@@ -1,0 +1,98 @@
+[
+    {
+        "file":  "infra/validation/media-execution/crash-worker.mjs",
+        "sha256":  "8462FDF91F70F4F324B1C2E4D34315E39834F8FFE778A2DE02B4DC0212EBA309"
+    },
+    {
+        "file":  "infra/validation/media-execution/Dockerfile",
+        "sha256":  "40F4442F1DD818B794867F0F525176E5B34364E522354DF271CA8E811C150430"
+    },
+    {
+        "file":  "infra/validation/media-execution/Dockerfile.dockerignore",
+        "sha256":  "CE3286F83C0F7E29438895F93EC8F67931250E72C54151460734867B89C53449"
+    },
+    {
+        "file":  "infra/validation/media-execution/late-docker.mjs",
+        "sha256":  "153BF999C3AAF74FBE8CC7DC493528E24456383D49BA13829ED188C531878FB4"
+    },
+    {
+        "file":  "infra/validation/media-execution/run.mjs",
+        "sha256":  "82B2C1AC6B469B8C27D74B5E589F43875F9F39B12DD8E730BA1DA5DDE72E110A"
+    },
+    {
+        "file":  "infra/validation/media-execution/Run.ps1",
+        "sha256":  "8D7A0D93D5026E9E586AC05F63ABBFA22B112E36D224F6F4B888C83FF011E23E"
+    },
+    {
+        "file":  "infra/validation/media-execution/runtime-probe.mjs",
+        "sha256":  "CD34771EA5DA0B4E03066497868E13B0BE5FB885C81E5B3401AE00C0B0C5B8DF"
+    },
+    {
+        "file":  "package.json",
+        "sha256":  "BD35E3292E0D858935EB707F00DA749CC231D389CD574A2BC502AABC3ECB7183"
+    },
+    {
+        "file":  "packages/job-queue/tsconfig.build.json",
+        "sha256":  "09F4291688626DA197A5263AAC22E0D37E6F55B0C9B1B453810CF18F1F29B57C"
+    },
+    {
+        "file":  "packages/media-execution/package.json",
+        "sha256":  "199D4B9453ED4E1E919D233D313212FE2F5C211BE2AB80364A196A1BB3FEEA3B"
+    },
+    {
+        "file":  "packages/media-execution/prisma.config.ts",
+        "sha256":  "3816AF0C8003E987CA2878522A6767D98CDB3A410056C525D5FDDBCFB6D09C8D"
+    },
+    {
+        "file":  "packages/media-execution/prisma/migrations/202610090002_execution_inventory/migration.sql",
+        "sha256":  "513FF0F7FFF3AD97C8CCA417E060F6057D482F2554BB3B5111D4E250E22BD5C6"
+    },
+    {
+        "file":  "packages/media-execution/prisma/migrations/migration_lock.toml",
+        "sha256":  "1DB17A8D051AA136110736752C5E1F8B7ED92B6EA8E803112FBBE2497047C210"
+    },
+    {
+        "file":  "packages/media-execution/prisma/schema.prisma",
+        "sha256":  "D69DA1CC9111C3BA8E0CCE4A1556ADC0DB9AC666518BC47170CE84232C5155A5"
+    },
+    {
+        "file":  "packages/media-execution/src/contracts.ts",
+        "sha256":  "92CB34382BFA16F74E81448F67471FC85C7BD246D66B1F73B04169BF48C0508C"
+    },
+    {
+        "file":  "packages/media-execution/src/docker-runtime.ts",
+        "sha256":  "40CBA2F602EC71D98E23A3B1DC1DE67106C34E9FF802A43C8796FDAF0316FDF3"
+    },
+    {
+        "file":  "packages/media-execution/src/index.ts",
+        "sha256":  "81CA1F0C8DBC576ACA8BA48B63DB5399347FBD8B5F27AF439C987D4F9B05683D"
+    },
+    {
+        "file":  "packages/media-execution/src/inventory.ts",
+        "sha256":  "1E81FDA0AE209006C17F077CEC5190C0E0D5BE82317F46D36935B6CDB3954513"
+    },
+    {
+        "file":  "packages/media-execution/src/supervisor.ts",
+        "sha256":  "E4C812620AEF14F4510A68651B6C505F961DAB50A75D4A581D2C6C4AA44354AD"
+    },
+    {
+        "file":  "packages/media-execution/test/laboratory-storage.ts",
+        "sha256":  "AC07C2988008D1A92A6362642B0534222E0A20193F0EB8AD449596CF1EC6219E"
+    },
+    {
+        "file":  "packages/media-execution/test/media-execution.integration.test.ts",
+        "sha256":  "19A46A2D647441EF13C03711E4E337C781D3D1CF851D336CA3C00AE81527634F"
+    },
+    {
+        "file":  "packages/media-execution/tsconfig.build.json",
+        "sha256":  "6CFC806FE62F9EFF4C012DA427561A11491D18D40F933DD3D50CD779630DB83C"
+    },
+    {
+        "file":  "packages/media-execution/tsconfig.json",
+        "sha256":  "A5A819B6B9E2F04AB07AD2391E429DD8C6D7923DBE8C176E9F5F021AAE96B9EF"
+    },
+    {
+        "file":  "pnpm-lock.yaml",
+        "sha256":  "6EE6BA0E9077DB0FF75E6AED8B346C1C736754245B7F4574BD49CB445452FA0F"
+    }
+]

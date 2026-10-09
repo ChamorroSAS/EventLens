@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "ticket": "EL-TK-061",
+  "evidenceKind": "INDEPENDENT_AUTOMATED_VALIDATION",
+  "recordedAt": "2026-10-09",
+  "validationStatus": "PASS_WITH_WARNINGS",
+  "experimentResult": "PENDING",
+  "physicalCompatibility": "FAIL_OR_BLOCKED",
+  "scope": "Final focused validation of tool/runtime error classification and related EL-TK-061 behavior after the final freeze. No canonical corpus regeneration, physical-result edits, or broad media rerun.",
+  "checks": [
+    {
+      "command": "powershell -NoProfile -File infra/spikes/spike061/Run.ps1 -Action test",
+      "result": "PASS",
+      "passed": 17,
+      "failed": 0,
+      "testFile": "spike061/core.test.mjs"
+    },
+    {
+      "command": "powershell -NoProfile -File infra/spikes/spike061/Supplemental.ps1 -Action execute -Dataset <existing supplemental dataset> -RevalidateNegative",
+      "result": "PASS",
+      "passed": 4,
+      "failed": 0,
+      "details": "Four existing truncated/corrupt media samples were rejected. Two were classified INVALID_OR_UNSUPPORTED_INPUT and two VALIDATION_REJECT; each had zero outputs and an unchanged original."
+    },
+    {
+      "command": "powershell -NoProfile -File infra/spikes/spike061/SupplementalFaults.ps1 -Dataset <existing supplemental dataset>",
+      "result": "PASS",
+      "passed": 3,
+      "failed": 0,
+      "details": "Output I/O failure produced PROCESSING_FAILED / OUTPUT_OR_RUNTIME_IO / OUTPUT_TRANSFORM; the harness confirmed the thumbnail existed before the injected output-open failure and exported no partial output. Cancellation stopped a running child with a private partial file and exported nothing. Timeout was classified RESOURCE_OR_PROCESS_FAILURE. Originals remained unchanged."
+    }
+  ],
+  "acceptanceCriteria": [
+    {
+      "criterion": "Invalid/corrupt inputs are rejected without being confused with runtime/output I/O failures.",
+      "status": "VERIFIED",
+      "evidence": "4/4 targeted negative revalidations; 17/17 focused tests include missing-tool, permission, output-I/O, recognized decoder-rejection, and fail-closed unknown-exit checks."
+    },
+    {
+      "criterion": "Processing failures, cancellation, and timeout do not publish partial outputs or mutate originals.",
+      "status": "VERIFIED",
+      "evidence": "3/3 isolated fault checks passed; each confirmed zero promoted outputs and unchanged original."
+    },
+    {
+      "criterion": "The existing supplemental media evidence remains consistent with recorded inputs and outputs.",
+      "status": "VERIFIED",
+      "evidence": "Prior 32 case/boundary attempts and 41 recorded outputs were independently checked for input immutability and output existence/checksum consistency; no mismatch was found. The final rerun was intentionally limited to targeted classification checks."
+    },
+    {
+      "criterion": "Physical browser/device compatibility is demonstrated for supported cases.",
+      "status": "NOT_TESTED",
+      "evidence": "Manual matrix remains 39 PASS, 9 BLOCKED, 0 FAIL; no new physical-device results were supplied or fabricated."
+    }
+  ],
+  "protectedEvidence": {
+    "physicalReportsAndTemplateUnchanged": true,
+    "canonicalCorpusManifestUnchanged": true,
+    "physicalMatrixRows": 48,
+    "physicalStatusCounts": {
+      "PASS": 39,
+      "BLOCKED": 9,
+      "FAIL": 0
+    }
+  },
+  "relatedExistingEvidence": {
+    "supplementalMediaAndBoundaryCases": "infra/spikes/evidence/spike061-automated-supplemental.json",
+    "postgresMinioIntegration": "9/9 recorded integration checks passed in the existing supplemental evidence; not rerun in this focused validation."
+  },
+  "limitations": [
+    "Physical playback, format compatibility, and device/browser behavior remain unverified for the 9 blocked manual rows.",
+    "The 40 MP limit is an experimental inspection bound and does not establish performance at that size.",
+    "HEIF evidence covers the recorded HEVC 8/10-bit and mif1 samples only; it does not establish universal profile/plugin compatibility.",
+    "Prior PostgreSQL/MinIO integration evidence was inspected but not rerun in this focused pass.",
+    "No validation gate or overall experiment is marked PASS."
+  ]
+}

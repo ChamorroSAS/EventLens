@@ -1,0 +1,592 @@
+{
+    "ticket":  "EL-TK-061",
+    "runId":  "68239717-6148-4579-be41-91a239715589",
+    "recordedAt":  "2026-10-09T06:22:55.275Z",
+    "experimentOnly":  true,
+    "binding":  {
+                    "originalSha256":  "cca45e06d7cfb176096a00abece7a61f011c494caedb77faec2f0df9c36a1ae8",
+                    "outputSha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                    "outputName":  "playback.mp4",
+                    "outputFile":  "cases/MP4-H264-NO-AUDIO/playback.mp4",
+                    "originalFile":  "inputs/MP4-H264-NO-AUDIO.mp4",
+                    "supplementalRunId":  "6e6fe5d6cd0a424199695ec4419f4124",
+                    "caseId":  "MP4-H264-NO-AUDIO"
+                },
+    "cases":  [
+                  {
+                      "name":  "valid-current-real-media-promotion",
+                      "result":  "PASS",
+                      "casRows":  1,
+                      "actualMediaSha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                      "cleanup":  "HEAD_404"
+                  },
+                  {
+                      "name":  "cancel",
+                      "result":  "PASS",
+                      "caseId":  "MP4-H264-NO-AUDIO",
+                      "mediaSha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                      "staleCasRows":  0,
+                      "clientOutcome":  "UNKNOWN",
+                      "actualLatePut":  true,
+                      "writerDrained":  true,
+                      "newIoDenied":  true,
+                      "rejectedNewIo":  1,
+                      "cleanup":  "HEAD_404",
+                      "reactionMs":  130
+                  },
+                  {
+                      "name":  "token-revoked",
+                      "result":  "PASS",
+                      "caseId":  "MP4-H264-NO-AUDIO",
+                      "mediaSha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                      "staleCasRows":  0,
+                      "clientOutcome":  "UNKNOWN",
+                      "actualLatePut":  true,
+                      "writerDrained":  true,
+                      "newIoDenied":  true,
+                      "rejectedNewIo":  1,
+                      "cleanup":  "HEAD_404",
+                      "reactionMs":  126
+                  },
+                  {
+                      "name":  "fence-change",
+                      "result":  "PASS",
+                      "caseId":  "MP4-H264-NO-AUDIO",
+                      "mediaSha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                      "staleCasRows":  0,
+                      "clientOutcome":  "UNKNOWN",
+                      "actualLatePut":  true,
+                      "writerDrained":  true,
+                      "newIoDenied":  true,
+                      "rejectedNewIo":  1,
+                      "cleanup":  "HEAD_404",
+                      "reactionMs":  124
+                  },
+                  {
+                      "name":  "generation-change",
+                      "result":  "PASS",
+                      "caseId":  "MP4-H264-NO-AUDIO",
+                      "mediaSha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                      "staleCasRows":  0,
+                      "clientOutcome":  "UNKNOWN",
+                      "actualLatePut":  true,
+                      "writerDrained":  true,
+                      "newIoDenied":  true,
+                      "rejectedNewIo":  1,
+                      "cleanup":  "HEAD_404",
+                      "reactionMs":  123
+                  },
+                  {
+                      "name":  "epoch-change",
+                      "result":  "PASS",
+                      "caseId":  "MP4-H264-NO-AUDIO",
+                      "mediaSha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                      "staleCasRows":  0,
+                      "clientOutcome":  "UNKNOWN",
+                      "actualLatePut":  true,
+                      "writerDrained":  true,
+                      "newIoDenied":  true,
+                      "rejectedNewIo":  1,
+                      "cleanup":  "HEAD_404",
+                      "reactionMs":  125
+                  },
+                  {
+                      "name":  "lease-expired",
+                      "result":  "PASS",
+                      "caseId":  "MP4-H264-NO-AUDIO",
+                      "mediaSha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                      "staleCasRows":  0,
+                      "clientOutcome":  "UNKNOWN",
+                      "actualLatePut":  true,
+                      "writerDrained":  true,
+                      "newIoDenied":  true,
+                      "rejectedNewIo":  1,
+                      "cleanup":  "HEAD_404",
+                      "reactionMs":  130
+                  },
+                  {
+                      "name":  "heartbeat-loss",
+                      "result":  "PASS",
+                      "caseId":  "MP4-H264-NO-AUDIO",
+                      "mediaSha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                      "staleCasRows":  0,
+                      "clientOutcome":  "UNKNOWN",
+                      "actualLatePut":  true,
+                      "writerDrained":  true,
+                      "newIoDenied":  true,
+                      "rejectedNewIo":  1,
+                      "cleanup":  "HEAD_404",
+                      "reactionMs":  231
+                  },
+                  {
+                      "name":  "original-byte-identical-after-faults",
+                      "result":  "PASS",
+                      "originalSha256":  "cca45e06d7cfb176096a00abece7a61f011c494caedb77faec2f0df9c36a1ae8"
+                  }
+              ],
+    "timeline":  [
+                     {
+                         "at":  "2026-10-09T06:22:54.058Z",
+                         "event":  "controlled-original-staged",
+                         "key":  "attempts/spike061/68239717-6148-4579-be41-91a239715589/protected/original",
+                         "sha256":  "cca45e06d7cfb176096a00abece7a61f011c494caedb77faec2f0df9c36a1ae8"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.064Z",
+                         "event":  "durable-intent-before-io",
+                         "id":  "68239717-6148-4579-be41-91a239715589-valid",
+                         "key":  "attempts/spike061/68239717-6148-4579-be41-91a239715589/valid/playback.mp4",
+                         "caseId":  "MP4-H264-NO-AUDIO",
+                         "sha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                         "fence":  1,
+                         "generation":  1
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.087Z",
+                         "event":  "valid-publication-cas",
+                         "id":  "68239717-6148-4579-be41-91a239715589-valid"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.098Z",
+                         "event":  "durable-intent-before-io",
+                         "id":  "68239717-6148-4579-be41-91a239715589-cancel",
+                         "key":  "attempts/spike061/68239717-6148-4579-be41-91a239715589/cancel/playback.mp4",
+                         "caseId":  "MP4-H264-NO-AUDIO",
+                         "sha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                         "fence":  1,
+                         "generation":  1
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.104Z",
+                         "event":  "held-real-media-put",
+                         "id":  "68239717-6148-4579-be41-91a239715589-cancel",
+                         "bytes":  9577
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.121Z",
+                         "event":  "authority-fault-injected",
+                         "id":  "68239717-6148-4579-be41-91a239715589-cancel",
+                         "fault":  "cancel"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.122Z",
+                         "event":  "writer-admission-closed-client-aborted",
+                         "id":  "68239717-6148-4579-be41-91a239715589-cancel"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.124Z",
+                         "event":  "partial-not-promoted",
+                         "id":  "68239717-6148-4579-be41-91a239715589-cancel",
+                         "casRows":  0,
+                         "reason":  "ACTIVE_EXTERNAL_WRITER"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.131Z",
+                         "event":  "actual-external-writer-drained",
+                         "id":  "68239717-6148-4579-be41-91a239715589-cancel",
+                         "status":  200
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.251Z",
+                         "event":  "cleanup-after-drain-confirmed",
+                         "id":  "68239717-6148-4579-be41-91a239715589-cancel"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.254Z",
+                         "event":  "durable-intent-before-io",
+                         "id":  "68239717-6148-4579-be41-91a239715589-token-revoked",
+                         "key":  "attempts/spike061/68239717-6148-4579-be41-91a239715589/token-revoked/playback.mp4",
+                         "caseId":  "MP4-H264-NO-AUDIO",
+                         "sha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                         "fence":  1,
+                         "generation":  1
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.256Z",
+                         "event":  "held-real-media-put",
+                         "id":  "68239717-6148-4579-be41-91a239715589-token-revoked",
+                         "bytes":  9577
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.277Z",
+                         "event":  "authority-fault-injected",
+                         "id":  "68239717-6148-4579-be41-91a239715589-token-revoked",
+                         "fault":  "token-revoked"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.277Z",
+                         "event":  "writer-admission-closed-client-aborted",
+                         "id":  "68239717-6148-4579-be41-91a239715589-token-revoked"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.280Z",
+                         "event":  "partial-not-promoted",
+                         "id":  "68239717-6148-4579-be41-91a239715589-token-revoked",
+                         "casRows":  0,
+                         "reason":  "ACTIVE_EXTERNAL_WRITER"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.287Z",
+                         "event":  "actual-external-writer-drained",
+                         "id":  "68239717-6148-4579-be41-91a239715589-token-revoked",
+                         "status":  200
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.403Z",
+                         "event":  "cleanup-after-drain-confirmed",
+                         "id":  "68239717-6148-4579-be41-91a239715589-token-revoked"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.406Z",
+                         "event":  "durable-intent-before-io",
+                         "id":  "68239717-6148-4579-be41-91a239715589-fence-change",
+                         "key":  "attempts/spike061/68239717-6148-4579-be41-91a239715589/fence-change/playback.mp4",
+                         "caseId":  "MP4-H264-NO-AUDIO",
+                         "sha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                         "fence":  1,
+                         "generation":  1
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.408Z",
+                         "event":  "held-real-media-put",
+                         "id":  "68239717-6148-4579-be41-91a239715589-fence-change",
+                         "bytes":  9577
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.428Z",
+                         "event":  "authority-fault-injected",
+                         "id":  "68239717-6148-4579-be41-91a239715589-fence-change",
+                         "fault":  "fence-change"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.429Z",
+                         "event":  "writer-admission-closed-client-aborted",
+                         "id":  "68239717-6148-4579-be41-91a239715589-fence-change"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.431Z",
+                         "event":  "partial-not-promoted",
+                         "id":  "68239717-6148-4579-be41-91a239715589-fence-change",
+                         "casRows":  0,
+                         "reason":  "ACTIVE_EXTERNAL_WRITER"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.437Z",
+                         "event":  "actual-external-writer-drained",
+                         "id":  "68239717-6148-4579-be41-91a239715589-fence-change",
+                         "status":  200
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.552Z",
+                         "event":  "cleanup-after-drain-confirmed",
+                         "id":  "68239717-6148-4579-be41-91a239715589-fence-change"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.555Z",
+                         "event":  "durable-intent-before-io",
+                         "id":  "68239717-6148-4579-be41-91a239715589-generation-change",
+                         "key":  "attempts/spike061/68239717-6148-4579-be41-91a239715589/generation-change/playback.mp4",
+                         "caseId":  "MP4-H264-NO-AUDIO",
+                         "sha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                         "fence":  1,
+                         "generation":  1
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.558Z",
+                         "event":  "held-real-media-put",
+                         "id":  "68239717-6148-4579-be41-91a239715589-generation-change",
+                         "bytes":  9577
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.578Z",
+                         "event":  "authority-fault-injected",
+                         "id":  "68239717-6148-4579-be41-91a239715589-generation-change",
+                         "fault":  "generation-change"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.579Z",
+                         "event":  "writer-admission-closed-client-aborted",
+                         "id":  "68239717-6148-4579-be41-91a239715589-generation-change"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.580Z",
+                         "event":  "partial-not-promoted",
+                         "id":  "68239717-6148-4579-be41-91a239715589-generation-change",
+                         "casRows":  0,
+                         "reason":  "ACTIVE_EXTERNAL_WRITER"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.586Z",
+                         "event":  "actual-external-writer-drained",
+                         "id":  "68239717-6148-4579-be41-91a239715589-generation-change",
+                         "status":  200
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.701Z",
+                         "event":  "cleanup-after-drain-confirmed",
+                         "id":  "68239717-6148-4579-be41-91a239715589-generation-change"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.704Z",
+                         "event":  "durable-intent-before-io",
+                         "id":  "68239717-6148-4579-be41-91a239715589-epoch-change",
+                         "key":  "attempts/spike061/68239717-6148-4579-be41-91a239715589/epoch-change/playback.mp4",
+                         "caseId":  "MP4-H264-NO-AUDIO",
+                         "sha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                         "fence":  1,
+                         "generation":  1
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.707Z",
+                         "event":  "held-real-media-put",
+                         "id":  "68239717-6148-4579-be41-91a239715589-epoch-change",
+                         "bytes":  9577
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.727Z",
+                         "event":  "authority-fault-injected",
+                         "id":  "68239717-6148-4579-be41-91a239715589-epoch-change",
+                         "fault":  "epoch-change"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.727Z",
+                         "event":  "writer-admission-closed-client-aborted",
+                         "id":  "68239717-6148-4579-be41-91a239715589-epoch-change"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.729Z",
+                         "event":  "partial-not-promoted",
+                         "id":  "68239717-6148-4579-be41-91a239715589-epoch-change",
+                         "casRows":  0,
+                         "reason":  "ACTIVE_EXTERNAL_WRITER"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.735Z",
+                         "event":  "actual-external-writer-drained",
+                         "id":  "68239717-6148-4579-be41-91a239715589-epoch-change",
+                         "status":  200
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.852Z",
+                         "event":  "cleanup-after-drain-confirmed",
+                         "id":  "68239717-6148-4579-be41-91a239715589-epoch-change"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.856Z",
+                         "event":  "durable-intent-before-io",
+                         "id":  "68239717-6148-4579-be41-91a239715589-lease-expired",
+                         "key":  "attempts/spike061/68239717-6148-4579-be41-91a239715589/lease-expired/playback.mp4",
+                         "caseId":  "MP4-H264-NO-AUDIO",
+                         "sha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                         "fence":  1,
+                         "generation":  1
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.859Z",
+                         "event":  "held-real-media-put",
+                         "id":  "68239717-6148-4579-be41-91a239715589-lease-expired",
+                         "bytes":  9577
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.878Z",
+                         "event":  "authority-fault-injected",
+                         "id":  "68239717-6148-4579-be41-91a239715589-lease-expired",
+                         "fault":  "lease-expired"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.879Z",
+                         "event":  "writer-admission-closed-client-aborted",
+                         "id":  "68239717-6148-4579-be41-91a239715589-lease-expired"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.882Z",
+                         "event":  "partial-not-promoted",
+                         "id":  "68239717-6148-4579-be41-91a239715589-lease-expired",
+                         "casRows":  0,
+                         "reason":  "ACTIVE_EXTERNAL_WRITER"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:54.888Z",
+                         "event":  "actual-external-writer-drained",
+                         "id":  "68239717-6148-4579-be41-91a239715589-lease-expired",
+                         "status":  200
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:55.008Z",
+                         "event":  "cleanup-after-drain-confirmed",
+                         "id":  "68239717-6148-4579-be41-91a239715589-lease-expired"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:55.010Z",
+                         "event":  "durable-intent-before-io",
+                         "id":  "68239717-6148-4579-be41-91a239715589-heartbeat-loss",
+                         "key":  "attempts/spike061/68239717-6148-4579-be41-91a239715589/heartbeat-loss/playback.mp4",
+                         "caseId":  "MP4-H264-NO-AUDIO",
+                         "sha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                         "fence":  1,
+                         "generation":  1
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:55.013Z",
+                         "event":  "held-real-media-put",
+                         "id":  "68239717-6148-4579-be41-91a239715589-heartbeat-loss",
+                         "bytes":  9577
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:55.034Z",
+                         "event":  "authority-fault-injected",
+                         "id":  "68239717-6148-4579-be41-91a239715589-heartbeat-loss",
+                         "fault":  "heartbeat-loss"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:55.141Z",
+                         "event":  "writer-admission-closed-client-aborted",
+                         "id":  "68239717-6148-4579-be41-91a239715589-heartbeat-loss"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:55.143Z",
+                         "event":  "partial-not-promoted",
+                         "id":  "68239717-6148-4579-be41-91a239715589-heartbeat-loss",
+                         "casRows":  0,
+                         "reason":  "ACTIVE_EXTERNAL_WRITER"
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:55.149Z",
+                         "event":  "actual-external-writer-drained",
+                         "id":  "68239717-6148-4579-be41-91a239715589-heartbeat-loss",
+                         "status":  200
+                     },
+                     {
+                         "at":  "2026-10-09T06:22:55.265Z",
+                         "event":  "cleanup-after-drain-confirmed",
+                         "id":  "68239717-6148-4579-be41-91a239715589-heartbeat-loss"
+                     }
+                 ],
+    "inventory":  [
+                      {
+                          "id":  "68239717-6148-4579-be41-91a239715589-fence-change",
+                          "key":  "attempts/spike061/68239717-6148-4579-be41-91a239715589/fence-change/playback.mp4",
+                          "state":  "CLEANED",
+                          "case_id":  "MP4-H264-NO-AUDIO",
+                          "sha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                          "fence":  1,
+                          "generation":  1
+                      },
+                      {
+                          "id":  "68239717-6148-4579-be41-91a239715589-valid",
+                          "key":  "attempts/spike061/68239717-6148-4579-be41-91a239715589/valid/playback.mp4",
+                          "state":  "PROMOTED",
+                          "case_id":  "MP4-H264-NO-AUDIO",
+                          "sha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                          "fence":  1,
+                          "generation":  1
+                      },
+                      {
+                          "id":  "68239717-6148-4579-be41-91a239715589-cancel",
+                          "key":  "attempts/spike061/68239717-6148-4579-be41-91a239715589/cancel/playback.mp4",
+                          "state":  "CLEANED",
+                          "case_id":  "MP4-H264-NO-AUDIO",
+                          "sha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                          "fence":  1,
+                          "generation":  1
+                      },
+                      {
+                          "id":  "68239717-6148-4579-be41-91a239715589-generation-change",
+                          "key":  "attempts/spike061/68239717-6148-4579-be41-91a239715589/generation-change/playback.mp4",
+                          "state":  "CLEANED",
+                          "case_id":  "MP4-H264-NO-AUDIO",
+                          "sha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                          "fence":  1,
+                          "generation":  1
+                      },
+                      {
+                          "id":  "68239717-6148-4579-be41-91a239715589-heartbeat-loss",
+                          "key":  "attempts/spike061/68239717-6148-4579-be41-91a239715589/heartbeat-loss/playback.mp4",
+                          "state":  "CLEANED",
+                          "case_id":  "MP4-H264-NO-AUDIO",
+                          "sha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                          "fence":  1,
+                          "generation":  1
+                      },
+                      {
+                          "id":  "68239717-6148-4579-be41-91a239715589-token-revoked",
+                          "key":  "attempts/spike061/68239717-6148-4579-be41-91a239715589/token-revoked/playback.mp4",
+                          "state":  "CLEANED",
+                          "case_id":  "MP4-H264-NO-AUDIO",
+                          "sha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                          "fence":  1,
+                          "generation":  1
+                      },
+                      {
+                          "id":  "68239717-6148-4579-be41-91a239715589-epoch-change",
+                          "key":  "attempts/spike061/68239717-6148-4579-be41-91a239715589/epoch-change/playback.mp4",
+                          "state":  "CLEANED",
+                          "case_id":  "MP4-H264-NO-AUDIO",
+                          "sha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                          "fence":  1,
+                          "generation":  1
+                      },
+                      {
+                          "id":  "68239717-6148-4579-be41-91a239715589-lease-expired",
+                          "key":  "attempts/spike061/68239717-6148-4579-be41-91a239715589/lease-expired/playback.mp4",
+                          "state":  "CLEANED",
+                          "case_id":  "MP4-H264-NO-AUDIO",
+                          "sha256":  "5460d4babafe55408a775642d74066f8b38ac948d0d84d42ab662f4b3c4eb810",
+                          "fence":  1,
+                          "generation":  1
+                      }
+                  ],
+    "reference":  "EL-TK-060 PASS: process-group stop, external writer containment and crash recovery remain separately evidenced; this experiment links publication faults to actual multimedia derivatives.",
+    "limitations":  [
+                        "Trusted publication supervisor only; no codec parser receives network or secrets.",
+                        "No production executor/provider certification.",
+                        "Protected controlled original is retained within this unique private attempt prefix."
+                    ],
+    "result":  "PASS",
+    "runtime":  {
+                    "pidsLimit":  128,
+                    "capDrop":  [
+                                    "ALL"
+                                ],
+                    "project":  "eventlens-spikes-059",
+                    "memoryBytes":  536870912,
+                    "elapsedMs":  1595.3145000000002,
+                    "readOnlyRootfs":  true,
+                    "imageId":  "sha256:c6637be5b163844b72fcc99d79889aadaa036ebc38407fb1b25f5c9f71407eda",
+                    "containerExitCode":  0,
+                    "cpuNano":  1000000000,
+                    "securityOpt":  [
+                                        "no-new-privileges:true"
+                                    ],
+                    "mounts":  [
+                                   {
+                                       "target":  "/run/secrets/s3_lab_user",
+                                       "rw":  false
+                                   },
+                                   {
+                                       "target":  "/run/secrets/s3_lab_password",
+                                       "rw":  false
+                                   },
+                                   {
+                                       "target":  "/run/secrets/pg_lab",
+                                       "rw":  false
+                                   },
+                                   {
+                                       "target":  "/lab/spike061",
+                                       "rw":  false
+                                   },
+                                   {
+                                       "target":  "/media",
+                                       "rw":  false
+                                   },
+                                   {
+                                       "target":  "/state",
+                                       "rw":  true
+                                   },
+                                   {
+                                       "target":  "/evidence",
+                                       "rw":  true
+                                   }
+                               ]
+                }
+}

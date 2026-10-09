@@ -1,0 +1,108 @@
+name: eventlens-spikes-059
+x-runtime: &runtime
+  init: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  pids_limit: 128
+  cpus: 1.0
+  mem_limit: 512m
+  restart: 'no'
+services:
+  postgres:
+    image: postgres:16.15-alpine3.24@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685
+    pids_limit: 128
+    cpus: 1.0
+    mem_limit: 512m
+    security_opt: [no-new-privileges:true]
+    environment:
+      POSTGRES_DB: eventlens_lab
+      POSTGRES_USER: lab_admin
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg_admin
+    secrets: [pg_admin]
+    volumes: [pg_data:/var/lib/postgresql/data]
+    networks: [lab]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U lab_admin -d eventlens_lab']
+      interval: 3s
+      timeout: 3s
+      retries: 40
+  minio:
+    <<: *runtime
+    build: {context: ., dockerfile: Dockerfile.minio}
+    image: eventlens-spikes-minio:2025-10-15-9e49d5e
+    environment:
+      MINIO_ROOT_USER_FILE: /run/secrets/s3_root_user
+      MINIO_ROOT_PASSWORD_FILE: /run/secrets/s3_root_password
+    secrets: [s3_root_user, s3_root_password]
+    volumes: [s3_data:/data]
+    networks: [lab]
+    healthcheck:
+      test: [CMD, curl, --fail, --silent, http://localhost:9000/minio/health/ready]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+  provision:
+    <<: *runtime
+    profiles: [tools]
+    build: {context: ., dockerfile: Dockerfile.harness}
+    image: eventlens-spikes-harness:059
+    user: '0:0'
+    read_only: true
+    tmpfs: ['/tmp:size=64m,mode=1777']
+    secrets: [pg_admin, pg_lab, s3_root_user, s3_root_password, s3_lab_user, s3_lab_password]
+    volumes: ['./.local:/state']
+    networks: [lab]
+    command: [pnpm, provision]
+    depends_on:
+      postgres: {condition: service_healthy}
+      minio: {condition: service_healthy}
+  harness:
+    <<: *runtime
+    profiles: [tools]
+    image: eventlens-spikes-harness:059
+    read_only: true
+    tmpfs: ['/tmp:size=64m,mode=1777']
+    secrets: [pg_lab, s3_lab_user, s3_lab_password]
+    networks: [lab]
+    volumes: ['./evidence:/evidence']
+    depends_on:
+      postgres: {condition: service_healthy}
+      minio: {condition: service_healthy}
+  runtime:
+    <<: *runtime
+    profiles: [runtime]
+    image: eventlens-spikes-harness:059
+    user: '1000:1000'
+    network_mode: none
+    read_only: true
+    tmpfs: ['/scratch:size=64m,uid=1000,gid=1000,mode=0700', '/tmp:size=16m,uid=1000,gid=1000,mode=0700']
+    volumes: ['./corpus:/inputs:ro']
+    command: [node, src/runtime.mjs]
+    environment: {LAB_HOLD_SECONDS: '3600'}
+  preview:
+    <<: *runtime
+    profiles: [preview]
+    image: eventlens-spikes-harness:059
+    read_only: true
+    tmpfs: ['/tmp:size=16m,mode=1777']
+    networks: [preview]
+    ports: ['127.0.0.1:19059:8059']
+    command: [pnpm, preview]
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://localhost:8059/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+volumes:
+  pg_data:
+  s3_data:
+networks:
+  lab: {internal: true}
+  preview: {}
+secrets:
+  pg_admin: {file: ./.local/secrets/pg_admin}
+  pg_lab: {file: ./.local/secrets/pg_lab}
+  s3_root_user: {file: ./.local/secrets/s3_root_user}
+  s3_root_password: {file: ./.local/secrets/s3_root_password}
+  s3_lab_user: {file: ./.local/secrets/s3_lab_user}
+  s3_lab_password: {file: ./.local/secrets/s3_lab_password}

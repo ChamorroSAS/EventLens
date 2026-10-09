@@ -1,0 +1,15 @@
+{
+    "name":  "eventlens",
+    "private":  true,
+    "packageManager":  "pnpm@10.30.3",
+    "scripts":  {
+                    "test:job-queue":  "pnpm --filter @eventlens/job-queue test",
+                    "build:job-queue":  "pnpm --filter @eventlens/job-queue build",
+                    "test:media-execution":  "pnpm --filter @eventlens/media-execution test",
+                    "build:media-execution":  "pnpm --filter @eventlens/media-execution build",
+                    "test:media-acceptance":  "pnpm --filter @eventlens/media-acceptance test",
+                    "build:media-acceptance":  "pnpm --filter @eventlens/media-acceptance build",
+                    "test:media-inspection":  "pnpm --filter @eventlens/media-inspection test",
+                    "build:media-inspection":  "pnpm --filter @eventlens/media-inspection build"
+                }
+}

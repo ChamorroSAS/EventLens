@@ -1,0 +1,35 @@
+{
+    "schemaVersion":  1,
+    "engineVersion":  "1.4.6",
+    "sourceImageDigest":  "sha256:58d9b21b5694a1f5b3a136e4f2e4fc6b463fce88635737e16f8cb9ee9455a199",
+    "snapshotId":  "45ed99001d94237d6b2a8054a796946f3151909c3f61c913591a970702f206b4",
+    "acquiredAtUTC":  "2026-10-09T20:34:16.0314617+00:00",
+    "verifiedAtUTC":  "2026-10-09T20:34:39.9656298+00:00",
+    "files":  [
+                  {
+                      "name":  "bytecode.cvd",
+                      "sha256":  "6d4aa01f219e988060fc419f495d07f27e0cdf1a2cccc065971da922c76f7ffb",
+                      "sizeBytes":  281702,
+                      "version":  339,
+                      "buildTimeUTC":  "2025-09-11T12:29:00.0000000+00:00",
+                      "signatureCount":  80
+                  },
+                  {
+                      "name":  "daily.cvd",
+                      "sha256":  "d6d284674457d851a9fb3cd2f1bba03dfe49e2a8bffd46c5dd8aee0c8423c2a4",
+                      "sizeBytes":  23440679,
+                      "version":  28148,
+                      "buildTimeUTC":  "2026-10-09T06:25:00.0000000+00:00",
+                      "signatureCount":  355740
+                  },
+                  {
+                      "name":  "main.cvd",
+                      "sha256":  "0b2182d229f46981ec8f535382222f7c9dfdd656b250ad47988b910a8d302365",
+                      "sizeBytes":  89072577,
+                      "version":  63,
+                      "buildTimeUTC":  "2025-12-16T23:18:00.0000000+00:00",
+                      "signatureCount":  3287027
+                  }
+              ],
+    "authenticityVerified":  true
+}

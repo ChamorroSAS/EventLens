@@ -1,0 +1,458 @@
+﻿{
+    "checks":  [
+                   {
+                       "result":  "PASS",
+                       "name":  "boundaries",
+                       "details":  {
+                                       "name":  "boundaries",
+                                       "uid":  1000,
+                                       "denied":  [
+                                                      {
+                                                          "path":  "/root/escape",
+                                                          "code":  "EACCES"
+                                                      },
+                                                      {
+                                                          "path":  "/home/node/escape",
+                                                          "code":  "EROFS"
+                                                      },
+                                                      {
+                                                          "path":  "/inputs/manifest.json",
+                                                          "code":  "EROFS"
+                                                      },
+                                                      {
+                                                          "path":  "/run/secrets/pg_lab",
+                                                          "code":  "ENOENT"
+                                                      },
+                                                      {
+                                                          "path":  "/var/run/docker.sock",
+                                                          "code":  "ENOENT"
+                                                      },
+                                                      {
+                                                          "path":  "/scratch-other/private",
+                                                          "code":  "ENOENT"
+                                                      }
+                                                  ],
+                                       "network":  "ENETUNREACH",
+                                       "privilegeEscalation":  "EPERM",
+                                       "inputSha256Before":  "4dd619c5e7ebfddea4173acf434d8a50d7673d4ae554e18cf89d711c2ab8c21e",
+                                       "inputSha256After":  "4dd619c5e7ebfddea4173acf434d8a50d7673d4ae554e18cf89d711c2ab8c21e",
+                                       "capabilities":  "0000000000000000",
+                                       "noNewPrivileges":  "1",
+                                       "cpuMax":  "50000 100000",
+                                       "memoryMax":  "134217728",
+                                       "pidsMax":  "32"
+                                   }
+                   },
+                   {
+                       "result":  "PASS",
+                       "name":  "cpu",
+                       "details":  {
+                                       "quotaCores":  0.5,
+                                       "cgroupMemoryPeakBytes":  16568320,
+                                       "measuredCpuRatio":  0.49136186348862404
+                                   }
+                   },
+                   {
+                       "result":  "PASS",
+                       "name":  "memory",
+                       "details":  {
+                                       "oomKilled":  true,
+                                       "kernelLimitBytes":  134217728,
+                                       "largestRecordedMemoryPeakBytes":  132993024,
+                                       "note":  "Final allocation triggers kernel OOM; sample before kill is the largest observed value, not exact terminal peak."
+                                   }
+                   },
+                   {
+                       "result":  "PASS",
+                       "name":  "scratch",
+                       "details":  {
+                                       "name":  "scratch",
+                                       "bytes":  16777216,
+                                       "code":  "ENOSPC"
+                                   }
+                   },
+                   {
+                       "result":  "PASS",
+                       "name":  "processes",
+                       "details":  {
+                                       "name":  "processes",
+                                       "attempted":  40,
+                                       "rejected":  16,
+                                       "current":  32,
+                                       "peak":  32,
+                                       "peakMemoryBytes":  20193280,
+                                       "events":  "max 16"
+                                   }
+                   },
+                   {
+                       "result":  "PASS",
+                       "name":  "threads",
+                       "details":  {
+                                       "name":  "threads",
+                                       "attempted":  40,
+                                       "rejected":  16,
+                                       "current":  32,
+                                       "peak":  32,
+                                       "peakMemoryBytes":  260304896,
+                                       "events":  "max 16"
+                                   }
+                   },
+                   {
+                       "result":  "PASS",
+                       "name":  "headers",
+                       "details":  {
+                                       "cases":  [
+                                                     {
+                                                         "width":  4000,
+                                                         "height":  3000,
+                                                         "streams":  2,
+                                                         "valid":  true,
+                                                         "accepted":  true
+                                                     },
+                                                     {
+                                                         "width":  10000,
+                                                         "height":  10000,
+                                                         "streams":  4,
+                                                         "valid":  true,
+                                                         "accepted":  true
+                                                     },
+                                                     {
+                                                         "width":  100000001,
+                                                         "height":  1,
+                                                         "streams":  1,
+                                                         "valid":  false,
+                                                         "accepted":  false
+                                                     },
+                                                     {
+                                                         "width":  100000,
+                                                         "height":  100000,
+                                                         "streams":  1,
+                                                         "valid":  false,
+                                                         "accepted":  false
+                                                     },
+                                                     {
+                                                         "width":  100,
+                                                         "height":  100,
+                                                         "streams":  5,
+                                                         "valid":  false,
+                                                         "accepted":  false
+                                                     },
+                                                     {
+                                                         "width":  null,
+                                                         "height":  100,
+                                                         "streams":  1,
+                                                         "valid":  false,
+                                                         "accepted":  false
+                                                     },
+                                                     {
+                                                         "width":  100,
+                                                         "height":  100,
+                                                         "streams":  -1,
+                                                         "valid":  false,
+                                                         "accepted":  false
+                                                     }
+                                                 ],
+                                       "scope":  "Synthetic pre-allocation pixel/stream budget guard only; actual codec inspection belongs to EL-TK-061"
+                                   }
+                   },
+                   {
+                       "result":  "PASS",
+                       "name":  "descendants",
+                       "details":  {
+                                       "descendantsStoppedWithContainer":  true,
+                                       "containerRunning":  false,
+                                       "stopMs":  182.9863
+                                   }
+                   },
+                   {
+                       "result":  "PASS",
+                       "name":  "live-scratch-and-crash-recovery",
+                       "details":  {
+                                       "removedContainers":  [
+                                                                 "el060-scratch-a-4b41aa82",
+                                                                 "el060-scratch-b-4b41aa82",
+                                                                 "el060-scratch-c-4b41aa82"
+                                                             ],
+                                       "attemptAUnchanged":  "attempt-A",
+                                       "recoveryAttemptSeesResidual":  false,
+                                       "result":  "PASS",
+                                       "liveAttemptA":  "attempt-A",
+                                       "recordedAt":  "2026-10-08T23:43:15.2964268Z",
+                                       "cleanupConfirmed":  true,
+                                       "mechanism":  "Separate per-container private tmpfs; no shared scratch mount",
+                                       "liveAttemptBAfterWrite":  "attempt-B",
+                                       "ownerKilled":  true,
+                                       "ticket":  "EL-TK-060",
+                                       "crossAttemptReadable":  false,
+                                       "recovery":  "Crash container removed and absence confirmed before PASS; new attempt scratch starts empty"
+                                   }
+                   },
+                   {
+                       "result":  "PASS",
+                       "name":  "lease-expired",
+                       "details":  {
+                                       "name":  "lease-expired",
+                                       "result":  "PASS",
+                                       "durationMs":  244,
+                                       "stopMs":  82,
+                                       "deadlineMs":  4000,
+                                       "stalePromotion":  false,
+                                       "clientOutcome":  "UNKNOWN",
+                                       "actualLatePut":  true,
+                                       "writerDrained":  true,
+                                       "attemptedNewIo":  1,
+                                       "rejectedNewIo":  1,
+                                       "processGroupKillObserved":  true,
+                                       "staleRenewalRejected":  true
+                                   }
+                   },
+                   {
+                       "result":  "PASS",
+                       "name":  "lease-revoked",
+                       "details":  {
+                                       "name":  "lease-revoked",
+                                       "result":  "PASS",
+                                       "durationMs":  230,
+                                       "stopMs":  77,
+                                       "deadlineMs":  4000,
+                                       "stalePromotion":  false,
+                                       "clientOutcome":  "UNKNOWN",
+                                       "actualLatePut":  true,
+                                       "writerDrained":  true,
+                                       "attemptedNewIo":  1,
+                                       "rejectedNewIo":  1,
+                                       "processGroupKillObserved":  true,
+                                       "staleRenewalRejected":  true
+                                   }
+                   },
+                   {
+                       "result":  "PASS",
+                       "name":  "heartbeat-loss",
+                       "details":  {
+                                       "name":  "heartbeat-loss",
+                                       "result":  "PASS",
+                                       "durationMs":  480,
+                                       "stopMs":  327,
+                                       "deadlineMs":  4000,
+                                       "stalePromotion":  false,
+                                       "clientOutcome":  "UNKNOWN",
+                                       "actualLatePut":  true,
+                                       "writerDrained":  true,
+                                       "attemptedNewIo":  1,
+                                       "rejectedNewIo":  1,
+                                       "processGroupKillObserved":  true,
+                                       "staleRenewalRejected":  true
+                                   }
+                   },
+                   {
+                       "result":  "PASS",
+                       "name":  "cancel",
+                       "details":  {
+                                       "name":  "cancel",
+                                       "result":  "PASS",
+                                       "durationMs":  235,
+                                       "stopMs":  86,
+                                       "deadlineMs":  4000,
+                                       "stalePromotion":  false,
+                                       "clientOutcome":  "UNKNOWN",
+                                       "actualLatePut":  true,
+                                       "writerDrained":  true,
+                                       "attemptedNewIo":  1,
+                                       "rejectedNewIo":  1,
+                                       "processGroupKillObserved":  true,
+                                       "staleRenewalRejected":  true
+                                   }
+                   },
+                   {
+                       "result":  "PASS",
+                       "name":  "generation-change",
+                       "details":  {
+                                       "name":  "generation-change",
+                                       "result":  "PASS",
+                                       "durationMs":  232,
+                                       "stopMs":  82,
+                                       "deadlineMs":  4000,
+                                       "stalePromotion":  false,
+                                       "clientOutcome":  "UNKNOWN",
+                                       "actualLatePut":  true,
+                                       "writerDrained":  true,
+                                       "attemptedNewIo":  1,
+                                       "rejectedNewIo":  1,
+                                       "processGroupKillObserved":  true,
+                                       "staleRenewalRejected":  true
+                                   }
+                   },
+                   {
+                       "result":  "PASS",
+                       "name":  "epoch-change",
+                       "details":  {
+                                       "name":  "epoch-change",
+                                       "result":  "PASS",
+                                       "durationMs":  230,
+                                       "stopMs":  81,
+                                       "deadlineMs":  4000,
+                                       "stalePromotion":  false,
+                                       "clientOutcome":  "UNKNOWN",
+                                       "actualLatePut":  true,
+                                       "writerDrained":  true,
+                                       "attemptedNewIo":  1,
+                                       "rejectedNewIo":  1,
+                                       "processGroupKillObserved":  true,
+                                       "staleRenewalRejected":  true
+                                   }
+                   },
+                   {
+                       "result":  "PASS",
+                       "name":  "fence-change",
+                       "details":  {
+                                       "name":  "fence-change",
+                                       "result":  "PASS",
+                                       "durationMs":  232,
+                                       "stopMs":  80,
+                                       "deadlineMs":  4000,
+                                       "stalePromotion":  false,
+                                       "clientOutcome":  "UNKNOWN",
+                                       "actualLatePut":  true,
+                                       "writerDrained":  true,
+                                       "attemptedNewIo":  1,
+                                       "rejectedNewIo":  1,
+                                       "processGroupKillObserved":  true,
+                                       "staleRenewalRejected":  true
+                                   }
+                   },
+                   {
+                       "result":  "PASS",
+                       "name":  "db-loss",
+                       "details":  {
+                                       "name":  "db-loss",
+                                       "result":  "PASS",
+                                       "durationMs":  2376,
+                                       "stopMs":  516,
+                                       "deadlineMs":  4000,
+                                       "stalePromotion":  false,
+                                       "clientOutcome":  "UNKNOWN",
+                                       "actualLatePut":  true,
+                                       "writerDrained":  true,
+                                       "attemptedNewIo":  1,
+                                       "rejectedNewIo":  1,
+                                       "processGroupKillObserved":  true,
+                                       "staleRenewalRejected":  true
+                                   }
+                   },
+                   {
+                       "result":  "PASS",
+                       "name":  "multipart-late-complete-and-abort",
+                       "details":  {
+                                       "name":  "multipart-late-complete-and-abort",
+                                       "result":  "PASS",
+                                       "durationMs":  83,
+                                       "actualLateCompletion":  true,
+                                       "clientOutcome":  "UNKNOWN",
+                                       "abortVerifiedByListParts404":  true
+                                   }
+                   },
+                   {
+                       "result":  "PASS",
+                       "name":  "crash-recovery-durable-inventory",
+                       "details":  {
+                                       "name":  "crash-recovery-durable-inventory",
+                                       "result":  "PASS",
+                                       "durationMs":  239,
+                                       "recoveryConnectionIndependent":  true,
+                                       "inventoryBefore":  [
+                                                               {
+                                                                   "id":  "5430c205-56ad-4141-b474-9318b37bd31d-generation-change",
+                                                                   "key":  "attempts/spike060/5430c205-56ad-4141-b474-9318b37bd31d/generation-change/output",
+                                                                   "state":  "CLEANED"
+                                                               },
+                                                               {
+                                                                   "id":  "5430c205-56ad-4141-b474-9318b37bd31d-epoch-change",
+                                                                   "key":  "attempts/spike060/5430c205-56ad-4141-b474-9318b37bd31d/epoch-change/output",
+                                                                   "state":  "CLEANED"
+                                                               },
+                                                               {
+                                                                   "id":  "5430c205-56ad-4141-b474-9318b37bd31d-lease-expired",
+                                                                   "key":  "attempts/spike060/5430c205-56ad-4141-b474-9318b37bd31d/lease-expired/output",
+                                                                   "state":  "CLEANED"
+                                                               },
+                                                               {
+                                                                   "id":  "5430c205-56ad-4141-b474-9318b37bd31d-fence-change",
+                                                                   "key":  "attempts/spike060/5430c205-56ad-4141-b474-9318b37bd31d/fence-change/output",
+                                                                   "state":  "CLEANED"
+                                                               },
+                                                               {
+                                                                   "id":  "5430c205-56ad-4141-b474-9318b37bd31d-lease-revoked",
+                                                                   "key":  "attempts/spike060/5430c205-56ad-4141-b474-9318b37bd31d/lease-revoked/output",
+                                                                   "state":  "CLEANED"
+                                                               },
+                                                               {
+                                                                   "id":  "5430c205-56ad-4141-b474-9318b37bd31d-heartbeat-loss",
+                                                                   "key":  "attempts/spike060/5430c205-56ad-4141-b474-9318b37bd31d/heartbeat-loss/output",
+                                                                   "state":  "CLEANED"
+                                                               },
+                                                               {
+                                                                   "id":  "5430c205-56ad-4141-b474-9318b37bd31d-db-loss",
+                                                                   "key":  "attempts/spike060/5430c205-56ad-4141-b474-9318b37bd31d/db-loss/output",
+                                                                   "state":  "CLEANED"
+                                                               },
+                                                               {
+                                                                   "id":  "5430c205-56ad-4141-b474-9318b37bd31d-cancel",
+                                                                   "key":  "attempts/spike060/5430c205-56ad-4141-b474-9318b37bd31d/cancel/output",
+                                                                   "state":  "CLEANED"
+                                                               },
+                                                               {
+                                                                   "id":  "5430c205-56ad-4141-b474-9318b37bd31d-multipart",
+                                                                   "key":  "attempts/spike060/5430c205-56ad-4141-b474-9318b37bd31d/multipart/output",
+                                                                   "state":  "CLEANED"
+                                                               },
+                                                               {
+                                                                   "id":  "5430c205-56ad-4141-b474-9318b37bd31d-crash",
+                                                                   "key":  "attempts/spike060/5430c205-56ad-4141-b474-9318b37bd31d/crash/partial",
+                                                                   "state":  "UNKNOWN"
+                                                               }
+                                                           ],
+                                       "writerExitObserved":  true,
+                                       "latePutAfterCrash":  true,
+                                       "scope":  "trusted adapter process crashed; independent relay models external in-flight storage request"
+                                   }
+                   },
+                   {
+                       "result":  "PASS",
+                       "name":  "protected-original-active-preserved",
+                       "details":  {
+                                       "name":  "protected-original-active-preserved",
+                                       "result":  "PASS",
+                                       "durationMs":  5,
+                                       "protectedHashes":  [
+                                                               {
+                                                                   "key":  "attempts/spike060/5430c205-56ad-4141-b474-9318b37bd31d/protected/original",
+                                                                   "sha256":  "00bbd04ac212938c12e939b81668c40f07201b7da8e2e5b494f289a6a9b2da8b"
+                                                               },
+                                                               {
+                                                                   "key":  "attempts/spike060/5430c205-56ad-4141-b474-9318b37bd31d/protected/active",
+                                                                   "sha256":  "09c0e15f8358eec4883acb9a6312060584cf0a09e7ab10da24e9e807b24b19ad"
+                                                               }
+                                                           ]
+                                   }
+                   }
+               ],
+    "runtimeImage":  "eventlens-spikes-harness:059 (Node24.21.0/alpine3.23 pinned by EL-TK-059 Dockerfile)",
+    "storage":  "Local MinIO2025-10-15 pinned source9e49d5e",
+    "failedChecks":  0,
+    "completeUniqueCaseSet":  true,
+    "recordedAt":  "2026-10-08T23:43:15.6706923Z",
+    "postgres":  "PostgreSQL16.15",
+    "EXPERIMENT_RESULT":  "PASS",
+    "limitations":  [
+                        "Synthetic parser guards do not validate actual codecs; EL-TK-061 remains unexecuted.",
+                        "MinIO-local semantics only; final provider requires adapter verification.",
+                        "No validation gate CAP-001/DR-001/MEDIA-001/EXPORT-001 passed.",
+                        "Resource/OOM terminal sampling is bounded and largest observed peak is recorded separately from kernel cap."
+                    ],
+    "initialAttempt":  "spike060-integration-attempt1.json retains DB-handshake failure corrected for PowerShell UTF8 BOM",
+    "expectedChecks":  20,
+    "ticket":  "EL-TK-060",
+    "recommendation":  "Recommend architect evaluate single-host Docker cgroup/private-tmpfs parser plus separate scoped trusted supervisor, database-clock authority detector, CAS and durable attempt inventory with adapter writer-drain evidence. This spike does not adopt a permanent production implementation.",
+    "executedChecks":  20,
+    "nextTicketExecuted":  false
+}

@@ -1,0 +1,124 @@
+{
+    "createdAt":  "2026-10-09T20:55:07.5618158Z",
+    "schemaVersion":  1,
+    "imageId":  "sha256:78974d0c3bc99de10b0688e1d9ef8dcc7ce96312ecdd197e9a0d6f15c5fb6599",
+    "files":  [
+                  {
+                      "sha256":  "b23d401daa5046ef1f40bb25f25e6125de66311d44b6ec8e0add75e1345325c1",
+                      "path":  "infra/validation/media-execution/Run.ps1"
+                  },
+                  {
+                      "sha256":  "729ce90579f6cdc97a1735d77e6ffc8c49d61ae70f98c156f9ed22342f109723",
+                      "path":  "infra/validation/media-inspection/Dockerfile"
+                  },
+                  {
+                      "sha256":  "76199a9bd3da62a2e98c8e46b63f0c79b777cb37f68b5125d87acca69f92d6fe",
+                      "path":  "infra/validation/media-inspection/Dockerfile.dockerignore"
+                  },
+                  {
+                      "sha256":  "02af946d1f7e2729d4b7c56fcf0a9fbf4b5f7e789cb3a04ce1261463ffcf9b72",
+                      "path":  "infra/validation/media-inspection/run.mjs"
+                  },
+                  {
+                      "sha256":  "c607977c0fd33501f1063e8edcc450a25889cee2fcf81d6bf41e452a913992e5",
+                      "path":  "infra/validation/media-inspection/Run.ps1"
+                  },
+                  {
+                      "sha256":  "91ce8bf3930ffdf9620d0de192ee65e06b94b447b0ff4b3c7189185652faf078",
+                      "path":  "package.json"
+                  },
+                  {
+                      "sha256":  "f9f77be2186b3a120272979080718315a036fbe50ffe3eacd3b19f5ce9a13c45",
+                      "path":  "packages/job-queue/src/job-queue.ts"
+                  },
+                  {
+                      "sha256":  "5f64ce55dc681ec6ce8d58675ab1f7cfd2a1bf08b6b3ef836e24b499901e46d7",
+                      "path":  "packages/media-execution/prisma/migrations/202610090005_execution_phases/migration.sql"
+                  },
+                  {
+                      "sha256":  "df619f96c43fe67ad7b201f3473b2b7ba2399b9393ab87dd84c3f693080c076d",
+                      "path":  "packages/media-execution/prisma/schema.prisma"
+                  },
+                  {
+                      "sha256":  "0a9fb92de3b70a2bd146c7ae0ead74e23c3383f6c10bc125acffcf21ce68ffeb",
+                      "path":  "packages/media-execution/src/contracts.ts"
+                  },
+                  {
+                      "sha256":  "abf8d3a5eb6d8939bd89696dfaa495121312a56dad3a7358da03c5134aaa6ab7",
+                      "path":  "packages/media-execution/src/docker-runtime.ts"
+                  },
+                  {
+                      "sha256":  "541fd5cd7563a3d729aadea2f1b2093392af699298ae67633f0fc366ed6dd89f",
+                      "path":  "packages/media-execution/src/inventory.ts"
+                  },
+                  {
+                      "sha256":  "29434392dee717cc1b55a2b8b6fd2b74240d18155071e5d9601e1a897303ed75",
+                      "path":  "packages/media-execution/src/supervisor.ts"
+                  },
+                  {
+                      "sha256":  "8f272e7c3bb4888eb5fb0bfee033c869b6d0a4b00d0c3fdbd47e386202a57e91",
+                      "path":  "packages/media-inspection/package.json"
+                  },
+                  {
+                      "sha256":  "51c48ae76f379ff354bee1102403fa2615d6b77e13a3b16f4cc8c66bbaa1e098",
+                      "path":  "packages/media-inspection/prisma.config.ts"
+                  },
+                  {
+                      "sha256":  "e7dd28c11f3aea0e286b849174f928c5ed1cb054db0f4dd643b4f20e0bb8dbc7",
+                      "path":  "packages/media-inspection/prisma/migrations/202610090004_media_inspection/migration.sql"
+                  },
+                  {
+                      "sha256":  "045ec04cb50d85d47b25e61aac9be08da3d8ce1606c46e00b41c8bf06e9c957e",
+                      "path":  "packages/media-inspection/prisma/migrations/202610090006_inspection_history/migration.sql"
+                  },
+                  {
+                      "sha256":  "1db17a8d051aa136110736752c5e1f8b7ed92b6ea8e803112fbbe2497047c210",
+                      "path":  "packages/media-inspection/prisma/migrations/migration_lock.toml"
+                  },
+                  {
+                      "sha256":  "ac8b82a7bbe2e76cd51ffda10a4c8759a27b4516134e6b5c0d3c2e75ebbe9e35",
+                      "path":  "packages/media-inspection/prisma/schema.prisma"
+                  },
+                  {
+                      "sha256":  "5940b94eec783e897385fa0b192c304be0672e3992dcc02ebdca2312bc65acc9",
+                      "path":  "packages/media-inspection/src/adapters.ts"
+                  },
+                  {
+                      "sha256":  "673d58462fbc93ef930e58de4ddf4abb1820e37a9762441303434fcff0d02470",
+                      "path":  "packages/media-inspection/src/contracts.ts"
+                  },
+                  {
+                      "sha256":  "88f494c511b14a7dc09bf4c1af58d1e072ec512edc5c128433e8e957c7712b91",
+                      "path":  "packages/media-inspection/src/index.ts"
+                  },
+                  {
+                      "sha256":  "c55e0c2aae1c7ce55fd99bc7b650c91e3aadf01883828bcdcba14a5a19e5ceb1",
+                      "path":  "packages/media-inspection/src/inspection.ts"
+                  },
+                  {
+                      "sha256":  "a84854fa85b7d48cc3c70ca0c46818ade5a3aa6f2a8e9f0fa365220ebedd532b",
+                      "path":  "packages/media-inspection/src/repository.ts"
+                  },
+                  {
+                      "sha256":  "0a2a88cf555bb9721547d7806bf7fd00453a986431ca333f8b4b9ba6485a07c8",
+                      "path":  "packages/media-inspection/test/inspection.integration.test.ts"
+                  },
+                  {
+                      "sha256":  "d03397774501c15d424342fea8bd60641cc7a537641e3f030491bc5dab5bc07d",
+                      "path":  "packages/media-inspection/test/inspection.unit.test.ts"
+                  },
+                  {
+                      "sha256":  "6cfc806fe62f9eff4c012da427561a11491d18d40f933dd3d50cd779630db83c",
+                      "path":  "packages/media-inspection/tsconfig.build.json"
+                  },
+                  {
+                      "sha256":  "a5a819b6b9e2f04ab07ad2391e429dd8c6d7923dbe8c176e9f5f021aae96b9ef",
+                      "path":  "packages/media-inspection/tsconfig.json"
+                  },
+                  {
+                      "sha256":  "f36487a58619de1a473563664f0722c22b6ad554af3df7bdb1a28be9ce4134e3",
+                      "path":  "pnpm-lock.yaml"
+                  }
+              ],
+    "ticket":  "EL-TK-033"
+}

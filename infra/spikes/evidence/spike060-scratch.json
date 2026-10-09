@@ -1,0 +1,19 @@
+﻿{
+    "removedContainers":  [
+                              "el060-scratch-a-10f8c79b",
+                              "el060-scratch-b-10f8c79b",
+                              "el060-scratch-c-10f8c79b"
+                          ],
+    "attemptAUnchanged":  "attempt-A",
+    "recoveryAttemptSeesResidual":  false,
+    "result":  "PASS",
+    "liveAttemptA":  "attempt-A",
+    "recordedAt":  "2026-10-08T23:44:27.5842224Z",
+    "cleanupConfirmed":  true,
+    "mechanism":  "Separate per-container private tmpfs; no shared scratch mount",
+    "liveAttemptBAfterWrite":  "attempt-B",
+    "ownerKilled":  true,
+    "ticket":  "EL-TK-060",
+    "crossAttemptReadable":  false,
+    "recovery":  "Crash container removed and absence confirmed before PASS; new attempt scratch starts empty"
+}

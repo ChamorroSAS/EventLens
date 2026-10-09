@@ -1,0 +1,141 @@
+﻿{
+    "cases":  [
+                  {
+                      "provenance":  "CONTROLLED_GENERATED",
+                      "filename":  "neutral.png",
+                      "directory":  "generated",
+                      "id":  "GEN-PNG",
+                      "expected":  {
+                                       "outcome":  "ACCEPT",
+                                       "format":  "PNG"
+                                   }
+                  },
+                  {
+                      "provenance":  "CONTROLLED_GENERATED",
+                      "filename":  "neutral.webp",
+                      "directory":  "generated",
+                      "id":  "GEN-WEBP",
+                      "expected":  {
+                                       "outcome":  "ACCEPT",
+                                       "format":  "WebP"
+                                   }
+                  },
+                  {
+                      "provenance":  "CONTROLLED_GENERATED",
+                      "filename":  "neutral.webm",
+                      "directory":  "generated",
+                      "id":  "GEN-WEBM",
+                      "expected":  {
+                                       "outcome":  "ACCEPT",
+                                       "format":  "WebM"
+                                   }
+                  },
+                  {
+                      "provenance":  "CONTROLLED_GENERATED",
+                      "filename":  "invalid.jpg",
+                      "directory":  "generated",
+                      "id":  "GEN-INVALID",
+                      "expected":  {
+                                       "outcome":  "REJECT",
+                                       "format":  "JPEG/JPG"
+                                   }
+                  },
+                  {
+                      "provenance":  "CONTROLLED_GENERATED",
+                      "filename":  "corrupt.png",
+                      "directory":  "generated",
+                      "id":  "GEN-CORRUPT",
+                      "expected":  {
+                                       "outcome":  "REJECT",
+                                       "format":  "PNG"
+                                   }
+                  },
+                  {
+                      "provenance":  "USER_PERMITTED_NEUTRAL_ORIGINAL",
+                      "directory":  "physical/ios",
+                      "id":  "IOS-HEIC",
+                      "expected":  {
+                                       "outcome":  "ACCEPT",
+                                       "format":  "HEIC"
+                                   }
+                  },
+                  {
+                      "provenance":  "USER_PERMITTED_NEUTRAL_ORIGINAL",
+                      "directory":  "physical/ios",
+                      "id":  "IOS-HEIF",
+                      "expected":  {
+                                       "outcome":  "ACCEPT",
+                                       "format":  "HEIF"
+                                   }
+                  },
+                  {
+                      "provenance":  "USER_PERMITTED_NEUTRAL_ORIGINAL",
+                      "directory":  "physical/ios",
+                      "id":  "IOS-JPEG",
+                      "expected":  {
+                                       "outcome":  "ACCEPT",
+                                       "format":  "JPEG/JPG"
+                                   }
+                  },
+                  {
+                      "provenance":  "USER_PERMITTED_NEUTRAL_ORIGINAL",
+                      "directory":  "physical/ios",
+                      "id":  "IOS-MOV",
+                      "expected":  {
+                                       "outcome":  "ACCEPT",
+                                       "format":  "MOV"
+                                   }
+                  },
+                  {
+                      "provenance":  "USER_PERMITTED_NEUTRAL_ORIGINAL",
+                      "directory":  "physical/ios",
+                      "id":  "IOS-MP4",
+                      "expected":  {
+                                       "outcome":  "ACCEPT",
+                                       "format":  "MP4"
+                                   }
+                  },
+                  {
+                      "provenance":  "USER_PERMITTED_NEUTRAL_ORIGINAL",
+                      "directory":  "physical/android",
+                      "id":  "ANDROID-JPEG",
+                      "expected":  {
+                                       "outcome":  "ACCEPT",
+                                       "format":  "JPEG/JPG"
+                                   }
+                  },
+                  {
+                      "provenance":  "USER_PERMITTED_NEUTRAL_ORIGINAL",
+                      "directory":  "physical/android",
+                      "id":  "ANDROID-MP4",
+                      "expected":  {
+                                       "outcome":  "ACCEPT",
+                                       "format":  "MP4"
+                                   }
+                  }
+              ],
+    "pendingCoverage":  [
+                            "orientation",
+                            "metadata including GPS presence",
+                            "audio and no audio",
+                            "truncation",
+                            "limits and fault injection",
+                            "representative codecs",
+                            "physical playback",
+                            "approved desktop browser policy"
+                        ],
+    "requiredFormats":  [
+                            "JPEG/JPG",
+                            "PNG",
+                            "WebP",
+                            "HEIC",
+                            "HEIF",
+                            "MP4",
+                            "MOV",
+                            "WebM"
+                        ],
+    "experimentResult":  "PENDING",
+    "schemaVersion":  2,
+    "corpusVersion":  "0.1.0-preparation",
+    "status":  "PENDING_PHYSICAL_ORIGINALS_AND_FULL_CORPUS"
+}

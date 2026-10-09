@@ -1,0 +1,860 @@
+{
+  "ticket": "EL-TK-060",
+  "run": "2ece319b-b07d-4537-8874-3717afd3ec21",
+  "recordedAt": "2026-10-08T23:44:21.151Z",
+  "experimentOnly": true,
+  "cases": [
+    {
+      "name": "lease-expired",
+      "result": "PASS",
+      "durationMs": 247,
+      "stopMs": 81,
+      "deadlineMs": 4000,
+      "stalePromotion": false,
+      "clientOutcome": "UNKNOWN",
+      "actualLatePut": true,
+      "writerDrained": true,
+      "attemptedNewIo": 1,
+      "rejectedNewIo": 1,
+      "processGroupKillObserved": true,
+      "staleRenewalRejected": true
+    },
+    {
+      "name": "lease-revoked",
+      "result": "PASS",
+      "durationMs": 225,
+      "stopMs": 77,
+      "deadlineMs": 4000,
+      "stalePromotion": false,
+      "clientOutcome": "UNKNOWN",
+      "actualLatePut": true,
+      "writerDrained": true,
+      "attemptedNewIo": 1,
+      "rejectedNewIo": 1,
+      "processGroupKillObserved": true,
+      "staleRenewalRejected": true
+    },
+    {
+      "name": "heartbeat-loss",
+      "result": "PASS",
+      "durationMs": 488,
+      "stopMs": 335,
+      "deadlineMs": 4000,
+      "stalePromotion": false,
+      "clientOutcome": "UNKNOWN",
+      "actualLatePut": true,
+      "writerDrained": true,
+      "attemptedNewIo": 1,
+      "rejectedNewIo": 1,
+      "processGroupKillObserved": true,
+      "staleRenewalRejected": true
+    },
+    {
+      "name": "cancel",
+      "result": "PASS",
+      "durationMs": 228,
+      "stopMs": 80,
+      "deadlineMs": 4000,
+      "stalePromotion": false,
+      "clientOutcome": "UNKNOWN",
+      "actualLatePut": true,
+      "writerDrained": true,
+      "attemptedNewIo": 1,
+      "rejectedNewIo": 1,
+      "processGroupKillObserved": true,
+      "staleRenewalRejected": true
+    },
+    {
+      "name": "generation-change",
+      "result": "PASS",
+      "durationMs": 226,
+      "stopMs": 76,
+      "deadlineMs": 4000,
+      "stalePromotion": false,
+      "clientOutcome": "UNKNOWN",
+      "actualLatePut": true,
+      "writerDrained": true,
+      "attemptedNewIo": 1,
+      "rejectedNewIo": 1,
+      "processGroupKillObserved": true,
+      "staleRenewalRejected": true
+    },
+    {
+      "name": "epoch-change",
+      "result": "PASS",
+      "durationMs": 222,
+      "stopMs": 76,
+      "deadlineMs": 4000,
+      "stalePromotion": false,
+      "clientOutcome": "UNKNOWN",
+      "actualLatePut": true,
+      "writerDrained": true,
+      "attemptedNewIo": 1,
+      "rejectedNewIo": 1,
+      "processGroupKillObserved": true,
+      "staleRenewalRejected": true
+    },
+    {
+      "name": "fence-change",
+      "result": "PASS",
+      "durationMs": 236,
+      "stopMs": 82,
+      "deadlineMs": 4000,
+      "stalePromotion": false,
+      "clientOutcome": "UNKNOWN",
+      "actualLatePut": true,
+      "writerDrained": true,
+      "attemptedNewIo": 1,
+      "rejectedNewIo": 1,
+      "processGroupKillObserved": true,
+      "staleRenewalRejected": true
+    },
+    {
+      "name": "db-loss",
+      "result": "PASS",
+      "durationMs": 2392,
+      "stopMs": 528,
+      "deadlineMs": 4000,
+      "stalePromotion": false,
+      "clientOutcome": "UNKNOWN",
+      "actualLatePut": true,
+      "writerDrained": true,
+      "attemptedNewIo": 1,
+      "rejectedNewIo": 1,
+      "processGroupKillObserved": true,
+      "staleRenewalRejected": true
+    },
+    {
+      "name": "multipart-late-complete-and-abort",
+      "result": "PASS",
+      "durationMs": 78,
+      "actualLateCompletion": true,
+      "clientOutcome": "UNKNOWN",
+      "abortVerifiedByListParts404": true
+    },
+    {
+      "name": "crash-recovery-durable-inventory",
+      "result": "PASS",
+      "durationMs": 237,
+      "recoveryConnectionIndependent": true,
+      "inventoryBefore": [
+        {
+          "id": "2ece319b-b07d-4537-8874-3717afd3ec21-epoch-change",
+          "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/epoch-change/output",
+          "state": "CLEANED"
+        },
+        {
+          "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-revoked",
+          "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/lease-revoked/output",
+          "state": "CLEANED"
+        },
+        {
+          "id": "2ece319b-b07d-4537-8874-3717afd3ec21-heartbeat-loss",
+          "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/heartbeat-loss/output",
+          "state": "CLEANED"
+        },
+        {
+          "id": "2ece319b-b07d-4537-8874-3717afd3ec21-fence-change",
+          "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/fence-change/output",
+          "state": "CLEANED"
+        },
+        {
+          "id": "2ece319b-b07d-4537-8874-3717afd3ec21-cancel",
+          "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/cancel/output",
+          "state": "CLEANED"
+        },
+        {
+          "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-expired",
+          "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/lease-expired/output",
+          "state": "CLEANED"
+        },
+        {
+          "id": "2ece319b-b07d-4537-8874-3717afd3ec21-generation-change",
+          "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/generation-change/output",
+          "state": "CLEANED"
+        },
+        {
+          "id": "2ece319b-b07d-4537-8874-3717afd3ec21-db-loss",
+          "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/db-loss/output",
+          "state": "CLEANED"
+        },
+        {
+          "id": "2ece319b-b07d-4537-8874-3717afd3ec21-multipart",
+          "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/multipart/output",
+          "state": "CLEANED"
+        },
+        {
+          "id": "2ece319b-b07d-4537-8874-3717afd3ec21-crash",
+          "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/crash/partial",
+          "state": "UNKNOWN"
+        }
+      ],
+      "writerExitObserved": true,
+      "latePutAfterCrash": true,
+      "scope": "trusted adapter process crashed; independent relay models external in-flight storage request"
+    },
+    {
+      "name": "protected-original-active-preserved",
+      "result": "PASS",
+      "durationMs": 6,
+      "protectedHashes": [
+        {
+          "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/protected/original",
+          "sha256": "0ea7e5945a42db3c826902bbb230c668430809f122732b7cfe336e9e7b27d45d"
+        },
+        {
+          "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/protected/active",
+          "sha256": "2cf17e765e9aa57aa4baf06d690776c4e5bae21e04e16b391d6b586daf2a1312"
+        }
+      ]
+    }
+  ],
+  "timeline": [
+    {
+      "at": "2026-10-08T23:44:16.572Z",
+      "event": "durable-intent-before-io",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-expired",
+      "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/lease-expired/output",
+      "generation": 1,
+      "fence": 1
+    },
+    {
+      "at": "2026-10-08T23:44:16.585Z",
+      "event": "relay-request-accepted",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-expired",
+      "bytes": 11
+    },
+    {
+      "at": "2026-10-08T23:44:16.593Z",
+      "event": "authority-loss",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-expired",
+      "fault": "lease-expired"
+    },
+    {
+      "at": "2026-10-08T23:44:16.628Z",
+      "event": "parser-descendant-confirmed",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-expired",
+      "pid": 27
+    },
+    {
+      "at": "2026-10-08T23:44:16.671Z",
+      "event": "supervisor-detected-authority-loss",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-expired"
+    },
+    {
+      "at": "2026-10-08T23:44:16.672Z",
+      "event": "supervisor-killed-process-group-aborted-client",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-expired"
+    },
+    {
+      "at": "2026-10-08T23:44:16.674Z",
+      "event": "descendant-no-longer-running",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-expired",
+      "pid": 27
+    },
+    {
+      "at": "2026-10-08T23:44:16.674Z",
+      "event": "physical-completion-refused",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-expired",
+      "reason": "ACTIVE_EXTERNAL_WRITER"
+    },
+    {
+      "at": "2026-10-08T23:44:16.678Z",
+      "event": "external-write-start",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-expired"
+    },
+    {
+      "at": "2026-10-08T23:44:16.687Z",
+      "event": "external-write-drained",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-expired",
+      "status": 200
+    },
+    {
+      "at": "2026-10-08T23:44:16.808Z",
+      "event": "physical-completion-after-drain-and-head",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-expired"
+    },
+    {
+      "at": "2026-10-08T23:44:16.813Z",
+      "event": "durable-intent-before-io",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-revoked",
+      "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/lease-revoked/output",
+      "generation": 1,
+      "fence": 1
+    },
+    {
+      "at": "2026-10-08T23:44:16.815Z",
+      "event": "relay-request-accepted",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-revoked",
+      "bytes": 11
+    },
+    {
+      "at": "2026-10-08T23:44:16.833Z",
+      "event": "authority-loss",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-revoked",
+      "fault": "lease-revoked"
+    },
+    {
+      "at": "2026-10-08T23:44:16.867Z",
+      "event": "parser-descendant-confirmed",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-revoked",
+      "pid": 35
+    },
+    {
+      "at": "2026-10-08T23:44:16.909Z",
+      "event": "supervisor-detected-authority-loss",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-revoked"
+    },
+    {
+      "at": "2026-10-08T23:44:16.909Z",
+      "event": "supervisor-killed-process-group-aborted-client",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-revoked"
+    },
+    {
+      "at": "2026-10-08T23:44:16.910Z",
+      "event": "descendant-no-longer-running",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-revoked",
+      "pid": 35
+    },
+    {
+      "at": "2026-10-08T23:44:16.910Z",
+      "event": "physical-completion-refused",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-revoked",
+      "reason": "ACTIVE_EXTERNAL_WRITER"
+    },
+    {
+      "at": "2026-10-08T23:44:16.912Z",
+      "event": "external-write-start",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-revoked"
+    },
+    {
+      "at": "2026-10-08T23:44:16.919Z",
+      "event": "external-write-drained",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-revoked",
+      "status": 200
+    },
+    {
+      "at": "2026-10-08T23:44:17.034Z",
+      "event": "physical-completion-after-drain-and-head",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-revoked"
+    },
+    {
+      "at": "2026-10-08T23:44:17.039Z",
+      "event": "durable-intent-before-io",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-heartbeat-loss",
+      "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/heartbeat-loss/output",
+      "generation": 1,
+      "fence": 1
+    },
+    {
+      "at": "2026-10-08T23:44:17.041Z",
+      "event": "relay-request-accepted",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-heartbeat-loss",
+      "bytes": 11
+    },
+    {
+      "at": "2026-10-08T23:44:17.058Z",
+      "event": "authority-loss",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-heartbeat-loss",
+      "fault": "heartbeat-loss"
+    },
+    {
+      "at": "2026-10-08T23:44:17.099Z",
+      "event": "parser-descendant-confirmed",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-heartbeat-loss",
+      "pid": 43
+    },
+    {
+      "at": "2026-10-08T23:44:17.390Z",
+      "event": "supervisor-detected-authority-loss",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-heartbeat-loss"
+    },
+    {
+      "at": "2026-10-08T23:44:17.391Z",
+      "event": "supervisor-killed-process-group-aborted-client",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-heartbeat-loss"
+    },
+    {
+      "at": "2026-10-08T23:44:17.393Z",
+      "event": "descendant-no-longer-running",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-heartbeat-loss",
+      "pid": 43
+    },
+    {
+      "at": "2026-10-08T23:44:17.393Z",
+      "event": "physical-completion-refused",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-heartbeat-loss",
+      "reason": "ACTIVE_EXTERNAL_WRITER"
+    },
+    {
+      "at": "2026-10-08T23:44:17.397Z",
+      "event": "external-write-start",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-heartbeat-loss"
+    },
+    {
+      "at": "2026-10-08T23:44:17.403Z",
+      "event": "external-write-drained",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-heartbeat-loss",
+      "status": 200
+    },
+    {
+      "at": "2026-10-08T23:44:17.522Z",
+      "event": "physical-completion-after-drain-and-head",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-heartbeat-loss"
+    },
+    {
+      "at": "2026-10-08T23:44:17.527Z",
+      "event": "durable-intent-before-io",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-cancel",
+      "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/cancel/output",
+      "generation": 1,
+      "fence": 1
+    },
+    {
+      "at": "2026-10-08T23:44:17.529Z",
+      "event": "relay-request-accepted",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-cancel",
+      "bytes": 11
+    },
+    {
+      "at": "2026-10-08T23:44:17.547Z",
+      "event": "authority-loss",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-cancel",
+      "fault": "cancel"
+    },
+    {
+      "at": "2026-10-08T23:44:17.583Z",
+      "event": "parser-descendant-confirmed",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-cancel",
+      "pid": 51
+    },
+    {
+      "at": "2026-10-08T23:44:17.626Z",
+      "event": "supervisor-detected-authority-loss",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-cancel"
+    },
+    {
+      "at": "2026-10-08T23:44:17.626Z",
+      "event": "supervisor-killed-process-group-aborted-client",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-cancel"
+    },
+    {
+      "at": "2026-10-08T23:44:17.627Z",
+      "event": "descendant-no-longer-running",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-cancel",
+      "pid": 51
+    },
+    {
+      "at": "2026-10-08T23:44:17.627Z",
+      "event": "physical-completion-refused",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-cancel",
+      "reason": "ACTIVE_EXTERNAL_WRITER"
+    },
+    {
+      "at": "2026-10-08T23:44:17.629Z",
+      "event": "external-write-start",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-cancel"
+    },
+    {
+      "at": "2026-10-08T23:44:17.635Z",
+      "event": "external-write-drained",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-cancel",
+      "status": 200
+    },
+    {
+      "at": "2026-10-08T23:44:17.749Z",
+      "event": "physical-completion-after-drain-and-head",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-cancel"
+    },
+    {
+      "at": "2026-10-08T23:44:17.754Z",
+      "event": "durable-intent-before-io",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-generation-change",
+      "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/generation-change/output",
+      "generation": 1,
+      "fence": 1
+    },
+    {
+      "at": "2026-10-08T23:44:17.756Z",
+      "event": "relay-request-accepted",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-generation-change",
+      "bytes": 11
+    },
+    {
+      "at": "2026-10-08T23:44:17.774Z",
+      "event": "authority-loss",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-generation-change",
+      "fault": "generation-change"
+    },
+    {
+      "at": "2026-10-08T23:44:17.807Z",
+      "event": "parser-descendant-confirmed",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-generation-change",
+      "pid": 59
+    },
+    {
+      "at": "2026-10-08T23:44:17.849Z",
+      "event": "supervisor-detected-authority-loss",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-generation-change"
+    },
+    {
+      "at": "2026-10-08T23:44:17.850Z",
+      "event": "supervisor-killed-process-group-aborted-client",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-generation-change"
+    },
+    {
+      "at": "2026-10-08T23:44:17.850Z",
+      "event": "descendant-no-longer-running",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-generation-change",
+      "pid": 59
+    },
+    {
+      "at": "2026-10-08T23:44:17.850Z",
+      "event": "physical-completion-refused",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-generation-change",
+      "reason": "ACTIVE_EXTERNAL_WRITER"
+    },
+    {
+      "at": "2026-10-08T23:44:17.852Z",
+      "event": "external-write-start",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-generation-change"
+    },
+    {
+      "at": "2026-10-08T23:44:17.860Z",
+      "event": "external-write-drained",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-generation-change",
+      "status": 200
+    },
+    {
+      "at": "2026-10-08T23:44:17.975Z",
+      "event": "physical-completion-after-drain-and-head",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-generation-change"
+    },
+    {
+      "at": "2026-10-08T23:44:17.979Z",
+      "event": "durable-intent-before-io",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-epoch-change",
+      "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/epoch-change/output",
+      "generation": 1,
+      "fence": 1
+    },
+    {
+      "at": "2026-10-08T23:44:17.981Z",
+      "event": "relay-request-accepted",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-epoch-change",
+      "bytes": 11
+    },
+    {
+      "at": "2026-10-08T23:44:18.000Z",
+      "event": "authority-loss",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-epoch-change",
+      "fault": "epoch-change"
+    },
+    {
+      "at": "2026-10-08T23:44:18.031Z",
+      "event": "parser-descendant-confirmed",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-epoch-change",
+      "pid": 67
+    },
+    {
+      "at": "2026-10-08T23:44:18.074Z",
+      "event": "supervisor-detected-authority-loss",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-epoch-change"
+    },
+    {
+      "at": "2026-10-08T23:44:18.074Z",
+      "event": "supervisor-killed-process-group-aborted-client",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-epoch-change"
+    },
+    {
+      "at": "2026-10-08T23:44:18.076Z",
+      "event": "descendant-no-longer-running",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-epoch-change",
+      "pid": 67
+    },
+    {
+      "at": "2026-10-08T23:44:18.076Z",
+      "event": "physical-completion-refused",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-epoch-change",
+      "reason": "ACTIVE_EXTERNAL_WRITER"
+    },
+    {
+      "at": "2026-10-08T23:44:18.078Z",
+      "event": "external-write-start",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-epoch-change"
+    },
+    {
+      "at": "2026-10-08T23:44:18.083Z",
+      "event": "external-write-drained",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-epoch-change",
+      "status": 200
+    },
+    {
+      "at": "2026-10-08T23:44:18.197Z",
+      "event": "physical-completion-after-drain-and-head",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-epoch-change"
+    },
+    {
+      "at": "2026-10-08T23:44:18.202Z",
+      "event": "durable-intent-before-io",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-fence-change",
+      "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/fence-change/output",
+      "generation": 1,
+      "fence": 1
+    },
+    {
+      "at": "2026-10-08T23:44:18.204Z",
+      "event": "relay-request-accepted",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-fence-change",
+      "bytes": 11
+    },
+    {
+      "at": "2026-10-08T23:44:18.222Z",
+      "event": "authority-loss",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-fence-change",
+      "fault": "fence-change"
+    },
+    {
+      "at": "2026-10-08T23:44:18.259Z",
+      "event": "parser-descendant-confirmed",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-fence-change",
+      "pid": 75
+    },
+    {
+      "at": "2026-10-08T23:44:18.301Z",
+      "event": "supervisor-detected-authority-loss",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-fence-change"
+    },
+    {
+      "at": "2026-10-08T23:44:18.302Z",
+      "event": "supervisor-killed-process-group-aborted-client",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-fence-change"
+    },
+    {
+      "at": "2026-10-08T23:44:18.304Z",
+      "event": "descendant-no-longer-running",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-fence-change",
+      "pid": 75
+    },
+    {
+      "at": "2026-10-08T23:44:18.304Z",
+      "event": "physical-completion-refused",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-fence-change",
+      "reason": "ACTIVE_EXTERNAL_WRITER"
+    },
+    {
+      "at": "2026-10-08T23:44:18.307Z",
+      "event": "external-write-start",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-fence-change"
+    },
+    {
+      "at": "2026-10-08T23:44:18.316Z",
+      "event": "external-write-drained",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-fence-change",
+      "status": 200
+    },
+    {
+      "at": "2026-10-08T23:44:18.433Z",
+      "event": "physical-completion-after-drain-and-head",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-fence-change"
+    },
+    {
+      "at": "2026-10-08T23:44:18.437Z",
+      "event": "durable-intent-before-io",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-db-loss",
+      "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/db-loss/output",
+      "generation": 1,
+      "fence": 1
+    },
+    {
+      "at": "2026-10-08T23:44:18.440Z",
+      "event": "relay-request-accepted",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-db-loss",
+      "bytes": 11
+    },
+    {
+      "at": "2026-10-08T23:44:18.457Z",
+      "event": "authority-loss",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-db-loss",
+      "fault": "db-loss"
+    },
+    {
+      "at": "2026-10-08T23:44:18.490Z",
+      "event": "parser-descendant-confirmed",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-db-loss",
+      "pid": 83
+    },
+    {
+      "at": "2026-10-08T23:44:18.961Z",
+      "event": "supervisor-detected-authority-loss",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-db-loss"
+    },
+    {
+      "at": "2026-10-08T23:44:18.961Z",
+      "event": "supervisor-killed-process-group-aborted-client",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-db-loss"
+    },
+    {
+      "at": "2026-10-08T23:44:18.985Z",
+      "event": "descendant-no-longer-running",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-db-loss",
+      "pid": 83
+    },
+    {
+      "at": "2026-10-08T23:44:18.985Z",
+      "event": "physical-completion-refused",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-db-loss",
+      "reason": "ACTIVE_EXTERNAL_WRITER"
+    },
+    {
+      "at": "2026-10-08T23:44:20.702Z",
+      "event": "external-write-start",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-db-loss"
+    },
+    {
+      "at": "2026-10-08T23:44:20.709Z",
+      "event": "external-write-drained",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-db-loss",
+      "status": 200
+    },
+    {
+      "at": "2026-10-08T23:44:20.825Z",
+      "event": "physical-completion-after-drain-and-head",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-db-loss"
+    },
+    {
+      "at": "2026-10-08T23:44:20.847Z",
+      "event": "durable-intent-before-io",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-multipart",
+      "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/multipart/output",
+      "generation": 1,
+      "fence": 1
+    },
+    {
+      "at": "2026-10-08T23:44:20.851Z",
+      "event": "relay-request-accepted",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-multipart",
+      "bytes": 233
+    },
+    {
+      "at": "2026-10-08T23:44:20.870Z",
+      "event": "external-write-start",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-multipart"
+    },
+    {
+      "at": "2026-10-08T23:44:20.875Z",
+      "event": "external-write-drained",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-multipart",
+      "status": 200
+    },
+    {
+      "at": "2026-10-08T23:44:21.107Z",
+      "event": "relay-request-accepted",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-crash",
+      "bytes": 16
+    },
+    {
+      "at": "2026-10-08T23:44:21.112Z",
+      "event": "writer-supervisor-process-crashed-with-inflight-put",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-crash"
+    },
+    {
+      "at": "2026-10-08T23:44:21.121Z",
+      "event": "external-write-start",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-crash"
+    },
+    {
+      "at": "2026-10-08T23:44:21.128Z",
+      "event": "external-write-drained",
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-crash",
+      "status": 200
+    }
+  ],
+  "inventory": [
+    {
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-crash",
+      "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/crash/partial",
+      "state": "CLEANED",
+      "upload_id": null,
+      "generation": 1,
+      "fence": 1
+    },
+    {
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-epoch-change",
+      "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/epoch-change/output",
+      "state": "CLEANED",
+      "upload_id": null,
+      "generation": 1,
+      "fence": 1
+    },
+    {
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-revoked",
+      "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/lease-revoked/output",
+      "state": "CLEANED",
+      "upload_id": null,
+      "generation": 1,
+      "fence": 1
+    },
+    {
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-heartbeat-loss",
+      "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/heartbeat-loss/output",
+      "state": "CLEANED",
+      "upload_id": null,
+      "generation": 1,
+      "fence": 1
+    },
+    {
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-fence-change",
+      "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/fence-change/output",
+      "state": "CLEANED",
+      "upload_id": null,
+      "generation": 1,
+      "fence": 1
+    },
+    {
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-cancel",
+      "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/cancel/output",
+      "state": "CLEANED",
+      "upload_id": null,
+      "generation": 1,
+      "fence": 1
+    },
+    {
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-lease-expired",
+      "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/lease-expired/output",
+      "state": "CLEANED",
+      "upload_id": null,
+      "generation": 1,
+      "fence": 1
+    },
+    {
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-generation-change",
+      "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/generation-change/output",
+      "state": "CLEANED",
+      "upload_id": null,
+      "generation": 1,
+      "fence": 1
+    },
+    {
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-db-loss",
+      "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/db-loss/output",
+      "state": "CLEANED",
+      "upload_id": null,
+      "generation": 1,
+      "fence": 1
+    },
+    {
+      "id": "2ece319b-b07d-4537-8874-3717afd3ec21-multipart",
+      "key": "attempts/spike060/2ece319b-b07d-4537-8874-3717afd3ec21/multipart/output",
+      "state": "CLEANED",
+      "upload_id": "MjgzNmI0YjYtY2M4Zi00ZTJlLThhYzAtZTg5YTQ2MGRjY2Y4LmUyNTQ4NjE0LTk3NTMtNGEzZC05NTcyLTY2ZjZjZmM5ZDkzMngxNzkxNTAzMDYwODI5MTM3MTE1",
+      "generation": 1,
+      "fence": 1
+    }
+  ],
+  "limitations": [
+    "Synthetic header budgets are not codec parser validation.",
+    "No production executor or final provider certified."
+  ],
+  "result": "PASS"
+}

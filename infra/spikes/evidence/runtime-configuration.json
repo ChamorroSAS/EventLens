@@ -1,0 +1,139 @@
+{
+    "services":  [
+                     {
+                         "service":  "postgres",
+                         "mounts":  [
+                                        {
+                                            "readWrite":  true,
+                                            "name":  "eventlens-spikes-059_pg_data",
+                                            "target":  "/var/lib/postgresql/data",
+                                            "type":  "volume"
+                                        },
+                                        {
+                                            "readWrite":  false,
+                                            "name":  null,
+                                            "target":  "/run/secrets/pg_admin",
+                                            "type":  "bind"
+                                        }
+                                    ],
+                         "pidsLimit":  128,
+                         "nanoCpus":  1000000000,
+                         "readOnly":  false,
+                         "networkMode":  "eventlens-spikes-059_lab",
+                         "user":  "",
+                         "capDrop":  null,
+                         "health":  "healthy",
+                         "securityOpt":  [
+                                             "no-new-privileges:true"
+                                         ],
+                         "status":  "running",
+                         "memoryBytes":  536870912,
+                         "imageId":  "sha256:75f5a96988cdf694a215073c3e9c001b706b371e2f94df3967f2efdec2787f6b",
+                         "image":  "postgres:16.15-alpine3.24@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685",
+                         "tmpfs":  null
+                     },
+                     {
+                         "service":  "minio",
+                         "mounts":  [
+                                        {
+                                            "readWrite":  true,
+                                            "name":  "eventlens-spikes-059_s3_data",
+                                            "target":  "/data",
+                                            "type":  "volume"
+                                        },
+                                        {
+                                            "readWrite":  false,
+                                            "name":  null,
+                                            "target":  "/run/secrets/s3_root_password",
+                                            "type":  "bind"
+                                        },
+                                        {
+                                            "readWrite":  false,
+                                            "name":  null,
+                                            "target":  "/run/secrets/s3_root_user",
+                                            "type":  "bind"
+                                        }
+                                    ],
+                         "pidsLimit":  128,
+                         "nanoCpus":  1000000000,
+                         "readOnly":  false,
+                         "networkMode":  "eventlens-spikes-059_lab",
+                         "user":  "10001:10001",
+                         "capDrop":  [
+                                         "ALL"
+                                     ],
+                         "health":  "healthy",
+                         "securityOpt":  [
+                                             "no-new-privileges:true"
+                                         ],
+                         "status":  "running",
+                         "memoryBytes":  536870912,
+                         "imageId":  "sha256:196491d0551b2fa916d2833f689ec84f55e55662c8fc052988db5f31301d4c72",
+                         "image":  "eventlens-spikes-minio:2025-10-15-9e49d5e",
+                         "tmpfs":  null
+                     },
+                     {
+                         "service":  "runtime",
+                         "mounts":  [
+                                        {
+                                            "readWrite":  false,
+                                            "name":  null,
+                                            "target":  "/inputs",
+                                            "type":  "bind"
+                                        }
+                                    ],
+                         "pidsLimit":  128,
+                         "nanoCpus":  1000000000,
+                         "readOnly":  true,
+                         "networkMode":  "none",
+                         "user":  "1000:1000",
+                         "capDrop":  [
+                                         "ALL"
+                                     ],
+                         "health":  null,
+                         "securityOpt":  [
+                                             "no-new-privileges:true"
+                                         ],
+                         "status":  "running",
+                         "memoryBytes":  536870912,
+                         "imageId":  "sha256:c6637be5b163844b72fcc99d79889aadaa036ebc38407fb1b25f5c9f71407eda",
+                         "image":  "eventlens-spikes-harness:059",
+                         "tmpfs":  {
+                                       "/scratch":  "size=64m,uid=1000,gid=1000,mode=0700",
+                                       "/tmp":  "size=16m,uid=1000,gid=1000,mode=0700"
+                                   }
+                     },
+                     {
+                         "service":  "preview",
+                         "mounts":  [
+
+                                    ],
+                         "pidsLimit":  128,
+                         "nanoCpus":  1000000000,
+                         "readOnly":  true,
+                         "networkMode":  "eventlens-spikes-059_preview",
+                         "user":  "node",
+                         "capDrop":  [
+                                         "ALL"
+                                     ],
+                         "health":  "healthy",
+                         "securityOpt":  [
+                                             "no-new-privileges:true"
+                                         ],
+                         "status":  "running",
+                         "memoryBytes":  536870912,
+                         "imageId":  "sha256:c6637be5b163844b72fcc99d79889aadaa036ebc38407fb1b25f5c9f71407eda",
+                         "image":  "eventlens-spikes-harness:059",
+                         "tmpfs":  {
+                                       "/tmp":  "size=16m,mode=1777"
+                                   }
+                     }
+                 ],
+    "operationalGates":  "NOT_EVALUATED",
+    "recordedAt":  "2026-10-08T23:01:12.1037542Z",
+    "isolationEffectiveness":  "NOT_EVALUATED",
+    "writerQuiescence":  "NOT_EVALUATED",
+    "ticket":  "EL-TK-059",
+    "dockerVersion":  "29.7.2",
+    "composeVersion":  "5.5.1"
+}

@@ -1,0 +1,16 @@
+infra/spikes/.local/
+infra/spikes/node_modules/
+infra/spikes/corpus/private/
+infra/spikes/corpus/physical/
+infra/spikes/corpus/generated/
+
+node_modules/
+packages/*/src/generated/
+packages/*/dist/
+
+AGENTS.md
+
+.codex/agents/
+.codex/config.toml
+.codex/ROUTING.md
+.codex/product/sessions/

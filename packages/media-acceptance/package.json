@@ -1,0 +1,1 @@
+{"name":"@eventlens/media-acceptance","version":"0.0.0","private":true,"type":"module","exports":"./dist/index.js","scripts":{"build":"tsc -p tsconfig.build.json","typecheck":"tsc --noEmit","test":"vitest run"},"dependencies":{"@eventlens/job-queue":"workspace:*"},"devDependencies":{"prisma":"7.10.0","typescript":"5.9.3","vitest":"4.0.18","@types/node":"24.10.1"}}

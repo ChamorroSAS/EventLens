@@ -1,0 +1,216 @@
+﻿{
+    "limits":  {
+                   "threadsMemoryBytes":  536870912,
+                   "wallDeadlineMs":  8000,
+                   "memoryBytesDefault":  134217728,
+                   "stopDeadlineMs":  4000,
+                   "scratchBytes":  16777216,
+                   "pids":  32,
+                   "cpu":  0.5
+               },
+    "dockerVersion":  "29.7.2",
+    "cases":  [
+                  {
+                      "runningAfterStop":  false,
+                      "pidsLimit":  32,
+                      "exitCode":  0,
+                      "elapsedMs":  432.96500000000003,
+                      "log":  "{\"name\":\"boundaries\",\"uid\":1000,\"denied\":[{\"path\":\"/root/escape\",\"code\":\"EACCES\"},{\"path\":\"/home/node/escape\",\"code\":\"EROFS\"},{\"path\":\"/inputs/manifest.json\",\"code\":\"EROFS\"},{\"path\":\"/run/secrets/pg_lab\",\"code\":\"ENOENT\"},{\"path\":\"/var/run/docker.sock\",\"code\":\"ENOENT\"},{\"path\":\"/scratch-other/private\",\"code\":\"ENOENT\"}],\"network\":\"ENETUNREACH\",\"privilegeEscalation\":\"EPERM\",\"inputSha256Before\":\"4dd619c5e7ebfddea4173acf434d8a50d7673d4ae554e18cf89d711c2ab8c21e\",\"inputSha256After\":\"4dd619c5e7ebfddea4173acf434d8a50d7673d4ae554e18cf89d711c2ab8c21e\",\"capabilities\":\"0000000000000000\",\"noNewPrivileges\":\"1\",\"cpuMax\":\"50000 100000\",\"memoryMax\":\"134217728\",\"pidsMax\":\"32\"}",
+                      "name":  "boundaries",
+                      "cpuNano":  500000000,
+                      "stopMs":  null,
+                      "mounts":  [
+                                     {
+                                         "target":  "/lab/spike060",
+                                         "rw":  false
+                                     },
+                                     {
+                                         "target":  "/inputs",
+                                         "rw":  false
+                                     }
+                                 ],
+                      "observedSampleMaxPids":  0,
+                      "forcedStop":  false,
+                      "lastObservedMemory":  "0B / 0B",
+                      "memoryLimit":  134217728,
+                      "oomKilled":  false
+                  },
+                  {
+                      "runningAfterStop":  false,
+                      "pidsLimit":  32,
+                      "exitCode":  0,
+                      "elapsedMs":  3440.3349000000003,
+                      "log":  "{\"name\":\"cpu\",\"elapsedMs\":1800,\"before\":\"usage_usec 72753\\nuser_usec 31180\\nsystem_usec 41573\\nnice_usec 0\\nnr_periods 1\\nnr_throttled 1\\nthrottled_usec 50546\\nnr_bursts 0\\nburst_usec 0\",\"after\":\"usage_usec 969870\\nuser_usec 918617\\nsystem_usec 51253\\nnice_usec 0\\nnr_periods 19\\nnr_throttled 19\\nthrottled_usec 953292\\nnr_bursts 0\\nburst_usec 0\",\"peakMemoryBytes\":17186816}",
+                      "name":  "cpu",
+                      "cpuNano":  500000000,
+                      "stopMs":  null,
+                      "mounts":  [
+                                     {
+                                         "target":  "/lab/spike060",
+                                         "rw":  false
+                                     },
+                                     {
+                                         "target":  "/inputs",
+                                         "rw":  false
+                                     }
+                                 ],
+                      "observedSampleMaxPids":  8,
+                      "forcedStop":  false,
+                      "lastObservedMemory":  "0B / 0B",
+                      "memoryLimit":  134217728,
+                      "oomKilled":  false
+                  },
+                  {
+                      "runningAfterStop":  false,
+                      "pidsLimit":  32,
+                      "exitCode":  137,
+                      "elapsedMs":  1683.8248,
+                      "log":  "{\"name\":\"memory-sample\",\"peakMemoryBytes\":15372288,\"currentMemoryBytes\":15372288}\r\n{\"name\":\"memory-sample\",\"peakMemoryBytes\":23826432,\"currentMemoryBytes\":23826432}\r\n{\"name\":\"memory-sample\",\"peakMemoryBytes\":32141312,\"currentMemoryBytes\":32141312}\r\n{\"name\":\"memory-sample\",\"peakMemoryBytes\":40529920,\"currentMemoryBytes\":40529920}\r\n{\"name\":\"memory-sample\",\"peakMemoryBytes\":48803840,\"currentMemoryBytes\":48803840}\r\n{\"name\":\"memory-sample\",\"peakMemoryBytes\":57192448,\"currentMemoryBytes\":57192448}\r\n{\"name\":\"memory-sample\",\"peakMemoryBytes\":65581056,\"currentMemoryBytes\":65581056}\r\n{\"name\":\"memory-sample\",\"peakMemoryBytes\":73969664,\"currentMemoryBytes\":73969664}\r\n{\"name\":\"memory-sample\",\"peakMemoryBytes\":82509824,\"currentMemoryBytes\":82288640}\r\n{\"name\":\"memory-sample\",\"peakMemoryBytes\":90898432,\"currentMemoryBytes\":90873856}\r\n{\"name\":\"memory-sample\",\"peakMemoryBytes\":99229696,\"currentMemoryBytes\":99229696}\r\n{\"name\":\"memory-sample\",\"peakMemoryBytes\":107618304,\"currentMemoryBytes\":107618304}\r\n{\"name\":\"memory-sample\",\"peakMemoryBytes\":116006912,\"currentMemoryBytes\":116006912}\r\n{\"name\":\"memory-sample\",\"peakMemoryBytes\":124395520,\"currentMemoryBytes\":124395520}\r\n{\"name\":\"memory-sample\",\"peakMemoryBytes\":133046272,\"currentMemoryBytes\":133046272}",
+                      "name":  "memory",
+                      "cpuNano":  500000000,
+                      "stopMs":  null,
+                      "mounts":  [
+                                     {
+                                         "target":  "/lab/spike060",
+                                         "rw":  false
+                                     },
+                                     {
+                                         "target":  "/inputs",
+                                         "rw":  false
+                                     }
+                                 ],
+                      "observedSampleMaxPids":  0,
+                      "forcedStop":  false,
+                      "lastObservedMemory":  "0B / 0B",
+                      "memoryLimit":  134217728,
+                      "oomKilled":  true
+                  },
+                  {
+                      "runningAfterStop":  false,
+                      "pidsLimit":  32,
+                      "exitCode":  0,
+                      "elapsedMs":  453.0804,
+                      "log":  "{\"name\":\"scratch\",\"bytes\":16777216,\"code\":\"ENOSPC\"}",
+                      "name":  "scratch",
+                      "cpuNano":  500000000,
+                      "stopMs":  null,
+                      "mounts":  [
+                                     {
+                                         "target":  "/lab/spike060",
+                                         "rw":  false
+                                     },
+                                     {
+                                         "target":  "/inputs",
+                                         "rw":  false
+                                     }
+                                 ],
+                      "observedSampleMaxPids":  0,
+                      "forcedStop":  false,
+                      "lastObservedMemory":  "0B / 0B",
+                      "memoryLimit":  134217728,
+                      "oomKilled":  false
+                  },
+                  {
+                      "runningAfterStop":  false,
+                      "pidsLimit":  32,
+                      "exitCode":  0,
+                      "elapsedMs":  1417.2398,
+                      "log":  "{\"name\":\"processes\",\"attempted\":40,\"rejected\":16,\"current\":32,\"peak\":32,\"peakMemoryBytes\":20951040,\"events\":\"max 16\"}",
+                      "name":  "processes",
+                      "cpuNano":  500000000,
+                      "stopMs":  null,
+                      "mounts":  [
+                                     {
+                                         "target":  "/inputs",
+                                         "rw":  false
+                                     },
+                                     {
+                                         "target":  "/lab/spike060",
+                                         "rw":  false
+                                     }
+                                 ],
+                      "observedSampleMaxPids":  0,
+                      "forcedStop":  false,
+                      "lastObservedMemory":  "0B / 0B",
+                      "memoryLimit":  134217728,
+                      "oomKilled":  false
+                  },
+                  {
+                      "runningAfterStop":  false,
+                      "pidsLimit":  32,
+                      "exitCode":  0,
+                      "elapsedMs":  5716.8160000000007,
+                      "log":  "{\"name\":\"threads\",\"attempted\":40,\"rejected\":16,\"current\":32,\"peak\":32,\"peakMemoryBytes\":243101696,\"events\":\"max 16\"}",
+                      "name":  "threads",
+                      "cpuNano":  500000000,
+                      "stopMs":  null,
+                      "mounts":  [
+                                     {
+                                         "target":  "/lab/spike060",
+                                         "rw":  false
+                                     },
+                                     {
+                                         "target":  "/inputs",
+                                         "rw":  false
+                                     }
+                                 ],
+                      "observedSampleMaxPids":  31,
+                      "forcedStop":  false,
+                      "lastObservedMemory":  "0B / 0B",
+                      "memoryLimit":  536870912,
+                      "oomKilled":  false
+                  },
+                  {
+                      "runningAfterStop":  false,
+                      "pidsLimit":  32,
+                      "exitCode":  0,
+                      "elapsedMs":  434.8724,
+                      "log":  "{\"name\":\"headers\",\"maxPixels\":100000000,\"maxStreams\":4,\"syntheticHeaderGuardOnly\":true,\"results\":[{\"width\":4000,\"height\":3000,\"streams\":2,\"valid\":true,\"accepted\":true},{\"width\":10000,\"height\":10000,\"streams\":4,\"valid\":true,\"accepted\":true},{\"width\":100000001,\"height\":1,\"streams\":1,\"valid\":false,\"accepted\":false},{\"width\":100000,\"height\":100000,\"streams\":1,\"valid\":false,\"accepted\":false},{\"width\":100,\"height\":100,\"streams\":5,\"valid\":false,\"accepted\":false},{\"width\":null,\"height\":100,\"streams\":1,\"valid\":false,\"accepted\":false},{\"width\":100,\"height\":100,\"streams\":-1,\"valid\":false,\"accepted\":false}]}",
+                      "name":  "headers",
+                      "cpuNano":  500000000,
+                      "stopMs":  null,
+                      "mounts":  [
+                                     {
+                                         "target":  "/lab/spike060",
+                                         "rw":  false
+                                     },
+                                     {
+                                         "target":  "/inputs",
+                                         "rw":  false
+                                     }
+                                 ],
+                      "observedSampleMaxPids":  0,
+                      "forcedStop":  false,
+                      "lastObservedMemory":  "0B / 0B",
+                      "memoryLimit":  134217728,
+                      "oomKilled":  false
+                  },
+                  {
+                      "runningAfterStop":  false,
+                      "pidsLimit":  32,
+                      "exitCode":  137,
+                      "elapsedMs":  3412.3419000000004,
+                      "log":  "{\"name\":\"descendants\",\"spawned\":true}",
+                      "name":  "descendants",
+                      "cpuNano":  500000000,
+                      "stopMs":  212.65470000000002,
+                      "mounts":  [
+                                     {
+                                         "target":  "/lab/spike060",
+                                         "rw":  false
+                                     },
+                                     {
+                                         "target":  "/inputs",
+                                         "rw":  false
+                                     }
+                                 ],
+                      "observedSampleMaxPids":  9,
+                      "forcedStop":  true,
+                      "lastObservedMemory":  "14.13MiB / 128MiB",
+                      "memoryLimit":  134217728,
+                      "oomKilled":  false
+                  }
+              ],
+    "recordedAt":  "2026-10-08T23:44:15.1889180Z",
+    "ticket":  "EL-TK-060"
+}

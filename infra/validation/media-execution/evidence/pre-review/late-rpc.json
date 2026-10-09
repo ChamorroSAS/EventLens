@@ -1,0 +1,10 @@
+{
+  "attemptId": "d230d40b-c66c-4733-9d19-ed6a61c0a194",
+  "cancelledCreateDrained": true,
+  "lateStartDenied": true,
+  "proof": {
+    "terminal": true,
+    "container": "el056-d230d40b-c66c-4733-9d19-ed6a61c0a194",
+    "evidenceId": "docker-identity-removed:c0c347b6d93a8b8daf7392baba7b6cf62e2d490f95780cc6edaa3748975dc7ec:0001-01-01T00:00:00Z"
+  }
+}

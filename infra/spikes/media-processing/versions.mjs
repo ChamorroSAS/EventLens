@@ -1,0 +1,1 @@
+﻿import {command}from './core.mjs';console.log(JSON.stringify({ffmpeg:command('ffmpeg',['-version']).split('\n')[0],ffprobe:command('ffprobe',['-version']).split('\n')[0],libheif:command('heif-convert',['--version']).trim(),packages:command('apk',['info','-v']).trim()}));

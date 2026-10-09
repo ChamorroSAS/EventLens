@@ -1,0 +1,17 @@
+**
+!package.json
+!pnpm-workspace.yaml
+!pnpm-lock.yaml
+!packages/
+!packages/job-queue/
+!packages/job-queue/**
+!packages/media-acceptance/
+!packages/media-acceptance/**
+!infra/
+!infra/validation/
+!infra/validation/media-acceptance/
+!infra/validation/media-acceptance/**
+**/node_modules/
+**/dist/
+**/src/generated/
+infra/validation/media-acceptance/evidence/

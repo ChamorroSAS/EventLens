@@ -1,0 +1,5 @@
+datasource db {
+ provider = "postgresql"
+}
+// Infrastructure migration boundary; shared Prisma transactions supplied by
+// job-queue. Domain contracts never depend on generated models.

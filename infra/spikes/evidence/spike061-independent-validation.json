@@ -1,0 +1,109 @@
+{
+    "ticket":  "EL-TK-061",
+    "validationStatus":  "PASS_WITH_WARNINGS",
+    "scope":  "PREPARATION_ONLY",
+    "tests":  [
+                  {
+                      "suite":  "spike061/core.test.mjs",
+                      "command":  "powershell -NoProfile -File infra/spikes/spike061/Run.ps1 -Action test",
+                      "failed":  0,
+                      "passed":  12
+                  },
+                  {
+                      "isolatedCases":  5,
+                      "derived":  3,
+                      "rejected":  2,
+                      "generatedFixtures":  5,
+                      "unexpected":  0,
+                      "commands":  [
+                                       "Run.ps1 -Action generate",
+                                       "Run.ps1 -Action register",
+                                       "Run.ps1 -Action run"
+                                   ]
+                  }
+              ],
+    "physical":  {
+                     "iosPhysicalFiles":  0,
+                     "generatedTemplateRowsAllNotRun":  true,
+                     "userReportPresent":  false,
+                     "missingSlotBrowserRows":  21,
+                     "androidPhysicalFiles":  0,
+                     "status":  "NOT_RUN",
+                     "templateRows":  36,
+                     "missingCorpusSlots":  [
+                                                "IOS-HEIC",
+                                                "IOS-HEIF",
+                                                "IOS-JPEG",
+                                                "IOS-MOV",
+                                                "IOS-MP4",
+                                                "ANDROID-JPEG",
+                                                "ANDROID-MP4"
+                                            ]
+                 },
+    "validatorTests":  {
+                           "honestMissingSourceBlockedAccepted":  true,
+                           "missingSourceForgedPassRejected":  true,
+                           "fullExperimentStillPending":  true
+                       },
+    "privacy":  {
+                    "physicalCorpusGitIgnored":  true,
+                    "physicalCorpusDockerExcluded":  true,
+                    "originalsRead":  false
+                },
+    "runtime":  {
+                    "pids":  64,
+                    "memoryMiB":  512,
+                    "nonRoot":  "1000:1000",
+                    "scratchMiB":  128,
+                    "capabilitiesDropped":  "ALL",
+                    "cpu":  1,
+                    "parserPerFileContainer":  true,
+                    "network":  "none",
+                    "rootReadonly":  true
+                },
+    "limitations":  [
+                        "No original device samples were present.",
+                        "No physical browser or playback validation was performed.",
+                        "Synthetic rotation and dimensions do not establish device codec compatibility.",
+                        "Full EL-TK-061 experiment remains PENDING."
+                    ],
+    "recordedAtUtc":  "2026-10-09T00:40:06.9459214Z",
+    "noUpscaleInvariant":  {
+                               "unitTest":  "PASS",
+                               "oddDimensionSmoke":  {
+                                                         "thumbnail":  [
+                                                                           320,
+                                                                           240
+                                                                       ],
+                                                         "inputWidth":  320,
+                                                         "preview":  [
+                                                                         320,
+                                                                         240
+                                                                     ],
+                                                         "originalUnchanged":  true,
+                                                         "inputHeight":  241,
+                                                         "result":  "DERIVED"
+                                                     },
+                               "rotatedVideoSmoke":  {
+                                                         "rotationDegrees":  90,
+                                                         "rawHeight":  108,
+                                                         "thumbnail":  [
+                                                                           108,
+                                                                           192
+                                                                       ],
+                                                         "originalUnchanged":  true,
+                                                         "rawWidth":  192,
+                                                         "playback":  [
+                                                                          108,
+                                                                          192
+                                                                      ],
+                                                         "result":  "DERIVED",
+                                                         "preview":  [
+                                                                         108,
+                                                                         192
+                                                                     ]
+                                                     },
+                               "constraint":  "Each derivative area and sorted dimensions do not exceed the oriented source",
+                               "physicalOrientation":  "NOT_RUN"
+                           }
+}

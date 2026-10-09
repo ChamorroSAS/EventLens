@@ -1,0 +1,82 @@
+{
+    "ticket":  "EL-TK-061",
+    "runId":  "470e6689-d6e4-47ec-b784-226c6f38d4a3",
+    "scope":  "Coverage review of the nine missing-source slots; original run and results remain immutable",
+    "interpretation":  "Capabilities and representative formats/codecs, not every capture manufacturer multiplied by every format",
+    "physicalExecutedPass":  39,
+    "physicalExecutedFail":  0,
+    "historicalBlockedRows":  9,
+    "activePhysicalBlockersFromReviewedSlots":  0,
+    "blockedCasesReclassified":  9,
+    "newPhysicalSamplesRequired":  0,
+    "classifications":  [
+                            {
+                                "slotId":  "IOS-HEIF",
+                                "historicalCaseId":  "MISSING-IOS-HEIF",
+                                "historicalRows":  3,
+                                "disposition":  "No mandatory second physical sample based only on extension",
+                                "reusedCaseIds":  [
+                                                      "IOS-HEIC-8a03d165408f",
+                                                      "IOS-HEIC-7de05716ae9b"
+                                                  ],
+                                "capability":  "HEVC image within HEIF family",
+                                "remaining":  "Generic mif1/msf1 identification, representative justified profiles and malformed input remain automated evidence; HEIC does not prove every HEIF profile"
+                            },
+                            {
+                                "slotId":  "IOS-JPEG",
+                                "historicalCaseId":  "MISSING-IOS-JPEG",
+                                "historicalRows":  3,
+                                "disposition":  "iPhone capture optional; JPEG physical compatibility already covered",
+                                "reusedCaseIds":  [
+                                                      "ANDROID-JPEG-67929ef4020b",
+                                                      "ANDROID-JPEG-5ee797c1e05a"
+                                                  ],
+                                "capability":  "Real JPEG selection, orientation and derived display tested in all three browsers",
+                                "remaining":  "Most Compatible iPhone original needed only if a distinct material capture-specific variant is demonstrated; not required by current ticket"
+                            },
+                            {
+                                "slotId":  "IOS-MP4",
+                                "historicalCaseId":  "MISSING-IOS-MP4",
+                                "historicalRows":  3,
+                                "disposition":  "Replace native-iPhone-capture expectation with source-independent MP4 compatibility coverage",
+                                "reusedCaseIds":  [
+                                                      "ANDROID-MP4-574790f5df52",
+                                                      "ANDROID-MP4-0a23dabadb68"
+                                                  ],
+                                "capability":  "Authentic MP4 input selection and derivative playback/audio/seek tested on iPhone Safari and Chrome, plus Android Chrome",
+                                "remaining":  "Future controlled MP4 fixtures only for distinct codec/container cases; existing Android originals retain original provenance; no MOV renamed/remuxed/converted and no extra redundant fixture required",
+                                "nativeCaptureEvidence":  "Camera capture MOV consistent with actual iPhone originals and Apple AVFoundation QuickTime capture documentation; Most Compatible changes codec to H264, not a guarantee of MP4 container"
+                            }
+                        ],
+    "automatedEvidenceRemaining":  [
+                                       "Generic HEIF brands and justified representative profiles",
+                                       "Metadata/GPS detection and minimization with controlled metadata; original HEIF metadata inspection currently incomplete",
+                                       "Video without audio and correct silent derivatives",
+                                       "Truncated/malformed cases beyond two initial rejection fixtures",
+                                       "Approved size/duration/resource boundaries",
+                                       "Representative codec/container combinations, not all possible profiles",
+                                       "Transformation/IO interruption, authorization loss, partial results, stale-result denial with TB-02 mechanisms"
+                                   ],
+    "manualEvidencePolicy":  "These remaining technical checks are automated spike work. Fresh materially different renditions, if introduced later, may require a targeted physical playback confirmation; no automatic nine-row retest demand.",
+    "unchangedArtifacts":  [
+                               "run.json",
+                               "physical-results.json",
+                               "physical-results-template.json",
+                               "physical-validation.json",
+                               "corpus/manifest.json",
+                               "manual-evaluation.json"
+                           ],
+    "rawValidatorResult":  "FAIL_OR_BLOCKED for historical matrix; not overridden or relabeled PASS",
+    "experimentResult":  "PENDING",
+    "readyForArchitectDecision":  "NO_FOR_TOOL_ADOPTION",
+    "architecturalCoverageReview":  "Completed; no architecture, formats or provider selection changes",
+    "sources":  [
+                    "https://nokiatech.github.io/heif/technical.html",
+                    "https://support.apple.com/en-us/116944",
+                    "https://developer.apple.com/documentation/avfoundation/avcapturemoviefileoutput",
+                    "https://devstreaming-cdn.apple.com/videos/wwdc/2017/511tj33587vdhds/511/511_working_with_heif_and_hevc.pdf"
+                ],
+    "validationGatesChanged":  [
+
+                               ]
+}

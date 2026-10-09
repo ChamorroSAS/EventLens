@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+datasource db {
+  provider = "postgresql"
+}
+model Job {
+  id String @id @db.Uuid
+  dedupKey String @unique @map("dedup_key")
+  fingerprint String
+  type String
+  handlerVersion String @map("handler_version")
+  resourceRef String @map("resource_ref")
+  generation BigInt
+  queue String
+  priority Int
+  payload Json
+  status String @default("PENDING")
+  availableAt DateTime @map("available_at") @db.Timestamptz
+  deadline DateTime? @db.Timestamptz
+  attempt Int @default(0)
+  fence BigInt @default(0)
+  owner String?
+  token String? @db.Uuid
+  epoch String?
+  leaseUntil DateTime? @map("lease_until") @db.Timestamptz
+  cancelled Boolean @default(false)
+  @@map("job_queue")
+}
+model Attempt {
+  token String @id @db.Uuid
+  jobId String @map("job_id") @db.Uuid
+  number Int
+  fence BigInt
+  owner String
+  epoch String
+  generation BigInt
+  startedAt DateTime @map("started_at") @db.Timestamptz
+  endedAt DateTime? @map("ended_at") @db.Timestamptz
+  result String?
+  @@unique([jobId, number])
+  @@map("job_attempt")
+}
+model Receipt {
+  operationId String @id @map("operation_id")
+  jobId String @map("job_id") @db.Uuid
+  token String @db.Uuid
+  fingerprint String
+  disposition String
+  outcome Json
+  committedAt DateTime @map("committed_at") @db.Timestamptz
+  @@map("job_receipt")
+}

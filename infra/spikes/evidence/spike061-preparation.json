@@ -1,0 +1,184 @@
+﻿{
+    "preparationStatus":  "COMPLETE",
+    "generatedSmoke":  {
+                           "derived":  3,
+                           "rejected":  2,
+                           "unexpected":  [
+
+                                          ],
+                           "missingSlots":  [
+                                                "IOS-HEIC",
+                                                "IOS-HEIF",
+                                                "IOS-JPEG",
+                                                "IOS-MOV",
+                                                "IOS-MP4",
+                                                "ANDROID-JPEG",
+                                                "ANDROID-MP4"
+                                            ],
+                           "experimentResult":  "PENDING",
+                           "physicalCompatibility":  "NOT_RUN"
+                       },
+    "experimentExecution":  "NOT_RUN_FULL_SPIKE",
+    "runtimeAttempts":  {
+                            "value":  [
+                                          {
+                                              "mounts":  [
+                                                             {
+                                                                 "target":  "/code",
+                                                                 "rw":  false
+                                                             },
+                                                             {
+                                                                 "target":  "/input",
+                                                                 "rw":  false
+                                                             }
+                                                         ],
+                                              "capDrop":  [
+                                                              "ALL"
+                                                          ],
+                                              "runtimeImage":  "sha256:bfdca4987f5afc676c208f7d31b8fb0663413d7fceafeaf17161209b7bf6a857",
+                                              "readOnlyRoot":  true,
+                                              "memoryBytes":  536870912,
+                                              "user":  "1000:1000",
+                                              "elapsedMs":  722.5769,
+                                              "pidsLimit":  64,
+                                              "network":  "none",
+                                              "cpuNano":  1000000000,
+                                              "securityOpt":  [
+                                                                  "no-new-privileges:true"
+                                                              ],
+                                              "caseId":  "GEN-PNG-05e900ac07dc"
+                                          },
+                                          {
+                                              "mounts":  [
+                                                             {
+                                                                 "target":  "/code",
+                                                                 "rw":  false
+                                                             },
+                                                             {
+                                                                 "target":  "/input",
+                                                                 "rw":  false
+                                                             }
+                                                         ],
+                                              "capDrop":  [
+                                                              "ALL"
+                                                          ],
+                                              "runtimeImage":  "sha256:bfdca4987f5afc676c208f7d31b8fb0663413d7fceafeaf17161209b7bf6a857",
+                                              "readOnlyRoot":  true,
+                                              "memoryBytes":  536870912,
+                                              "user":  "1000:1000",
+                                              "elapsedMs":  698.0336,
+                                              "pidsLimit":  64,
+                                              "network":  "none",
+                                              "cpuNano":  1000000000,
+                                              "securityOpt":  [
+                                                                  "no-new-privileges:true"
+                                                              ],
+                                              "caseId":  "GEN-WEBP-c5d9b671d66e"
+                                          },
+                                          {
+                                              "mounts":  [
+                                                             {
+                                                                 "target":  "/code",
+                                                                 "rw":  false
+                                                             },
+                                                             {
+                                                                 "target":  "/input",
+                                                                 "rw":  false
+                                                             }
+                                                         ],
+                                              "capDrop":  [
+                                                              "ALL"
+                                                          ],
+                                              "runtimeImage":  "sha256:bfdca4987f5afc676c208f7d31b8fb0663413d7fceafeaf17161209b7bf6a857",
+                                              "readOnlyRoot":  true,
+                                              "memoryBytes":  536870912,
+                                              "user":  "1000:1000",
+                                              "elapsedMs":  1091.3729,
+                                              "pidsLimit":  64,
+                                              "network":  "none",
+                                              "cpuNano":  1000000000,
+                                              "securityOpt":  [
+                                                                  "no-new-privileges:true"
+                                                              ],
+                                              "caseId":  "GEN-WEBM-4d7d05fee6de"
+                                          },
+                                          {
+                                              "mounts":  [
+                                                             {
+                                                                 "target":  "/code",
+                                                                 "rw":  false
+                                                             },
+                                                             {
+                                                                 "target":  "/input",
+                                                                 "rw":  false
+                                                             }
+                                                         ],
+                                              "capDrop":  [
+                                                              "ALL"
+                                                          ],
+                                              "runtimeImage":  "sha256:bfdca4987f5afc676c208f7d31b8fb0663413d7fceafeaf17161209b7bf6a857",
+                                              "readOnlyRoot":  true,
+                                              "memoryBytes":  536870912,
+                                              "user":  "1000:1000",
+                                              "elapsedMs":  349.8978,
+                                              "pidsLimit":  64,
+                                              "network":  "none",
+                                              "cpuNano":  1000000000,
+                                              "securityOpt":  [
+                                                                  "no-new-privileges:true"
+                                                              ],
+                                              "caseId":  "GEN-INVALID-f74d60194fec"
+                                          },
+                                          {
+                                              "mounts":  [
+                                                             {
+                                                                 "target":  "/code",
+                                                                 "rw":  false
+                                                             },
+                                                             {
+                                                                 "target":  "/input",
+                                                                 "rw":  false
+                                                             }
+                                                         ],
+                                              "capDrop":  [
+                                                              "ALL"
+                                                          ],
+                                              "runtimeImage":  "sha256:bfdca4987f5afc676c208f7d31b8fb0663413d7fceafeaf17161209b7bf6a857",
+                                              "readOnlyRoot":  true,
+                                              "memoryBytes":  536870912,
+                                              "user":  "1000:1000",
+                                              "elapsedMs":  361.6104,
+                                              "pidsLimit":  64,
+                                              "network":  "none",
+                                              "cpuNano":  1000000000,
+                                              "securityOpt":  [
+                                                                  "no-new-privileges:true"
+                                                              ],
+                                              "caseId":  "GEN-CORRUPT-5edaad67769f"
+                                          }
+                                      ],
+                            "Count":  5
+                        },
+    "versions":  {
+                     "ffmpeg":  "ffmpeg version 8.0.1 Copyright (c) 2000-2025 the FFmpeg developers",
+                     "ffprobe":  "ffprobe version 8.0.1 Copyright (c) 2007-2025 the FFmpeg developers",
+                     "libheif":  "1.23.0\nlibheif: 1.23.0\nplugin path: /usr/lib/libheif",
+                     "packages":  "alpine-baselayout-3.7.2-r0\nalpine-baselayout-data-3.7.2-r0\nalpine-keys-2.6-r0\nalpine-release-3.23.6-r0\nalsa-lib-1.2.14-r2\naom-libs-3.14.1-r0\napk-tools-3.0.8-r0\nbrotli-libs-1.2.0-r0\nbusybox-1.37.0-r30\nbusybox-binsh-1.37.0-r30\nca-certificates-bundle-20260909-r0\ncjson-1.7.19-r1\ndbus-libs-1.16.2-r1\nffmpeg-8.0.1-r1\nffmpeg-libavcodec-8.0.1-r1\nffmpeg-libavdevice-8.0.1-r1\nffmpeg-libavfilter-8.0.1-r1\nffmpeg-libavformat-8.0.1-r1\nffmpeg-libavutil-8.0.1-r1\nffmpeg-libswresample-8.0.1-r1\nffmpeg-libswscale-8.0.1-r1\nfontconfig-2.17.1-r0\nfreetype-2.14.3-r0\nfribidi-1.0.16-r2\nglib-2.86.3-r0\nglslang-libs-1.4.321.0-r0\ngraphite2-1.3.14-r6\nharfbuzz-12.2.0-r0\nheif-thumbnailer-1.23.0-r0\nhwdata-pci-0.401-r0\njson-c-0.18-r1\nlame-libs-3.100-r5\nlcms2-2.19-r0\nlibapk-3.0.8-r0\nlibass-0.17.4-r0\nlibasyncns-0.8-r4\nlibblkid-2.41.6-r1\nlibbluray-1.4.0-r0\nlibbsd-0.12.2-r0\nlibbz2-1.0.8-r6\nlibcrypto3-3.5.8-r0\nlibdav1d-1.5.2-r0\nlibde265-1.0.16-r0\nlibdovi-3.3.2-r0\nlibdrm-2.4.131-r0\nlibeconf-0.8.3-r0\nlibexpat-2.8.5-r0\nlibffi-3.5.2-r0\nlibflac-1.4.3-r2\nlibgcc-15.2.0-r2\nlibgomp-15.2.0-r2\nlibheif-1.23.0-r0\nlibheif-tools-1.23.0-r0\nlibhwy-1.3.0-r0\nlibintl-0.24.1-r1\nlibjpeg-turbo-3.1.2-r0\nlibjxl-0.11.2-r0\nlibltdl-2.5.4-r2\nlibmd-1.1.0-r0\nlibmount-2.41.6-r1\nlibogg-1.3.6-r0\nlibopenmpt-0.8.6-r0\nlibpciaccess-0.18.1-r1\nlibplacebo-7.351.0-r0\nlibpng-1.6.59-r0\nlibpulse-17.0-r5\nlibrist-0.2.10-r1\nlibsharpyuv-1.6.0-r0\nlibsndfile-1.2.2-r2\nlibsodium-1.0.20-r1\nlibsrt-1.5.3-r1\nlibssh-0.11.4-r0\nlibssl3-3.5.8-r0\nlibstdc++-15.2.0-r2\nlibSvtAv1Enc-3.1.2-r0\nlibtheora-1.2.0-r0\nlibudfread-1.2.0-r0\nlibunibreak-6.1-r0\nlibva-2.22.0-r1\nlibvdpau-1.5-r4\nlibvorbis-1.3.7-r2\nlibvpl-2.15.0-r1\nlibvpx-1.15.2-r1\nlibwebp-1.6.0-r0\nlibwebpmux-1.6.0-r0\nlibx11-1.8.12-r1\nlibxau-1.0.12-r0\nlibxcb-1.17.0-r1\nlibxdmcp-1.1.5-r1\nlibxext-1.3.6-r2\nlibxfixes-6.0.2-r0\nlibxml2-2.13.9-r1\nlibzmq-4.3.5-r2\nlilv-libs-0.24.26-r0\nmbedtls-3.6.7-r0\nmpg123-libs-1.33.3-r0\nmusl-1.2.5-r23\nmusl-utils-1.2.5-r23\nnumactl-2.0.18-r0\nopus-1.5.2-r1\norc-0.4.41-r0\npcre2-10.49-r0\nrav1e-libs-0.8.1-r0\nscanelf-1.3.8-r2\nserd-libs-0.32.4-r0\nshaderc-2025.3-r0\nsord-libs-0.16.18-r0\nsoxr-0.1.3-r7\nspeexdsp-1.2.1-r2\nspirv-tools-1.4.321.0-r1\nsratom-0.6.18-r0\nssl_client-1.37.0-r30\ntdb-libs-1.4.14-r0\ntiff-4.7.2-r0\nv4l-utils-libs-1.32.0-r0\nvidstab-1.1.1-r0\nvulkan-loader-1.4.321.0-r0\nwayland-libs-client-1.24.0-r0\nx264-libs-0.164.3108-r1\nx265-libs-4.1-r0\nxvidcore-1.3.7-r2\nxz-libs-5.8.4-r0\nzimg-3.0.6-r0\nzix-libs-0.6.2-r0\nzlib-1.3.2-r0\nzstd-libs-1.5.7-r2"
+                 },
+    "experimentResult":  "PENDING",
+    "recordedAt":  "2026-10-09T00:29:07.0388602Z",
+    "canonicalManifestSha256":  "85526a6e1bd65f5f775fbb971fa3397c5032466dc16abda40424e60fc1ec7609",
+    "unitSafetyTests":  {
+                            "failed":  0,
+                            "framework":  "Vitest 4.0.18",
+                            "passed":  10
+                        },
+    "validationGates":  "NOT_EVALUATED",
+    "physicalCompatibility":  "NOT_RUN",
+    "ticket":  "EL-TK-061",
+    "image":  {
+                  "id":  "sha256:bfdca4987f5afc676c208f7d31b8fb0663413d7fceafeaf17161209b7bf6a857",
+                  "tag":  "eventlens-spike061:preparation"
+              },
+    "fullCorpus":  "PENDING"
+}

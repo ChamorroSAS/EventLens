@@ -1,0 +1,62 @@
+﻿{
+    "ticket":  "EL-TK-056",
+    "role":  "Independent tester, final remediated source",
+    "runId":  "media_execution_b6ea60c72dd14cd68733496e70d1b5e7",
+    "testedAt":  "2026-10-09T14:56:31.349Z",
+    "status":  "PASS",
+    "execution":  {
+                      "image":  "sha256:f6fbd127578ff36809e0a056900db180d920bed7f2314da4d65111d3b1ffc619",
+                      "migrations":  "055 and 056 applied; repeat deploy had no pending migrations",
+                      "build":  "PASS",
+                      "publicImports":  "PASS for media-execution and job-queue",
+                      "command":  ".\\infra\\validation\\media-execution\\Run.ps1 -Build",
+                      "typecheck":  "PASS",
+                      "testDatabase":  "media_execution_b6ea60c72dd14cd68733496e70d1b5e7",
+                      "declarations":  "PASS, present for both workspace packages",
+                      "exitCode":  0
+                  },
+    "tests":  {
+                  "coverage":  [
+                                   "attempt-scoped outputs and original byte integrity",
+                                   "authorization loss, lease/fence/generation/epoch/DB loss, cancel, timeout and no partial promotion",
+                                   "storage writer drain and real accepted remote PUT after client abort",
+                                   "crash inventory, SIGKILL recovery and late Docker RPC/create reconciliation",
+                                   "held real staging file write and descriptor close; UNKNOWN and slot held until close",
+                                   "symlink/non-regular/oversized output rejection",
+                                   "real CPU/memory/PID/scratch/network/privilege controls and descendant termination"
+                               ],
+                  "file":  "packages/media-execution/test/media-execution.integration.test.ts",
+                  "failed":  0,
+                  "passed":  21
+              },
+    "stagingDrain":  {
+                         "realFileHandle":  true,
+                         "slotHeldWhileWriterActive":  true,
+                         "writeHeldAfterAbort":  true,
+                         "unknownUntilDescriptorClosed":  true,
+                         "recoveryAfterClose":  "PASS"
+                     },
+    "sourceIntegrity":  {
+                            "entries":  24,
+                            "allMatch":  true,
+                            "manifest":  "infra/validation/media-execution/evidence/implementation-source-hashes.json"
+                        },
+    "runtime":  {
+                    "activeParserContainers":  0,
+                    "labServicesReset":  false,
+                    "allParserContainersAfterRun":  0,
+                    "inputVolumeRetained":  true
+                },
+    "limitations":  [
+                        "Resource values are test fixtures and do not establish Beta sizing.",
+                        "Cold recovery without durable terminal proof remains UNKNOWN; absence is not treated as proof of quiescence.",
+                        "MEDIA-001, CAP-001, DR-001, EXPORT-001 remain NOT_EVALUATED."
+                    ],
+    "failureClassification":  "No test failures. A separate ad hoc import probe from monorepo root could not resolve workspace package names; rerun from the media-execution workspace passed for both public packages and declarations. This was a probe working-directory issue.",
+    "protectedEvidence":  {
+                              "spike060ResultSha256":  "46D1F0E7317205731164C2008032D243DE750EB4179E2695F88369ACDF5AA302",
+                              "spike061ResultSha256":  "B6A037C8C48EDDC608912DA929F99F2B3FCF1647875B6C9D2E9F7A6F67F3A29F",
+                              "physicalResultsSha256":  "7D288713082D8737712BA1DFD01F050ED8E4540BBE1282A605CEC249F79EAD61",
+                              "expectedHashesMatch":  true
+                          }
+}

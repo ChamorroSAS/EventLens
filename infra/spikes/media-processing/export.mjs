@@ -1,0 +1,2 @@
+﻿import fs from 'node:fs';
+const result=JSON.parse(fs.readFileSync('/scratch/result.json'));const files={};for(const name of ['thumbnail.jpg','preview.jpg','playback.mp4'])if(fs.existsSync('/scratch/'+name)){const stats=fs.lstatSync('/scratch/'+name);if(!stats.isFile()||stats.isSymbolicLink()||stats.size>16777216)throw Error('Unsafe experimental output');files[name]=fs.readFileSync('/scratch/'+name).toString('base64');}console.log(JSON.stringify({result,files}));

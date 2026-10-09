@@ -1,0 +1,27 @@
+{
+    "TB01":  "NOT_EXECUTED",
+    "TB02":  "NOT_EXECUTED",
+    "desktopPreviewHttpStatus":  200,
+    "PITR":  "NOT_EXECUTED",
+    "scope":  "REQUIRED_FOR_SPIKES_PREPARATION_ONLY",
+    "ticket":  "EL-TK-059",
+    "volumeRecreation":  "CONFIRMED",
+    "validationGates":  "NOT_EVALUATED",
+    "physicalPlayback":  "NOT_EXECUTED",
+    "typecheck":  "SUCCESS",
+    "physicalDevices":  "USER_CONFIRMED_AVAILABLE",
+    "fullMediaCorpus":  "PENDING",
+    "isolatedLogicalRestore":  "CONFIRMED",
+    "recordedAt":  "2026-10-08T23:02:27.8575455Z",
+    "faultControls":  {
+                          "postgresPauseUnpause":  "AVAILABLE_VERIFIED",
+                          "minioPauseUnpause":  "AVAILABLE_VERIFIED"
+                      },
+    "vitest":  {
+                   "realPrivateMinIO":  true,
+                   "realPostgreSQL":  true,
+                   "failed":  0,
+                   "passed":  4
+               },
+    "offHostBackup":  "PENDING"
+}

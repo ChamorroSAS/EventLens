@@ -1,0 +1,25 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {spawnSync} from 'node:child_process';
+import pg from 'pg';
+const secret=n=>readFileSync(`/run/secrets/${n}`,'utf8').trim();
+const db=new pg.Client({host:'postgres',database:'eventlens_lab',user:'lab_admin',password:secret('pg_admin')});
+await db.connect();
+const password=secret('pg_lab');
+if(!/^[a-f0-9]{64}$/.test(password))throw new Error('Invalid generated credential shape');
+if(!(await db.query("SELECT 1 FROM pg_roles WHERE rolname='lab_runner'")).rowCount)await db.query(`CREATE ROLE lab_runner LOGIN PASSWORD '${password}' NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION`);
+await db.query('CREATE SCHEMA IF NOT EXISTS lab AUTHORIZATION lab_runner');
+await db.query('REVOKE CREATE ON SCHEMA public FROM PUBLIC');
+await db.end();
+const policy={Version:'2012-10-17',Statement:[{Effect:'Allow',Action:['s3:GetBucketLocation'],Resource:['arn:aws:s3:::eventlens-lab']},{Effect:'Allow',Action:['s3:ListBucket'],Resource:['arn:aws:s3:::eventlens-lab'],Condition:{StringLike:{'s3:prefix':['attempts/*']}}},{Effect:'Allow',Action:['s3:GetObject','s3:PutObject','s3:DeleteObject','s3:AbortMultipartUpload','s3:ListMultipartUploadParts'],Resource:['arn:aws:s3:::eventlens-lab/attempts/*']}]};
+writeFileSync('/tmp/policy.json',JSON.stringify(policy));
+const env={...process.env,MC_HOST_lab:`http://${encodeURIComponent(secret('s3_root_user'))}:${encodeURIComponent(secret('s3_root_password'))}@minio:9000`};
+function mc(...args){const r=spawnSync('mc',['--config-dir','/tmp/mc',...args],{env,encoding:'utf8'});if(r.status!==0){let detail=r.stderr??'';for(const name of ['pg_admin','pg_lab','s3_root_user','s3_root_password','s3_lab_user','s3_lab_password'])detail=detail.replaceAll(secret(name),'[REDACTED]');detail=detail.replace(/https?:\/\/\S+/g,'[REDACTED_ENDPOINT]');throw new Error(`MinIO initialization failed: ${args.slice(0,2).join(' ')} ${detail.slice(0,500)}`);}}
+mc('mb','--ignore-existing','lab/eventlens-lab');
+mc('mb','--ignore-existing','lab/eventlens-foreign');
+mc('anonymous','set','none','lab/eventlens-lab');
+mc('anonymous','set','none','lab/eventlens-foreign');
+mc('admin','policy','create','lab','lab-attempts','/tmp/policy.json');
+mc('admin','user','add','lab',secret('s3_lab_user'),secret('s3_lab_password'));
+mc('admin','policy','attach','lab','lab-attempts','--user',secret('s3_lab_user'));
+writeFileSync('/state/provisioned.json',JSON.stringify({ticket:'EL-TK-059',policy:'lab-attempts',bucket:'eventlens-lab',prefix:'attempts/',runtimeUsesRootCredentials:false},null,2));
+console.log('Scoped PostgreSQL role and private object storage initialized.');

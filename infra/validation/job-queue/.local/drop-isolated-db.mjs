@@ -1,0 +1,11 @@
+﻿import {readFileSync,realpathSync} from 'node:fs';
+import {createRequire} from 'node:module';
+const result=JSON.parse(readFileSync('/evidence/result.json','utf8'));
+if(!/^tk055_[a-f0-9]{32}$/.test(result.runId)) throw new Error('UNEXPECTED_DATABASE_NAME');
+const password=readFileSync('/run/secrets/pg_admin','utf8').trim();
+const require=createRequire(realpathSync('/workspace/packages/job-queue/node_modules/@prisma/adapter-pg/package.json'));
+const {Client}=require('pg');
+const client=new Client({host:'postgres',user:'lab_admin',password,database:'eventlens_lab'});
+await client.connect();
+await client.query(`DROP DATABASE IF EXISTS "${result.runId}"`);
+await client.end();

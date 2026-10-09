@@ -1,0 +1,66 @@
+[
+    {
+        "file":  "package.json",
+        "sha256":  "BD35E3292E0D858935EB707F00DA749CC231D389CD574A2BC502AABC3ECB7183"
+    },
+    {
+        "file":  "pnpm-lock.yaml",
+        "sha256":  "6EE6BA0E9077DB0FF75E6AED8B346C1C736754245B7F4574BD49CB445452FA0F"
+    },
+    {
+        "file":  "packages/job-queue/tsconfig.build.json",
+        "sha256":  "09F4291688626DA197A5263AAC22E0D37E6F55B0C9B1B453810CF18F1F29B57C"
+    },
+    {
+        "file":  "packages/media-execution/src/contracts.ts",
+        "sha256":  "92CB34382BFA16F74E81448F67471FC85C7BD246D66B1F73B04169BF48C0508C"
+    },
+    {
+        "file":  "packages/media-execution/src/supervisor.ts",
+        "sha256":  "E4C812620AEF14F4510A68651B6C505F961DAB50A75D4A581D2C6C4AA44354AD"
+    },
+    {
+        "file":  "packages/media-execution/src/docker-runtime.ts",
+        "sha256":  "34BB3866B0B1FE523AF089E7A7A28379B5630E95575C903B04DCBEC345F49C8C"
+    },
+    {
+        "file":  "packages/media-execution/src/inventory.ts",
+        "sha256":  "1E81FDA0AE209006C17F077CEC5190C0E0D5BE82317F46D36935B6CDB3954513"
+    },
+    {
+        "file":  "packages/media-execution/test/media-execution.integration.test.ts",
+        "sha256":  "ED1624626FD6132B86D12BCDEE18468FDA7992C56BA00D4C287D1F931F0F94D1"
+    },
+    {
+        "file":  "packages/media-execution/test/laboratory-storage.ts",
+        "sha256":  "AC07C2988008D1A92A6362642B0534222E0A20193F0EB8AD449596CF1EC6219E"
+    },
+    {
+        "file":  "packages/media-execution/prisma/migrations/202610090002_execution_inventory/migration.sql",
+        "sha256":  "513FF0F7FFF3AD97C8CCA417E060F6057D482F2554BB3B5111D4E250E22BD5C6"
+    },
+    {
+        "file":  "infra/tk056/Dockerfile",
+        "sha256":  "A04481A35831B598E3B58F28450DF38E5C32ECECB654A3FAAAB3970613118DA9"
+    },
+    {
+        "file":  "infra/tk056/Run.ps1",
+        "sha256":  "0ACA01FADF95A56257002F6B34830E248988EB2960C689E330FB159737B71553"
+    },
+    {
+        "file":  "infra/tk056/run.mjs",
+        "sha256":  "1589D29621ADED76CB5E96E0412487E95EEB6013B81C2BE776FEAAF1B1E675A1"
+    },
+    {
+        "file":  "infra/tk056/runtime-probe.mjs",
+        "sha256":  "CD34771EA5DA0B4E03066497868E13B0BE5FB885C81E5B3401AE00C0B0C5B8DF"
+    },
+    {
+        "file":  "infra/tk056/crash-worker.mjs",
+        "sha256":  "8462FDF91F70F4F324B1C2E4D34315E39834F8FFE778A2DE02B4DC0212EBA309"
+    },
+    {
+        "file":  "infra/tk056/late-docker.mjs",
+        "sha256":  "153BF999C3AAF74FBE8CC7DC493528E24456383D49BA13829ED188C531878FB4"
+    }
+]

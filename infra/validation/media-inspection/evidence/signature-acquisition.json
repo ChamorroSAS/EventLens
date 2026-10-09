@@ -1,0 +1,64 @@
+{
+    "schemaVersion":  1,
+    "status":  "OFFICIAL_SNAPSHOT_VERIFIED",
+    "mode":  "snapshot-reverification",
+    "engineVersion":  "1.4.6",
+    "sourceImageDigest":  "sha256:58d9b21b5694a1f5b3a136e4f2e4fc6b463fce88635737e16f8cb9ee9455a199",
+    "localImageId":  "sha256:e4df73bcde9afeb6bd1b464091f053537b3df86d8bf5a0431ae87c1760b332ae",
+    "snapshotId":  "45ed99001d94237d6b2a8054a796946f3151909c3f61c913591a970702f206b4",
+    "snapshotPath":  "C:\\Users\\geren\\Documents\\GitHub\\EventLens\\infra\\validation\\media-inspection\\.local\\signatures\\45ed99001d94237d6b2a8054a796946f3151909c3f61c913591a970702f206b4",
+    "verifiedAtUTC":  "2026-10-09T20:36:02.7521387+00:00",
+    "dailyContentBuildTimeUTC":  "2026-10-09T06:25:00.0000000+00:00",
+    "dailyContentAgeHours":  14.179,
+    "maximumDailyAgeHours":  72,
+    "authenticityVerified":  true,
+    "engineLoadVerified":  true,
+    "engineKnownViruses":  3628144,
+    "engineLoadSeconds":  16.315,
+    "elapsedSeconds":  24.31,
+    "updater":  {
+                    "cpus":  2,
+                    "pids":  64,
+                    "scratchMiB":  64,
+                    "timeoutSeconds":  300,
+                    "network":  "bridge",
+                    "memoryMiB":  1536,
+                    "executedThisInvocation":  false,
+                    "budgetSource":  "script_configuration"
+                },
+    "verification":  {
+                         "cpus":  2,
+                         "pids":  64,
+                         "scratchMiB":  64,
+                         "timeoutSeconds":  180,
+                         "network":  "none",
+                         "snapshotReadOnly":  true,
+                         "memoryMiB":  3072
+                     },
+    "files":  [
+                  {
+                      "name":  "bytecode.cvd",
+                      "sha256":  "6d4aa01f219e988060fc419f495d07f27e0cdf1a2cccc065971da922c76f7ffb",
+                      "sizeBytes":  281702,
+                      "version":  339,
+                      "buildTimeUTC":  "2025-09-11T12:29:00.0000000+00:00",
+                      "signatureCount":  80
+                  },
+                  {
+                      "name":  "daily.cvd",
+                      "sha256":  "d6d284674457d851a9fb3cd2f1bba03dfe49e2a8bffd46c5dd8aee0c8423c2a4",
+                      "sizeBytes":  23440679,
+                      "version":  28148,
+                      "buildTimeUTC":  "2026-10-09T06:25:00.0000000+00:00",
+                      "signatureCount":  355740
+                  },
+                  {
+                      "name":  "main.cvd",
+                      "sha256":  "0b2182d229f46981ec8f535382222f7c9dfdd656b250ad47988b910a8d302365",
+                      "sizeBytes":  89072577,
+                      "version":  63,
+                      "buildTimeUTC":  "2025-12-16T23:18:00.0000000+00:00",
+                      "signatureCount":  3287027
+                  }
+              ]
+}

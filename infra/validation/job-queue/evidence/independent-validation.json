@@ -1,0 +1,117 @@
+﻿{
+    "ticket":  "EL-TK-055",
+    "validationStatus":  "PASS_WITH_WARNINGS",
+    "testedAt":  "2026-10-09T13:40:27.716Z",
+    "runId":  "tk055_3f84958728ca4efc970682cd92043995",
+    "postgresql":  "16 real laboratory; isolated database created and dropped after run",
+    "imageDigest":  "sha256:b115dcad4c16286c919d6be3d3cc0c8f77d561c49ad1d7e4e7c614ab51ba8838",
+    "tests":  {
+                  "suites":  2,
+                  "passedSuites":  2,
+                  "tests":  25,
+                  "passed":  25,
+                  "failed":  0,
+                  "file":  "packages/job-queue/test/job-queue.integration.test.ts"
+              },
+    "checks":  {
+                   "migration":  "PASS",
+                   "typecheck":  "PASS",
+                   "build":  "PASS",
+                   "packageImport":  "PASS (runner checked JobQueuePostgres and createPrismaClient exports)",
+                   "fingerprints":  "PASS: 9 scoped source/runner files unchanged during final run"
+               },
+    "acceptance":  [
+                       {
+                           "criterion":  "Concurrent claim, bounded slots, SKIP LOCKED, reservation rollback and advancing bounded candidate window",
+                           "status":  "VERIFIED",
+                           "evidence":  "real PostgreSQL: one concurrent winner; overlapping claims within slots; locked head skipped; rollback does not persist/consume slot; denied window advances"
+                       },
+                       {
+                           "criterion":  "Database-clock eligibility and lease expiry; matching owner/token/fence/generation/epoch and resource/recovery authorization",
+                           "status":  "VERIFIED",
+                           "evidence":  "future/deadline/cancel/generation/barrier checks; DB-clock lease; expiry; unavailable/PREPARED guard fails closed"
+                       },
+                       {
+                           "criterion":  "Fenced completion/retry with atomic domain/audit/receipt/job effects and idempotent ACK",
+                           "status":  "VERIFIED",
+                           "evidence":  "atomic commit/replay; concurrent ACK; effect/lease/authority failure rollback; retry preserves attempt/fence history"
+                       },
+                       {
+                           "criterion":  "Restored stale execution denied when DB counters/token are unchanged",
+                           "status":  "VERIFIED_WITH_SCOPE_LIMIT",
+                           "evidence":  "semantic restoration simulation with independent authority epoch; operational PITR was not executed"
+                       },
+                       {
+                           "criterion":  "Physical process cancellation and writer drain before external effects",
+                           "status":  "NOT_TESTED_HERE",
+                           "evidence":  "EL-TK-055 does not implement physical media writer control; consumers EL-TK-056/057 verify that boundary"
+                       }
+                   ],
+    "limitations":  [
+                        "Recovery validation is a semantic independent-authority simulation; no operational PITR or RecoveryAuthority provider adapter was exercised. DR-001 remains NOT_EVALUATED.",
+                        "Physical media writer drain/cancellation is outside this ticket.",
+                        "MEDIA-001, CAP-001 and EXPORT-001 remain NOT_EVALUATED."
+                    ],
+    "failures":  [
+
+                 ],
+    "failureClassification":  [
+
+                              ],
+    "testsAddedOrModified":  [
+                                 "No changes by this validator; worker made approved deterministic-priority test correction before final rebuild/run."
+                             ],
+    "regressionsFound":  [
+
+                         ],
+    "environmentLimitations":  [
+                                   "Used approved EL-TK-059 Docker/PostgreSQL 16 lab."
+                               ],
+    "sourceFingerprints":  [
+                               {
+                                   "Path":  "packages/job-queue/src/contracts.ts",
+                                   "SHA256":  "8F81A7EF11EDAD2F3D9F2A9A51D2445A291830EFC847C2993CDFF7DBE3BE9361",
+                                   "Length":  2509
+                               },
+                               {
+                                   "Path":  "packages/job-queue/src/job-queue.ts",
+                                   "SHA256":  "62286A1383D88CAAE64B8C0FCE61792F180220EB9CA7A5529C52CE5103947D1F",
+                                   "Length":  12479
+                               },
+                               {
+                                   "Path":  "packages/job-queue/src/prisma-transactions.ts",
+                                   "SHA256":  "DA364E6A66BF88FFB382605D62C75F65FB1F3B5D6B57F2381208E51A92CBAE15",
+                                   "Length":  1057
+                               },
+                               {
+                                   "Path":  "packages/job-queue/prisma/schema.prisma",
+                                   "SHA256":  "0027842B61B1944580E434CD84E8C9080559B9C0526ED45A52AA4A02E6D4C7DF",
+                                   "Length":  1373
+                               },
+                               {
+                                   "Path":  "packages/job-queue/prisma/migrations/202610090001_job_queue/migration.sql",
+                                   "SHA256":  "DDC2CC86654907ADF9007F3E047CC139187989B76F029AD5259F7F1B5D5B3259",
+                                   "Length":  1556
+                               },
+                               {
+                                   "Path":  "packages/job-queue/test/job-queue.integration.test.ts",
+                                   "SHA256":  "2F1DA64617D6B58F82C3741023141DD680489C6CCFDAD77909B0325E90067290",
+                                   "Length":  14667
+                               },
+                               {
+                                   "Path":  "infra/tk055/Run.ps1",
+                                   "SHA256":  "D7847807D5CA916A3B9AD4E8297A69477054BED1898A0AFFA03078B146C79491",
+                                   "Length":  767
+                               },
+                               {
+                                   "Path":  "infra/tk055/run.mjs",
+                                   "SHA256":  "87F655AEBF285BD370B03E68473846EFC262E4870C10EB0D8C85D85883ED1848",
+                                   "Length":  2268
+                               },
+                               {
+                                   "Path":  "infra/tk055/Dockerfile",
+                                   "SHA256":  "77C19411AD342226D29E1034A8BBA9072607D492550C52C5B1148D5E7626418F",
+                                   "Length":  514
+                               }
+                           ]
+}

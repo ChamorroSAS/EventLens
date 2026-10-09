@@ -1,0 +1,15 @@
+FROM golang:1.26.9-alpine3.23@sha256:96123126ac58e910f4dd3619a8901e2fb6d1ad84b59b1232cac7c9ea65a8f888 AS mc
+RUN apk add --no-cache git ca-certificates
+WORKDIR /src
+RUN git init && git remote add origin https://github.com/minio/mc.git && git fetch --depth 1 origin 7394ce0dd2a80935aded936b09fa12cbb3cb8096 && git checkout --detach FETCH_HEAD
+RUN CGO_ENABLED=0 go build -trimpath -o /out/mc .
+FROM node:24.21.0-alpine3.23@sha256:9ec4a2e289874ed0d722e1772ec2de45d2801541db8612f3638b26f128c69ac2
+RUN npm install --global pnpm@10.30.3
+WORKDIR /lab
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile
+COPY src ./src
+COPY tsconfig.json ./
+COPY --from=mc /out/mc /usr/local/bin/mc
+USER node
+CMD ["pnpm", "test"]

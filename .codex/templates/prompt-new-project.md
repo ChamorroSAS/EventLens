@@ -1,0 +1,2 @@
+# Start a new project
+Use `product_discovery`. Read `.codex/product/` first. Interview me in short rounds of no more than 5-7 questions. Ask only what is still unknown and prioritize questions that could change scope, rules, permissions, data, integrations or architecture. Do not create final epics yet. Persist confirmed answers, decisions and open questions. When enough is known, tell me whether the project is ready for `product_planner`.

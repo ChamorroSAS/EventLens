@@ -1,0 +1,118 @@
+{
+    "ticket":  "EL-TK-061",
+    "validationStatus":  "PASS_WITH_WARNINGS",
+    "scope":  "CORPUS_AND_PREVIEW_PREPARATION",
+    "runId":  "470e6689-d6e4-47ec-b784-226c6f38d4a3",
+    "experimentExecution":  "SMOKE_AND_PREPARATION_ONLY",
+    "experimentResult":  "PENDING",
+    "corpus":  {
+                   "version":  "0.1.0-preparation",
+                   "physicalOriginals":  8,
+                   "physicalDirectoryFiles":  16,
+                   "unknownPhysicalFilesUnprocessed":  8,
+                   "verifiedOriginalChecksumsMatching":  8,
+                   "registeredCases":  13,
+                   "formats":  [
+                                   {
+                                       "count":  2,
+                                       "name":  "HEIC"
+                                   },
+                                   {
+                                       "count":  2,
+                                       "name":  "MOV"
+                                   },
+                                   {
+                                       "count":  2,
+                                       "name":  "JPEG/JPG"
+                                   },
+                                   {
+                                       "count":  2,
+                                       "name":  "MP4"
+                                   }
+                               ]
+               },
+    "execution":  {
+                      "expectedRejected":  2,
+                      "missingDerived":  0,
+                      "derived":  11,
+                      "unexpected":  0,
+                      "derivedHashMismatches":  0,
+                      "inputChecksumAndRunAlignment":  "PASS",
+                      "derivedFilesExpected":  27,
+                      "derivedFilesPresentAndHashMatched":  27,
+                      "cases":  13
+                  },
+    "physicalValidation":  {
+                               "physicalPlayback":  "NOT_RUN",
+                               "templateRows":  48,
+                               "userReportPresent":  false,
+                               "physicalCompatibility":  "NOT_RUN",
+                               "rowsNotRun":  48,
+                               "devices":  [
+                                               "iPhone 14 Pro / Safari iOS (WebKit)",
+                                               "iPhone 14 Pro / Chrome iOS (WebKit)",
+                                               "Redmi A5 / Chrome Android (Blink)"
+                                           ],
+                               "missingSlots":  [
+                                                    "IOS-HEIF",
+                                                    "IOS-JPEG",
+                                                    "IOS-MP4"
+                                                ]
+                           },
+    "preview":  {
+                    "rangeBytes":  32,
+                    "originalRouteHttp":  404,
+                    "unknownDerivedHttp":  404,
+                    "runningPreviewContainers":  1,
+                    "homepageHttp":  200,
+                    "activeParserContainers":  0,
+                    "serviceLeftRunning":  true,
+                    "currentVideoRangeHttp":  206,
+                    "currentImageRangeHttp":  206,
+                    "historicalOutputsHttp404":  80
+                },
+    "historicalOutputs":  {
+                              "deleted":  0,
+                              "retainedInIgnoredSpikeWork":  true,
+                              "files":  80,
+                              "priorRunIds":  9,
+                              "servedByCurrentAllowlist":  0,
+                              "orphanFixtureCategory":  "GEN-WEBM",
+                              "currentRegistryOrphanCaseFiles":  12,
+                              "priorRunSnapshotsFound":  1,
+                              "priorRunSnapshotsMissing":  8,
+                              "classification":  "Historical EL-TK-061 generated-smoke outputs retained under run-ID names; all 80 paths are denied by the active allowlist. Nine prior IDs exist; only one has retained run and registration snapshots, eight older generated-only IDs do not. Twelve prior GEN-WEBM outputs use a generated fixture checksum absent from the current registry. No files were deleted."
+                          },
+    "runtime":  {
+                    "ffmpeg":  "8.0.1",
+                    "imageId":  "sha256:bfdca4987f5afc676c208f7d31b8fb0663413d7fceafeaf17161209b7bf6a857",
+                    "libheif":  "1.23.0",
+                    "ffprobe":  "8.0.1",
+                    "limits":  {
+                                   "noNewPrivileges":  true,
+                                   "readOnlyRoot":  true,
+                                   "cpuCores":  1,
+                                   "capabilitiesDropped":  "ALL",
+                                   "memoryMiB":  512,
+                                   "pids":  64,
+                                   "network":  "none",
+                                   "uid":  "1000:1000",
+                                   "scratchMiB":  128
+                               },
+                    "attempts":  13
+                },
+    "tests":  {
+                  "suite":  "spike061/core.test.mjs",
+                  "command":  "powershell -NoProfile -File infra/spikes/spike061/Run.ps1 -Action test",
+                  "failed":  0,
+                  "passed":  13
+              },
+    "limitations":  [
+                        "Eight unregistered physical-directory files were counted but not opened or processed.",
+                        "Eight older generated-only run IDs have no retained run and registration snapshots.",
+                        "Completed physical browser/playback results have not been returned.",
+                        "Full compatibility and EL-TK-061 experiment remain PENDING.",
+                        "Historical outputs remain in ignored EL-TK-061 work storage and are not served."
+                    ],
+    "recordedAtUtc":  "2026-10-09T05:38:42.3869303Z"
+}

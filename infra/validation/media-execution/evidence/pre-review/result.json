@@ -1,0 +1,16 @@
+{
+  "ticket": "EL-TK-056",
+  "runId": "tk056_a5715a5a56814a7ea537012cc06e6ce5",
+  "testedAt": "2026-10-09T14:43:00.959Z",
+  "result": "PASS",
+  "tests": 20,
+  "passed": 20,
+  "laboratory": "Real PostgreSQL16, MinIO, adopted Docker media image; synthetic ticket-scoped data only",
+  "limits": "Fixture budgets, not Beta sizing",
+  "gates": {
+    "MEDIA-001": "NOT_EVALUATED",
+    "CAP-001": "NOT_EVALUATED",
+    "DR-001": "NOT_EVALUATED",
+    "EXPORT-001": "NOT_EVALUATED"
+  }
+}

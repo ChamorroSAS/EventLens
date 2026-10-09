@@ -1,0 +1,9 @@
+{
+  "ticket": "EL-TK-059",
+  "recordedAt": "2026-10-08T22:59:43.122Z",
+  "check": "isolated-logical-restore",
+  "postgresFixture": true,
+  "objectByteIdentical": true,
+  "PITR": "NOT_EXECUTED",
+  "DR001": "NOT_EVALUATED"
+}

@@ -1,0 +1,13 @@
+generator client {
+ provider = "prisma-client-js"
+}
+datasource db {
+ provider = "postgresql"
+}
+model Inspection {
+ mediaRef String @map("media_ref")
+ generation BigInt
+ fact Json
+ @@id([mediaRef,generation])
+ @@map("media_inspection")
+}

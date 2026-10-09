@@ -1,0 +1,16 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import pg from 'pg';
+import {S3Client,GetObjectCommand} from '@aws-sdk/client-s3';
+import {createHash} from 'node:crypto';
+const secret=n=>readFileSync(`/run/secrets/${n}`,'utf8').trim();
+const restoring=process.env.RESTORE==='true';
+const db=new pg.Client({host:restoring?'postgres-restore':'postgres',database:'eventlens_lab',user:restoring?'lab_admin':'lab_runner',password:secret(restoring?'pg_admin':'pg_lab')});
+await db.connect();const row=await db.query('SELECT note FROM lab.capability_rows WHERE id=1');await db.end();
+if(row.rows[0]?.note!=='persistent')throw new Error('Persistent PostgreSQL fixture mismatch');
+const client=new S3Client({region:'us-east-1',endpoint:restoring?'http://minio-restore:9000':'http://minio:9000',forcePathStyle:true,credentials:{accessKeyId:secret('s3_lab_user'),secretAccessKey:secret('s3_lab_password')}});
+const object=await client.send(new GetObjectCommand({Bucket:'eventlens-lab',Key:'attempts/persistence-check.bin'}));
+const bytes=await object.Body.transformToByteArray();client.destroy();
+const hash=b=>createHash('sha256').update(b).digest('hex');
+if(hash(bytes)!==hash(Buffer.from('EventLens lab persistence fixture\n')))throw new Error('Persistent object checksum mismatch');
+const result={ticket:'EL-TK-059',recordedAt:new Date().toISOString(),check:restoring?'isolated-logical-restore':'volume-recreation-persistence',postgresFixture:true,objectByteIdentical:true,PITR:'NOT_EXECUTED',DR001:'NOT_EVALUATED'};
+writeFileSync(`/evidence/${restoring?'restore':'persistence'}.json`,JSON.stringify(result,null,2));console.log(JSON.stringify(result));

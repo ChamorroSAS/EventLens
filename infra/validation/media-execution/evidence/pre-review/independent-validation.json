@@ -1,0 +1,57 @@
+﻿{
+    "ticket":  "EL-TK-056",
+    "role":  "Independent tester",
+    "runId":  "tk056_a5715a5a56814a7ea537012cc06e6ce5",
+    "testedAt":  "2026-10-09T14:43:00.959Z",
+    "status":  "PASS",
+    "execution":  {
+                      "build":  "PASS",
+                      "typecheck":  "PASS",
+                      "exitCode":  0,
+                      "packageExports":  [
+                                             {
+                                                 "declarations":  "present",
+                                                 "exports":  6,
+                                                 "package":  "@eventlens/job-queue"
+                                             },
+                                             {
+                                                 "declarations":  "present",
+                                                 "exports":  8,
+                                                 "package":  "@eventlens/media-execution"
+                                             }
+                                         ],
+                      "command":  ".\\infra\\tk056\\Run.ps1 -Build",
+                      "image":  "sha256:f1b195b2030a464ca29297768078ad91e9ee5b122c496c1b90a1c3c5f9c10e44",
+                      "migrations":  "055 and 056 applied; repeat deploy reported no pending migrations"
+                  },
+    "tests":  {
+                  "coverage":  [
+                                   "attempt-scoped outputs and original byte integrity",
+                                   "lease/fence/generation/epoch/cancel/DB-loss stop and prevent promotion",
+                                   "timeouts and real remote PUT cancellation/quiescence",
+                                   "crash inventory and SIGKILL recovery with active writer",
+                                   "late Docker RPC and cancelled mutating create drain",
+                                   "symlink/non-regular/oversized output rejection",
+                                   "real cgroup CPU/memory/PID/scratch/network/privilege constraints and descendant termination"
+                               ],
+                  "file":  "packages/media-execution/test/media-execution.integration.test.ts",
+                  "failed":  0,
+                  "passed":  20
+              },
+    "sourceIntegrity":  {
+                            "entries":  16,
+                            "allMatch":  true,
+                            "manifest":  "infra/tk056/evidence/implementation-source-hashes.json"
+                        },
+    "runtime":  {
+                    "stoppedTicketContainers":  0,
+                    "inputVolumesRetained":  true,
+                    "runningTicketContainers":  0
+                },
+    "limits":  [
+                   "Resource values are test fixtures and do not establish Beta sizing.",
+                   "Cold recovery never infers safety from missing durable terminal proof; ambiguous operations remain UNKNOWN.",
+                   "MEDIA-001, CAP-001, DR-001, EXPORT-001 remain NOT_EVALUATED."
+               ],
+    "failureClassification":  "No test failures. An initial package-import probe from repository root could not resolve workspace packages; importing from each package workspace passed, confirming the initial probe used the wrong resolution context."
+}

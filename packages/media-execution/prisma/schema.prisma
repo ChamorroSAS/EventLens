@@ -1,0 +1,18 @@
+generator client {
+ provider = "prisma-client"
+ output = "../src/generated/prisma"
+}
+datasource db {
+ provider = "postgresql"
+}
+model ExecutionInventory {
+ id String @id @db.Uuid
+ token String @db.Uuid
+ phaseId String @default("processing") @map("phase_id")
+ record Json
+ status String
+ createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+ updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz
+ @@map("execution_inventory")
+ @@unique([token,phaseId])
+}

@@ -1,0 +1,80 @@
+{
+    "ticket":  "EL-TK-061",
+    "EXPERIMENT_RESULT":  "PASS",
+    "scope":  "BOUNDED_REPRESENTATIVE_LOCAL_SPIKE",
+    "physicalRunId":  "470e6689-d6e4-47ec-b784-226c6f38d4a3",
+    "supplementalRunId":  "6e6fe5d6cd0a424199695ec4419f4124",
+    "AUTOMATED_TESTS":  {
+                            "vitest":  "17/17 PASS",
+                            "formatAndLimitCases":  "26/26 PASS",
+                            "acceptedBoundaryTransforms":  "6/6 PASS",
+                            "negativeRevalidation":  "4/4 PASS (subset rerun, not new unique cases)",
+                            "processingFaults":  "3/3 PASS",
+                            "postgresMinioAuthorityChecks":  "9/9 PASS",
+                            "independentInputChecksums":  "26/26 MATCH",
+                            "independentOutputChecksums":  "41/41 MATCH"
+                        },
+    "AUTOMATED_COMPATIBILITY":  "PASS_FOR_BOUNDED_SPIKE_SCOPE",
+    "PHYSICAL_COMPATIBILITY":  "PASS_FOR_APPROVED_COVERAGE",
+    "physical":  {
+                     "executedPass":  39,
+                     "executedFail":  0,
+                     "activeBlockers":  0,
+                     "historicalBlockedRows":  9,
+                     "rawValidatorResult":  "FAIL_OR_BLOCKED retained unchanged; evaluated alongside approved coverage review"
+                 },
+    "FAULT_INJECTION":  "PASS",
+    "ORIGINAL_INTEGRITY":  "PASS",
+    "UNSUPPORTED_OR_CORRUPT_HANDLING":  "SAFE_REJECT_NO_DERIVATIVES",
+    "operationalFailures":  "Missing tools, permissions, IO, resources and unknown processing errors remain PROCESSING_FAILED; no fault-name override",
+    "RECOMMENDED_MEDIA_TOOLING":  [
+                                      "FFmpeg/ffprobe for probing and transforms",
+                                      "libheif/heif-convert for HEVC HEIF items",
+                                      "Bounded structured EXIF metadata inspection demonstrated experimentally"
+                                  ],
+    "RECOMMENDED_TOOL_VERSIONS":  {
+                                      "ffmpeg":  "8.0.1-r1",
+                                      "ffprobe":  "8.0.1-r1",
+                                      "libheif":  "1.23.0-r0",
+                                      "libde265":  "1.0.16-r0",
+                                      "x265":  "4.1-r0",
+                                      "multimediaRuntimeImage":  "sha256:bfdca4987f5afc676c208f7d31b8fb0663413d7fceafeaf17161209b7bf6a857"
+                                  },
+    "RECOMMENDED_RENDITIONS":  {
+                                   "preview":  "JPEG bounded960 without upscaling",
+                                   "thumbnail":  "JPEG bounded320 without upscaling",
+                                   "video":  "MP4 H264/yuv420p AAC when source has audio; no audio track when none; faststart bounded960"
+                               },
+    "configuration":  "One decoder/filter/encoder thread; libheif codec/tile threads1; no relaxed security limits",
+    "KNOWN_LIMITATIONS":  [
+                              "Experimental local laboratory, not production certification or Beta throughput gate.",
+                              "HEIF family coverage is representative HEVC8/10-bit; not universal every HEIF codec/profile or image-sequence semantics.",
+                              "40MP boundary tested at inspection only; full transformations of every image at that budget not certified under512MiB.",
+                              "Duration/size boundary transformations use tiny low-frame-rate or valid trailing-padding fixtures; not performance or all500MB codecs certification.",
+                              "No-audio and extra HEVC/VP8 variants inspected/transcoded automatically, no additional physical browser claim; canonical approved H264 outputs and physical report preserved.",
+                              "XMP extraction path invoked for HEIF but controlled GPS evidence is EXIF; no populated XMP source case.",
+                              "OS/browser versions physically UNKNOWN as reported; no fabricated versions."
+                          ],
+    "READY_FOR_ARCHITECT_DECISION":  "YES",
+    "toolingAdoption":  "RECOMMENDED_ONLY_NOT_ACCEPTED_AUTOMATICALLY",
+    "betaValidationGates":  {
+                                "MEDIA-001":  "NOT_EVALUATED",
+                                "CAP-001":  "NOT_EVALUATED",
+                                "DR-001":  "NOT_EVALUATED",
+                                "EXPORT-001":  "NOT_EVALUATED"
+                            },
+    "quality":  {
+                    "tester":  "PASS_WITH_WARNINGS",
+                    "reviewer":  "APPROVED_NO_ACTIONABLE_FINDINGS",
+                    "evidenceInterpretation":  "Tester raw historical physical result is not an active blocker; final bounded evaluation follows approved architect coverage and reviewer criteria"
+                },
+    "evidence":  [
+                     "infra/spikes/evidence/spike061-automated-supplemental.json",
+                     "infra/spikes/evidence/spike061-supplemental-integration.json",
+                     "infra/spikes/evidence/spike061-automated-validation.json",
+                     "infra/spikes/evidence/spike061-physical-coverage-review.json",
+                     "infra/spikes/evidence/spike060-result.json"
+                 ],
+    "preserved":  "Canonical corpus, physical results, run IDs, hashes and outputs were not regenerated or changed",
+    "priorAttempts":  "Previous evidence and failed first classification revalidation preserved in private supplemental dataset"
+}

@@ -1,0 +1,8 @@
+.local
+evidence
+node_modules
+corpus/private
+*.log
+corpus/physical
+corpus/generated
+media-processing/outputs
