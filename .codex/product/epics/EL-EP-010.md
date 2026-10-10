@@ -117,6 +117,8 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
+- 2026-10-10: ticket_writer crea EL-TK-124..133 como DRAFT para descarga individual, export snapshot/async/multipart, disponibilidad/expiración/invalidation, grants, retry, estado, UI owner y validación integrada. Pendientes de requirements_reviewer; sin implementación.
+
 - 2026-10-08: gate localizado aprueba READY de requisitos; implementaci?n/UI conservan sus puertas pendientes.
 
 - 2026-10-08: DEC-090 resuelve snapshot/revalidación/invalidation; gate pendiente sin tickets ni código.
