@@ -4,7 +4,7 @@
 EL-EP-005
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** invitado que terminó una transferencia, **quiero** confirmar el archivo cargado, **para** que EventLens valide el objeto real antes de aceptarlo.
@@ -62,3 +62,6 @@ Q-008, Q-009; DEC-009, DEC-010, DEC-011, DEC-063, DEC-080, DEC-085; EL-EP-005.
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el endpoint de confirmación de transferencia que valida tamaño y pertenencia real del objeto en ObjectStorage antes de marcarlo como candidato a aceptación.

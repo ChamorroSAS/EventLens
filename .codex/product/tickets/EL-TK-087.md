@@ -4,7 +4,7 @@
 EL-EP-005
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** invitado con un intento autorizado, **quiero** obtener una URL temporal de carga, **para** transferir el original directamente al almacenamiento privado sin pasar los bytes por la aplicación.
@@ -62,3 +62,6 @@ Q-008, Q-014; DEC-013, DEC-063, DEC-080, DEC-085; EL-EP-005.
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la emisión de URLs firmadas temporales delegadas al contrato neutral ObjectStorage (DEC-063), permitiendo transferencia directa sin pasar bytes por la aplicación.

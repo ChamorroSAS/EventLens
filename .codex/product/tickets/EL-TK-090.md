@@ -4,7 +4,7 @@
 EL-EP-005
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** sistema, **quiero** aceptar de forma atómica un original validado, **para** conservarlo y entregarlo una sola vez al procesamiento asíncrono.
@@ -62,3 +62,6 @@ Q-008, Q-009, Q-011; DEC-009, DEC-011, DEC-063, DEC-080, DEC-085; EL-EP-005, EL-
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el comando atómico de aceptación de original y consolidación de cuota, emitiendo el contrato downstream que consume EL-TK-032 para encolar el procesamiento en JobQueue PostgreSQL.

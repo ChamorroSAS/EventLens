@@ -4,7 +4,7 @@
 EL-EP-005
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** sistema, **quiero** validar el archivo transferido con sus datos reales, **para** impedir aceptar formatos, tamaños o duraciones fuera del contrato del evento.
@@ -62,3 +62,6 @@ Q-008, Q-009, Q-011; DEC-009, DEC-010, DEC-011; EL-EP-005, EL-EP-011.
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el validador de restricciones reales de archivo (formatos JPG/JPEG, PNG, HEIC/HEIF, WebP <=25 MB; MP4/MOV/WebM <=500 MB y <=5 min), aislando fallos por archivo sin cancelar el lote.

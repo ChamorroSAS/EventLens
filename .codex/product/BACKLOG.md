@@ -116,18 +116,18 @@
 | EL-TK-083 | Integrar la experiencia guest de acceso, consentimiento y Mis aportes | EL-EP-004 | READY | P0 | EL-TK-074..078, EL-TK-082 | [EL-TK-083](tickets/EL-TK-083.md) |
 | EL-TK-084 | Emitir la credencial pública inicial y publicar el acceso de un evento | EL-EP-004 | READY | P0 | EL-TK-020, EL-TK-027 | [EL-TK-084](tickets/EL-TK-084.md) |
 | EL-TK-085 | Integrar la gestión de acceso, PIN y compartir en la interfaz del organizador | EL-EP-004 | READY | P0 | EL-TK-079,080,081,084 | [EL-TK-085](tickets/EL-TK-085.md) |
-| EL-TK-086 | Autorizar un intento de carga y reservar capacidad del evento | EL-EP-005 | DRAFT | P0 | EL-TK-075, EL-TK-072, contrato EL-EP-011 | [EL-TK-086](tickets/EL-TK-086.md) |
-| EL-TK-087 | Emitir una URL temporal para carga directa al object storage privado | EL-EP-005 | DRAFT | P0 | EL-TK-086 | [EL-TK-087](tickets/EL-TK-087.md) |
-| EL-TK-088 | Confirmar la existencia y pertenencia del original cargado | EL-EP-005 | DRAFT | P0 | EL-TK-087 | [EL-TK-088](tickets/EL-TK-088.md) |
-| EL-TK-089 | Validar restricciones reales del archivo antes de aceptar el original | EL-EP-005 | DRAFT | P0 | EL-TK-088, contrato EL-EP-011 | [EL-TK-089](tickets/EL-TK-089.md) |
-| EL-TK-090 | Aceptar un original confirmado y transferirlo al pipeline asíncrono | EL-EP-005 | DRAFT | P0 | EL-TK-089 | [EL-TK-090](tickets/EL-TK-090.md) |
-| EL-TK-091 | Renovar una transferencia temporal para un fallo de red elegible | EL-EP-005 | DRAFT | P0 | EL-TK-086, EL-TK-087 | [EL-TK-091](tickets/EL-TK-091.md) |
-| EL-TK-092 | Cancelar intentos no confirmados y liberar sus reservas | EL-EP-005 | DRAFT | P0 | EL-TK-086, EL-TK-088, EL-TK-072, EL-TK-075 | [EL-TK-092](tickets/EL-TK-092.md) |
-| EL-TK-093 | Consultar el estado de intentos y resultados de carga del lote | EL-EP-005 | DRAFT | P0 | EL-TK-086,088,089,090,092 | [EL-TK-093](tickets/EL-TK-093.md) |
-| EL-TK-094 | Integrar selección, progreso y retry por archivo en la interfaz guest | EL-EP-005 | DRAFT | P0 | EL-TK-086..093 | [EL-TK-094](tickets/EL-TK-094.md) |
-| EL-TK-095 | Validar el flujo completo de carga móvil y resultado parcial | EL-EP-005 | DRAFT | P0 | EL-TK-086..094 | [EL-TK-095](tickets/EL-TK-095.md) |
+| EL-TK-086 | Autorizar un intento de carga y reservar capacidad del evento | EL-EP-005 | READY | P0 | EL-TK-075, EL-TK-076, EL-TK-072, contrato EL-EP-011 | [EL-TK-086](tickets/EL-TK-086.md) |
+| EL-TK-087 | Emitir una URL temporal para carga directa al object storage privado | EL-EP-005 | READY | P0 | EL-TK-086 | [EL-TK-087](tickets/EL-TK-087.md) |
+| EL-TK-088 | Confirmar la existencia y pertenencia del original cargado | EL-EP-005 | READY | P0 | EL-TK-087 | [EL-TK-088](tickets/EL-TK-088.md) |
+| EL-TK-089 | Validar restricciones reales del archivo antes de aceptar el original | EL-EP-005 | READY | P0 | EL-TK-088, contrato EL-EP-011 | [EL-TK-089](tickets/EL-TK-089.md) |
+| EL-TK-090 | Aceptar un original confirmado y transferirlo al pipeline asíncrono | EL-EP-005 | READY | P0 | EL-TK-089 | [EL-TK-090](tickets/EL-TK-090.md) |
+| EL-TK-091 | Renovar una transferencia temporal para un fallo de red elegible | EL-EP-005 | READY | P0 | EL-TK-086, EL-TK-087 | [EL-TK-091](tickets/EL-TK-091.md) |
+| EL-TK-092 | Cancelar intentos no confirmados y liberar sus reservas | EL-EP-005 | READY | P0 | EL-TK-086, EL-TK-088, EL-TK-072, EL-TK-075 | [EL-TK-092](tickets/EL-TK-092.md) |
+| EL-TK-093 | Consultar el estado de intentos y resultados de carga del lote | EL-EP-005 | READY | P0 | EL-TK-086,088,089,090,092 | [EL-TK-093](tickets/EL-TK-093.md) |
+| EL-TK-094 | Integrar selección, progreso y retry por archivo en la interfaz guest | EL-EP-005 | READY | P0 | EL-TK-086..093 | [EL-TK-094](tickets/EL-TK-094.md) |
+| EL-TK-095 | Validar el flujo completo de carga móvil y resultado parcial | EL-EP-005 | READY | P0 | EL-TK-086..094 | [EL-TK-095](tickets/EL-TK-095.md) |
 
-**DRAFT — 2026-10-10, EL-EP-005:** ticket_writer descompuso carga directa/tolerante a fallos en EL-TK-086..095. Los 10 tickets permanecen DRAFT hasta requirements_reviewer; no implican implementación ni cierre de dependencias de EL-EP-004/011/006. La automatización GitHub reflejará estos artefactos cuando el PR sea aprobado y llegue a main.
+**CONFIRMED — 2026-10-10, EL-EP-005:** EL-TK-086..095 aprobados por requirements_reviewer como READY; cubren autorización/reserva atómica, carga directa a storage privado, confirmación real, validación de restricciones, aceptación/handoff a EL-TK-032, retry por archivo, cancelación por policy (DEC-085), consulta de lote, interfaz guest accesible e integración E2E. Implementación conforme a dependencias técnicas y ObjectStorage privado (DEC-063).
 
 **HISTÓRICO CONFIRMED:** EL-TK-005..019 sustituyeron la descomposición anterior y quedaron READY el 2026-10-07. [Dictamen](sessions/2026-10-07-el-ep-001-ticket-redesign-review.md). **CONFIRMED — 2026-10-08:** la remediación autorizada de EL-TK-005..019 y EL-TK-043..046 fue APPROVED; los 19 activos están READY de requisitos. READY_FOR_IMPLEMENTATION: PARTIAL; YES sólo para 008 backend, 043 provisión operativa y 046 integración del puerto MOD-001, con los límites del [dictamen final](sessions/2026-10-08-el-ep-001-ticket-remediation-review.md). La UI de EL-EP-001 sigue con gate PARTIAL: no se generan tickets frontend.
 

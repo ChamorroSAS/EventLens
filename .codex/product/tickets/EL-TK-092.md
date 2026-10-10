@@ -4,7 +4,7 @@
 EL-EP-005
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** sistema, **quiero** cancelar intentos no confirmados cuando dejan de estar autorizados o vencen, **para** impedir confirmaciones tardías y recuperar capacidad reservada.
@@ -62,3 +62,6 @@ Q-009, Q-011; DEC-080, DEC-083, DEC-085; EL-EP-005, EL-EP-003, EL-EP-004.
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el reconciliador de cancelación por policy (DEC-085) que cancela intentos pendientes, libera reservas atómicamente y preserva intactos los originales confirmados previamente.

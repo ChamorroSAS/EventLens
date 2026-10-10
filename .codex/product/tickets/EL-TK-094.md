@@ -4,7 +4,7 @@
 EL-EP-005
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** invitado desde móvil, **quiero** seleccionar varios archivos y ver progreso, errores y retry por archivo, **para** completar el lote aun cuando una transferencia falle.
@@ -65,3 +65,10 @@ Q-008, Q-009, Q-011; DEC-010, DEC-011, DEC-080, DEC-085; EL-EP-005; ui-mvp-epic-
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Integración UI/UX y Readiness — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la experiencia frontend guest de carga móvil que integra los componentes del catálogo (FilePicker, UploadSelectionSummary, UploadFileItem, UploadQueue, UploadProgressSummary, UploadRetryAction, UploadCompletedState, GuestIdentitySummary, FileThumbnail, FileTypeIcon, FileDropzone opcional, UsageLimitAlert) conforme al handoff canónico de .codex/context/ui-mvp-epic-review.md#el-ep-005.
+
+- **Componentes reutilizados:** Catálogo de §5.11..17 sin inventar componentes nuevos ni tokens ad-hoc. Extensiones: «Confirmando carga», cancelación por policy y resultado parcial (DESIGNED).
+- **Copy contractual:** Mensajes claros de estado («X archivos recibidos; Y requieren atención»); 100% de transferencia no prueba aceptación o publicación; sin mensajes técnicos internos.
+- **Accesibilidad y responsive:** WCAG 2.2 AA (selector nativo y filas verticales móvil; ProgressBar medible solo si aplica, indeterminado textual en confirmación/proceso; anuncios por archivo/lote sin saturación de región viva; tap targets ≥ 44×44px; sin botón cancelar upload inventado ni promesa de resume universal tras cerrar navegador).

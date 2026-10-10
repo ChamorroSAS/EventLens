@@ -4,7 +4,7 @@
 EL-EP-005
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** invitado, **quiero** consultar el estado de cada archivo de mi lote, **para** distinguir qué fue recibido, qué requiere atención y qué sigue en progreso.
@@ -62,3 +62,6 @@ Q-009; DEC-011, DEC-014, DEC-085; EL-EP-005, EL-EP-006.
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el endpoint de consulta autorizada del lote (UploadBatchSnapshot), que alimenta UploadProgressSummary y distingue claramente entre recepción y procesamiento asíncrono posterior.

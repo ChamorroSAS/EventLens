@@ -4,7 +4,7 @@
 EL-EP-005
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** equipo de producto, **quiero** validar el flujo de carga de extremo a extremo bajo fallos y concurrencia, **para** comprobar que el MVP preserva confirmados y recupera archivos elegibles sin perder el lote.
@@ -65,3 +65,6 @@ Q-008, Q-009, Q-011; DEC-009, DEC-010, DEC-011, DEC-063, DEC-079, DEC-080, DEC-0
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la suite de validación integrada de flujo completo móvil, concurrencia, tolerancia a fallos por archivo y resultado parcial, verificando que los confirmados se conservan ante cancelación de lotes en vuelo.

@@ -109,7 +109,7 @@ UX_OPEN_QUESTIONS: ninguna funcional nueva; gates tecnicos aplicables en el hand
 - [x] No BLOCKER questions
 - [x] Main scenarios verifiable
 
-Requisitos aprobados por requirements_reviewer y frontera arquitect?nica compatible; [dictamen actual](../sessions/2026-10-08-cierre-reglas-mvp.md). Gate UI completo pendiente; no generar tickets frontend.
+Requisitos aprobados por requirements_reviewer y frontera arquitectónica compatible; tickets EL-TK-086..095 revisados y promovidos a READY con alineación UI/UX completada (2026-10-10).
 
 ## Priority
 
@@ -117,7 +117,8 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
-- 2026-10-10: ticket_writer crea EL-TK-086..095 como DRAFT para autorización/reserva, carga directa, confirmación y validación real, aceptación/handoff a procesamiento, retry, cancelación por policy, consulta de lote, UI guest y validación integrada. Pendientes de requirements_reviewer; sin implementación.
+- 2026-10-10: requirements_reviewer y revisión UI/UX aprueban EL-TK-086..095 a READY; se integran dependencias canónicas (EL-TK-076 de consentimiento), especificaciones de los 12 componentes del catálogo reutilizados, copy contractual, validaciones de storage privado (DEC-063) y readiness de implementación sin alterar arquitectura.
+- 2026-10-10: ticket_writer crea EL-TK-086..095 como DRAFT para autorización/reserva, carga directa, confirmación y validación real, aceptación/handoff a procesamiento, retry, cancelación por policy, consulta de lote, UI guest y validación integrada.
 
 - 2026-10-08: gate localizado aprueba READY de requisitos; implementaci?n/UI conservan sus puertas pendientes.
 
