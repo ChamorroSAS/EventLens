@@ -116,7 +116,7 @@ La [aprobación final de 2026-10-07](sessions/2026-10-07-el-ep-002-ticket-final-
 
 EL-TK-048 compone navegación frontend compartida. Los formularios existentes consumen su superficie durante ejecución frontend; esta integración no añade una predecesora artificial al backend aislado ni un ciclo020 ↔ 048. 031 usa EventSnapshot y assets opcionales por contrato sin requerir ejecutar reemplazos para preview sin portada.
 
-## Tickets propuestos — EL-EP-003 (DRAFT; pendiente requirements_reviewer)
+## Tickets vigentes — EL-EP-003 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
@@ -133,7 +133,7 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-072 | 064,065,067,068,069,071 | consumidores guest/upload/gallery/export |
 | EL-TK-073 | 071,072 | integración UX downstream |
 
-EL-TK-062..073 son una descomposición DRAFT del resultado de EL-EP-003. No se consideran READY hasta dictamen de requirements_reviewer. Los contratos de EL-EP-011 y EL-EP-015 se consumen por interfaz y no se reinterpretan dentro de lifecycle.
+12 activos READY de requisitos tras [dictamen de 2026-10-10](sessions/2026-10-10-el-ep-003-ticket-review.md); REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: PARTIAL (sujeto a contratos técnicos y dependencias de EL-EP-011/015 y auth administrativa EL-TK-044). Los contratos de EL-EP-011 y EL-EP-015 se consumen por interfaz y no se reinterpretan dentro de lifecycle.
 
 ## Tickets propuestos — EL-EP-004 (DRAFT; pendiente requirements_reviewer)
 

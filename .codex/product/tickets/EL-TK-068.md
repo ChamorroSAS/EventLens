@@ -4,7 +4,7 @@
 EL-EP-003
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** administrador autorizado, **quiero** suspender un evento con motivo justificado, **para** bloquear su operación sin perder el estado previo necesario para una revisión posterior.
@@ -47,11 +47,11 @@ Permisos, motivo, estado previo, DELETED terminal, concurrencia y rollback.
 ## Observabilidad / auditoría
 Auditar administrador, motivo sanitizado, estado previo y revisión.
 
-## Prioridad
-P0
+## Prioridad / estimación
+P0 / S
 
-## Estimación
-S
+## Traceability
+Q-015, Q-017; DEC-017, DEC-019, DEC-078; EL-EP-003, EL-EP-012.
 
 ## Definition of Ready
 - [x] Comportamiento inequívoco
@@ -59,3 +59,6 @@ S
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: PARTIAL (YES para el alcance contractual propio neutral de suspensión y registro de previous_status consumido por SuspendEventDialog según el handoff UI/UX; NO para ejecución integrada humana hasta la disponibilidad de autenticación administrativa EL-TK-044).

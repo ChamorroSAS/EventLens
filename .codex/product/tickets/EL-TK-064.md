@@ -4,7 +4,7 @@
 EL-EP-003
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** organizador o sistema, **quiero** activar un evento SCHEDULED, **para** habilitar su experiencia cuando corresponda sin alterar su vencimiento.
@@ -50,11 +50,11 @@ Manual anticipada, automática, carrera doble, replay y pérdida/reintento del s
 ## Observabilidad / auditoría
 Auditar origen manual/automático, revisión y resultado.
 
-## Prioridad
-P0
+## Prioridad / estimación
+P0 / M
 
-## Estimación
-M
+## Traceability
+Q-015; DEC-017, DEC-061..064, DEC-077; EL-EP-003.
 
 ## Definition of Ready
 - [x] Comportamiento inequívoco
@@ -62,3 +62,6 @@ M
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el comando de activación anticipada y encolado en JobQueue PostgreSQL (EL-TK-055 DONE), consumido por la acción «Activar ahora» en EventLifecycleAction conforme al handoff UI/UX de EL-EP-003.

@@ -4,7 +4,7 @@
 EL-EP-003
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** administrador autorizado, **quiero** aplicar una ampliación válida de vigencia, **para** extender la disponibilidad sin alterar las condiciones base del plan.
@@ -26,7 +26,7 @@ Comprar ampliaciones, definir precios o modificar el plan base.
 **Dado** PENDING_DELETION o una eliminación concurrente no reversible según EL-EP-015, **cuando** llega una ampliación incompatible, **entonces** se rechaza por conflicto.
 
 ## Reglas de negocio
-La ampliación no cambia silenciosamente el plan base ni revive DELETED.
+La ampliación no cambia silenciosamente el plan base ni revive DELETED. Conforme a DEC-102, después de ACTIVE se bloquean reducciones de vigencia o retornos al plan base que dejen el vencimiento en el pasado.
 
 ## Validaciones y permisos
 Solo actor administrativo autorizado y override vigente.
@@ -50,11 +50,11 @@ Recalculo, GRACE→estado vigente, conflicto de eliminación, idempotencia y aud
 ## Observabilidad / auditoría
 Auditar override aplicado, actor, timeline anterior/nuevo y resultado.
 
-## Prioridad
-P0
+## Prioridad / estimación
+P0 / M
 
-## Estimación
-M
+## Traceability
+Q-015, Q-017; DEC-017, DEC-020, DEC-082, DEC-093, DEC-095, DEC-100, DEC-102; EL-EP-003, EL-EP-011.
 
 ## Definition of Ready
 - [x] Comportamiento inequívoco
@@ -62,3 +62,6 @@ M
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el handler propio de extensión en lifecycle consumido por AdminUsageOverrideForm (EL-EP-011) conforme a DEC-102 y las directrices del handoff UI/UX de EL-EP-003.

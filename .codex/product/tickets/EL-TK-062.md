@@ -4,7 +4,7 @@
 EL-EP-003
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** sistema, **quiero** calcular de forma determinística inicio, vencimiento y gracia de un evento, **para** que todas las transiciones usen la misma referencia temporal.
@@ -50,14 +50,11 @@ Unitarias de cálculo temporal, DST, TZ, recálculo y activación anticipada.
 ## Observabilidad / auditoría
 No audita lecturas puras; los comandos que persistan resultados auditan su cambio.
 
-## Prioridad
-P0
+## Prioridad / estimación
+P0 / S
 
-## Estimación
-S
-
-## Riesgos / notas
-Evitar duplicar cálculos temporales en handlers o frontend.
+## Traceability
+Q-010, Q-015, Q-022; DEC-012, DEC-017, DEC-077, DEC-082; EL-EP-003, EL-EP-002, EL-EP-011.
 
 ## Definition of Ready
 - [x] Comportamiento inequívoco
@@ -65,3 +62,6 @@ Evitar duplicar cálculos temporales en handlers o frontend.
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el alcance propio de cálculo temporal y provisión de timestamps canónicos UTC/TZ que alimentan la interfaz y el snapshot de EL-EP-003.

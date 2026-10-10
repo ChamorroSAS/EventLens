@@ -4,7 +4,7 @@
 EL-EP-003
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** organizador, administrador o invitado autorizado, **quiero** consultar el estado temporal efectivo del evento, **para** saber qué acciones están realmente permitidas.
@@ -50,11 +50,11 @@ Snapshots por actor/estado, no enumeración, carrera con transición y esquema A
 ## Observabilidad / auditoría
 Lecturas ordinarias sin auditoría sensible; denegaciones administrativas según política.
 
-## Prioridad
-P0
+## Prioridad / estimación
+P0 / M
 
-## Estimación
-M
+## Traceability
+Q-015; DEC-017, DEC-077, DEC-078, DEC-081, DEC-082; EL-EP-003.
 
 ## Definition of Ready
 - [x] Comportamiento inequívoco
@@ -62,3 +62,6 @@ M
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el endpoint y contrato API de LifecycleSnapshot y capabilities que alimenta EventLifecyclePanel y EventAccessStatus en el organizador y pantallas de invitado según el handoff UI/UX de EL-EP-003.

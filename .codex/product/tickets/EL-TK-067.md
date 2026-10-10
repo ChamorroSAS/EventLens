@@ -4,7 +4,7 @@
 EL-EP-003
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** sistema, **quiero** avanzar el lifecycle al vencer la vigencia y la gracia, **para** aplicar restricciones temporales aunque no haya tráfico.
@@ -20,7 +20,7 @@ Purga física y transición final ejecutada por EL-EP-015.
 **Dado** ACTIVE o CLOSED cuyo expiresAt llega, **cuando** corre el scheduler, **entonces** el lifecycle efectivo entra en GRACE_PERIOD idempotentemente.
 
 ### Escenario 2
-**Dado** GRACE_PERIOD cuyo graceEndsAt llega, **cuando** corre el scheduler, **entonces** queda PENDING_DELETION según el contrato de EL-EP-015, sin purgar contenido aquí.
+**Dado** GRACE_PERIOD cuyo graceEndsAt llega, **cuando** corre el scheduler, **entonces** queda PENDING_DELETION fijando purge_started_at conforme a DEC-092 y el contrato de EL-EP-015, sin purgar contenido aquí.
 
 ### Escenario 3
 **Dado** SUSPENDED que atraviesa vencimiento o gracia, **cuando** pasa el tiempo, **entonces** los plazos no se congelan.
@@ -35,7 +35,7 @@ Transiciones del sistema; acciones humanas no invocan este ticket directamente.
 Job duplicado, retrasado o recuperado no produce retrocesos ni resurrección.
 
 ## Datos / contratos afectados
-status efectivo, expiresAt, graceEndsAt, lifecycle revision, JobQueue.
+status efectivo, expiresAt, graceEndsAt, purge_started_at, lifecycle revision, JobQueue.
 
 ## Dependencias técnicas y funcionales
 Scheduler/Workers, JobQueue PostgreSQL y contrato de EL-EP-015 para PENDING_DELETION.
@@ -50,11 +50,11 @@ Vencimiento ACTIVE/CLOSED, fin de gracia, SUSPENDED atravesando plazos, retry/re
 ## Observabilidad / auditoría
 Registrar transición temporal, scheduledAt del job, ejecución y resultado.
 
-## Prioridad
-P0
+## Prioridad / estimación
+P0 / M
 
-## Estimación
-M
+## Traceability
+Q-010, Q-015; DEC-012, DEC-017, DEC-061..064, DEC-078, DEC-082, DEC-092, DEC-098; EL-EP-003, EL-EP-015.
 
 ## Definition of Ready
 - [x] Comportamiento inequívoco
@@ -62,3 +62,6 @@ M
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el worker de transiciones temporales encolado en JobQueue PostgreSQL (EL-TK-055 DONE); sus cambios de estado se reflejan en la UI vía refresco del snapshot sin robar foco ni emitir anuncios de tick según el handoff UI/UX de EL-EP-003.

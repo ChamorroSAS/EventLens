@@ -92,18 +92,18 @@
 | EL-TK-059 | Habilitar el entorno mínimo real requerido para spikes técnicos | EL-EP-006 | DONE | P0 | — | [EL-TK-059](tickets/EL-TK-059.md) |
 | EL-TK-060 | Evaluar aislamiento efectivo y quiescencia mediante spike controlado | EL-EP-006 | DONE | P0 | EL-TK-059 | [EL-TK-060](tickets/EL-TK-060.md) |
 | EL-TK-061 | Evaluar inspección y rendiciones con corpus móvil mediante spike | EL-EP-006 | DONE | P0 | EL-TK-059, EL-TK-060 | [EL-TK-061](tickets/EL-TK-061.md) |
-| EL-TK-062 | Calcular la línea temporal canónica del lifecycle de un evento | EL-EP-003 | DRAFT | P0 | EL-TK-023, contrato EL-EP-011 | [EL-TK-062](tickets/EL-TK-062.md) |
-| EL-TK-063 | Programar un evento DRAFT para apertura futura | EL-EP-003 | DRAFT | P0 | EL-TK-020, EL-TK-023, EL-TK-062 | [EL-TK-063](tickets/EL-TK-063.md) |
-| EL-TK-064 | Activar un evento SCHEDULED manual o automáticamente | EL-EP-003 | DRAFT | P0 | EL-TK-063, EL-TK-062, EL-TK-055 | [EL-TK-064](tickets/EL-TK-064.md) |
-| EL-TK-065 | Cerrar manualmente un evento ACTIVE | EL-EP-003 | DRAFT | P0 | EL-TK-064 | [EL-TK-065](tickets/EL-TK-065.md) |
-| EL-TK-066 | Reabrir un evento CLOSED antes de vencer | EL-EP-003 | DRAFT | P0 | EL-TK-065, EL-TK-062 | [EL-TK-066](tickets/EL-TK-066.md) |
-| EL-TK-067 | Avanzar automáticamente por vencimiento y fin de gracia | EL-EP-003 | DRAFT | P0 | EL-TK-062,064,065,055; contrato EL-EP-015 | [EL-TK-067](tickets/EL-TK-067.md) |
-| EL-TK-068 | Suspender administrativamente un evento conservando su estado previo | EL-EP-003 | DRAFT | P0 | EL-TK-044 | [EL-TK-068](tickets/EL-TK-068.md) |
-| EL-TK-069 | Reactivar un evento SUSPENDED recalculando su estado vigente | EL-EP-003 | DRAFT | P0 | EL-TK-062,067,068,044 | [EL-TK-069](tickets/EL-TK-069.md) |
-| EL-TK-070 | Extender la vigencia autorizada de un evento | EL-EP-003 | DRAFT | P0 | EL-TK-062, contrato EL-EP-011 | [EL-TK-070](tickets/EL-TK-070.md) |
-| EL-TK-071 | Consultar lifecycle y capacidades vigentes de un evento | EL-EP-003 | DRAFT | P0 | EL-TK-063..070 | [EL-TK-071](tickets/EL-TK-071.md) |
-| EL-TK-072 | Aplicar restricciones de acceso según el lifecycle vigente | EL-EP-003 | DRAFT | P0 | EL-TK-064,065,067,068,069,071 | [EL-TK-072](tickets/EL-TK-072.md) |
-| EL-TK-073 | Integrar el lifecycle en la interfaz de organizador e invitado | EL-EP-003 | DRAFT | P0 | EL-TK-071, EL-TK-072 | [EL-TK-073](tickets/EL-TK-073.md) |
+| EL-TK-062 | Calcular la línea temporal canónica del lifecycle de un evento | EL-EP-003 | READY | P0 | EL-TK-023, contrato EL-EP-011 | [EL-TK-062](tickets/EL-TK-062.md) |
+| EL-TK-063 | Programar un evento DRAFT para apertura futura | EL-EP-003 | READY | P0 | EL-TK-020, EL-TK-023, EL-TK-062 | [EL-TK-063](tickets/EL-TK-063.md) |
+| EL-TK-064 | Activar un evento SCHEDULED manual o automáticamente | EL-EP-003 | READY | P0 | EL-TK-063, EL-TK-062, EL-TK-055 | [EL-TK-064](tickets/EL-TK-064.md) |
+| EL-TK-065 | Cerrar manualmente un evento ACTIVE | EL-EP-003 | READY | P0 | EL-TK-064 | [EL-TK-065](tickets/EL-TK-065.md) |
+| EL-TK-066 | Reabrir un evento CLOSED antes de vencer | EL-EP-003 | READY | P0 | EL-TK-065, EL-TK-062 | [EL-TK-066](tickets/EL-TK-066.md) |
+| EL-TK-067 | Avanzar automáticamente por vencimiento y fin de gracia | EL-EP-003 | READY | P0 | EL-TK-062,064,065,055; contrato EL-EP-015 | [EL-TK-067](tickets/EL-TK-067.md) |
+| EL-TK-068 | Suspender administrativamente un evento conservando su estado previo | EL-EP-003 | READY | P0 | EL-TK-044 | [EL-TK-068](tickets/EL-TK-068.md) |
+| EL-TK-069 | Reactivar un evento SUSPENDED recalculando su estado vigente | EL-EP-003 | READY | P0 | EL-TK-062,067,068,044 | [EL-TK-069](tickets/EL-TK-069.md) |
+| EL-TK-070 | Extender la vigencia autorizada de un evento | EL-EP-003 | READY | P0 | EL-TK-062, contrato EL-EP-011 | [EL-TK-070](tickets/EL-TK-070.md) |
+| EL-TK-071 | Consultar lifecycle y capacidades vigentes de un evento | EL-EP-003 | READY | P0 | EL-TK-063..070 | [EL-TK-071](tickets/EL-TK-071.md) |
+| EL-TK-072 | Aplicar restricciones de acceso según el lifecycle vigente | EL-EP-003 | READY | P0 | EL-TK-064,065,067,068,069,071 | [EL-TK-072](tickets/EL-TK-072.md) |
+| EL-TK-073 | Integrar el lifecycle en la interfaz de organizador e invitado | EL-EP-003 | READY | P0 | EL-TK-071, EL-TK-072 | [EL-TK-073](tickets/EL-TK-073.md) |
 | EL-TK-074 | Resolver acceso público a un evento mediante credencial no adivinable | EL-EP-004 | DRAFT | P0 | EL-TK-020, EL-TK-072 | [EL-TK-074](tickets/EL-TK-074.md) |
 | EL-TK-075 | Validar PIN opcional y establecer una sesión anónima guest | EL-EP-004 | DRAFT | P0 | EL-TK-027, EL-TK-074 | [EL-TK-075](tickets/EL-TK-075.md) |
 | EL-TK-076 | Registrar consentimiento versionado antes de la primera carga | EL-EP-004 | DRAFT | P0 | EL-TK-075 | [EL-TK-076](tickets/EL-TK-076.md) |
@@ -129,7 +129,7 @@
 
 **CONFIRMED — EL-TK-035 DONE, 2026-10-10:** candidatos fotográficos privados con rendiciones ARCH-015 implementados. Suite enfocada PASS 60/60; regresión combinada PASS 139/139; EL-TK-056 PASS 21/21; typecheck/build/migraciones y reviewers PASS. Véase el [cierre del ticket](tickets/EL-TK-035.md) y [evidencia](../../infra/validation/media-inspection/README.md#el-tk-035-photo-derivatives-final-validation). La dependencia 033→035 queda satisfecha; 037 aún depende de 036. Gates MEDIA-001/CAP-001/DR-001/EXPORT-001 siguen NOT_EVALUATED; no se selecciona storage definitivo.
 
-**DRAFT — 2026-10-10, EL-EP-003:** ticket_writer descompuso lifecycle en EL-TK-062..073. Los 12 tickets permanecen DRAFT hasta requirements_reviewer; no implican implementación ni cierre de dependencias de EL-EP-011/015. La automatización GitHub debe reflejar estos artefactos activos sin publicar históricos SUPERSEDED.
+**CONFIRMED — 2026-10-10, EL-EP-003:** requirements_reviewer aprobó el quality gate de EL-TK-062..073; los 12 tickets están READY de requisitos. REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: PARTIAL (sujeto a contratos técnicos y dependencias de EL-EP-011/015 y auth administrativa EL-TK-044). [Dictamen](sessions/2026-10-10-el-ep-003-ticket-review.md).
 
 **DRAFT — 2026-10-10, EL-EP-004:** ticket_writer descompuso acceso guest en EL-TK-074..083. Los 10 tickets permanecen DRAFT hasta requirements_reviewer; no implican implementación ni cierre de dependencias de EL-EP-003/009. GitHub Issues se crearán sólo cuando este cambio llegue a main mediante el workflow de sincronización.
 
