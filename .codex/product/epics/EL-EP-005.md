@@ -117,6 +117,8 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
+- 2026-10-10: ticket_writer crea EL-TK-086..095 como DRAFT para autorización/reserva, carga directa, confirmación y validación real, aceptación/handoff a procesamiento, retry, cancelación por policy, consulta de lote, UI guest y validación integrada. Pendientes de requirements_reviewer; sin implementación.
+
 - 2026-10-08: gate localizado aprueba READY de requisitos; implementaci?n/UI conservan sus puertas pendientes.
 
 - 2026-10-08: DEC-085 resuelve continuidad de intentos no confirmados; reglas/escenarios actualizados, gate pendiente, sin código ni tickets.
