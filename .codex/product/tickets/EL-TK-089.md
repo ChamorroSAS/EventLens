@@ -6,6 +6,9 @@ EL-EP-005
 ## Status
 READY
 
+REQUIREMENTS_READY: YES
+READY_FOR_IMPLEMENTATION: PARTIAL
+
 ## User story
 **Como** sistema, **quiero** validar el archivo transferido con sus datos reales, **para** impedir aceptar formatos, tamaños o duraciones fuera del contrato del evento.
 
@@ -64,4 +67,4 @@ Q-008, Q-009, Q-011; DEC-009, DEC-010, DEC-011; EL-EP-005, EL-EP-011.
 - [x] Sin preguntas BLOCKER
 
 ## Readiness de implementación — 2026-10-10
-REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el validador de restricciones reales de archivo (formatos JPG/JPEG, PNG, HEIC/HEIF, WebP <=25 MB; MP4/MOV/WebM <=500 MB y <=5 min), aislando fallos por archivo sin cancelar el lote.
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: PARTIAL. Las reglas de negocio, límites de formato y aislamiento por archivo están completamente definidos. La implementación conserva un gate técnico localizado pendiente: definir la frontera técnica segura para inspeccionar tipo real (magic bytes) y duración de contenedores de video en archivos no confiables transferidos al ObjectStorage, evitando ejecutar parsers complejos no aislados directamente dentro del proceso principal de la API antes del pipeline de inspección supervisada de EL-EP-006 (EL-TK-056 / EL-TK-034).
