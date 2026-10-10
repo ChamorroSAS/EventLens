@@ -35,10 +35,10 @@ Referencias inválidas, rate limit o error temporal preservan neutralidad y entr
 Solo navegación/entrada al RemovalRequest contract; no nuevo modelo de dominio.
 
 ## Dependencias técnicas y funcionales
-Contrato aprobado de intake EL-EP-009 y disponibilidad guest.
+Disponibilidad de superficie pública (EL-TK-074) y contrato de intake sin sesión de EL-EP-009 (DEC-103..105). No requiere sesión activa previa (EL-TK-075), pues opera precisamente ante sesión ausente o revocada.
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-074, EL-TK-075, contrato de EL-EP-009.
+- **depends_on:** EL-TK-074, contrato de EL-EP-009.
 - **blocks:** EL-TK-083.
 
 ## Pruebas requeridas

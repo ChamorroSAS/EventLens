@@ -42,7 +42,7 @@ Acceso público y sesión guest.
 
 ## Dependencias de tickets
 - **depends_on:** EL-TK-074, EL-TK-075.
-- **blocks:** EL-TK-081, EL-TK-083.
+- **blocks:** EL-TK-081, EL-TK-085.
 
 ## Pruebas requeridas
 Regeneración, enlace viejo, enlace nuevo, sesiones previas, concurrencia y rollback.

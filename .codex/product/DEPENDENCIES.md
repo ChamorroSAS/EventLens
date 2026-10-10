@@ -139,18 +139,20 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
-| EL-TK-074 | 020,072 | 075,081,082,083 |
-| EL-TK-075 | 027,074 | 076,077,078,082,083 |
+| EL-TK-074 | 020, 072, 084 | 075, 081, 082, 083 |
+| EL-TK-075 | 027, 074 | 076, 077, 078, 083 |
 | EL-TK-076 | 075 | primera carga EL-EP-005; 083 |
-| EL-TK-077 | 075 | integración carga EL-EP-005; 078,083 |
-| EL-TK-078 | 075,077,072 | 082,083; retiro propio EL-EP-009 |
-| EL-TK-079 | 027,075 | 083 |
-| EL-TK-080 | 074,075 | 081,083 |
-| EL-TK-081 | 074,080 | 083 |
-| EL-TK-082 | 074,075; contrato EL-EP-009 | 083 |
-| EL-TK-083 | 074..082 | integración UI downstream |
+| EL-TK-077 | 075 | integración carga EL-EP-005; 083 |
+| EL-TK-078 | 075, 072 | 083; retiro propio EL-EP-009 |
+| EL-TK-079 | 027, 075 | 085 |
+| EL-TK-080 | 074, 075 | 081, 085 |
+| EL-TK-081 | 074, 084 | 085 |
+| EL-TK-082 | 074; contrato EL-EP-009 | 083 |
+| EL-TK-083 | 074..078, 082 | integración UI guest downstream |
+| EL-TK-084 | 020, 027 | 074, 081, 085 |
+| EL-TK-085 | 079, 080, 081, 084 | integración UI organizador downstream |
 
-10 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de acceso guest, consentimiento, identidad y superficies UI aprobadas en ui-mvp-epic-review.md#el-ep-004. La resolución de solicitudes de retiro permanece en EL-EP-009 y la carga de archivos en EL-EP-005; esta épica sólo entrega acceso, sesión, consentimiento, identidad guest y superficies propias.
+12 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de acceso guest, consentimiento, identidad, emisión inicial y superficies UI aprobadas en ui-mvp-epic-review.md#el-ep-004. La resolución de solicitudes de retiro permanece en EL-EP-009 y la carga de archivos en EL-EP-005; esta épica sólo entrega acceso, sesión, consentimiento, identidad guest y superficies de gestión y participación.
 
 ## Tickets vigentes — EL-EP-006 (quality gate APPROVED)
 

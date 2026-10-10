@@ -10,10 +10,10 @@ READY
 **Como** invitado, **quiero** completar el flujo de entrada, consentimiento, identificación y consulta de mis aportes desde móvil, **para** participar sin crear una cuenta.
 
 ## Alcance funcional
-Integrar EventGuestPageShell, PinAccessForm, ConsentSheet, GuestIdentityForm, MyContributionsList y superficies de compartir/revocación usando contratos del servidor.
+Integrar la superficie pública e interactiva del invitado (EventGuestPageShell, PinAccessForm, ConsentSheet, GuestIdentityForm, MyContributionsList y derivación a retiro) usando contratos del servidor y componentes del catálogo.
 
 ## Fuera de alcance
-Implementar uploads de EL-EP-005, galería de EL-EP-007 o resolución de retiros EL-EP-009.
+Superficie del organizador para gestión de acceso, PIN y compartir (EL-TK-085), uploads de EL-EP-005, galería general de EL-EP-007 o resolución de retiros EL-EP-009.
 
 ## Criterios de aceptación
 ### Escenario 1
@@ -44,7 +44,7 @@ Cliente OpenAPI de EventAccessSnapshot, GuestSession, Consent, GuestIdentity y M
 Handoff UI/UX aprobado de EL-EP-004.
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-074, EL-TK-075, EL-TK-076, EL-TK-077, EL-TK-078, EL-TK-079, EL-TK-080, EL-TK-081, EL-TK-082.
+- **depends_on:** EL-TK-074, EL-TK-075, EL-TK-076, EL-TK-077, EL-TK-078, EL-TK-082.
 - **blocks:** integración UI de EL-EP-005 y EL-EP-007 según sus propios tickets.
 
 ## Pruebas requeridas
@@ -67,8 +67,8 @@ Q-005, Q-006, Q-014, Q-025; DEC-004, DEC-013, DEC-041, DEC-042, DEC-083, DEC-084
 - [x] Sin preguntas BLOCKER
 
 ## Integración UI/UX y Readiness — 2026-10-10
-REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la experiencia frontend guest que integra los componentes del catálogo (EventGuestPageShell, EventCover, EventHeader, EventWelcomeMessage, GuestPrimaryActions, PinAccessForm, ConsentSheet, GuestIdentityForm, GuestIdentitySummary, MyContributionsList, MyContributionItem, EventAccessSettings, EventSharePanel, QRPreview, CopyEventLinkAction, RegenerateAccessDialog) conforme al handoff canónico de .codex/context/ui-mvp-epic-review.md#el-ep-004.
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la experiencia frontend guest que integra los componentes del catálogo (EventGuestPageShell, EventCover, EventHeader, EventWelcomeMessage, GuestPrimaryActions, PinAccessForm, ConsentSheet, GuestIdentityForm, GuestIdentitySummary, MyContributionsList, MyContributionItem, LegalFooter, LegalDocumentLink) conforme al handoff canónico de .codex/context/ui-mvp-epic-review.md#el-ep-004.
 
-- **Componentes reutilizados:** Catálogo de §5.6..10/18..19 y §7.20..23 sin inventar componentes nuevos ni tokens ad-hoc.
+- **Componentes reutilizados:** Catálogo guest de §5.6..10/18..19 sin mezclar la interfaz de configuración del organizador (cubierta en EL-TK-085) ni inventar componentes nuevos ni tokens ad-hoc.
 - **Copy contractual:** Textos aprobados para estados de evento, mensajes de revocación y derivación a retiro sin sesión donde recepción no equivale a eliminación.
 - **Accesibilidad y responsive:** WCAG 2.2 AA (foco visible, retorno de foco tras modales, PinAccessForm accesible sin NumberInput, ConsentSheet sin preselección, mobile-first con tap targets ≥ 44×44px).

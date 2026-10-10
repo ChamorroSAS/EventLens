@@ -41,7 +41,7 @@ PublicAccessCredential, EventAccessSnapshot, lifecycle capabilities.
 Consume el evento preparado y la policy de lifecycle de EL-EP-003.
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-020, EL-TK-072.
+- **depends_on:** EL-TK-020, EL-TK-072, EL-TK-084.
 - **blocks:** EL-TK-075, EL-TK-081, EL-TK-082, EL-TK-083.
 
 ## Pruebas requeridas

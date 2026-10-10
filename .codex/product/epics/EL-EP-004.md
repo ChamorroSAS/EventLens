@@ -125,7 +125,7 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
-- 2026-10-10: requirements_reviewer aprueba quality gate de EL-TK-074..083 como READY para acceso público, PIN/sesión guest, consentimiento, identidad, Mis aportes, revocación/regeneración, compartir/QR, ruta de retiro sin sesión e integración UI. REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para su alcance propio. Sin implementación de código en esta sesión.
+- 2026-10-10: requirements_reviewer aprueba quality gate completo de EL-TK-074..085 como READY: cubre emisión inicial de acceso (EL-TK-084), acceso público, PIN/sesión guest, consentimiento, identidad, Mis aportes desacoplado, cambio y desactivación de PIN (EL-TK-079), revocación/regeneración, compartir/QR, derivación a retiro sin sesión desacoplada de sesión activa, integración UI guest (EL-TK-083) e integración UI organizador (EL-TK-085). REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para su alcance propio. Sin implementación de código en esta sesión.
 
 - 2026-10-10: ticket_writer crea EL-TK-074..083 como DRAFT para acceso público, PIN/sesión guest, consentimiento, identidad, Mis aportes, revocación/regeneración, compartir/QR, ruta de retiro sin sesión e integración UI. Pendientes de requirements_reviewer; sin implementación.
 
