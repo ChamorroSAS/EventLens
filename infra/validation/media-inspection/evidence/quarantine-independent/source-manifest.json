@@ -1,0 +1,90 @@
+﻿{
+    "ticket":  "EL-TK-034",
+    "sourceCommit":  "939629f4307a2179378daa422e9f64086752499f",
+    "createdAtUtc":  "2026-10-10T06:15:39.9009016Z",
+    "files":  [
+                  {
+                      "path":  "packages/job-queue/src/contracts.ts",
+                      "sha256":  "077f8d4fad7f1d77d62927e35fe6a7f810bd6099c5f8cbf6006a5c6210b7d6d1",
+                      "bytes":  4131
+                  },
+                  {
+                      "path":  "packages/job-queue/src/job-queue.ts",
+                      "sha256":  "5a3703afb22ee1ceff33002b7554c4d4b671c45fb162955d6f7f0e79bb6293af",
+                      "bytes":  16336
+                  },
+                  {
+                      "path":  "packages/media-inspection/src/index.ts",
+                      "sha256":  "81bfb915c96c291fedbc01ebaf987e121db6923ce7b465c2e9eda58838eb49e4",
+                      "bytes":  162
+                  },
+                  {
+                      "path":  "packages/media-inspection/src/quarantine.ts",
+                      "sha256":  "ff9a6328a44733b3d269d11dcbad15966428896f127eeb78f14823072631a926",
+                      "bytes":  5444
+                  },
+                  {
+                      "path":  "packages/media-inspection/test/quarantine.test.ts",
+                      "sha256":  "0e02c862e3cd1829bb941acf09f4757aa37596d2a2fc2d75453832c1fae206ae",
+                      "bytes":  1324
+                  },
+                  {
+                      "path":  "packages/media-inspection/test/quarantine.integration.test.ts",
+                      "sha256":  "94c202ab3f9678e0b9222e3eb30ccb871e4eadcae4e1794a9afeb4bd4eec6f25",
+                      "bytes":  15982
+                  },
+                  {
+                      "path":  "infra/validation/media-inspection/Run.ps1",
+                      "sha256":  "f29038ad2c44c56718c5a125b7f9b8d4f91f5428e414f45c8b7ca133ec41252b",
+                      "bytes":  2573
+                  },
+                  {
+                      "path":  "infra/validation/media-inspection/run.mjs",
+                      "sha256":  "9f0f73074c045bed060cbc8309aff4e5c2715ee30bd8ee3d53526458691dff9d",
+                      "bytes":  2210
+                  },
+                  {
+                      "path":  "infra/validation/media-inspection/Dockerfile",
+                      "sha256":  "3559baeac0901463a415c5cd7e7f50bb1100b95d332716ffad1dc30198b3d433",
+                      "bytes":  1072
+                  },
+                  {
+                      "path":  "infra/validation/media-inspection/Dockerfile.dockerignore",
+                      "sha256":  "3911a48809f0fcdec2615a1f8cbb8eb9609cd628c8d6314c79c3406781665ee8",
+                      "bytes":  325
+                  },
+                  {
+                      "path":  "packages/job-queue/test/job-queue.integration.test.ts",
+                      "sha256":  "2f1da64617d6b58f82c3741023141dd680489c6ccfdad77909b0325e90067290",
+                      "bytes":  14667
+                  },
+                  {
+                      "path":  "packages/database/prisma/migrations/202610090007_media_quarantine/migration.sql",
+                      "sha256":  "9c5290f97f62e0a640fa861a8adf323457e99cef852c395efdc545969a4555f3",
+                      "bytes":  652
+                  }
+              ],
+    "runs":  [
+                 {
+                     "suite":  "quarantine-focused",
+                     "report":  "quarantine-independent/tests.json",
+                     "tests":  33,
+                     "passed":  33,
+                     "failed":  0
+                 },
+                 {
+                     "suite":  "job-queue-regression",
+                     "report":  "job-queue/evidence/quarantine-regression/tests.json",
+                     "tests":  25,
+                     "passed":  25,
+                     "failed":  0
+                 },
+                 {
+                     "suite":  "media-inspection-full-regression",
+                     "report":  "quarantine-inspection-regression/tests.json",
+                     "tests":  79,
+                     "passed":  79,
+                     "failed":  0
+                 }
+             ]
+}
