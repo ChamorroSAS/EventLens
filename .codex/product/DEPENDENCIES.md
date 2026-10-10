@@ -171,19 +171,19 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 10 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de carga directa, confirmación real, retry por archivo y superficies UI aprobadas en ui-mvp-epic-review.md#el-ep-005. EL-TK-090 produce el contrato de original aceptado que consume EL-TK-032; no duplica procesamiento de EL-EP-006. Capacidad comercial permanece propiedad de EL-EP-011 y lifecycle/acceso de EL-EP-003/004.
 
-## Tickets propuestos — EL-EP-007 (DRAFT; pendiente requirements_reviewer)
+## Tickets vigentes — EL-EP-007 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
-| EL-TK-096 | 074,072; contrato EL-EP-006 | 097,099,101,102 |
-| EL-TK-097 | 096; contrato derivados EL-EP-006 | 099,100,101,102 |
-| EL-TK-098 | 047,053 | 100,102 |
-| EL-TK-099 | 096,097; contrato reportes EL-EP-009 | 102; UI guest downstream |
-| EL-TK-100 | 098,053,054 | 102; UI owner downstream |
-| EL-TK-101 | 096,097,072,074 | 099,102 |
+| EL-TK-096 | 074, 075, 072; EL-TK-037 | 097, 099, 101, 102 |
+| EL-TK-097 | 096, 035, 037 | 099, 100, 101, 102 |
+| EL-TK-098 | 047, 053 | 100, 102 |
+| EL-TK-099 | 096, 097 | 101, 102; UI guest downstream |
+| EL-TK-100 | 098, 053, 054 | 101, 102; UI owner downstream |
+| EL-TK-101 | 096, 097, 072, 074 | 099, 102 |
 | EL-TK-102 | 096..101 | validación integrada de EL-EP-007 |
 
-EL-TK-096..102 son una descomposición DRAFT de EL-EP-007. La galería guest solo consume PUBLISHED; la biblioteca owner reutiliza estados/capacidades de EL-EP-006. Moderación, retiro/reportes y descargas conservan ownership en EL-EP-008/009/010 respectivamente.
+7 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de galería guest PUBLISHED, grants temporales de derivados (DEC-063), biblioteca de media para el organizador, revalidación server-side y superficies UI aprobadas en ui-mvp-epic-review.md#el-ep-007. Moderación, retiro y descargas conservan ownership en EL-EP-008, EL-EP-009 y EL-EP-010 respectivamente.
 
 ## Tickets vigentes — EL-EP-006 (quality gate APPROVED)
 

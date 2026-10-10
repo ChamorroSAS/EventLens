@@ -103,7 +103,7 @@ UX_OPEN_QUESTIONS: ninguna funcional nueva; gates tecnicos aplicables en el hand
 - [x] No BLOCKER questions
 - [x] Main scenarios verifiable
 
-Sin preguntas BLOCKER de producto en este límite; las decisiones técnicas pendientes no se presentan como decisiones confirmadas.
+Sin preguntas BLOCKER de producto en este límite; tickets EL-TK-096..102 revisados y promovidos a READY por requirements_reviewer con alineación UI/UX completada (2026-10-10).
 
 ## Priority
 
@@ -111,7 +111,8 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
-- 2026-10-10: ticket_writer crea EL-TK-096..102 como DRAFT para galería guest PUBLISHED, entrega temporal de derivados, biblioteca owner, integración UI guest/organizador, revalidación de visibilidad y validación integrada. Pendientes de requirements_reviewer; sin implementación.
+- 2026-10-10: requirements_reviewer y revisión UI/UX aprueban EL-TK-096..102 a READY; se integran dependencias canónicas (EL-TK-074, EL-TK-075, EL-TK-072, EL-TK-037), especificaciones del catálogo de componentes de galería guest (§5.20..24) y biblioteca del organizador (§8.1..4), contratos de storage privado (DEC-063), revalidación server-side y readiness de implementación sin alterar arquitectura.
+- 2026-10-10: ticket_writer crea EL-TK-096..102 como DRAFT para galería guest PUBLISHED, entrega temporal de derivados, biblioteca owner, integración UI guest/organizador, revalidación de visibilidad y validación integrada.
 
 - 2026-10-07: CR-002 resuelve TC aplicables y sustituye restricciones CR-001; estado/bloqueantes de producto conservados.
 

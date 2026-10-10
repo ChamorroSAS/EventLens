@@ -4,7 +4,10 @@
 EL-EP-007
 
 ## Status
-DRAFT
+READY
+
+REQUIREMENTS_READY: YES
+READY_FOR_IMPLEMENTATION: YES
 
 ## User story
 **Como** invitado autorizado, **quiero** consultar los recuerdos publicados del evento, **para** ver únicamente el contenido que la galería guest me permite.
@@ -29,22 +32,22 @@ Media pendiente, oculta, rechazada, eliminada o en cuarentena; descargas guest; 
 **Dado** múltiples páginas, **cuando** solicita el siguiente bloque, **entonces** no mezcla media de otros eventos ni repite resultados por una paginación estable.
 
 ## Reglas de negocio
-Invitados solo ven PUBLISHED. Carga y galería son flags independientes. Una sesión válida para Mis aportes no habilita por sí sola la galería general.
+Invitados solo ven PUBLISHED. Carga y galería son flags independientes. Una sesión válida para Mis aportes no habilita por sí sola la galería general. Nunca se exponen conteos ni estados de contenido en revisión, rechazado o en cuarentena.
 
 ## Validaciones y permisos
-Credencial/sesión guest vigente cuando aplique, eventId resuelto por acceso autorizado y policy server-side.
+Credencial/sesión guest vigente cuando aplique (EL-TK-074, EL-TK-075 con PIN validado si existe), eventId resuelto por acceso autorizado y policy server-side.
 
 ## Casos de error y estados vacíos
-Galería vacía, galería apagada, acceso revocado, evento no disponible y fallo temporal de consulta.
+Galería vacía (`EMPTY_GALLERY`), galería apagada (`GALLERY_DISABLED`), acceso revocado, evento no disponible y fallo temporal de consulta.
 
 ## Datos / contratos afectados
 GuestGallerySnapshot, GalleryMediaSummary, pagination cursor/capabilities.
 
 ## Dependencias técnicas y funcionales
-Acceso guest de EL-EP-004, lifecycle de EL-EP-003 y media procesada/publicable de EL-EP-006.
+Acceso guest de EL-EP-004, lifecycle de EL-EP-003 y media procesada/publicable de EL-EP-006 (EL-TK-037).
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-074, EL-TK-072, contrato de media publicada de EL-EP-006.
+- **depends_on:** EL-TK-074, EL-TK-075, EL-TK-072, EL-TK-037.
 - **blocks:** EL-TK-097, EL-TK-099, EL-TK-101.
 
 ## Pruebas requeridas
@@ -65,3 +68,10 @@ Q-005, Q-016; DEC-003, DEC-018, DEC-032, DEC-033, DEC-063, DEC-084; EL-EP-007, E
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación y UI/UX — 2026-10-10
+
+- **Dictamen requirements_reviewer:** APROBADO sin preguntas bloqueantes.
+- **Aislamiento de acceso:** La consulta se encuentra aislada a nivel de base de datos (`eventId` verificado por sesión). No expone metadatos de moderación ni estado de procesamiento para invitados.
+- **Diferenciación de estados:** El contrato discrimina `EMPTY_GALLERY` (el evento admite galería pero aún no hay fotos/videos publicados) de `GALLERY_DISABLED` (`guest_gallery_enabled: false`).
+- **Paginación determinística:** Cursor basado en orden de publicación o fecha para evitar resultados duplicados o saltos en scroll/bloques incrementales.

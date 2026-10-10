@@ -4,7 +4,10 @@
 EL-EP-007
 
 ## Status
-DRAFT
+READY
+
+REQUIREMENTS_READY: YES
+READY_FOR_IMPLEMENTATION: YES
 
 ## User story
 **Como** invitado u organizador autorizado, **quiero** abrir un derivado visualizable mediante acceso temporal, **para** ver la foto o video sin exponer el almacenamiento privado.
@@ -17,7 +20,7 @@ Descargar originales, crear derivados, publicar media, exponer URLs permanentes 
 
 ## Criterios de aceptación
 ### Escenario 1
-**Dado** media PUBLISHED visible para un invitado autorizado, **cuando** solicita visualizarla, **entonces** recibe una URL temporal limitada al derivado autorizado.
+**Dado** media PUBLISHED visible para un invitado autorizado, **cuando** solicita visualizarla, **entonces** recibe una URL temporal limitada al derivado autorizado (thumbnail, display image o video web optimizado).
 
 ### Escenario 2
 **Dado** un organizador propietario y media visible para su biblioteca según contrato, **cuando** solicita preview, **entonces** recibe únicamente el derivado permitido por su estado y seguridad.
@@ -26,7 +29,7 @@ Descargar originales, crear derivados, publicar media, exponer URLs permanentes 
 **Dado** media retirada, acceso revocado o permiso perdido antes de emitir el grant, **cuando** solicita visualización, **entonces** se deniega sin entregar una nueva URL.
 
 ## Reglas de negocio
-Storage privado/no navegable. El grant de visualización no equivale a función de descarga guest ni a autorización permanente.
+Storage privado/no navegable (DEC-063). El grant de visualización entrega una URL prefirmada de lectura con TTL corto y no equivale a función de descarga guest ni a autorización permanente. Jamás se entrega URL del original a un invitado (DEC-013, DEC-018).
 
 ## Validaciones y permisos
 Revalidación server-side por actor/sesión, eventId, mediaId, estado y seguridad antes de ObjectStorage.createDownloadUrl.
@@ -38,10 +41,10 @@ Derivado inexistente/no listo, media retirada, URL expirada, actor ajeno, storag
 MediaViewGrant, derivativeKey/reference, expiresAt, ObjectStorage.createDownloadUrl.
 
 ## Dependencias técnicas y funcionales
-Listado autorizado de EL-TK-096 y contratos de derivados/estado de EL-EP-006.
+Listado autorizado de EL-TK-096 y contratos de derivados/estado de EL-EP-006 (EL-TK-035, EL-TK-036, EL-TK-037).
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-096, contrato de derivados de EL-EP-006.
+- **depends_on:** EL-TK-096, EL-TK-035, EL-TK-037.
 - **blocks:** EL-TK-099, EL-TK-100, EL-TK-101.
 
 ## Pruebas requeridas
@@ -62,3 +65,10 @@ Q-005, Q-016; DEC-003, DEC-007, DEC-013, DEC-018, DEC-063; EL-EP-007, EL-EP-006.
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación y UI/UX — 2026-10-10
+
+- **Dictamen requirements_reviewer:** APROBADO sin preguntas bloqueantes.
+- **Seguridad en storage:** Conforme a DEC-063, el almacenamiento en S3/MinIO es 100% privado sin acceso anónimo. Cada grant emite una URL prefirmada `GET` con TTL corto vinculada exclusivamente al derivado solicitado.
+- **Protección de originales:** El rol guest únicamente tiene habilitados grants de derivados optimizados para navegación (`THUMBNAIL`, `DISPLAY_WEB`, `VIDEO_PREVIEW`).
+- **Idempotencia y cache temporal:** La expiración controlada de la URL previene enlaces duraderos compartidos fuera de la sesión autorizada.
