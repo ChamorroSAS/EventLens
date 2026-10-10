@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { type Json, type Execution, type JobSpec, type RecoveryAuthority, type ResourcePolicy, type SqlTransaction, type TransactionRunner, QueueError } from './contracts.js';
+import { type Json, type Execution, type JobSpec, type RecoveryAuthority, type ResourcePolicy, type SqlTransaction, type TransactionRunner, type RestrictionBinding, type RestrictionPermit, QueueError } from './contracts.js';
 function canonical(value: unknown): string {
   if (typeof value === 'bigint') return JSON.stringify(value.toString());
   if (value instanceof Date) return JSON.stringify(value.toISOString());
@@ -8,6 +8,10 @@ function canonical(value: unknown): string {
   const encoded=JSON.stringify(value); if(encoded===undefined) throw new QueueError('INVALID_ARGUMENT'); return encoded;
 }
 export function fingerprint(value: unknown): string { return createHash('sha256').update(canonical(value)).digest('hex'); }
+export function restrictionBinding(job:Execution,operationId:string,outcome:Json):RestrictionBinding {
+  if(!operationId)throw new QueueError('INVALID_ARGUMENT');
+  return {operationId,resourceRef:job.resourceRef,epoch:job.epoch,fingerprint:fingerprint({jobId:job.jobId,resourceRef:job.resourceRef,owner:job.owner,token:job.token,fence:job.fence,epoch:job.epoch,generation:job.generation,outcome,disposition:'RESTRICTION_CHECKPOINT'})};
+}
 function positive(value: number): void { if (!Number.isSafeInteger(value)||value<=0) throw new QueueError('INVALID_ARGUMENT'); }
 interface Row {id:string; resource_ref:string; generation:bigint; queue:string; type:string; handler_version:string; payload:Json; attempt:number; fence:bigint; owner:string; token:string; epoch:string; lease_until:Date;}
 function execution(row:Row):Execution {return {jobId:row.id,resourceRef:row.resource_ref,generation:row.generation,queue:row.queue,type:row.type,handlerVersion:row.handler_version,payload:row.payload,attempt:row.attempt,fence:row.fence,owner:row.owner,token:row.token,epoch:row.epoch,leaseUntil:row.lease_until};}
@@ -101,6 +105,33 @@ export class JobQueuePostgres {
       await this.lockExecution(tx,job);
       await tx.execute(`INSERT INTO job_receipt(operation_id,job_id,token,fingerprint,disposition,outcome,committed_at) VALUES($1,$2::uuid,$3::uuid,$4,'CHECKPOINT',$5::jsonb,clock_timestamp())`,operationId,job.jobId,job.token,hash,JSON.stringify(outcome));
       return 'COMMITTED';
+    });
+  }
+  /** Database-only restrictive owner checkpoint. The same authority's narrowly
+   * bound PREPARE capability replaces normal admission through its own barrier.
+   * Does not finish/renew the job, cancel physical writers or release slots.
+   * Caller ACKs the durable authority after SQL; uncertain ACK remains closed. */
+  async restrictionCheckpoint(job:Execution,operationId:string,outcome:Json,permit:RestrictionPermit,lockOwner:(tx:SqlTransaction)=>Promise<void>,effect:(tx:SqlTransaction)=>Promise<void>):Promise<'COMMITTED'|'ALREADY_COMMITTED'>{
+    const binding=restrictionBinding(job,operationId,outcome);
+    const assert=()=>{
+      if(permit.epoch!==job.epoch||!permit.sequence||fingerprint(permit.binding)!==fingerprint(binding))throw new QueueError('AUTHORITY_UNAVAILABLE');
+      permit.assertRestriction(binding);permit.assertCurrent(job.resourceRef);
+    };
+    assert();
+    if(!this.policy.lockAndAuthorizeRestriction)throw new QueueError('AUTHORITY_UNAVAILABLE');
+    return this.transactions.run(async tx=>{
+      assert();
+      if(!await this.policy.lockAndAuthorizeRestriction!(tx,job.resourceRef,job.generation))throw new QueueError('LEASE_LOST');
+      await lockOwner(tx);
+      // Serialize receipt lookup even after this attempt's lease has expired.
+      await tx.query('SELECT id FROM job_queue WHERE id=$1::uuid FOR UPDATE',job.jobId);
+      const receipts=await tx.query<{fingerprint:string}>(`SELECT fingerprint FROM job_receipt WHERE operation_id=$1`,operationId);
+      if(receipts.length){if(receipts[0].fingerprint!==binding.fingerprint)throw new QueueError('IDEMPOTENCY_CONFLICT');assert();return 'ALREADY_COMMITTED';}
+      await this.lockExecution(tx,job);
+      await effect(tx);
+      await this.lockExecution(tx,job);
+      await tx.execute(`INSERT INTO job_receipt(operation_id,job_id,token,fingerprint,disposition,outcome,committed_at) VALUES($1,$2::uuid,$3::uuid,$4,'CHECKPOINT',$5::jsonb,clock_timestamp())`,operationId,job.jobId,job.token,binding.fingerprint,JSON.stringify(outcome));
+      assert();return 'COMMITTED';
     });
   }
   async complete(job:Execution,operationId:string,outcome:Json,effect:(tx:SqlTransaction)=>Promise<void>):Promise<'COMPLETED'|'ALREADY_COMMITTED'>{return this.finish(job,operationId,outcome,'COMPLETED',null,effect);}

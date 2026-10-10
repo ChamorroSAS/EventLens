@@ -20,6 +20,29 @@ export interface RecoveryPermit {
 }
 export interface RecoveryAuthority {
   acquire(scopes: readonly string[]): Promise<RecoveryPermit>;
+  /** Durable PREPARE installs a conservative barrier before SQL. Idempotent by
+   * operationId and the complete binding; a different binding conflicts.
+   * Optional until the owner supplies its reconciled durable adapter. */
+  prepareRestriction?(binding: RestrictionBinding): Promise<RestrictionPermit>;
+}
+export interface RestrictionBinding {
+  readonly operationId: string;
+  readonly resourceRef: string;
+  readonly epoch: string;
+  readonly fingerprint: string;
+}
+/** Admits ONLY this restriction's SQL commit/replay through its own PREPARED
+ * barrier, never normal work. Other barriers/ancestor restrictions, restored
+ * checkpoint gaps, epoch changes and unavailable authority remain fail-closed.
+ * assertRestriction is synchronous and ordered with competing admission and
+ * revocation. sequence is an immutable durable journal position.
+ * ACK must durably prove this exact SQL receipt; an uncertain ACK throws.
+ * release never aborts PREPARE or removes its barrier. */
+export interface RestrictionPermit extends RecoveryPermit {
+  readonly binding: RestrictionBinding;
+  readonly sequence: string;
+  assertRestriction(binding: RestrictionBinding): void;
+  acknowledgeCommit(receipt: {operationId: string; fingerprint: string; sequence: string}): Promise<void>;
 }
 /** Database-only UnitOfWork capability; deliberately not generated Prisma/domain entities. */
 export interface SqlTransaction {
@@ -30,6 +53,10 @@ export interface ResourcePolicy {
   /** Lock current resource/ancestor barriers before the job lock. No external I/O.
    * Keep locks to commit; validate generation, cancellation, authorization and reconciliation. */
   lockAndAuthorize(tx: SqlTransaction, resourceRef: string, generation: bigint, operation: 'RESERVE'|'HEARTBEAT'|'COMPLETE'|'RETRY'): Promise<boolean>;
+  /** Lock current parent/resource SQL barriers before the owner's row and job.
+   * Own quarantine restriction is permitted; unrelated barriers deny. Replay
+   * must not require the old media revision or a live processing lease. */
+  lockAndAuthorizeRestriction?(tx: SqlTransaction, resourceRef: string, generation: bigint): Promise<boolean>;
 }
 export interface TransactionRunner {
   run<T>(work: (tx: SqlTransaction)=>Promise<T>): Promise<T>;
