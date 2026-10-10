@@ -41,7 +41,7 @@ CaseClassification, severity, priority, actor, reason, timestamps, alert event.
 Auth admin EL-TK-044 y auditoría EL-EP-014.
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-113, EL-TK-044; contrato EL-EP-014
+- **depends_on:** EL-TK-113, EL-TK-115, EL-TK-044; contrato EL-EP-014
 - **blocks:** EL-TK-117, EL-TK-118, EL-TK-119, EL-TK-120, EL-TK-122, EL-TK-123
 
 ## Pruebas requeridas

@@ -206,15 +206,15 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
-| EL-TK-113 | 099; contrato EL-EP-014 | 116,120,121,123 |
+| EL-TK-113 | contrato media visible EL-EP-007; contrato EL-EP-014 | 116,120,121,123 |
 | EL-TK-114 | 078; contrato EL-EP-015 | 121,123 |
-| EL-TK-115 | 082 | 120,121,123 |
-| EL-TK-116 | 113,044; contrato EL-EP-014 | 117,118,119,120,122,123 |
+| EL-TK-115 | 082 | 116,120,121,123 |
+| EL-TK-116 | 113,115,044; contrato EL-EP-014 | 117,118,119,120,122,123 |
 | EL-TK-117 | 116,044,097; contrato EL-EP-014 | 118,119,122,123 |
 | EL-TK-118 | 116,117,101 | 119,122,123 |
-| EL-TK-119 | 116,117; contratos EL-EP-013/014/015 | 120,122,123 |
+| EL-TK-119 | 116,117; contratos EL-EP-013/014/015 | 122,123 |
 | EL-TK-120 | 113,115,116 | 122,123 |
-| EL-TK-121 | 113,114,115 | 123 |
+| EL-TK-121 | 099,113,114,115 | 123 |
 | EL-TK-122 | 116..120; contrato EL-EP-012 | 123 |
 | EL-TK-123 | 113..122 | validación EL-EP-009 |
 

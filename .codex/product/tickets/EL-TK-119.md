@@ -42,7 +42,7 @@ EL-EP-015 purga, EL-EP-013 comunicaciones y EL-EP-014 auditoría.
 
 ## Dependencias de tickets
 - **depends_on:** EL-TK-116, EL-TK-117; contrato EL-EP-013, EL-EP-014, EL-EP-015
-- **blocks:** EL-TK-120, EL-TK-122, EL-TK-123
+- **blocks:** EL-TK-122, EL-TK-123
 
 ## Pruebas requeridas
 Resolución normal/grave, replay, fallo downstream, auditoría y no restaurabilidad cuando aplica.

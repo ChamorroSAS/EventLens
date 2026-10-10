@@ -41,7 +41,7 @@ Clientes de EL-TK-113..115; ReportContentAction/Dialog, RemovalRequestFlow.
 Handoff UI EL-EP-009.
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-113, EL-TK-114, EL-TK-115
+- **depends_on:** EL-TK-099, EL-TK-113, EL-TK-114, EL-TK-115
 - **blocks:** EL-TK-123
 
 ## Pruebas requeridas

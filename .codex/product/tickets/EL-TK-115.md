@@ -42,7 +42,7 @@ RemovalRequestFlow del handoff y cola/revisión admin de esta épica.
 
 ## Dependencias de tickets
 - **depends_on:** EL-TK-082
-- **blocks:** EL-TK-120, EL-TK-121, EL-TK-123
+- **blocks:** EL-TK-116, EL-TK-120, EL-TK-121, EL-TK-123
 
 ## Pruebas requeridas
 Matriz DEC-103..105, Otro, declaración, neutralidad, retry y rate limit.

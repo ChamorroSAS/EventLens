@@ -7,7 +7,7 @@ READY
 **RECOMMENDED:** frontera, descomposición y prioridad propuestas por product_planner. **CONFIRMED:** reglas atribuidas al discovery en Q-006, Q-019, Q-023; DEC-005, DEC-022, DEC-023, DEC-039. READY expresa DoR del resultado, no finalización de predecesoras; NOT_READY requiere cerrar preguntas locales antes de tickets.
 
 REQUIREMENTS_READY: YES
-READY_FOR_IMPLEMENTATION: PARTIAL
+READY_FOR_IMPLEMENTATION: YES
 UI_REQUIRED: YES - alcance en handoff UI/UX.
 READY_FOR_FRONTEND_PLANNING: YES - dictamen UI/UX actual; no certifica implementacion.
 
@@ -119,6 +119,7 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
+- 2026-10-10: reconciliación documental de cabecera a READY_FOR_IMPLEMENTATION: YES (alcance propio), alineado con el DoR de la épica, el dictamen de tickets EL-TK-103..112 y DEPENDENCIES.md.
 - 2026-10-10: requirements_reviewer y revisión UI/UX aprueban el paso de EL-TK-103..112 de DRAFT a READY (REQUIREMENTS_READY: YES, READY_FOR_FRONTEND_PLANNING: YES, READY_FOR_IMPLEMENTATION: YES propio). Reutilización estricta del catálogo UI/UX (§8.5..9) sin nuevos componentes.
 - 2026-10-10: ticket_writer crea EL-TK-103..112 como DRAFT para moderación cotidiana, visibilidad, papelera/restauración, vencimiento, cambio de modo, UI owner y validación integrada. Pendientes de requirements_reviewer; sin implementación.
 

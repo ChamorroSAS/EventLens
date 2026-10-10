@@ -41,7 +41,7 @@ ReportCase intake, reportReason, public reference, idempotency key, receivedAt.
 Galería EL-EP-007 y auditoría EL-EP-014.
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-099; contrato EL-EP-014
+- **depends_on:** contrato de media visible de EL-EP-007; contrato EL-EP-014
 - **blocks:** EL-TK-116, EL-TK-120, EL-TK-121, EL-TK-123
 
 ## Pruebas requeridas
