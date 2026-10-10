@@ -185,6 +185,58 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 7 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de galería guest PUBLISHED, grants temporales de derivados (DEC-063), biblioteca de media para el organizador, revalidación server-side y superficies UI aprobadas en ui-mvp-epic-review.md#el-ep-007. Se corrigió el ciclo 099 ↔ 101 (099 consume 101; 099 solo bloquea 102), se desacopló MediaViewGrant (097) de la consulta de galería guest (096) permitiendo su consumo compartido, y se eliminaron bloqueos asimétricos hacia 101. Moderación, retiro y descargas conservan ownership en EL-EP-008, EL-EP-009 y EL-EP-010 respectivamente.
 
+## Tickets propuestos — EL-EP-008 (DRAFT; pendiente requirements_reviewer)
+
+| Ticket | Depende de | Bloquea |
+|---|---|---|
+| EL-TK-103 | 098,037 | 111,112 |
+| EL-TK-104 | 098 | 107,111,112 |
+| EL-TK-105 | 098,101 | 106,107,111,112 |
+| EL-TK-106 | 105,101 | 111,112 |
+| EL-TK-107 | 098,053; contrato EL-EP-006 | 108,109,111,112 |
+| EL-TK-108 | 107 | 111,112 |
+| EL-TK-109 | 107,055; contrato EL-EP-015 | 112; consumidor purge EL-EP-015 |
+| EL-TK-110 | 028,037 | 111,112 |
+| EL-TK-111 | 100,103..108,110 | 112 |
+| EL-TK-112 | 103..111 | validación EL-EP-008 |
+
+EL-TK-103..112 son DRAFT. Moderación cotidiana/papelera permanecen en EL-EP-008; seguridad/cuarentena en EL-EP-006 y purga física/retención en EL-EP-015.
+
+## Tickets propuestos — EL-EP-009 (DRAFT; pendiente requirements_reviewer)
+
+| Ticket | Depende de | Bloquea |
+|---|---|---|
+| EL-TK-113 | 099; contrato EL-EP-014 | 116,120,121,123 |
+| EL-TK-114 | 078; contrato EL-EP-015 | 121,123 |
+| EL-TK-115 | 082 | 120,121,123 |
+| EL-TK-116 | 113,044; contrato EL-EP-014 | 117,118,119,120,122,123 |
+| EL-TK-117 | 116,044,097; contrato EL-EP-014 | 118,119,122,123 |
+| EL-TK-118 | 116,117,101 | 119,122,123 |
+| EL-TK-119 | 116,117; contratos EL-EP-013/014/015 | 120,122,123 |
+| EL-TK-120 | 113,115,116 | 122,123 |
+| EL-TK-121 | 113,114,115 | 123 |
+| EL-TK-122 | 116..120; contrato EL-EP-012 | 123 |
+| EL-TK-123 | 113..122 | validación EL-EP-009 |
+
+EL-TK-113..123 son DRAFT. Recepción no equivale a resolución ni auto-ocultamiento; retiro propio es irreversible; intake sin sesión sigue DEC-103..105; purga/auditoría/comunicaciones permanecen en sus épicas propietarias.
+
+## Tickets propuestos — EL-EP-010 (DRAFT; pendiente requirements_reviewer)
+
+| Ticket | Depende de | Bloquea |
+|---|---|---|
+| EL-TK-124 | 098,053; contrato EL-EP-006 | 132,133 |
+| EL-TK-125 | 098; contrato EL-EP-008 | 126,128,131,132,133 |
+| EL-TK-126 | 125,055 | 127,128,130,131,132,133 |
+| EL-TK-127 | 126 | 129,131,132,133; avisos EL-EP-013 |
+| EL-TK-128 | 125,126; contratos EL-EP-008/009/015 | 129,131,132,133 |
+| EL-TK-129 | 127,128 | 132,133 |
+| EL-TK-130 | 126,127,128 | 131,132,133 |
+| EL-TK-131 | 125..130 | 132,133 |
+| EL-TK-132 | 100,124..131 | 133 |
+| EL-TK-133 | 124..132 | validación EL-EP-010 |
+
+EL-TK-124..133 son DRAFT. Export usa snapshot fijo al solicitar, revalida al preparar/descargar, storage privado y JobQueue; descargas guest siguen fuera de alcance.
+
 ## Tickets vigentes — EL-EP-006 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
