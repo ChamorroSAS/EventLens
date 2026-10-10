@@ -1,0 +1,64 @@
+# EL-TK-097 — Autorizar visualización temporal de un derivado privado
+
+## Parent epic
+EL-EP-007
+
+## Status
+DRAFT
+
+## User story
+**Como** invitado u organizador autorizado, **quiero** abrir un derivado visualizable mediante acceso temporal, **para** ver la foto o video sin exponer el almacenamiento privado.
+
+## Alcance funcional
+Emitir un grant temporal para visualizar el derivado autorizado de una media, revalidando actor/sesión, evento, visibilidad, lifecycle y estado actual antes de crear la URL privada temporal.
+
+## Fuera de alcance
+Descargar originales, crear derivados, publicar media, exponer URLs permanentes o revocar universalmente bytes ya entregados.
+
+## Criterios de aceptación
+### Escenario 1
+**Dado** media PUBLISHED visible para un invitado autorizado, **cuando** solicita visualizarla, **entonces** recibe una URL temporal limitada al derivado autorizado.
+
+### Escenario 2
+**Dado** un organizador propietario y media visible para su biblioteca según contrato, **cuando** solicita preview, **entonces** recibe únicamente el derivado permitido por su estado y seguridad.
+
+### Escenario 3
+**Dado** media retirada, acceso revocado o permiso perdido antes de emitir el grant, **cuando** solicita visualización, **entonces** se deniega sin entregar una nueva URL.
+
+## Reglas de negocio
+Storage privado/no navegable. El grant de visualización no equivale a función de descarga guest ni a autorización permanente.
+
+## Validaciones y permisos
+Revalidación server-side por actor/sesión, eventId, mediaId, estado y seguridad antes de ObjectStorage.createDownloadUrl.
+
+## Casos de error y estados vacíos
+Derivado inexistente/no listo, media retirada, URL expirada, actor ajeno, storage temporalmente indisponible.
+
+## Datos / contratos afectados
+MediaViewGrant, derivativeKey/reference, expiresAt, ObjectStorage.createDownloadUrl.
+
+## Dependencias técnicas y funcionales
+Listado autorizado de EL-TK-096 y contratos de derivados/estado de EL-EP-006.
+
+## Dependencias de tickets
+- **depends_on:** EL-TK-096, contrato de derivados de EL-EP-006.
+- **blocks:** EL-TK-099, EL-TK-100, EL-TK-101.
+
+## Pruebas requeridas
+Guest PUBLISHED, owner autorizado, media retirada, cross-event, URL temporal y derivado no disponible.
+
+## Observabilidad / auditoría
+No registrar URL firmada completa ni object keys sensibles.
+
+## Prioridad / estimación
+P0 / M
+
+## Traceability
+Q-005, Q-016; DEC-003, DEC-007, DEC-013, DEC-018, DEC-063; EL-EP-007, EL-EP-006.
+
+## Definition of Ready
+- [x] Comportamiento inequívoco
+- [x] Criterios comprobables
+- [x] Dependencias identificadas
+- [x] Permisos/errores definidos cuando aplican
+- [x] Sin preguntas BLOCKER

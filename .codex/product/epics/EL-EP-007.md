@@ -111,6 +111,8 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
+- 2026-10-10: ticket_writer crea EL-TK-096..102 como DRAFT para galería guest PUBLISHED, entrega temporal de derivados, biblioteca owner, integración UI guest/organizador, revalidación de visibilidad y validación integrada. Pendientes de requirements_reviewer; sin implementación.
+
 - 2026-10-07: CR-002 resuelve TC aplicables y sustituye restricciones CR-001; estado/bloqueantes de producto conservados.
 
 - 2026-10-07: CR-001/DEC-060 explicita entrega privada local y riesgos; conserva READY y permisos.

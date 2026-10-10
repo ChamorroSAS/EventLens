@@ -171,6 +171,20 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 EL-TK-086..095 son una descomposición DRAFT de EL-EP-005. EL-TK-090 produce el contrato de original aceptado que consume EL-TK-032; no duplica procesamiento de EL-EP-006. Capacidad comercial permanece propiedad de EL-EP-011 y lifecycle/acceso de EL-EP-003/004.
 
+## Tickets propuestos — EL-EP-007 (DRAFT; pendiente requirements_reviewer)
+
+| Ticket | Depende de | Bloquea |
+|---|---|---|
+| EL-TK-096 | 074,072; contrato EL-EP-006 | 097,099,101,102 |
+| EL-TK-097 | 096; contrato derivados EL-EP-006 | 099,100,101,102 |
+| EL-TK-098 | 047,053 | 100,102 |
+| EL-TK-099 | 096,097; contrato reportes EL-EP-009 | 102; UI guest downstream |
+| EL-TK-100 | 098,053,054 | 102; UI owner downstream |
+| EL-TK-101 | 096,097,072,074 | 099,102 |
+| EL-TK-102 | 096..101 | validación integrada de EL-EP-007 |
+
+EL-TK-096..102 son una descomposición DRAFT de EL-EP-007. La galería guest solo consume PUBLISHED; la biblioteca owner reutiliza estados/capacidades de EL-EP-006. Moderación, retiro/reportes y descargas conservan ownership en EL-EP-008/009/010 respectivamente.
+
 ## Tickets vigentes — EL-EP-006 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
