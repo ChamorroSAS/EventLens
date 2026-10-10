@@ -45,7 +45,7 @@ EL-TK-098 y contratos UI/estado de EL-TK-053/054.
 
 ## Dependencias de tickets
 - **depends_on:** EL-TK-098, EL-TK-053, EL-TK-054.
-- **blocks:** EL-TK-101, EL-TK-102.
+- **blocks:** EL-TK-102.
 
 ## Pruebas requeridas
 Component/unit, filtros, estados, actor ajeno, responsive, teclado/foco y WCAG 2.2 AA.

@@ -41,7 +41,7 @@ UploadAttempt/UploadIntent, reservationBytes, reservationFileSlot, eventId, gues
 Capacidades guest de EL-EP-004, policy de lifecycle de EL-EP-003 y contrato de capacidad de EL-EP-011.
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-075, EL-TK-076, EL-TK-072, contrato EL-EP-011.
+- **depends_on:** EL-TK-075, EL-TK-076, EL-TK-077, EL-TK-072, contrato EL-EP-011.
 - **blocks:** EL-TK-087, EL-TK-090, EL-TK-091, EL-TK-092, EL-TK-093, EL-TK-094, EL-TK-095.
 
 ## Pruebas requeridas
@@ -64,4 +64,4 @@ Q-008, Q-011; DEC-010, DEC-011, DEC-079, DEC-080, DEC-085; EL-EP-005, EL-EP-011.
 - [x] Sin preguntas BLOCKER
 
 ## Readiness de implementación — 2026-10-10
-REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el endpoint de autorización de intento y reserva atómica de cupo y bytes, consumido por la cola de subida y validado contra el consentimiento de EL-TK-076 y la policy de lifecycle de EL-TK-072.
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el endpoint de autorización de intento y reserva atómica de cupo y bytes, consumido por la cola de subida y validado contra el consentimiento de EL-TK-076, la identidad guest de EL-TK-077 y la policy de lifecycle de EL-TK-072.

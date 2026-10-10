@@ -45,7 +45,7 @@ Evento propio (EL-TK-047) y contratos de estado/capacidades de EL-TK-053/054.
 
 ## Dependencias de tickets
 - **depends_on:** EL-TK-047, EL-TK-053.
-- **blocks:** EL-TK-100, EL-TK-101.
+- **blocks:** EL-TK-100, EL-TK-102.
 
 ## Pruebas requeridas
 Aislamiento owner/evento, estados, filtros, paginación, vacíos y actor ajeno.

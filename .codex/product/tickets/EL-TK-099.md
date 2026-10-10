@@ -47,8 +47,8 @@ Cliente OpenAPI de GuestGallerySnapshot y MediaViewGrant; integración contractu
 Handoff UI/UX de EL-EP-007 (.codex/context/ui-mvp-epic-review.md#el-ep-007).
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-096, EL-TK-097.
-- **blocks:** EL-TK-101, EL-TK-102.
+- **depends_on:** EL-TK-096, EL-TK-097, EL-TK-101.
+- **blocks:** EL-TK-102.
 
 ## Pruebas requeridas
 Component/unit, E2E móvil, grid/viewer, teclado/Escape/anterior/siguiente, retorno de foco, carga incremental, revocación y WCAG 2.2 AA.

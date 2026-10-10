@@ -117,7 +117,7 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
-- 2026-10-10: requirements_reviewer y revisión UI/UX aprueban EL-TK-086..095 a READY; se integran dependencias canónicas (EL-TK-076 de consentimiento), especificaciones de los 12 componentes del catálogo reutilizados, copy contractual, validaciones de storage privado (DEC-063) y readiness de implementación sin alterar arquitectura.
+- 2026-10-10: requirements_reviewer y revisión UI/UX aprueban EL-TK-086..095 a READY; se integran dependencias canónicas de consentimiento (EL-TK-076) e identidad guest (EL-TK-077) en EL-TK-086, contrato downstream transaccional de EL-TK-032 (DONE) en EL-TK-090, gate técnico PARTIAL en EL-TK-089 para inspección segura de archivos no confiables, y los 12 componentes del catálogo reutilizados en EL-TK-094 sin alterar arquitectura.
 - 2026-10-10: ticket_writer crea EL-TK-086..095 como DRAFT para autorización/reserva, carga directa, confirmación y validación real, aceptación/handoff a procesamiento, retry, cancelación por policy, consulta de lote, UI guest y validación integrada.
 
 - 2026-10-08: gate localizado aprueba READY de requisitos; implementaci?n/UI conservan sus puertas pendientes.

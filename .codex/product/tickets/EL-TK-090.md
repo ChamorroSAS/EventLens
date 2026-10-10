@@ -42,7 +42,7 @@ Validación de EL-TK-089 y contrato downstream de EL-TK-032.
 
 ## Dependencias de tickets
 - **depends_on:** EL-TK-089.
-- **blocks:** EL-TK-032, EL-TK-092, EL-TK-094, EL-TK-095.
+- **blocks:** EL-TK-092, EL-TK-094, EL-TK-095.
 
 ## Pruebas requeridas
 Aceptación, replay, concurrencia, revocación en carrera, consistencia reserva/consumo y publicación downstream.
@@ -54,7 +54,7 @@ Auditar aceptación y referencia de media sin exponer object keys sensibles inne
 P0 / M
 
 ## Traceability
-Q-008, Q-009, Q-011; DEC-009, DEC-011, DEC-063, DEC-080, DEC-085; EL-EP-005, EL-EP-006, EL-TK-032.
+Q-008, Q-011; DEC-009, DEC-011, DEC-063, DEC-080, DEC-085; EL-EP-005, EL-EP-006, EL-TK-032.
 
 ## Definition of Ready
 - [x] Comportamiento inequívoco
@@ -64,4 +64,4 @@ Q-008, Q-009, Q-011; DEC-009, DEC-011, DEC-063, DEC-080, DEC-085; EL-EP-005, EL-
 - [x] Sin preguntas BLOCKER
 
 ## Readiness de implementación — 2026-10-10
-REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el comando atómico de aceptación de original y consolidación de cuota, emitiendo el contrato downstream que consume EL-TK-032 para encolar el procesamiento en JobQueue PostgreSQL.
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el comando atómico de aceptación de original y consolidación de cuota, emitiendo el contrato downstream consumido por el handler transaccional ya implementado en EL-TK-032 (DONE) para encolar el procesamiento en JobQueue PostgreSQL.

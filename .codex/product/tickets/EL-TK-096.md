@@ -48,7 +48,7 @@ Acceso guest de EL-EP-004, lifecycle de EL-EP-003 y media procesada/publicable d
 
 ## Dependencias de tickets
 - **depends_on:** EL-TK-074, EL-TK-075, EL-TK-072, EL-TK-037.
-- **blocks:** EL-TK-097, EL-TK-099, EL-TK-101.
+- **blocks:** EL-TK-099, EL-TK-101, EL-TK-102.
 
 ## Pruebas requeridas
 Aislamiento entre eventos, solo PUBLISHED, galería on/off, lifecycle, vacío, paginación y acceso revocado.

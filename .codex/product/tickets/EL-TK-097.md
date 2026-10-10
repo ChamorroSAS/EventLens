@@ -41,11 +41,11 @@ Derivado inexistente/no listo, media retirada, URL expirada, actor ajeno, storag
 MediaViewGrant, derivativeKey/reference, expiresAt, ObjectStorage.createDownloadUrl.
 
 ## Dependencias técnicas y funcionales
-Listado autorizado de EL-TK-096 y contratos de derivados/estado de EL-EP-006 (EL-TK-035, EL-TK-036, EL-TK-037).
+Contratos de derivados y almacenamiento privado de EL-EP-006 (EL-TK-035, EL-TK-036, EL-TK-037), lifecycle de EL-EP-003 (EL-TK-072) y acceso/sesión (EL-TK-074, EL-TK-075 para guest; EL-TK-047 para organizador).
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-096, EL-TK-035, EL-TK-037.
-- **blocks:** EL-TK-099, EL-TK-100, EL-TK-101.
+- **depends_on:** EL-TK-072, EL-TK-074, EL-TK-035, EL-TK-037.
+- **blocks:** EL-TK-099, EL-TK-101, EL-TK-102.
 
 ## Pruebas requeridas
 Guest PUBLISHED, owner autorizado, media retirada, cross-event, URL temporal y derivado no disponible.
