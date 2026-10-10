@@ -1,0 +1,50 @@
+name: Sync product backlog to GitHub Issues
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".codex/product/epics/**"
+      - ".codex/product/tickets/**"
+      - "scripts/sync-product-issues.mjs"
+      - ".github/workflows/sync-product-issues.yml"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Simulate synchronization without modifying issues"
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: sync-product-issues-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync .codex product backlog
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate sync script syntax
+        run: node --check scripts/sync-product-issues.mjs
+
+      - name: Synchronize epics and tickets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+        run: node scripts/sync-product-issues.mjs
