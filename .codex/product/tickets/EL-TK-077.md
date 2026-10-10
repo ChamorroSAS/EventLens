@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** invitado, **quiero** indicar un nombre o apodo para mis aportes, **para** identificarlos dentro del evento sin crear una cuenta.
@@ -47,11 +47,11 @@ Persistencia, sanitización, aislamiento entre sesiones y revocación.
 ## Observabilidad / auditoría
 No registrar el valor completo en logs operativos.
 
-## Prioridad
-P0
+## Prioridad / estimación
+P0 / S
 
-## Estimación
-S
+## Traceability
+Q-014, Q-025; DEC-013, DEC-041; EL-EP-004.
 
 ## Definition of Ready
 - [x] Comportamiento inequívoco
@@ -59,3 +59,6 @@ S
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la asociación de nombre o apodo sanitizado de presentación en la sesión guest sin crear perfil nominal, consumido por GuestIdentityForm («¿Quién aporta?») conforme al handoff UI/UX de EL-EP-004.

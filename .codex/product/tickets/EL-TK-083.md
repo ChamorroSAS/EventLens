@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** invitado, **quiero** completar el flujo de entrada, consentimiento, identificación y consulta de mis aportes desde móvil, **para** participar sin crear una cuenta.
@@ -53,11 +53,11 @@ Component/unit, E2E móvil, teclado/foco, accesibilidad WCAG 2.2 AA y estados de
 ## Observabilidad / auditoría
 Sin auditoría adicional de render; acciones usan auditoría del comando propietario.
 
-## Prioridad
-P0
+## Prioridad / estimación
+P0 / M
 
-## Estimación
-M
+## Traceability
+Q-005, Q-006, Q-014, Q-025; DEC-004, DEC-013, DEC-041, DEC-042, DEC-083, DEC-084, DEC-103..105; EL-EP-004.
 
 ## Definition of Ready
 - [x] Comportamiento inequívoco
@@ -65,3 +65,10 @@ M
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Integración UI/UX y Readiness — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la experiencia frontend guest que integra los componentes del catálogo (EventGuestPageShell, EventCover, EventHeader, EventWelcomeMessage, GuestPrimaryActions, PinAccessForm, ConsentSheet, GuestIdentityForm, GuestIdentitySummary, MyContributionsList, MyContributionItem, EventAccessSettings, EventSharePanel, QRPreview, CopyEventLinkAction, RegenerateAccessDialog) conforme al handoff canónico de .codex/context/ui-mvp-epic-review.md#el-ep-004.
+
+- **Componentes reutilizados:** Catálogo de §5.6..10/18..19 y §7.20..23 sin inventar componentes nuevos ni tokens ad-hoc.
+- **Copy contractual:** Textos aprobados para estados de evento, mensajes de revocación y derivación a retiro sin sesión donde recepción no equivale a eliminación.
+- **Accesibilidad y responsive:** WCAG 2.2 AA (foco visible, retorno de foco tras modales, PinAccessForm accesible sin NumberInput, ConsentSheet sin preselección, mobile-first con tap targets ≥ 44×44px).

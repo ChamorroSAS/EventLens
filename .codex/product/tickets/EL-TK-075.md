@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** invitado, **quiero** validar el PIN cuando el evento lo exige, **para** obtener una sesión anónima limitada al evento sin registrarme.
@@ -50,11 +50,11 @@ PIN correcto/incorrecto, sin PIN, rate limit, cookie/token seguro, aislamiento e
 ## Observabilidad / auditoría
 No registrar PIN ni secreto de sesión; métricas de intentos/rate limit sanitizadas.
 
-## Prioridad
-P0
+## Prioridad / estimación
+P0 / M
 
-## Estimación
-M
+## Traceability
+Q-005, Q-014; DEC-004, DEC-013, DEC-083; EL-EP-004, EL-EP-002.
 
 ## Definition of Ready
 - [x] Comportamiento inequívoco
@@ -62,3 +62,6 @@ M
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la validación de PIN protegido, rate limiting e inicio de sesión anónima revocable aislada por evento, consumido por PinAccessForm conforme a las reglas UI/UX (sin NumberInput, soporte de pegado y ceros a la izquierda).

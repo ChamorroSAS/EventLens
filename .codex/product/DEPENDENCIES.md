@@ -135,7 +135,7 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 12 activos READY de requisitos tras [dictamen de 2026-10-10](sessions/2026-10-10-el-ep-003-ticket-review.md); REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: PARTIAL (sujeto a contratos técnicos y dependencias de EL-EP-011/015 y auth administrativa EL-TK-044). Los contratos de EL-EP-011 y EL-EP-015 se consumen por interfaz y no se reinterpretan dentro de lifecycle.
 
-## Tickets propuestos — EL-EP-004 (DRAFT; pendiente requirements_reviewer)
+## Tickets vigentes — EL-EP-004 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
@@ -150,7 +150,7 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-082 | 074,075; contrato EL-EP-009 | 083 |
 | EL-TK-083 | 074..082 | integración UI downstream |
 
-EL-TK-074..083 son una descomposición DRAFT del resultado de EL-EP-004. No se consideran READY hasta dictamen de requirements_reviewer. La resolución de solicitudes de retiro permanece en EL-EP-009 y la carga de archivos en EL-EP-005; esta épica sólo entrega acceso, sesión, consentimiento, identidad guest y superficies propias.
+10 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de acceso guest, consentimiento, identidad y superficies UI aprobadas en ui-mvp-epic-review.md#el-ep-004. La resolución de solicitudes de retiro permanece en EL-EP-009 y la carga de archivos en EL-EP-005; esta épica sólo entrega acceso, sesión, consentimiento, identidad guest y superficies propias.
 
 ## Tickets vigentes — EL-EP-006 (quality gate APPROVED)
 

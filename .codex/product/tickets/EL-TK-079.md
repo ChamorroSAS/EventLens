@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** organizador, **quiero** cambiar el PIN de acceso de mi evento, **para** cortar accesos anteriores cuando sea necesario.
@@ -47,11 +47,11 @@ Cambio exitoso, sesiones anteriores revocadas, nuevo acceso, concurrencia y roll
 ## Observabilidad / auditoría
 Auditar cambio/revocación sin registrar PIN ni tokens.
 
-## Prioridad
-P0
+## Prioridad / estimación
+P0 / M
 
-## Estimación
-M
+## Traceability
+Q-005, Q-014; DEC-004, DEC-013, DEC-083; EL-EP-004, EL-EP-002.
 
 ## Definition of Ready
 - [x] Comportamiento inequívoco
@@ -59,3 +59,6 @@ M
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el cambio de PIN por el organizador y la revocación en cascada de generaciones de sesiones guest previas conforme a DEC-083, consumido por EventAccessSettings con advertencia de revocación y sin mostrar PIN almacenado.

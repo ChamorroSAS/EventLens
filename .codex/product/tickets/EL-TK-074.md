@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** invitado, **quiero** abrir un evento mediante su enlace o QR vigente, **para** acceder sin crear una cuenta cuando el lifecycle lo permite.
@@ -50,11 +50,11 @@ Credencial válida/revocada, no enumeración, lifecycle por estado, rate limit y
 ## Observabilidad / auditoría
 Métricas de acceso sanitizadas sin registrar token completo ni PII.
 
-## Prioridad
-P0
+## Prioridad / estimación
+P0 / M
 
-## Estimación
-M
+## Traceability
+Q-005, Q-006, Q-014; DEC-004, DEC-013, DEC-083, DEC-084; EL-EP-004, EL-EP-003.
 
 ## Riesgos / notas
 Nunca registrar ni devolver la credencial completa en logs o trazas.
@@ -65,3 +65,6 @@ Nunca registrar ni devolver la credencial completa en logs o trazas.
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el endpoint público de resolución de credencial no adivinable y consulta de disponibilidad según la policy de lifecycle de EL-TK-072, consumido por EventGuestPageShell y EventAccessStatus conforme al handoff UI/UX de EL-EP-004.

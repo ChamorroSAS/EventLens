@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** organizador, **quiero** consultar el enlace vigente y su representación QR, **para** compartir el acceso correcto con mis invitados.
@@ -47,11 +47,11 @@ Credencial vigente, post-regeneración, autorización y equivalencia enlace/QR.
 ## Observabilidad / auditoría
 No registrar URL/token completos.
 
-## Prioridad
-P0
+## Prioridad / estimación
+P0 / S
 
-## Estimación
-S
+## Traceability
+Q-005; DEC-004, DEC-013; EL-EP-004.
 
 ## Definition of Ready
 - [x] Comportamiento inequívoco
@@ -59,3 +59,6 @@ S
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la consulta de enlace de compartir y payload QR basado en la credencial vigente, consumido por EventSharePanel, QRPreview y CopyEventLinkAction conforme al handoff UI/UX de EL-EP-004.

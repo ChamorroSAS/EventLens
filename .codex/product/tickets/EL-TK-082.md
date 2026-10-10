@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** persona que perdió su sesión guest, **quiero** acceder a la ruta de solicitud de retiro sin recuperar mi token, **para** poder pedir revisión de un aporte sin acceder a contenido privado.
@@ -47,11 +47,11 @@ Sin sesión, sesión revocada, no enumeración y copy recepción≠resolución.
 ## Observabilidad / auditoría
 Sin registrar referencias sensibles en logs públicos.
 
-## Prioridad
-P0
+## Prioridad / estimación
+P0 / S
 
-## Estimación
-S
+## Traceability
+Q-014, Q-025; DEC-084, DEC-103..105; EL-EP-004, EL-EP-009.
 
 ## Definition of Ready
 - [x] Comportamiento inequívoco
@@ -59,3 +59,6 @@ S
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la derivación accesible al flujo de intake de solicitud de retiro sin sesión (RemovalRequestFlow de EL-EP-009 / DEC-103..105) desde el shell invitado, con copy inequívoco donde recepción no equivale a eliminación.
