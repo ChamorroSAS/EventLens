@@ -13,6 +13,7 @@
 - **CONFIRMED — 2026-10-08, remediación EL-EP-006:** EL-TK-053..058 asignados únicamente a estado API, integración UI, lease JobQueue, ejecutor aislado, cleanup media y validación integrada. Serie ocupada EL-TK-001..058; ningún ID histórico reutilizado.
 - **CONFIRMED — 2026-10-08, paquete TB-01..05:** EL-TK-059 entorno mínimo TB-04,060 spike TB-02,061 spike TB-01. Serie ocupada EL-TK-001..061; sólo tres nuevos, sin auth duplicada ni ticket TB-05.
 - **DRAFT — 2026-10-10, EL-EP-003:** EL-TK-062..073 asignados a lifecycle temporal, transiciones, política de acceso y handoff UI. La serie EL-TK-001..073 queda ocupada; DRAFT no habilita implementación hasta revisión.
+- **DRAFT — 2026-10-10, EL-EP-004:** EL-TK-074..083 asignados a acceso público, sesión guest, consentimiento, identidad, Mis aportes, revocación/regeneración, compartir/QR e integración UI. La serie EL-TK-001..083 queda ocupada; DRAFT no habilita implementación hasta revisión.
 - Antes de asignar un nuevo ID, revisar toda la serie, incluidos sus registros históricos. Tras esta migración están ocupados EL-EP-001..017 y EL-TK-001..019; no se asigna ningún número nuevo.
 - Usar identificadores canónicos en metadatos, referencias, enlaces, backlog, dependencias, roadmap, decisiones, sesiones y contexto técnico. Los otros tipos de ID del proyecto conservan sus convenciones existentes.
 - Las plantillas EL-EP-TEMPLATE.md y EL-TK-TEMPLATE.md no son IDs ni consumen números.
