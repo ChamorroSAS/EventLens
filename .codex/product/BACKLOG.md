@@ -126,8 +126,17 @@
 | EL-TK-093 | Consultar el estado de intentos y resultados de carga del lote | EL-EP-005 | DRAFT | P0 | EL-TK-086,088,089,090,092 | [EL-TK-093](tickets/EL-TK-093.md) |
 | EL-TK-094 | Integrar selección, progreso y retry por archivo en la interfaz guest | EL-EP-005 | DRAFT | P0 | EL-TK-086..093 | [EL-TK-094](tickets/EL-TK-094.md) |
 | EL-TK-095 | Validar el flujo completo de carga móvil y resultado parcial | EL-EP-005 | DRAFT | P0 | EL-TK-086..094 | [EL-TK-095](tickets/EL-TK-095.md) |
+| EL-TK-096 | Consultar la galería guest de media publicada y autorizada | EL-EP-007 | DRAFT | P0 | EL-TK-074, EL-TK-072, contrato EL-EP-006 | [EL-TK-096](tickets/EL-TK-096.md) |
+| EL-TK-097 | Autorizar visualización temporal de un derivado privado | EL-EP-007 | DRAFT | P0 | EL-TK-096, contrato EL-EP-006 | [EL-TK-097](tickets/EL-TK-097.md) |
+| EL-TK-098 | Consultar la biblioteca de media del organizador | EL-EP-007 | DRAFT | P0 | EL-TK-047, EL-TK-053 | [EL-TK-098](tickets/EL-TK-098.md) |
+| EL-TK-099 | Integrar la galería y viewer privados en la experiencia guest | EL-EP-007 | DRAFT | P0 | EL-TK-096, EL-TK-097, contrato EL-EP-009 | [EL-TK-099](tickets/EL-TK-099.md) |
+| EL-TK-100 | Integrar la biblioteca de media en la interfaz del organizador | EL-EP-007 | DRAFT | P0 | EL-TK-098, EL-TK-053, EL-TK-054 | [EL-TK-100](tickets/EL-TK-100.md) |
+| EL-TK-101 | Revalidar visibilidad cuando cambia el acceso o la media | EL-EP-007 | DRAFT | P0 | EL-TK-096, EL-TK-097, EL-TK-072, EL-TK-074 | [EL-TK-101](tickets/EL-TK-101.md) |
+| EL-TK-102 | Validar privacidad y experiencia móvil de galería y biblioteca | EL-EP-007 | DRAFT | P0 | EL-TK-096..101 | [EL-TK-102](tickets/EL-TK-102.md) |
 
 **DRAFT — 2026-10-10, EL-EP-005:** ticket_writer descompuso carga directa/tolerante a fallos en EL-TK-086..095. Los 10 tickets permanecen DRAFT hasta requirements_reviewer; no implican implementación ni cierre de dependencias de EL-EP-004/011/006. La automatización GitHub reflejará estos artefactos cuando el PR sea aprobado y llegue a main.
+
+**DRAFT — 2026-10-10, EL-EP-007:** ticket_writer descompuso galería/biblioteca privada en EL-TK-096..102. Los 7 tickets permanecen DRAFT hasta requirements_reviewer; no implementan moderación EL-EP-008, resolución de reportes/retiro EL-EP-009 ni descargas EL-EP-010. Este PR está apilado sobre EL-EP-005 para preservar la numeración reservada EL-TK-086..095.
 
 **HISTÓRICO CONFIRMED:** EL-TK-005..019 sustituyeron la descomposición anterior y quedaron READY el 2026-10-07. [Dictamen](sessions/2026-10-07-el-ep-001-ticket-redesign-review.md). **CONFIRMED — 2026-10-08:** la remediación autorizada de EL-TK-005..019 y EL-TK-043..046 fue APPROVED; los 19 activos están READY de requisitos. READY_FOR_IMPLEMENTATION: PARTIAL; YES sólo para 008 backend, 043 provisión operativa y 046 integración del puerto MOD-001, con los límites del [dictamen final](sessions/2026-10-08-el-ep-001-ticket-remediation-review.md). La UI de EL-EP-001 sigue con gate PARTIAL: no se generan tickets frontend.
 
