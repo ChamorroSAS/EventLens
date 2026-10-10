@@ -127,6 +127,8 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
+- 2026-10-10: ticket_writer crea EL-TK-062..073 como DRAFT para cálculo temporal, programación/activación, cierre/reapertura, vencimiento/gracia, suspensión/reactivación, ampliación, consulta/capacidades, policy de acceso e integración UI. Pendientes de requirements_reviewer; sin implementación.
+
 - 2026-10-08: usuario aprueba mapping de reactivación y duraciones N×24h en DEC-081/082; PL-015/016 respondidas, re-review aprobado sin hallazgos y estado READY de requisitos. Arquitectura habilita UI; implementación PARTIAL.
 
 - 2026-10-08: PL-001/002 respondidas mediante DEC-077/078; reglas y escenarios actualizados sin regenerar la épica. requirements_reviewer conserva NOT_READY por PL-015 y señala PL-016; sin tickets ni implementación.
