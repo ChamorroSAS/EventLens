@@ -4,3 +4,4 @@ export * from './repository.js';
 export * from './adapters.js';
 export * from './quarantine.js';
 export * from './photo-derivatives.js';
+export * from './video-derivatives.js';

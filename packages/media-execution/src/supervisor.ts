@@ -21,7 +21,7 @@ export function validatePlan(plan:ExecutionPlan,l:Limits):void {
   if(!/^[a-zA-Z0-9_-]+\.(jpg|jpeg|png|mp4|json|zip)$/.test(output.file)||filenames.has(output.file)||keys.has(key)||!output.destination.namespace||!output.destination.key||(output.destination.namespace===plan.input.namespace&&output.destination.key===plan.input.key))throw new ExecutionError('INVALID_PLAN');
   filenames.add(output.file);keys.add(key);
  }
- for(const step of plan.steps){if(!['ffprobe','ffmpeg','heif-convert','clamscan','input-header','photo-output-report'].includes(step.tool)||!Array.isArray(step.args)||step.args.some(a=>typeof a!=='string'||a.includes('\0')))throw new ExecutionError('INVALID_PLAN');}
+ for(const step of plan.steps){if(!['ffprobe','ffmpeg','heif-convert','clamscan','input-header','photo-output-report','video-output-report'].includes(step.tool)||!Array.isArray(step.args)||step.args.some(a=>typeof a!=='string'||a.includes('\0')))throw new ExecutionError('INVALID_PLAN');}
 }
 /** No publication/domain completion occurs here. The owner must commit through055 after
  * current policy validation. UNKNOWN retains the physical slot and inventory for recovery. */

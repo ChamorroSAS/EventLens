@@ -1,0 +1,146 @@
+{
+  "runId": "media_inspection_edac6e98aa084019a7ffa071ac843766",
+  "observations": [],
+  "measurements": [
+    {
+      "durationMs": 1390,
+      "inputFormat": "WEBM",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 17293,
+      "inputFormat": "MOV",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 8781,
+      "inputFormat": "MOV",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 18468,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 5745,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1212,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1268,
+      "inputFormat": "MOV",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1273,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1343,
+      "inputFormat": "WEBM",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1354,
+      "inputFormat": "WEBM",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1246,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1293,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1252,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1265,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1248,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1254,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1285,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1242,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1296,
+      "inputFormat": "MP4",
+      "result": "UNKNOWN"
+    },
+    {
+      "durationMs": 1226,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1270,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 3506,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1913,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1644,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1543,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1641,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1514,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1639,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    }
+  ]
+}

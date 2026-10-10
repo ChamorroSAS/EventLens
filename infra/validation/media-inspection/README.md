@@ -66,3 +66,20 @@ The implementer's focused run passed **60/60 tests**. The independent tester's f
 Evidence: [focused photo run](evidence/photo-buffer-validation/), [combined independent run](evidence/photo-independent-final/), [EL-TK-056 regression](../media-execution/evidence/photo-independent-final/), [source manifest](evidence/photo-final-source/source-manifest.json), and [source/image verification](evidence/photo-final-source/verification.json). The source manifest covers the final implementation; historical corpus and physical-result files were not regenerated.
 
 The operation stores only private, verified candidates and does not publish them or complete the processing job. Durable production `RecoveryAuthority` and object-storage adapters, worker composition, and observer wiring remain future integration work. No object-storage provider was selected. MEDIA-001, CAP-001, DR-001, and EXPORT-001 remain `NOT_EVALUATED`.
+
+## Video derivatives (EL-TK-036)
+
+Run the focused video unit and PostgreSQL/MinIO integration suite from the repository root, using a new evidence directory:
+
+```powershell
+$videoEvidence = ".\infra\validation\media-inspection\evidence\video-$([DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss'))"
+.\infra\validation\media-inspection\Run.ps1 -VideosOnly -Build -EvidenceDirectory $videoEvidence
+```
+
+Omit `-VideosOnly` to run the combined inspection, quarantine, photo and video suites. The harness applies migrations twice and checks build and typecheck. The video scope includes MP4/MOV/WebM, representative silent codecs, rotation and pixel aspect ratio, original integrity, safe metadata handling, strict output validation, replay/rollback, stale authority and partial or unknown writes. Video output is always transcoded to the adopted target; stream-copy/remux is not implemented. Rotation and pixel aspect ratio are normalized to the adopted output, including TV-range output; this does not certify universal HDR handling. The run uses laboratory adapters and preserves the historical corpus and physical results. It does not certify maximum-size throughput, physical playback of generated implementation outputs, or any Beta validation gate.
+
+### EL-TK-036 final validation
+
+The focused video run passed **60/60 tests**. The independent combined inspection, quarantine, photo and video regression passed **199/199**; its result keeps the primary ticket marker `EL-TK-033` and is not relabeled as a video-only run. The EL-TK-056 runtime regression passed **21/21**. Typecheck/build, repeat migration application, and final integrity checks passed: **18/18 source hashes** matched, the recorded and actual validation-image digests matched (`c47c90d934e33a7eb06d51542e6bbe577efe7be906a7c68ded8205309c7bdba4`), and the common migration assembly contained **9 unique migrations** with matching source/copy hashes.
+
+Evidence: [focused video run](evidence/video-focused-final/), [combined independent run](evidence/video-independent-final-3/), [EL-TK-056 runtime regression](../media-execution/evidence/video-independent-regression/), and [integrity verification](evidence/video-independent-final-3/integrity-check.json). These implementation results do not pass MEDIA-001, CAP-001, DR-001 or EXPORT-001, which remain `NOT_EVALUATED`. Maximum-size throughput and production composition remain outside this validation; the definitive Beta/production object-storage provider remains `DEFERRED`.

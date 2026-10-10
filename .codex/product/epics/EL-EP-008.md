@@ -111,13 +111,16 @@ UX_OPEN_QUESTIONS: ninguna funcional nueva; gates tecnicos aplicables en el hand
 - [x] No BLOCKER questions
 - [x] Main scenarios verifiable
 
-DoR de requisitos aprobada; no generar tickets frontend antes del gate UI completo.
+DoR de requisitos y UI aprobada; tickets EL-TK-103..112 validados como READY. READY_FOR_FRONTEND_PLANNING: YES; READY_FOR_IMPLEMENTATION: YES conforme a dependencias técnicas y baseline EL-TD-001..007.
 
 ## Priority
 
 P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
+
+- 2026-10-10: requirements_reviewer y revisión UI/UX aprueban el paso de EL-TK-103..112 de DRAFT a READY (REQUIREMENTS_READY: YES, READY_FOR_FRONTEND_PLANNING: YES, READY_FOR_IMPLEMENTATION: YES propio). Reutilización estricta del catálogo UI/UX (§8.5..9) sin nuevos componentes.
+- 2026-10-10: ticket_writer crea EL-TK-103..112 como DRAFT para moderación cotidiana, visibilidad, papelera/restauración, vencimiento, cambio de modo, UI owner y validación integrada. Pendientes de requirements_reviewer; sin implementación.
 
 - 2026-10-08: requirements_reviewer aprueba READY de requisitos sin hallazgos; implementacion/UI conservan gates aplicables. [Dictamen](../sessions/2026-10-08-precisiones-finales-mvp.md).
 

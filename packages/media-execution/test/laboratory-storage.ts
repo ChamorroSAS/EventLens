@@ -9,10 +9,17 @@ type Entry={state:'ACTIVE'|'TERMINAL';ref:OutputRef;error?:boolean;release:()=>v
 export class LaboratoryStorage implements ObjectStorage {
  readonly s3=new S3Client({endpoint:'http://minio:9000',region:'us-east-1',forcePathStyle:true,credentials:{accessKeyId:readFileSync('/run/secrets/s3_lab_user','utf8').trim(),secretAccessKey:readFileSync('/run/secrets/s3_lab_password','utf8').trim()}});
  hold=false;readonly entries=new Map<string,Entry>();private readonly sealed=new Set<string>();private server?:Server;private url='';
+ private readonly maxWriteBytes:number;private readonly maxRequestBytes:number;
+ constructor(configuration:{maxWriteBytes?:number}={}){
+  this.maxWriteBytes=configuration.maxWriteBytes??1_000_000;
+  this.maxRequestBytes=Math.ceil(this.maxWriteBytes*4/3)+4096;
+  if(!Number.isSafeInteger(this.maxWriteBytes)||this.maxWriteBytes<1||!Number.isSafeInteger(this.maxRequestBytes))throw Error('INVALID_FIXTURE_LIMIT');
+ }
  async start():Promise<void>{
   this.server=createServer(async(req,res)=>{
-   let body='';for await(const chunk of req){body+=chunk.toString();if(body.length>2_000_000){res.writeHead(413).end();return;}}
+   let body='';for await(const chunk of req){body+=chunk.toString();if(body.length>this.maxRequestBytes){res.writeHead(413).end();return;}}
    const {id,ref,data}=JSON.parse(body) as {id:string;ref:OutputRef;data:string};
+   if(Buffer.byteLength(data,'base64')>this.maxWriteBytes){res.writeHead(413).end();return;}
    if(this.sealed.has(id)||this.entries.has(id)){res.writeHead(409).end();return;}
    let release!:()=>void;const gate=new Promise<void>(resolve=>release=resolve);
    const entry:Entry={state:'ACTIVE',ref,release,done:Promise.resolve()};this.entries.set(id,entry);
@@ -37,7 +44,7 @@ export class LaboratoryStorage implements ObjectStorage {
  private reads=new Map<string,{stop:()=>void;terminal:()=>boolean}>();
  async write(ref:OutputRef,bytes:AsyncIterable<Uint8Array>,id:string,signal:AbortSignal):Promise<void>{
   if(this.sealed.has(id))throw Error('SEALED');const chunks:Buffer[]=[];let size=0;
-  for await(const chunk of bytes){size+=chunk.length;if(size>1_000_000)throw Error('FIXTURE_OUTPUT_LIMIT');chunks.push(Buffer.from(chunk));}
+  for await(const chunk of bytes){size+=chunk.length;if(size>this.maxWriteBytes)throw Error('FIXTURE_OUTPUT_LIMIT');chunks.push(Buffer.from(chunk));}
   const response=await fetch(this.url,{method:'POST',body:JSON.stringify({id,ref,data:Buffer.concat(chunks).toString('base64')}),signal});if(!response.ok)throw Error('LAB_WRITE_FAILED');
  }
  async verifyOutput(ref:OutputRef,id:string,maxBytes:number,signal:AbortSignal):Promise<ObjectRef>{

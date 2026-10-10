@@ -185,6 +185,58 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 7 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de galería guest PUBLISHED, grants temporales de derivados (DEC-063), biblioteca de media para el organizador, revalidación server-side y superficies UI aprobadas en ui-mvp-epic-review.md#el-ep-007. Se corrigió el ciclo 099 ↔ 101 (099 consume 101; 099 solo bloquea 102), se desacopló MediaViewGrant (097) de la consulta de galería guest (096) permitiendo su consumo compartido, y se eliminaron bloqueos asimétricos hacia 101. Moderación, retiro y descargas conservan ownership en EL-EP-008, EL-EP-009 y EL-EP-010 respectivamente.
 
+## Tickets vigentes — EL-EP-008 (quality gate APPROVED)
+
+| Ticket | Depende de | Bloquea |
+|---|---|---|
+| EL-TK-103 | 098,037 | 111,112 |
+| EL-TK-104 | 098 | 107,111,112 |
+| EL-TK-105 | 098,101 | 106,107,111,112 |
+| EL-TK-106 | 105,101 | 111,112 |
+| EL-TK-107 | 098,053; contrato EL-EP-006 | 108,109,111,112 |
+| EL-TK-108 | 107 | 111,112 |
+| EL-TK-109 | 107,055; contrato EL-EP-015 | 112; consumidor purge EL-EP-015 |
+| EL-TK-110 | 028,037 | 111,112 |
+| EL-TK-111 | 100,103..108,110 | 112 |
+| EL-TK-112 | 103..111 | validación EL-EP-008 |
+
+10 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de moderación cotidiana, papelera de 7 días (DEC-096), restauración fiel a previous_state (DEC-086), entrega a purga al vencer (contrato EL-EP-015), cambio de modo de moderación sin impacto retroactivo (DEC-087) e integración en OrganizerMediaLibrary. Superficies UI reutilizadas del catálogo canónico (§8.5..9), sin componentes nuevos. Seguridad/cuarentena en EL-EP-006 y purga física en EL-EP-015.
+
+## Tickets vigentes — EL-EP-009 (quality gate APPROVED)
+
+| Ticket | Depende de | Bloquea |
+|---|---|---|
+| EL-TK-113 | 099; contrato EL-EP-014 | 116,120,121,123 |
+| EL-TK-114 | 078; contrato EL-EP-015 | 121,123 |
+| EL-TK-115 | 082 | 120,121,123 |
+| EL-TK-116 | 113,044; contrato EL-EP-014 | 117,118,119,120,122,123 |
+| EL-TK-117 | 116,044,097; contrato EL-EP-014 | 118,119,122,123 |
+| EL-TK-118 | 116,117,101 | 119,122,123 |
+| EL-TK-119 | 116,117; contratos EL-EP-013/014/015 | 120,122,123 |
+| EL-TK-120 | 113,115,116 | 122,123 |
+| EL-TK-121 | 113,114,115 | 123 |
+| EL-TK-122 | 116..120; contrato EL-EP-012 | 123 |
+| EL-TK-123 | 113..122 | validación EL-EP-009 |
+
+11 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de reportes (sin auto-ocultamiento, DEC-088), retiro propio inmediato e irreversible con sesión guest (DEC-089, DEC-097), intake sin sesión con campos mínimos requeridos (DEC-103..105), clasificación de severidad y prioridad, acceso administrativo justificado a media de casos, ocultamiento preventivo administrativo y resolución formal con trazabilidad. Superficies UI reutilizadas del catálogo canónico (§5.26..27 y §12.11..15), sin componentes nuevos. Purga en EL-EP-015, auditoría en EL-EP-014 y consola administrativa en EL-EP-012.
+
+## Tickets vigentes — EL-EP-010 (quality gate APPROVED)
+
+| Ticket | Depende de | Bloquea |
+|---|---|---|
+| EL-TK-124 | 098,053; contrato EL-EP-006 | 132,133 |
+| EL-TK-125 | 098; contrato EL-EP-008 | 126,128,131,132,133 |
+| EL-TK-126 | 125,055 | 127,128,130,131,132,133 |
+| EL-TK-127 | 126 | 129,131,132,133; avisos EL-EP-013 |
+| EL-TK-128 | 125,126; contratos EL-EP-008/009/015 | 129,131,132,133 |
+| EL-TK-129 | 127,128 | 132,133 |
+| EL-TK-130 | 126,127,128 | 131,132,133 |
+| EL-TK-131 | 125..130 | 132,133 |
+| EL-TK-132 | 100,124..131 | 133 |
+| EL-TK-133 | 124..132 | validación EL-EP-010 |
+
+10 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de descarga individual de original seguro para organizador (DEC-009/013/075), exportación asíncrona multipartes con snapshot fijo (DEC-046..049/079/090), disponibilidad 48h, invalidación inmediata ante retiros de privacidad o revocación de acceso (DEC-090), grants temporales de partes, regeneración/retry autorizado y consulta de estado/partes/progreso real en OrganizerMediaLibrary. Superficies UI reutilizadas del catálogo canónico (§9.1..8), sin centros de exportación paralelos ni componentes nuevos. Descargas guest siguen fuera de alcance.
+
 ## Tickets vigentes — EL-EP-006 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |

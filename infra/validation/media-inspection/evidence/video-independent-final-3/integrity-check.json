@@ -1,0 +1,61 @@
+﻿{
+    "ticket":  "EL-TK-036",
+    "testedAtUtc":  "2026-10-10T20:23:43.7901681Z",
+    "sourceManifestFiles":  18,
+    "sourceHashesMatch":  true,
+    "imageManifest":  "sha256:c47c90d934e33a7eb06d51542e6bbe577efe7be906a7c68ded8205309c7bdba4",
+    "imageActual":  "sha256:c47c90d934e33a7eb06d51542e6bbe577efe7be906a7c68ded8205309c7bdba4",
+    "imageMatches":  true,
+    "commonMigrationAssembly":  {
+                                    "migrationCount":  9,
+                                    "uniqueIds":  true,
+                                    "sourceAndCopyHashesMatch":  true
+                                },
+    "migrationChecks":  [
+                            {
+                                "id":  "202610090001_job_queue",
+                                "sourceMatches":  true,
+                                "copyMatches":  true
+                            },
+                            {
+                                "id":  "202610090002_execution_inventory",
+                                "sourceMatches":  true,
+                                "copyMatches":  true
+                            },
+                            {
+                                "id":  "202610090003_media_acceptance",
+                                "sourceMatches":  true,
+                                "copyMatches":  true
+                            },
+                            {
+                                "id":  "202610090004_media_inspection",
+                                "sourceMatches":  true,
+                                "copyMatches":  true
+                            },
+                            {
+                                "id":  "202610090005_execution_phases",
+                                "sourceMatches":  true,
+                                "copyMatches":  true
+                            },
+                            {
+                                "id":  "202610090006_inspection_history",
+                                "sourceMatches":  true,
+                                "copyMatches":  true
+                            },
+                            {
+                                "id":  "202610090007_media_quarantine",
+                                "sourceMatches":  true,
+                                "copyMatches":  true
+                            },
+                            {
+                                "id":  "202610100008_photo_candidates",
+                                "sourceMatches":  true,
+                                "copyMatches":  true
+                            },
+                            {
+                                "id":  "202610100009_video_candidates",
+                                "sourceMatches":  true,
+                                "copyMatches":  true
+                            }
+                        ]
+}

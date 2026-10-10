@@ -116,13 +116,16 @@ UX_OPEN_QUESTIONS: ninguna funcional tras DEC-103..105 y gates aprobados.
 - [x] No BLOCKER questions
 - [x] Main scenarios verifiable
 
-DoR de requisitos y UX aprobados. READY no certifica implementacion ni apertura publica; no se generan tickets en esta actualizacion.
+DoR de requisitos y UX aprobados; tickets EL-TK-113..123 validados como READY. READY_FOR_FRONTEND_PLANNING: YES; READY_FOR_IMPLEMENTATION: YES conforme a dependencias técnicas y baseline EL-TD-001..007.
 
 ## Priority
 
 P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
+
+- 2026-10-10: requirements_reviewer y revisión UI/UX aprueban el paso de EL-TK-113..123 de DRAFT a READY (REQUIREMENTS_READY: YES, READY_FOR_FRONTEND_PLANNING: YES, READY_FOR_IMPLEMENTATION: YES propio). Reutilización estricta del catálogo UI/UX (§5.26..27 y §12.11..15) sin nuevos componentes.
+- 2026-10-10: ticket_writer crea EL-TK-113..123 como DRAFT para reportes, retiro propio irreversible, intake sin sesión, clasificación/revisión admin, ocultamiento, resolución, UI pública/admin y validación integrada. Pendientes de requirements_reviewer; sin implementación.
 
 - 2026-10-08: requirements_reviewer y ui_designer aprueban gate final DEC-103..105; epica READY, UX READY, frontend planning YES. Sin tickets/codigo; texto juridico final pendiente.
 

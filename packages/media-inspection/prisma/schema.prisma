@@ -19,3 +19,11 @@ model PhotoCandidate {
  @@id([mediaRef,generation,token])
  @@map("media_photo_candidate")
 }
+model VideoCandidate {
+ mediaRef String @map("media_ref")
+ generation BigInt
+ token String @db.Uuid
+ fact Json
+ @@id([mediaRef,generation,token])
+ @@map("media_video_candidate")
+}
