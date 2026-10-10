@@ -27,3 +27,44 @@ model VideoCandidate {
  @@id([mediaRef,generation,token])
  @@map("media_video_candidate")
 }
+model PromotionReceipt {
+ operationId String @id @map("operation_id")
+ mediaRef String @map("media_ref")
+ generation BigInt
+ previousRevision BigInt @map("previous_revision")
+ revision BigInt
+ jobId String @map("job_id") @db.Uuid
+ token String @db.Uuid
+ epoch String
+ candidateFingerprint String @map("candidate_fingerprint")
+ candidate Json
+ governance Json
+ status String
+ committedAt DateTime @map("committed_at") @db.Timestamptz
+ @@map("media_promotion_receipt")
+}
+model ActiveDerivative {
+ mediaRef String @map("media_ref")
+ generation BigInt
+ role String
+ reference Json
+ operationId String @map("operation_id")
+ @@id([mediaRef,generation,role])
+ @@map("media_active_derivative")
+}
+model PromotionAudit {
+ id String @id @db.Uuid
+ operationId String @unique @map("operation_id")
+ mediaRef String @map("media_ref")
+ generation BigInt
+ previousRevision BigInt @map("previous_revision")
+ revision BigInt
+ jobId String @map("job_id") @db.Uuid
+ token String @db.Uuid
+ epoch String
+ governance Json
+ transition String
+ actor String
+ committedAt DateTime @map("committed_at") @db.Timestamptz
+ @@map("media_promotion_audit")
+}

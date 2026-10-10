@@ -245,8 +245,8 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-033 (DONE) | EL-TK-032, EL-TK-056 | EL-TK-034, EL-TK-035, EL-TK-036, EL-TK-039, EL-TK-040 |
 | EL-TK-034 (DONE) | EL-TK-033 | EL-TK-041, EL-TK-042 |
 | EL-TK-035 (DONE) | EL-TK-033 | EL-TK-037 |
-| EL-TK-036 | EL-TK-033 | EL-TK-037 |
-| EL-TK-037 | EL-TK-035, EL-TK-036 | EL-TK-057; consumidores EL-EP-007 |
+| EL-TK-036 (DONE) | EL-TK-033 | EL-TK-037 |
+| EL-TK-037 (DONE) | EL-TK-035, EL-TK-036 | EL-TK-057; consumidores EL-EP-007 |
 | EL-TK-038 | EL-TK-032, EL-TK-055 | EL-TK-039, EL-TK-041, EL-TK-058 |
 | EL-TK-039 | EL-TK-033, EL-TK-038 | EL-TK-040; elegibilidad EL-EP-010 |
 | EL-TK-040 | EL-TK-033, EL-TK-039 | EL-TK-054 |
@@ -296,6 +296,8 @@ Cadena productiva:055 DONE →056 →033;032 →033;033 →035/036 →037 →057
 **CONFIRMED — EL-TK-034 DONE, 2026-10-10:** EL-TK-033→034 queda satisfecha. Las aristas 034→041/042 se conservan; completar 034 no satisface sus otras predecesoras ni cambia automáticamente su readiness. Véase el [cierre y evidencia](tickets/EL-TK-034.md).
 
 **CONFIRMED — EL-TK-035 DONE, 2026-10-10:** EL-TK-033→035 queda satisfecha. La arista 035→037 se conserva como dependencia satisfecha; EL-TK-037 aún espera EL-TK-036. Esta finalización no cambia el readiness de EL-TK-036/037 ni otras aristas. Véase el [cierre y evidencia](tickets/EL-TK-035.md).
+
+**CONFIRMED — EL-TK-037 DONE, 2026-10-10:** dependencias 035 y 036 satisfechas; implementación de promoción atómica CAS aprobada por reviewer y tester independiente (63/63 enfocadas, 262/262 regresión combinada, 21/21 EL-TK-056). Quedan satisfechas las dependencias de EL-TK-057 y consumidores de galería de EL-EP-007. Véase el [cierre](tickets/EL-TK-037.md) y la [evidencia](../../infra/validation/media-inspection/README.md#el-tk-037-successful-processing-final-validation).
 
 Portada:049 →050 →051 →052 conserva cadena funcional.050 consume contratos/adapters033/035/056/055 para integración real, no toda implementación guest ni pipeline duplicado.052 y057 comparten inventory/drain, no dependen bidireccionalmente.031 permite portada opcional; no exige procesamiento para preview sin portada. Son colaboraciones/precondiciones de integración explícitas, no nuevas predecesoras duras para construir handlers por puertos.
 

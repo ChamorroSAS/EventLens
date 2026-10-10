@@ -83,3 +83,22 @@ Omit `-VideosOnly` to run the combined inspection, quarantine, photo and video s
 The focused video run passed **60/60 tests**. The independent combined inspection, quarantine, photo and video regression passed **199/199**; its result keeps the primary ticket marker `EL-TK-033` and is not relabeled as a video-only run. The EL-TK-056 runtime regression passed **21/21**. Typecheck/build, repeat migration application, and final integrity checks passed: **18/18 source hashes** matched, the recorded and actual validation-image digests matched (`c47c90d934e33a7eb06d51542e6bbe577efe7be906a7c68ded8205309c7bdba4`), and the common migration assembly contained **9 unique migrations** with matching source/copy hashes.
 
 Evidence: [focused video run](evidence/video-focused-final/), [combined independent run](evidence/video-independent-final-3/), [EL-TK-056 runtime regression](../media-execution/evidence/video-independent-regression/), and [integrity verification](evidence/video-independent-final-3/integrity-check.json). These implementation results do not pass MEDIA-001, CAP-001, DR-001 or EXPORT-001, which remain `NOT_EVALUATED`. Maximum-size throughput and production composition remain outside this validation; the definitive Beta/production object-storage provider remains `DEFERRED`.
+
+## EL-TK-037 successful processing (final validation)
+
+Run the focused successful-processing unit and PostgreSQL integration suite from the repository root:
+
+```powershell
+$successEvidence = ".\infra\validation\media-inspection\evidence\success-$([DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss'))"
+.\infra\validation\media-inspection\Run.ps1 -SuccessOnly -Build -EvidenceDirectory $successEvidence
+```
+
+Omit `-SuccessOnly` to run the entire media-inspection suite (inspection, quarantine, photo, video, and successful processing).
+
+### EL-TK-037 final validation
+
+The focused successful processing run passed **63/63 tests** (55 PostgreSQL integration tests and 8 unit tests). The combined independent media-inspection regression passed **262/262 tests**, and the independent EL-TK-056 runtime regression passed **21/21 tests**. Typecheck, build, and repeat migration application passed.
+
+Evidence: [focused run](evidence/success-focused-final/), [combined independent regression](evidence/success-combined-regression/), and [EL-TK-056 runtime regression](../media-execution/evidence/success-independent-regression/).
+
+Coverage includes atomic CAS promotion to `PUBLISHED` (`AUTO`) or `PENDING_REVIEW` (`PRE_REVIEW`), governance revision reload without terminal failure (DEC-087), fail-closed protection against later restrictive states (`HIDDEN`, `TRASHED`, `DELETED`, `QUARANTINED`, `REJECTED`, `PROCESSING_FAILED`), idempotent ACK replay, strict coordinated parent admission locks, and zero partial owner effects on lease loss or failure. MEDIA-001, CAP-001, DR-001, and EXPORT-001 remain `NOT_EVALUATED`.
