@@ -69,7 +69,7 @@
 | EL-TK-032 | Encolar el procesamiento de un original aceptado | EL-EP-006 | DONE | P0 | Contrato de carga aceptada de EL-EP-005 | [EL-TK-032](tickets/EL-TK-032.md) |
 | EL-TK-033 | Inspeccionar un original antes de transformarlo | EL-EP-006 | DONE | P0 | EL-TK-032, EL-TK-056 | [EL-TK-033](tickets/EL-TK-033.md) |
 | EL-TK-034 | Aislar un original sospechoso en cuarentena | EL-EP-006 | DONE | P0 | EL-TK-033 | [EL-TK-034](tickets/EL-TK-034.md) |
-| EL-TK-035 | Generar derivados web de una fotografía aprobada | EL-EP-006 | READY | P0 | EL-TK-033 | [EL-TK-035](tickets/EL-TK-035.md) |
+| EL-TK-035 | Generar derivados web de una fotografía aprobada | EL-EP-006 | DONE | P0 | EL-TK-033 | [EL-TK-035](tickets/EL-TK-035.md) |
 | EL-TK-036 | Generar derivados web de un video aprobado | EL-EP-006 | READY | P0 | EL-TK-033 | [EL-TK-036](tickets/EL-TK-036.md) |
 | EL-TK-037 | Aplicar el resultado exitoso del procesamiento | EL-EP-006 | READY | P0 | EL-TK-035, EL-TK-036 | [EL-TK-037](tickets/EL-TK-037.md) |
 | EL-TK-038 | Reintentar automáticamente un procesamiento técnico transitorio | EL-EP-006 | READY | P0 | EL-TK-032, EL-TK-055 | [EL-TK-038](tickets/EL-TK-038.md) |
@@ -104,6 +104,8 @@
 **CONFIRMED — 2026-10-08, EL-EP-006:** remediación APPROVED de nueve existentes032/033/035/036/037/038/040/041/042 y seis nuevos053..058;034/039 VALID KEEP intactos. Total17 READY de requisitos; REQUIREMENTS_READY:YES; READY_FOR_IMPLEMENTATION:PARTIAL con7 gates técnicos localizados. UI006 YES. [Dictamen final](sessions/2026-10-08-el-ep-006-ticket-remediation-review.md). [Sesión](sessions/2026-10-08-el-ep-006-ticket-remediation.md).
 
 **HISTÓRICO CONFIRMED — paquete TB-01..05 ratificado (previo a ejecución/adopción):** ocho owners033/035/036/041/042/044/056/058 y tres nuevos059..061, once READY de requisitos tras [dictamen final APPROVED](sessions/2026-10-08-technical-blockers-ticket-review.md). REQUIREMENTS_READY:YES; READY_FOR_IMPLEMENTATION:PARTIAL (044/059YES propio,otros9NO full con scopes preparatorios habilitados). Dictámenes previos de001/006 conservan historia; el paquete sólo actualiza estos scopes. TB-03 contrato APPROVED, auth aún no implementada. PREPARATORY_SCOPE_READY/BLOCKED_SCOPE/BLOCKED_BY en cada owner;059 mínimo YES para implementación propia,060/061 NO hasta entorno real/PASS requerido. [Fuente ratificada](sessions/2026-10-08-technical-blockers-approved-contracts.md), [sesión del paquete](sessions/2026-10-08-technical-blockers-ticket-integration.md). No spikes ejecutados ni PASS declarados.
+
+**CONFIRMED — EL-TK-035 DONE, 2026-10-10:** candidatos fotográficos privados con rendiciones ARCH-015 implementados. Suite enfocada PASS 60/60; regresión combinada PASS 139/139; EL-TK-056 PASS 21/21; typecheck/build/migraciones y reviewers PASS. Véase el [cierre del ticket](tickets/EL-TK-035.md) y [evidencia](../../infra/validation/media-inspection/README.md#el-tk-035-photo-derivatives-final-validation). La dependencia 033→035 queda satisfecha; 037 aún depende de 036. Gates MEDIA-001/CAP-001/DR-001/EXPORT-001 siguen NOT_EVALUATED; no se selecciona storage definitivo.
 
 ## Superseded/deprecated
 

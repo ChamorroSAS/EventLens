@@ -1,0 +1,21 @@
+{
+  "ticket": "EL-TK-035",
+  "testedAt": "2026-10-10T16:06:21Z",
+  "result": "PASS",
+  "sourceManifest": "infra/validation/media-inspection/evidence/photo-final-source/source-manifest.json",
+  "workspaceFiles": {
+    "expected": 14,
+    "matched": 14
+  },
+  "builtImage": {
+    "reference": "eventlens-media-inspection:validation",
+    "imageId": "sha256:c40e73fad27ef86e046db51a85109a7017a2802ca03b2b929ba2962ca457cd72",
+    "embeddedFilesExpected": 12,
+    "embeddedFilesMatched": 12,
+    "hostOnlyFiles": [
+      "infra/spikes/src/provision.mjs",
+      "infra/validation/media-inspection/Run.ps1"
+    ]
+  },
+  "secretsRecorded": false
+}

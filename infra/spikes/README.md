@@ -53,6 +53,10 @@ This demonstrates **local logical/snapshot recoverability only**. Backups still 
 
 Desktop preview permits selecting a local file and observing browser rendering. It uploads nothing, creates no product UI and collects no evidence automatically. Chrome DevTools/Safari Responsive Design Mode support layout preparation only. User-confirmed physical iPhone/Android availability is recorded in EL-TK-061; both Chrome/Safari iOS use WebKit, Android Chrome supplies Blink. Physical format/codecs/playback evidence and complete corpus remain required for EL-TK-061, **not a blocker to preparing EL-TK-059**.
 
+For EL-TK-035 validation, keep corpus originals read-only and private: `corpus/physical` and `corpus/generated` are ignored by Git and excluded from Docker build contexts. The versioned `corpus/manifest.json` records case definitions; private registrations and run evidence remain separate and must not contain source bytes or sensitive EXIF/GPS. Validation reads the approved original and records run/source hashes separately; it does not regenerate EL-TK-061 corpus or physical results.
+
+The laboratory provisioner enables object versioning on the private `eventlens-lab` bucket. The runner gains only `GetObjectVersion` under `attempts/*`; bucket administration stays with provision. Rebuild and start the existing laboratory through `Lab.ps1 -Action build` and `Lab.ps1 -Action start` to reproduce this capability. Output verification reads actual stored bytes and records the returned version; this does not select a Beta/production storage provider.
+
 ## Readiness boundaries
 
 REQUIRED_FOR_SPIKES: real PostgreSQL/storage, candidate isolation/scratch/fault controls, corpus manifest/timeline/evidence and desktop preparation preview delivered here. EL-TK-060 must independently execute and document isolation/quiescence; EL-TK-061 requires explicit 060 PASS and full per-case corpus/playback evidence.

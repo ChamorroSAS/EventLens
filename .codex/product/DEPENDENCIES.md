@@ -123,7 +123,7 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-032 (DONE) | Contrato de carga aceptada de EL-EP-005 | EL-TK-033, EL-TK-038, EL-TK-041 |
 | EL-TK-033 (DONE) | EL-TK-032, EL-TK-056 | EL-TK-034, EL-TK-035, EL-TK-036, EL-TK-039, EL-TK-040 |
 | EL-TK-034 (DONE) | EL-TK-033 | EL-TK-041, EL-TK-042 |
-| EL-TK-035 | EL-TK-033 | EL-TK-037 |
+| EL-TK-035 (DONE) | EL-TK-033 | EL-TK-037 |
 | EL-TK-036 | EL-TK-033 | EL-TK-037 |
 | EL-TK-037 | EL-TK-035, EL-TK-036 | EL-TK-057; consumidores EL-EP-007 |
 | EL-TK-038 | EL-TK-032, EL-TK-055 | EL-TK-039, EL-TK-041, EL-TK-058 |
@@ -173,6 +173,8 @@ Cadena productiva:055 DONE →056 →033;032 →033;033 →035/036 →037 →057
 **CONFIRMED — EL-TK-033 DONE, 2026-10-09 hora local:** dependencias EL-TK-032/056 satisfechas; evidencia independiente 46/46 PASS y regresiones 055/056 PASS en el [cierre del ticket](tickets/EL-TK-033.md#cierre-de-implementación--2026-10-09-hora-local). No cambian las aristas downstream ni su readiness por inferencia; cada ticket conserva sus propios requisitos y predecesoras.
 
 **CONFIRMED — EL-TK-034 DONE, 2026-10-10:** EL-TK-033→034 queda satisfecha. Las aristas 034→041/042 se conservan; completar 034 no satisface sus otras predecesoras ni cambia automáticamente su readiness. Véase el [cierre y evidencia](tickets/EL-TK-034.md).
+
+**CONFIRMED — EL-TK-035 DONE, 2026-10-10:** EL-TK-033→035 queda satisfecha. La arista 035→037 se conserva como dependencia satisfecha; EL-TK-037 aún espera EL-TK-036. Esta finalización no cambia el readiness de EL-TK-036/037 ni otras aristas. Véase el [cierre y evidencia](tickets/EL-TK-035.md).
 
 Portada:049 →050 →051 →052 conserva cadena funcional.050 consume contratos/adapters033/035/056/055 para integración real, no toda implementación guest ni pipeline duplicado.052 y057 comparten inventory/drain, no dependen bidireccionalmente.031 permite portada opcional; no exige procesamiento para preview sin portada. Son colaboraciones/precondiciones de integración explícitas, no nuevas predecesoras duras para construir handlers por puertos.
 

@@ -9,10 +9,11 @@ const admin=new Client({host:'postgres',user:'lab_admin',password,database:'even
 const env={...process.env,DATABASE_URL:`postgresql://lab_admin:${encodeURIComponent(password)}@postgres:5432/${database}`,MEDIA_INSPECTION_RUN_ID:database};
 function run(args){const r=spawnSync('pnpm',args,{cwd:'/workspace',env,encoding:'utf8'});process.stdout.write(r.stdout??'');if(r.status!==0){process.stderr.write((r.stderr??'').replace(/postgres(?:ql)?:\/\/\S+/g,'[REDACTED_DATABASE_URL]'));throw Error('SCOPED_CHECK_FAILED');}}
 const quarantine=process.env.MEDIA_QUARANTINE_ONLY==='1';
-const result={ticket:quarantine?'EL-TK-034':'EL-TK-033',runId:database,testedAt:new Date().toISOString(),result:'FAIL',gates:{'MEDIA-001':'NOT_EVALUATED','CAP-001':'NOT_EVALUATED','DR-001':'NOT_EVALUATED','EXPORT-001':'NOT_EVALUATED'}};
+const photos=process.env.MEDIA_PHOTOS_ONLY==='1';
+const result={ticket:photos?'EL-TK-035':quarantine?'EL-TK-034':'EL-TK-033',runId:database,testedAt:new Date().toISOString(),result:'FAIL',gates:{'MEDIA-001':'NOT_EVALUATED','CAP-001':'NOT_EVALUATED','DR-001':'NOT_EVALUATED','EXPORT-001':'NOT_EVALUATED'}};
 try{
  for(let repeat=0;repeat<2;repeat++)for(const name of ['job-queue','media-execution','media-acceptance','media-inspection'])run(['--filter','@eventlens/'+name,'exec','prisma','migrate','deploy']);
  run(['--filter','@eventlens/media-inspection','typecheck']);run(['--filter','@eventlens/media-inspection','build']);
- run(['--filter','@eventlens/media-inspection','exec','vitest','run',...(quarantine?['test/quarantine.test.ts','test/quarantine.integration.test.ts']:[]),'--reporter=default','--reporter=json','--outputFile=/evidence/tests.json']);
+ run(['--filter','@eventlens/media-inspection','exec','vitest','run',...(photos?['test/photo-derivatives.test.ts','test/photo-derivatives.integration.test.ts']:quarantine?['test/quarantine.test.ts','test/quarantine.integration.test.ts']:[]),'--reporter=default','--reporter=json','--outputFile=/evidence/tests.json']);
  const tests=JSON.parse(readFileSync('/evidence/tests.json','utf8'));Object.assign(result,{result:tests.success?'PASS':'FAIL',tests:tests.numTotalTests,passed:tests.numPassedTests});
 }finally{writeFileSync('/evidence/result.json',JSON.stringify(result,null,2));await admin.end();}

@@ -10,11 +10,14 @@ if(!(await db.query("SELECT 1 FROM pg_roles WHERE rolname='lab_runner'")).rowCou
 await db.query('CREATE SCHEMA IF NOT EXISTS lab AUTHORIZATION lab_runner');
 await db.query('REVOKE CREATE ON SCHEMA public FROM PUBLIC');
 await db.end();
-const policy={Version:'2012-10-17',Statement:[{Effect:'Allow',Action:['s3:GetBucketLocation'],Resource:['arn:aws:s3:::eventlens-lab']},{Effect:'Allow',Action:['s3:ListBucket'],Resource:['arn:aws:s3:::eventlens-lab'],Condition:{StringLike:{'s3:prefix':['attempts/*']}}},{Effect:'Allow',Action:['s3:GetObject','s3:PutObject','s3:DeleteObject','s3:AbortMultipartUpload','s3:ListMultipartUploadParts'],Resource:['arn:aws:s3:::eventlens-lab/attempts/*']}]};
+const policy={Version:'2012-10-17',Statement:[{Effect:'Allow',Action:['s3:GetBucketLocation'],Resource:['arn:aws:s3:::eventlens-lab']},{Effect:'Allow',Action:['s3:ListBucket'],Resource:['arn:aws:s3:::eventlens-lab'],Condition:{StringLike:{'s3:prefix':['attempts/*']}}},{Effect:'Allow',Action:['s3:GetObject','s3:GetObjectVersion','s3:PutObject','s3:DeleteObject','s3:AbortMultipartUpload','s3:ListMultipartUploadParts'],Resource:['arn:aws:s3:::eventlens-lab/attempts/*']}]};
 writeFileSync('/tmp/policy.json',JSON.stringify(policy));
 const env={...process.env,MC_HOST_lab:`http://${encodeURIComponent(secret('s3_root_user'))}:${encodeURIComponent(secret('s3_root_password'))}@minio:9000`};
 function mc(...args){const r=spawnSync('mc',['--config-dir','/tmp/mc',...args],{env,encoding:'utf8'});if(r.status!==0){let detail=r.stderr??'';for(const name of ['pg_admin','pg_lab','s3_root_user','s3_root_password','s3_lab_user','s3_lab_password'])detail=detail.replaceAll(secret(name),'[REDACTED]');detail=detail.replace(/https?:\/\/\S+/g,'[REDACTED_ENDPOINT]');throw new Error(`MinIO initialization failed: ${args.slice(0,2).join(' ')} ${detail.slice(0,500)}`);}}
 mc('mb','--ignore-existing','lab/eventlens-lab');
+// Laboratory verification binds candidates to actual immutable versions. Bucket
+// administration stays with provision; the runner may only read scoped versions.
+mc('version','enable','lab/eventlens-lab');
 mc('mb','--ignore-existing','lab/eventlens-foreign');
 mc('anonymous','set','none','lab/eventlens-lab');
 mc('anonymous','set','none','lab/eventlens-foreign');

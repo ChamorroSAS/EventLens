@@ -1,0 +1,557 @@
+{
+  "runId": "media_inspection_bfafb3f39e6147d687b18e607ff6d6e1",
+  "observations": [
+    {
+      "case": "GEN-PNG-05e900ac07dc",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "5521405d-3ffc-4f21-b91f-b062cb286b52",
+        "jobId": "c6e73b86-cb84-4cfc-9c28-504812494e3c",
+        "executionToken": "96a9bdd1-ed50-4d07-a178-59b7034564da",
+        "fence": "1",
+        "epoch": "photos-epoch",
+        "mediaRef": "media:8446a4d2-515c-4e75-b76f-fb417ba11fd6",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "05e900ac07dcb96eb193f852a1ae780ca25411e0542afab9abf06f0633a6d3c0",
+        "originalVersion": "a5b71b3a-95ff-42d0-8c32-f26cd23eede5",
+        "safetyFingerprint": "d2275494368f7d163f7f33dd5dae91e448bb6979e9bdc50ffb1223397edc3950",
+        "attemptId": "c64fb6ed-fc49-4d66-ac48-dd34cfabe72b",
+        "durationMs": 1611,
+        "inputFormat": "PNG",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/c497b806c90b19d5c0d7963239edd9fc9337faa2519aedfededfb5e8ce386819/1/c64fb6ed-fc49-4d66-ac48-dd34cfabe72b/thumbnail.jpg",
+            "immutableVersion": "df8f73b7-9ba3-43a5-a095-34df042f50e3",
+            "sha256": "c3b4e3a083202233a79f2b5f8d459448c9c02c3b00dfedf91ea256ccc238506c",
+            "sizeBytes": 13478,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 320,
+            "height": 240
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/c497b806c90b19d5c0d7963239edd9fc9337faa2519aedfededfb5e8ce386819/1/c64fb6ed-fc49-4d66-ac48-dd34cfabe72b/preview.jpg",
+            "immutableVersion": "2b3b8d75-57d8-4d18-b46d-1743e69d6fc1",
+            "sha256": "c3b4e3a083202233a79f2b5f8d459448c9c02c3b00dfedf91ea256ccc238506c",
+            "sizeBytes": 13478,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 320,
+            "height": 240
+          }
+        ]
+      }
+    },
+    {
+      "case": "GEN-WEBP-c5d9b671d66e",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "b9401d6d-152b-4419-a5be-81bdab481d9a",
+        "jobId": "2c43ff5c-4d87-49b2-95b6-8a70634de681",
+        "executionToken": "621ffa9f-3325-4f58-8cce-91edd8c44d93",
+        "fence": "1",
+        "epoch": "photos-epoch",
+        "mediaRef": "media:84539273-3d37-4b78-9cfd-275dc0fe9ad6",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "c5d9b671d66e0d4031fb8b9cc5196713597cf8c10dcc0bddc44ac12f2d097f76",
+        "originalVersion": "51f12df6-f2cb-4a21-8ad9-ff7adde03c22",
+        "safetyFingerprint": "43a760e7e2da2c3ebc61ec924fcaba591f3c770d8ee23ec0b7de3224b5fa8152",
+        "attemptId": "4bdb9427-1a3a-4607-aa32-2ceb44ecf81e",
+        "durationMs": 1542,
+        "inputFormat": "WEBP",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/0abd2594c599329005b57b5c4c6bd929073dac7840639d9846440d191cb9c24f/1/4bdb9427-1a3a-4607-aa32-2ceb44ecf81e/thumbnail.jpg",
+            "immutableVersion": "1225c20d-f80a-497b-808b-a566f9a9567d",
+            "sha256": "ac80c52ce8dff8a84bb5960a8855e5f3e9f87f1bad30a65b15429396cfffa295",
+            "sizeBytes": 8926,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 320,
+            "height": 240
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/0abd2594c599329005b57b5c4c6bd929073dac7840639d9846440d191cb9c24f/1/4bdb9427-1a3a-4607-aa32-2ceb44ecf81e/preview.jpg",
+            "immutableVersion": "09270324-15b0-4dc5-8b85-f6d46e4b3f64",
+            "sha256": "ac80c52ce8dff8a84bb5960a8855e5f3e9f87f1bad30a65b15429396cfffa295",
+            "sizeBytes": 8926,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 320,
+            "height": 240
+          }
+        ]
+      }
+    },
+    {
+      "case": "ANDROID-JPEG-67929ef4020b",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "d3da9f02-d8a1-44d5-896d-d536ad013278",
+        "jobId": "3a14fce9-b255-4659-b6c9-99c283d2192b",
+        "executionToken": "6653efb0-1789-44d2-b871-2bbc0a55f05a",
+        "fence": "1",
+        "epoch": "photos-epoch",
+        "mediaRef": "media:c3c7255c-c564-4bf9-a8a2-cae3263e57e1",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "67929ef4020bb01e502a98b82d4dc67f1fd8b29431135a03ace1d9be79b7f68a",
+        "originalVersion": "31fa7530-46d0-4053-b315-5b782e68095f",
+        "safetyFingerprint": "852aeecbbc80cf981a9bb9a5546c378193f0ba587f22ffe8fddff13d7a3a47df",
+        "attemptId": "72bfaf8a-0682-45d4-89c2-1de714369e32",
+        "durationMs": 1715,
+        "inputFormat": "JPEG",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/d069b905524329fd0e8d22a9d0ad0b7ce76b95be82100a1b6ff9e86a3eb9ed71/1/72bfaf8a-0682-45d4-89c2-1de714369e32/thumbnail.jpg",
+            "immutableVersion": "7471d38a-43ab-4275-9060-4eb4e7214808",
+            "sha256": "f23592dcca53474baf679c4a1e6f1266c978051d8bc50942102f60dcbcea3476",
+            "sizeBytes": 12500,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 320,
+            "height": 427
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/d069b905524329fd0e8d22a9d0ad0b7ce76b95be82100a1b6ff9e86a3eb9ed71/1/72bfaf8a-0682-45d4-89c2-1de714369e32/preview.jpg",
+            "immutableVersion": "fc250078-826d-4fa5-a778-c31689585cb7",
+            "sha256": "71fabe6cffd3ed849d2294b8afd62b6148c9428de778a1d4639e01c1ec8a4874",
+            "sizeBytes": 40771,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 960,
+            "height": 1280
+          }
+        ]
+      }
+    },
+    {
+      "case": "ANDROID-JPEG-5ee797c1e05a",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "c53ca6f9-9ab1-41b6-9161-b759217837b7",
+        "jobId": "a0aa8bef-a5b0-4d3d-afe8-779cd83958fe",
+        "executionToken": "20bb77ea-42a3-4b87-a335-f70a66e0e02a",
+        "fence": "1",
+        "epoch": "photos-epoch",
+        "mediaRef": "media:26073afd-084e-4730-ae4a-b1c889d74896",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "5ee797c1e05ae18ce26dbb4c25afb5a2e0cf65bb38f5a6d7040659ad960f0853",
+        "originalVersion": "f2b1db3a-6ee6-4fe5-b711-50995b0173fc",
+        "safetyFingerprint": "3fc453ace191ace8f83f1df43cd13f5496c0c6c89a7dd420a95438a8e04d782c",
+        "attemptId": "fdefbbec-0f8c-44b9-8d06-c1c7291a53a5",
+        "durationMs": 2165,
+        "inputFormat": "JPEG",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/6a3940b11262ebab86a402d9aced5b6c54e69fa0c4ab57f1cc605c7989f3503c/1/fdefbbec-0f8c-44b9-8d06-c1c7291a53a5/thumbnail.jpg",
+            "immutableVersion": "80d2f9cd-fa79-4ed9-ad3e-cd0e2ae55f0f",
+            "sha256": "e640c772dd93d4e7bbf67aa0839ca363b2b0ed3d2e1534f8b3644f4708f500fe",
+            "sizeBytes": 8456,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 320,
+            "height": 240
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/6a3940b11262ebab86a402d9aced5b6c54e69fa0c4ab57f1cc605c7989f3503c/1/fdefbbec-0f8c-44b9-8d06-c1c7291a53a5/preview.jpg",
+            "immutableVersion": "90b9fab0-6b07-4abf-8274-497ab517a7c6",
+            "sha256": "dedf9c3f4a081cf90dcc93f5753520ea1ea58671289baa389c4c4b859f687516",
+            "sizeBytes": 27349,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 960,
+            "height": 720
+          }
+        ]
+      }
+    },
+    {
+      "case": "HEIF-GENERIC-MIF1",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "a1f6eb27-9822-4648-bdda-c80f74b01a5c",
+        "jobId": "6b26a08d-d87f-4737-b818-ef9627900ce5",
+        "executionToken": "d28635e6-d6b6-4796-afef-4eadd940ef23",
+        "fence": "1",
+        "epoch": "photos-epoch",
+        "mediaRef": "media:1da2615b-5432-49ed-9908-3b9360566122",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "94b622a02f65d9e88a15b8b106b744ecdda439bb67aedca9296ecfb28b96d459",
+        "originalVersion": "f5cccb1c-7fc8-4420-bfe6-8f0f2177d31a",
+        "safetyFingerprint": "21abd9658e037f80286a2526e920486abab9278ce6b4754dbcdfdc2bf697f727",
+        "attemptId": "1c5730a7-eec8-41aa-a574-0a2454269f01",
+        "durationMs": 1965,
+        "inputFormat": "HEIF",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/876e3f7ad0c5fe785cb7c1d6a43fbeb935404dff0af1bed15c2c402dba39057f/1/1c5730a7-eec8-41aa-a574-0a2454269f01/thumbnail.jpg",
+            "immutableVersion": "d61e60c1-5ae6-4a73-8cf6-8e168930bbb3",
+            "sha256": "747093d1da38407f488850be6f471c2658142919b16499ecfacef35a854be33b",
+            "sizeBytes": 7505,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 160,
+            "height": 120
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/876e3f7ad0c5fe785cb7c1d6a43fbeb935404dff0af1bed15c2c402dba39057f/1/1c5730a7-eec8-41aa-a574-0a2454269f01/preview.jpg",
+            "immutableVersion": "43921857-187c-4a13-be09-a0d802f8ddf0",
+            "sha256": "747093d1da38407f488850be6f471c2658142919b16499ecfacef35a854be33b",
+            "sizeBytes": 7505,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 160,
+            "height": 120
+          }
+        ]
+      }
+    },
+    {
+      "case": "GPS-JPEG",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "d0ca17a4-9325-4afc-bd47-56216e7ead29",
+        "jobId": "f8df4d10-075a-409a-876a-1b5c17c99810",
+        "executionToken": "2e6f21d4-7832-458f-ac00-851e4d82dd16",
+        "fence": "1",
+        "epoch": "photos-epoch",
+        "mediaRef": "media:f3c23ab6-499e-4b1e-b064-901f3eb306a1",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "8922e9f3243d0a7baa5f70e96073d363fc43eb856b7c73c131eb39e4d691527a",
+        "originalVersion": "2367082a-c0af-4e9c-b698-e3d0bec58184",
+        "safetyFingerprint": "56913f63748eab4ae828500b097d12309ba33495f21ab49c56152da557ee3f3d",
+        "attemptId": "8507956d-f8d4-4cce-8c1b-065c33ed2bb9",
+        "durationMs": 1796,
+        "inputFormat": "JPEG",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/2f792d1eaccf3358ab7b083090c18406ca82b00464b717b78ae4f957b96fb160/1/8507956d-f8d4-4cce-8c1b-065c33ed2bb9/thumbnail.jpg",
+            "immutableVersion": "f5c9aa49-9e4b-4040-b9c2-441332ac87c7",
+            "sha256": "ce2da6a7dd38d389fe7669ed3c72c3f684e4b8fe46e8be30d534bd96494c3f19",
+            "sizeBytes": 5281,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 160,
+            "height": 120
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/2f792d1eaccf3358ab7b083090c18406ca82b00464b717b78ae4f957b96fb160/1/8507956d-f8d4-4cce-8c1b-065c33ed2bb9/preview.jpg",
+            "immutableVersion": "ef1dd1ab-4a7b-47c0-b2f5-de159433769d",
+            "sha256": "ce2da6a7dd38d389fe7669ed3c72c3f684e4b8fe46e8be30d534bd96494c3f19",
+            "sizeBytes": 5281,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 160,
+            "height": 120
+          }
+        ]
+      }
+    },
+    {
+      "case": "GPS-HEIF",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "7fa73cac-8c41-4594-9e76-45125cd3737d",
+        "jobId": "ddc0debb-b6cb-459a-92bc-2b54820355e3",
+        "executionToken": "337b7163-a450-4696-b5ed-7d27dc3485c8",
+        "fence": "1",
+        "epoch": "photos-epoch",
+        "mediaRef": "media:314ce6c6-843b-42c2-8a88-10e83bb97565",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "970151ad277495738b31efb8232fbbeb1c7e2356dccdc6a34ec066924bb3dd47",
+        "originalVersion": "4319e698-611f-43bd-8bd4-781e24545029",
+        "safetyFingerprint": "210be06eadb130fc6b4de45d19dd15b6fe0db60af463db119f119b74bdc0e935",
+        "attemptId": "cd07edd5-f44a-4aad-9220-7924c3c264b6",
+        "durationMs": 1925,
+        "inputFormat": "HEIF",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/4663ed217381ea385ae263082d9d14883eaf08e865bf8fe6c3d338e01a180441/1/cd07edd5-f44a-4aad-9220-7924c3c264b6/thumbnail.jpg",
+            "immutableVersion": "03d2107a-3f59-4f50-bca4-ddfb193ae630",
+            "sha256": "854e0856bac0e79b239d4fd146e3a5eda0ab92b50e9421f92cf836fba74b2223",
+            "sizeBytes": 7496,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 160,
+            "height": 120
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/4663ed217381ea385ae263082d9d14883eaf08e865bf8fe6c3d338e01a180441/1/cd07edd5-f44a-4aad-9220-7924c3c264b6/preview.jpg",
+            "immutableVersion": "237b6ac5-63b8-4aef-a2c4-e2b274780ed1",
+            "sha256": "854e0856bac0e79b239d4fd146e3a5eda0ab92b50e9421f92cf836fba74b2223",
+            "sizeBytes": 7496,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 160,
+            "height": 120
+          }
+        ]
+      }
+    },
+    {
+      "case": "BOUNDARY-1x1",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "99f5b1ad-91cc-41d3-be29-c47889734efe",
+        "jobId": "f164a8ce-e7a2-4394-af89-1317f51e6c0a",
+        "executionToken": "724f2950-859f-4a3a-912f-87acd2d87201",
+        "fence": "1",
+        "epoch": "photos-epoch",
+        "mediaRef": "media:c965729f-1f6a-4017-bbba-0c7b2ec8a5bb",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "744f06fdd78a2c00568b1df740f1b7f4e3ad4aa1ddfe31e56e1990011d5f0f8c",
+        "originalVersion": "e2d9d7e2-677e-48c7-9346-015a9a21f3d0",
+        "safetyFingerprint": "611c76dfe22c93dca99175585c923ca19551af92fc170358ae635b13e019ae0d",
+        "attemptId": "22a8954e-506b-4efc-b274-5f3a9f162f01",
+        "durationMs": 1791,
+        "inputFormat": "PNG",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/5a4536a7730d7e91b21751f2f07f31c47150c249f67f0e8c4feac2f27a341bca/1/22a8954e-506b-4efc-b274-5f3a9f162f01/thumbnail.jpg",
+            "immutableVersion": "3bb25864-b447-47de-b16a-c11750ed4309",
+            "sha256": "2d611764cafa93fdcbbd89392d75885170c3968a41d90771dac4ab4cb5e078b7",
+            "sizeBytes": 190,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 1,
+            "height": 1
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/5a4536a7730d7e91b21751f2f07f31c47150c249f67f0e8c4feac2f27a341bca/1/22a8954e-506b-4efc-b274-5f3a9f162f01/preview.jpg",
+            "immutableVersion": "0a07e797-dff6-457a-b492-a870eebd0928",
+            "sha256": "2d611764cafa93fdcbbd89392d75885170c3968a41d90771dac4ab4cb5e078b7",
+            "sizeBytes": 190,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 1,
+            "height": 1
+          }
+        ]
+      }
+    },
+    {
+      "case": "BOUNDARY-1200x1",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "bcfaac70-e745-4910-a422-770ff3999589",
+        "jobId": "288ac794-3e77-47a7-882a-f3aea435fa54",
+        "executionToken": "c066ee2d-e48b-4a77-bd71-6e9adfead39f",
+        "fence": "1",
+        "epoch": "photos-epoch",
+        "mediaRef": "media:635a8228-1998-49f7-bbda-59614b138f21",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "87503406b02b1c07beb78c4d2e9f4eea7ac8bc4072b34f3299c4141b22c13e49",
+        "originalVersion": "34be1617-cf27-468d-9566-251012129cb8",
+        "safetyFingerprint": "f500da7e6e0510461757f4f3766b6b74af6f959ff917cb620874790bedb43f51",
+        "attemptId": "948fd311-0db5-4e3e-803a-4332a1ba7457",
+        "durationMs": 1710,
+        "inputFormat": "PNG",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/bdf1f09e6e66dfab6243ec47d9dbb2a6ed001745e321e1c604fe37c9d6632909/1/948fd311-0db5-4e3e-803a-4332a1ba7457/thumbnail.jpg",
+            "immutableVersion": "fd0574e9-1f61-4be9-83d3-957276793ef0",
+            "sha256": "9c7c25a2ffa584ad34abb9cead36cbd26fd52b8550d6cd49fa7660e25ead7c7b",
+            "sizeBytes": 780,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 320,
+            "height": 1
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/bdf1f09e6e66dfab6243ec47d9dbb2a6ed001745e321e1c604fe37c9d6632909/1/948fd311-0db5-4e3e-803a-4332a1ba7457/preview.jpg",
+            "immutableVersion": "4fd64ea6-4b83-414a-90d0-13ea17086098",
+            "sha256": "114ec5082162c011129c8fe5b7c772a969f56ee7cb16037fde35b6545519b6d6",
+            "sizeBytes": 1130,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 960,
+            "height": 1
+          }
+        ]
+      }
+    },
+    {
+      "case": "BOUNDARY-1x1200",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "adb1acfe-91c5-4705-bd8d-dd53aad0d098",
+        "jobId": "f80c41d9-73d9-46c8-a69c-8786eef8d247",
+        "executionToken": "ed717435-ad50-428f-b6df-3b5dd07ded3d",
+        "fence": "1",
+        "epoch": "photos-epoch",
+        "mediaRef": "media:3027afcc-9e96-4cbe-9002-10dc368c6344",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "67c86343414791aacfc6fd725e2a90c0b3e7cabbc23e7726f847f3e8e6c01c95",
+        "originalVersion": "04b2d652-8a43-4b23-8b6f-8956d5dbf5e1",
+        "safetyFingerprint": "790a1bd80dc02e6af1e29d0ec1799e317b611b3443dc51d80538fcb72df02d21",
+        "attemptId": "abeb0bb1-0af0-48c1-9c17-53558660908d",
+        "durationMs": 1809,
+        "inputFormat": "PNG",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/a87f3babd3803ef5ca41a0339072e46f38671c239346ab01482ba4f1655f073f/1/abeb0bb1-0af0-48c1-9c17-53558660908d/thumbnail.jpg",
+            "immutableVersion": "0ff4f8f4-34a7-4b95-aa9b-94e902a8a80d",
+            "sha256": "577836af8c85b3fac2aef7e496805c3dbc167b7f3b3b6435b80f502f5e35d805",
+            "sizeBytes": 686,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 1,
+            "height": 1200
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/a87f3babd3803ef5ca41a0339072e46f38671c239346ab01482ba4f1655f073f/1/abeb0bb1-0af0-48c1-9c17-53558660908d/preview.jpg",
+            "immutableVersion": "ed626c3f-0c9a-4016-87b7-2ecd8d99dd5e",
+            "sha256": "577836af8c85b3fac2aef7e496805c3dbc167b7f3b3b6435b80f502f5e35d805",
+            "sizeBytes": 686,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 1,
+            "height": 1200
+          }
+        ]
+      }
+    },
+    {
+      "case": "BOUNDARY-319x21",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "a5527a91-fe73-4597-a213-b38cf73c0358",
+        "jobId": "9231c004-b6ff-4c7f-bf6b-be9ce4f50302",
+        "executionToken": "28db34bb-f8c6-401c-9716-a11599fca3da",
+        "fence": "1",
+        "epoch": "photos-epoch",
+        "mediaRef": "media:365d6337-8a23-4831-8cfb-6e2e85f07baf",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "3714ccfdb9c116394922a5ca3308eb03b152342025eb01f01a16fddc0fd007f2",
+        "originalVersion": "ac6e62b7-e38d-4538-9cba-288ab5e87a1e",
+        "safetyFingerprint": "2b73181b3777ba776804290e23689a5f1ebe288aa0fb37bc0ab5e305a9442b5b",
+        "attemptId": "0ce1efee-f74d-4206-9d57-15ed9e5d2830",
+        "durationMs": 1737,
+        "inputFormat": "PNG",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/fa4176697a434a60977069d8b9684a3efc179d1aebb0a92cf96d12f68dd69c65/1/0ce1efee-f74d-4206-9d57-15ed9e5d2830/thumbnail.jpg",
+            "immutableVersion": "94eb1a9f-0fec-4224-8d10-ca8029bf6bb0",
+            "sha256": "325e76b1403e3cf026d9e6ccc25fc8d33194a3464b4f8e3ef9ec4bb3fa7490ef",
+            "sizeBytes": 918,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 319,
+            "height": 21
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/fa4176697a434a60977069d8b9684a3efc179d1aebb0a92cf96d12f68dd69c65/1/0ce1efee-f74d-4206-9d57-15ed9e5d2830/preview.jpg",
+            "immutableVersion": "37372850-bd50-4355-8f02-fea6f7ef4b5e",
+            "sha256": "325e76b1403e3cf026d9e6ccc25fc8d33194a3464b4f8e3ef9ec4bb3fa7490ef",
+            "sizeBytes": 918,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 319,
+            "height": 21
+          }
+        ]
+      }
+    },
+    {
+      "case": "BOUNDARY-321x19",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "2d6f4e6c-34cb-475d-ae68-d749d2bd5865",
+        "jobId": "11c34d81-9ea9-4d92-a1a2-a93bb9fd7122",
+        "executionToken": "3e99a3b6-1e87-4902-8ccc-03b8f5c361c0",
+        "fence": "1",
+        "epoch": "photos-epoch",
+        "mediaRef": "media:a638aae2-c1af-46d2-b125-972053264e8d",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "98d44d170c96e447b234d79b895405ba7bce08745721b9fba736f3efb03a6f5e",
+        "originalVersion": "c46b6d78-39df-4417-8eb6-5561a43eabf8",
+        "safetyFingerprint": "65905f83d352ca305b66b158bfdd899b2dcde5259581b87079eceb9f25621651",
+        "attemptId": "b74f6420-6fc6-4854-ab25-58994c6e3099",
+        "durationMs": 1667,
+        "inputFormat": "PNG",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/9af89525505062c6fc5c429ddd43e0c1a41f2242dbd4de0dbfcfc7d7511c1731/1/b74f6420-6fc6-4854-ab25-58994c6e3099/thumbnail.jpg",
+            "immutableVersion": "7d5d8d8a-ecd0-475c-a45b-225760fc1b45",
+            "sha256": "437d3e24ff7884ad84a0fe785a2706ed2e350120449a2fdd6a1485972a0446c7",
+            "sizeBytes": 984,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 320,
+            "height": 19
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/9af89525505062c6fc5c429ddd43e0c1a41f2242dbd4de0dbfcfc7d7511c1731/1/b74f6420-6fc6-4854-ab25-58994c6e3099/preview.jpg",
+            "immutableVersion": "2ef264fc-806f-4672-be3e-df0420b1da3b",
+            "sha256": "986d435c350292c76e0dba5f0b0f8f1d72e83a508e5988705cbff8944c126e41",
+            "sizeBytes": 875,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 321,
+            "height": 19
+          }
+        ]
+      }
+    }
+  ]
+}

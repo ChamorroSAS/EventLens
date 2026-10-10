@@ -1,0 +1,63 @@
+{
+    "ticket":  "EL-TK-035",
+    "recordedAt":  "2026-10-10T15:56:21.6479587Z",
+    "scope":  "final source; no corpus or historical evidence regenerated",
+    "files":  [
+                  {
+                      "path":  "infra/spikes/src/provision.mjs",
+                      "sha256":  "c217b465f5eae9c4eeed8328054566b1f68f819f5cc4d8ee07df10b146969c5c"
+                  },
+                  {
+                      "path":  "infra/validation/media-inspection/run.mjs",
+                      "sha256":  "6f92d9d9d825ef04ea9ee75b2f20c1f4af1b41c6c194452e92b4f96ad839d78c"
+                  },
+                  {
+                      "path":  "infra/validation/media-inspection/Run.ps1",
+                      "sha256":  "04f0f172f50dfb0c182618a73e11c143e65ca719296668ae34ff80f9e8e80a8d"
+                  },
+                  {
+                      "path":  "packages/media-execution/src/contracts.ts",
+                      "sha256":  "379da035390e49fe66b7155365b30b7c460f39d2fe26e9fd5b6b855f7f3cd574"
+                  },
+                  {
+                      "path":  "packages/media-execution/src/docker-runtime.ts",
+                      "sha256":  "2e24257a5dfcc369632bf0d4045d6694c2eb510571cea63b7a3e46aa3e502533"
+                  },
+                  {
+                      "path":  "packages/media-execution/src/supervisor.ts",
+                      "sha256":  "7ae8622e255fc62887dcfa2ac7b2a31d7aef55b7249783ef77cd96ef705b6ba9"
+                  },
+                  {
+                      "path":  "packages/media-execution/test/laboratory-storage.ts",
+                      "sha256":  "8d2cc5eecabafb7c4ef9330ae23831f04b045a1f4b3a40ceb7271d86320a5483"
+                  },
+                  {
+                      "path":  "packages/media-inspection/prisma/migrations/202610100008_photo_candidates/migration.sql",
+                      "sha256":  "46ccb16925dc88bbbe3946234938f8ada26918fac902c837a89fc002fc7d5078"
+                  },
+                  {
+                      "path":  "packages/media-inspection/prisma/schema.prisma",
+                      "sha256":  "3ca8516899dcc1c7f571483fc55fd4525979f40f913620846f6b7a95d1a71a4f"
+                  },
+                  {
+                      "path":  "packages/media-inspection/src/index.ts",
+                      "sha256":  "e73a3e2010a1499c8bdd3b0dc37ebc43ac736c005268b86a04f2ee4d66e27b39"
+                  },
+                  {
+                      "path":  "packages/media-inspection/src/photo-derivatives.ts",
+                      "sha256":  "baaea984d356e816cf8d4028dff84be2229d0c4a753aab9c0491071f3c290281"
+                  },
+                  {
+                      "path":  "packages/media-inspection/test/photo-derivatives.integration.test.ts",
+                      "sha256":  "4632567ffe974e7da1e2b575ba413efa4f023c19b75834b0b666f4ba4b62d1ce"
+                  },
+                  {
+                      "path":  "packages/media-inspection/test/photo-derivatives.test.ts",
+                      "sha256":  "c05ad6d1bc1b6244d5fe37ee2ad0278b4b0252bb8ba27e539eb9ed0b29bdc0cf"
+                  },
+                  {
+                      "path":  "packages/media-inspection/tsconfig.json",
+                      "sha256":  "6d0ad80777d749caf7d540acaeda8f85eb9901e68c4b873ff7719fbc8dc9fec9"
+                  }
+              ]
+}
