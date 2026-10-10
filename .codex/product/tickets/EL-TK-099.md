@@ -4,51 +4,54 @@
 EL-EP-007
 
 ## Status
-DRAFT
+READY
+
+REQUIREMENTS_READY: YES
+READY_FOR_IMPLEMENTATION: YES
 
 ## User story
 **Como** invitado desde móvil, **quiero** recorrer la galería y abrir fotos o videos autorizados, **para** disfrutar los recuerdos del evento desde el navegador.
 
 ## Alcance funcional
-Integrar Gallery, GalleryMediaCard, GalleryViewer, GalleryEmptyState, GalleryDisabledState, Image/VideoPlayer, MediaViewer y ReportContentAction usando los contratos autorizados del servidor.
+Integrar Gallery, GalleryMediaCard, GalleryViewer, GalleryEmptyState, GalleryDisabledState, ImagePlayer, VideoPlayer, MediaViewer y ReportContentAction usando los contratos autorizados del servidor y el catálogo existente (§5.20..24).
 
 ## Fuera de alcance
 Descarga guest, comentarios/reacciones, favoritos, slideshow, moderación o implementación del flujo de reportes de EL-EP-009.
 
 ## Criterios de aceptación
 ### Escenario 1
-**Dado** una galería habilitada con publicaciones, **cuando** el invitado navega, **entonces** ve el grid autorizado y puede abrir un viewer dentro del viewport.
+**Dado** una galería habilitada con publicaciones, **cuando** el invitado navega, **entonces** ve el grid autorizado y puede abrir un viewer modal dentro del viewport con controles visibles.
 
 ### Escenario 2
-**Dado** una galería vacía, **cuando** entra, **entonces** ve un estado vacío distinto del estado de galería deshabilitada.
+**Dado** una galería vacía, **cuando** entra, **entonces** ve un estado vacío (`GalleryEmptyState`) claramente distinguible del estado de galería deshabilitada (`GalleryDisabledState`).
 
 ### Escenario 3
-**Dado** un bloque incremental que falla, **cuando** ocurre el error, **entonces** conserva resultados previos y permite retry autorizado sin borrar el grid.
+**Dado** un bloque incremental que falla por red, **cuando** ocurre el error, **entonces** conserva los resultados previos y permite un retry accesible sin reiniciar ni borrar el grid.
 
 ### Escenario 4
-**Dado** media retirada o acceso revocado mientras el viewer está abierto, **cuando** se revalida, **entonces** deja de mostrar nuevas autorizaciones y presenta un estado comprensible.
+**Dado** media retirada o acceso revocado mientras el viewer está abierto, **cuando** se solicita siguiente o se revalida, **entonces** deja de emitir autorizaciones y presenta un mensaje neutro comprensible.
 
 ## Reglas de negocio
-No existe botón de descarga guest. ReportContentAction solo deriva al contrato propietario de EL-EP-009 cuando esté disponible.
+No existe botón de descarga guest. ReportContentAction solo deriva al contrato de recepción de reportes de EL-EP-009. Cero inferencia local de visibilidad: toda autorización proviene del servidor.
 
 ## Validaciones y permisos
-La UI consume capacidades del servidor y no infiere visibilidad privada localmente.
+La UI consume capacidades del servidor (`GuestGallerySnapshot`, `MediaViewGrant`) y no infiere visibilidad privada localmente.
 
 ## Casos de error y estados vacíos
-Vacío, deshabilitado, media no disponible, derivado fallido, acceso revocado, error incremental y sesión expirada.
+Vacío (`GalleryEmptyState`), deshabilitado (`GalleryDisabledState`), media no disponible, derivado fallido, acceso revocado, error incremental y sesión expirada.
 
 ## Datos / contratos afectados
 Cliente OpenAPI de GuestGallerySnapshot y MediaViewGrant; integración contractual con ReportContentAction.
 
 ## Dependencias técnicas y funcionales
-Handoff UI/UX de EL-EP-007.
+Handoff UI/UX de EL-EP-007 (.codex/context/ui-mvp-epic-review.md#el-ep-007).
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-096, EL-TK-097, contrato de reportes de EL-EP-009.
-- **blocks:** EL-TK-101 y UI downstream que consuma galería.
+- **depends_on:** EL-TK-096, EL-TK-097.
+- **blocks:** EL-TK-101, EL-TK-102.
 
 ## Pruebas requeridas
-Component/unit, E2E móvil, grid/viewer, teclado/Escape/anterior/siguiente, foco, carga incremental, revocación y WCAG 2.2 AA.
+Component/unit, E2E móvil, grid/viewer, teclado/Escape/anterior/siguiente, retorno de foco, carga incremental, revocación y WCAG 2.2 AA.
 
 ## Observabilidad / auditoría
 Sin telemetría invasiva ni logging de URLs temporales.
@@ -65,3 +68,24 @@ Q-005, Q-016; DEC-003, DEC-007, DEC-018, DEC-032, DEC-033; EL-EP-007; ui-mvp-epi
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Integración UI/UX y Readiness — 2026-10-10
+
+- **Handoff canónico:** Conforme a `.codex/context/ui-mvp-epic-review.md#el-ep-007` y catálogo de componentes (§5.20..24).
+- **Componentes reutilizados (sin inventar nuevos):**
+  - `Gallery`: Contenedor principal de la galería.
+  - `GalleryMediaCard`: Tarjeta individual en el grid con thumbnail, badge de video/duración y evento de apertura.
+  - `GalleryViewer`: Visualizador overlay dentro del viewport con controles accesibles.
+  - `GalleryEmptyState`: Mensaje cuando el evento permite galería pero aún no hay publicaciones (`"Aún no hay recuerdos publicados en este evento."`).
+  - `GalleryDisabledState`: Mensaje cuando la galería está desactivada (`"La galería de recuerdos no está habilitada para invitados en este momento."`).
+  - Shell / Header / `EventAccessStatus`: Cabecera guest y estado de acceso.
+  - `ImagePlayer` / `VideoPlayer` / `MediaViewer`: Renderizador del derivado con controles nativos/accesibles.
+  - `ReportContentAction`: Botón para abrir el diálogo de reporte de EL-EP-009.
+- **Extensiones de componentes (DESIGNED):**
+  - Viewer: Manejo de derivado no listo o fallido con opción de reintento.
+  - Navegación: Botones anterior/siguiente visibles además de flechas de teclado; no se exige gesto de swipe táctil exclusivo.
+  - Gestión de foco: Atrapamiento de foco en el viewer y retorno estricto a la `GalleryMediaCard` al cerrar (Escape o botón de cierre).
+- **Accesibilidad y Responsive (WCAG 2.2 AA):**
+  - Mobile-first: Grid adaptativo de 2 columnas en móvil a 3-4 en tablet/desktop conservando el orden de lectura.
+  - Touch targets ≥ 44×44px en controles de reproducción, navegación y cierre.
+  - Anuncios con `aria-live="polite"` para carga de nuevos bloques y errores. Controles de video con subtítulos/pausa sin autoplay forzado.
