@@ -11,3 +11,11 @@ model Inspection {
  @@id([mediaRef,generation])
  @@map("media_inspection")
 }
+model PhotoCandidate {
+ mediaRef String @map("media_ref")
+ generation BigInt
+ token String @db.Uuid
+ fact Json
+ @@id([mediaRef,generation,token])
+ @@map("media_photo_candidate")
+}

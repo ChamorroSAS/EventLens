@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** organizador, **quiero** regenerar el enlace/QR de acceso de mi evento, **para** invalidar una credencial pública filtrada.
@@ -50,11 +50,11 @@ Regeneración, enlace viejo, enlace nuevo, sesiones previas, concurrencia y roll
 ## Observabilidad / auditoría
 Auditar actor y generación sin registrar credenciales completas.
 
-## Prioridad
-P0
+## Prioridad / estimación
+P0 / M
 
-## Estimación
-M
+## Traceability
+Q-005, Q-014; DEC-004, DEC-013, DEC-083; EL-EP-004.
 
 ## Definition of Ready
 - [x] Comportamiento inequívoco
@@ -62,3 +62,6 @@ M
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la emisión de nueva credencial pública, invalidación atómica de la anterior y revocación de sesiones guest previas conforme a DEC-083, consumido por RegenerateAccessDialog con confirmación destructiva visible.

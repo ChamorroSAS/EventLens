@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** invitado con sesión vigente, **quiero** consultar únicamente mis propios aportes, **para** revisar lo que envié sin acceder al contenido de otras personas.
@@ -50,11 +50,11 @@ Aislamiento entre sesiones, CLOSED/GRACE, galería off, lista vacía y sesión r
 ## Observabilidad / auditoría
 Lectura normal sin exponer identificadores de otros invitados.
 
-## Prioridad
-P0
+## Prioridad / estimación
+P0 / M
 
-## Estimación
-M
+## Traceability
+Q-005, Q-014; DEC-013, DEC-041, DEC-084; EL-EP-004, EL-EP-003.
 
 ## Definition of Ready
 - [x] Comportamiento inequívoco
@@ -62,3 +62,6 @@ M
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la consulta aislada de Mis aportes por sessionId, consumido por MyContributionsList y MyContributionItem conforme al handoff UI/UX de EL-EP-004, preservando la excepción de DEC-084 en CLOSED/GRACE_PERIOD o galería inactiva.

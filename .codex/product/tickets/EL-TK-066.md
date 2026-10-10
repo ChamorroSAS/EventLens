@@ -4,7 +4,7 @@
 EL-EP-003
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** organizador, **quiero** reabrir un evento CLOSED todavía vigente, **para** permitir nuevamente la participación sin extender su plazo.
@@ -47,11 +47,11 @@ Antes/después del vencimiento, autorización, carrera y replay.
 ## Observabilidad / auditoría
 Auditar CLOSED→ACTIVE y denegaciones relevantes.
 
-## Prioridad
-P0
+## Prioridad / estimación
+P0 / S
 
-## Estimación
-S
+## Traceability
+Q-015; DEC-017, DEC-077, DEC-082; EL-EP-003.
 
 ## Definition of Ready
 - [x] Comportamiento inequívoco
@@ -59,3 +59,6 @@ S
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el comando de reapertura CLOSED→ACTIVE consumido por la acción «Reabrir evento» en EventLifecycleAction conforme al handoff UI/UX de EL-EP-003.

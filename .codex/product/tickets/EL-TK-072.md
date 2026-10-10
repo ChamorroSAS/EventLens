@@ -4,7 +4,7 @@
 EL-EP-003
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** sistema, **quiero** aplicar una política única de acceso basada en el lifecycle vigente, **para** impedir cargas o acceso general cuando el evento no lo permite.
@@ -50,11 +50,11 @@ Matriz estado×capacidad, excepción Mis aportes, fallos cerrados y regresiones 
 ## Observabilidad / auditoría
 Métricas/denegaciones sanitizadas sin datos privados innecesarios.
 
-## Prioridad
-P0
+## Prioridad / estimación
+P0 / M
 
-## Estimación
-M
+## Traceability
+Q-015; DEC-017, DEC-018, DEC-078, DEC-084; EL-EP-003, EL-EP-004.
 
 ## Definition of Ready
 - [x] Comportamiento inequívoco
@@ -62,3 +62,6 @@ M
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la policy central de autorización fail-closed que aplica permisos según lifecycle y preserva la excepción de Mis aportes de DEC-084, alineada con las capacidades expuestas en los componentes UI de EL-EP-003.

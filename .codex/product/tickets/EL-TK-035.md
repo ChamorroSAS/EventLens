@@ -6,9 +6,9 @@ EL-EP-006
 
 ## Status
 
-READY
+DONE
 
-**HISTÓRICO CONFIRMED — 2026-10-07:** requirements_reviewer aprobó este conjunto sin hallazgos pendientes. Véase [dictamen](../sessions/2026-10-07-el-ep-006-ticket-review.md). READY expresa preparación de requisitos; se conservan las dependencias de ejecución.
+**HISTÓRICO CONFIRMED — 2026-10-07:** requirements_reviewer aprobó este conjunto sin hallazgos pendientes. Véase [dictamen](../sessions/2026-10-07-el-ep-006-ticket-review.md). READY expresaba preparación de requisitos; se conservan las dependencias de ejecución.
 
 ## User story
 
@@ -96,3 +96,15 @@ REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: NO. [Dictamen final](../sessi
 **CONFIRMED:** REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES. Implementar transformer según rendiciones oficiales ARCH-015, orientación/proporciones/no upscale/original exacto y metadata sensible omitida. Integración requiere033/056, no certifica todo HEIF.
 
 Fuente: [contrato ARCH-015](../../context/media-and-jobs-architecture.md#pipeline-multimedia-adoptado--arch-015) y [impacto](../sessions/2026-10-09-arch-015-backlog-impact.md). TB-01/TB-02 resueltos experimentalmente; no bloqueadores activos. Cuando YES, describe construcción del alcance propio por contratos cerrados, no integración usable ni upstream implementado. Los dictámenes/scopes anteriores conservan historia donde difieren. MEDIA-001/CAP-001/DR-001/EXPORT-001 siguen VALIDATION_REQUIRED; sin proveedor adoptado.
+
+## Cierre de implementación — 2026-10-10
+
+**CONFIRMED:** `GeneratePhotoDerivatives` consume el hecho de inspección vigente y la referencia inmutable exacta del original mediante el ejecutor supervisado. Genera dos candidatos JPEG privados conforme a ARCH-015: thumbnail de hasta 320 px de ancho y preview de hasta 960 px, con orientación y proporciones preservadas, sin ampliación y sin EXIF/localización. Decodifica y valida ambos resultados, calcula sus hashes desde los bytes escritos y verifica mediante lectura posterior la versión inmutable almacenada. El original se conserva sin cambios.
+
+El par de candidatos, su auditoría y receipt compatible se registran atómicamente para la generación y token de ejecución. El replay idéntico devuelve el resultado persistido; un retry con nuevo token conserva el historial previo. Revisión/generación/autoridad obsoletas, salida parcial o inválida, fallo de verificación y drain `UNKNOWN` no registran candidatos. Los fallos y métricas exponen sólo resultados sanitizados. La operación no publica candidatos, no completa el job y no limpia objetos de intentos; esas responsabilidades corresponden a EL-TK-037 y EL-TK-057.
+
+La composición del worker de producción, los adapters durables de `RecoveryAuthority` y object storage, y el wiring de observabilidad permanecen para integración posterior. La evidencia usa adapters de laboratorio y no elige proveedor de storage. El manifiesto de 14 archivos y la imagen de validación con 12 archivos embebidos coinciden con el resultado verificado.
+
+**Validación:** corrida enfocada del implementer PASS 60/60; tester independiente: regresión combinada de inspección/cuarentena/fotos PASS 139/139 y regresión EL-TK-056 PASS 21/21. Typecheck, build, ensamblado y aplicación repetida de migraciones, tester y reviewer/critical_review: PASS, sin hallazgos. Evidencia, comando reproducible y límites en el [harness](../../../infra/validation/media-inspection/README.md#el-tk-035-photo-derivatives-final-validation).
+
+EL-TK-035 queda DONE y satisface su arista hacia EL-TK-037; la dependencia restante de 037 con EL-TK-036 no cambia. MEDIA-001, CAP-001, DR-001 y EXPORT-001 continúan `NOT_EVALUATED`; no se certifica Beta ni se selecciona proveedor de storage.

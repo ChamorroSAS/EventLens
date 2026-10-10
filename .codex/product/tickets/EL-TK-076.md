@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** invitado, **quiero** aceptar explícitamente las condiciones aplicables antes de mi primera carga, **para** que mi consentimiento quede trazable sin crear una cuenta.
@@ -50,11 +50,11 @@ Primera aceptación, cancelación, versión distinta, sesión revocada e idempot
 ## Observabilidad / auditoría
 Auditar versión y resultado sin almacenar contenido legal duplicado ni secretos de sesión.
 
-## Prioridad
-P0
+## Prioridad / estimación
+P0 / S
 
-## Estimación
-S
+## Traceability
+Q-006, Q-014, Q-029; DEC-013, DEC-041, DEC-042; EL-EP-004.
 
 ## Definition of Ready
 - [x] Comportamiento inequívoco
@@ -62,3 +62,6 @@ S
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el registro y persistencia mínima y auditable de la aceptación de condiciones antes de la primera carga, consumido por ConsentSheet conforme a las reglas UI/UX (sin preselección de checkbox y con acción explícita «Aceptar y continuar»).

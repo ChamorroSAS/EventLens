@@ -116,7 +116,7 @@ La [aprobación final de 2026-10-07](sessions/2026-10-07-el-ep-002-ticket-final-
 
 EL-TK-048 compone navegación frontend compartida. Los formularios existentes consumen su superficie durante ejecución frontend; esta integración no añade una predecesora artificial al backend aislado ni un ciclo020 ↔ 048. 031 usa EventSnapshot y assets opcionales por contrato sin requerir ejecutar reemplazos para preview sin portada.
 
-## Tickets propuestos — EL-EP-003 (DRAFT; pendiente requirements_reviewer)
+## Tickets vigentes — EL-EP-003 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
@@ -133,9 +133,9 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-072 | 064,065,067,068,069,071 | consumidores guest/upload/gallery/export |
 | EL-TK-073 | 071,072 | integración UX downstream |
 
-EL-TK-062..073 son una descomposición DRAFT del resultado de EL-EP-003. No se consideran READY hasta dictamen de requirements_reviewer. Los contratos de EL-EP-011 y EL-EP-015 se consumen por interfaz y no se reinterpretan dentro de lifecycle.
+12 activos READY de requisitos tras [dictamen de 2026-10-10](sessions/2026-10-10-el-ep-003-ticket-review.md); REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: PARTIAL (sujeto a contratos técnicos y dependencias de EL-EP-011/015 y auth administrativa EL-TK-044). Los contratos de EL-EP-011 y EL-EP-015 se consumen por interfaz y no se reinterpretan dentro de lifecycle.
 
-## Tickets propuestos — EL-EP-004 (DRAFT; pendiente requirements_reviewer)
+## Tickets vigentes — EL-EP-004 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
@@ -150,7 +150,7 @@ EL-TK-062..073 son una descomposición DRAFT del resultado de EL-EP-003. No se c
 | EL-TK-082 | 074,075; contrato EL-EP-009 | 083 |
 | EL-TK-083 | 074..082 | integración UI downstream |
 
-EL-TK-074..083 son una descomposición DRAFT del resultado de EL-EP-004. No se consideran READY hasta dictamen de requirements_reviewer. La resolución de solicitudes de retiro permanece en EL-EP-009 y la carga de archivos en EL-EP-005; esta épica sólo entrega acceso, sesión, consentimiento, identidad guest y superficies propias.
+10 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de acceso guest, consentimiento, identidad y superficies UI aprobadas en ui-mvp-epic-review.md#el-ep-004. La resolución de solicitudes de retiro permanece en EL-EP-009 y la carga de archivos en EL-EP-005; esta épica sólo entrega acceso, sesión, consentimiento, identidad guest y superficies propias.
 
 ## Tickets vigentes — EL-EP-006 (quality gate APPROVED)
 
@@ -159,7 +159,7 @@ EL-TK-074..083 son una descomposición DRAFT del resultado de EL-EP-004. No se c
 | EL-TK-032 (DONE) | Contrato de carga aceptada de EL-EP-005 | EL-TK-033, EL-TK-038, EL-TK-041 |
 | EL-TK-033 (DONE) | EL-TK-032, EL-TK-056 | EL-TK-034, EL-TK-035, EL-TK-036, EL-TK-039, EL-TK-040 |
 | EL-TK-034 (DONE) | EL-TK-033 | EL-TK-041, EL-TK-042 |
-| EL-TK-035 | EL-TK-033 | EL-TK-037 |
+| EL-TK-035 (DONE) | EL-TK-033 | EL-TK-037 |
 | EL-TK-036 | EL-TK-033 | EL-TK-037 |
 | EL-TK-037 | EL-TK-035, EL-TK-036 | EL-TK-057; consumidores EL-EP-007 |
 | EL-TK-038 | EL-TK-032, EL-TK-055 | EL-TK-039, EL-TK-041, EL-TK-058 |
@@ -209,6 +209,8 @@ Cadena productiva:055 DONE →056 →033;032 →033;033 →035/036 →037 →057
 **CONFIRMED — EL-TK-033 DONE, 2026-10-09 hora local:** dependencias EL-TK-032/056 satisfechas; evidencia independiente 46/46 PASS y regresiones 055/056 PASS en el [cierre del ticket](tickets/EL-TK-033.md#cierre-de-implementación--2026-10-09-hora-local). No cambian las aristas downstream ni su readiness por inferencia; cada ticket conserva sus propios requisitos y predecesoras.
 
 **CONFIRMED — EL-TK-034 DONE, 2026-10-10:** EL-TK-033→034 queda satisfecha. Las aristas 034→041/042 se conservan; completar 034 no satisface sus otras predecesoras ni cambia automáticamente su readiness. Véase el [cierre y evidencia](tickets/EL-TK-034.md).
+
+**CONFIRMED — EL-TK-035 DONE, 2026-10-10:** EL-TK-033→035 queda satisfecha. La arista 035→037 se conserva como dependencia satisfecha; EL-TK-037 aún espera EL-TK-036. Esta finalización no cambia el readiness de EL-TK-036/037 ni otras aristas. Véase el [cierre y evidencia](tickets/EL-TK-035.md).
 
 Portada:049 →050 →051 →052 conserva cadena funcional.050 consume contratos/adapters033/035/056/055 para integración real, no toda implementación guest ni pipeline duplicado.052 y057 comparten inventory/drain, no dependen bidireccionalmente.031 permite portada opcional; no exige procesamiento para preview sin portada. Son colaboraciones/precondiciones de integración explícitas, no nuevas predecesoras duras para construir handlers por puertos.
 

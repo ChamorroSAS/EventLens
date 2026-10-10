@@ -4,7 +4,7 @@
 EL-EP-003
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** administrador autorizado, **quiero** levantar una suspensión, **para** devolver el evento al estado temporal que realmente corresponde en ese instante.
@@ -50,11 +50,11 @@ Cada mapping DEC-081, suspensión que cruza vencimiento/gracia, permisos y concu
 ## Observabilidad / auditoría
 Auditar actor, previous_status, estado calculado y motivo/resultado.
 
-## Prioridad
-P0
+## Prioridad / estimación
+P0 / M
 
-## Estimación
-M
+## Traceability
+Q-015, Q-017; DEC-017, DEC-078, DEC-081, DEC-082; EL-EP-003, EL-EP-012.
 
 ## Definition of Ready
 - [x] Comportamiento inequívoco
@@ -62,3 +62,6 @@ M
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: PARTIAL (YES para el alcance contractual propio neutral de reactivación y mapping temporal de DEC-081 consumido por ReactivateEventDialog según el handoff UI/UX; NO para ejecución integrada humana hasta la disponibilidad de autenticación administrativa EL-TK-044).

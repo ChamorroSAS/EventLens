@@ -69,7 +69,7 @@
 | EL-TK-032 | Encolar el procesamiento de un original aceptado | EL-EP-006 | DONE | P0 | Contrato de carga aceptada de EL-EP-005 | [EL-TK-032](tickets/EL-TK-032.md) |
 | EL-TK-033 | Inspeccionar un original antes de transformarlo | EL-EP-006 | DONE | P0 | EL-TK-032, EL-TK-056 | [EL-TK-033](tickets/EL-TK-033.md) |
 | EL-TK-034 | Aislar un original sospechoso en cuarentena | EL-EP-006 | DONE | P0 | EL-TK-033 | [EL-TK-034](tickets/EL-TK-034.md) |
-| EL-TK-035 | Generar derivados web de una fotografía aprobada | EL-EP-006 | READY | P0 | EL-TK-033 | [EL-TK-035](tickets/EL-TK-035.md) |
+| EL-TK-035 | Generar derivados web de una fotografía aprobada | EL-EP-006 | DONE | P0 | EL-TK-033 | [EL-TK-035](tickets/EL-TK-035.md) |
 | EL-TK-036 | Generar derivados web de un video aprobado | EL-EP-006 | READY | P0 | EL-TK-033 | [EL-TK-036](tickets/EL-TK-036.md) |
 | EL-TK-037 | Aplicar el resultado exitoso del procesamiento | EL-EP-006 | READY | P0 | EL-TK-035, EL-TK-036 | [EL-TK-037](tickets/EL-TK-037.md) |
 | EL-TK-038 | Reintentar automáticamente un procesamiento técnico transitorio | EL-EP-006 | READY | P0 | EL-TK-032, EL-TK-055 | [EL-TK-038](tickets/EL-TK-038.md) |
@@ -92,28 +92,28 @@
 | EL-TK-059 | Habilitar el entorno mínimo real requerido para spikes técnicos | EL-EP-006 | DONE | P0 | — | [EL-TK-059](tickets/EL-TK-059.md) |
 | EL-TK-060 | Evaluar aislamiento efectivo y quiescencia mediante spike controlado | EL-EP-006 | DONE | P0 | EL-TK-059 | [EL-TK-060](tickets/EL-TK-060.md) |
 | EL-TK-061 | Evaluar inspección y rendiciones con corpus móvil mediante spike | EL-EP-006 | DONE | P0 | EL-TK-059, EL-TK-060 | [EL-TK-061](tickets/EL-TK-061.md) |
-| EL-TK-062 | Calcular la línea temporal canónica del lifecycle de un evento | EL-EP-003 | DRAFT | P0 | EL-TK-023, contrato EL-EP-011 | [EL-TK-062](tickets/EL-TK-062.md) |
-| EL-TK-063 | Programar un evento DRAFT para apertura futura | EL-EP-003 | DRAFT | P0 | EL-TK-020, EL-TK-023, EL-TK-062 | [EL-TK-063](tickets/EL-TK-063.md) |
-| EL-TK-064 | Activar un evento SCHEDULED manual o automáticamente | EL-EP-003 | DRAFT | P0 | EL-TK-063, EL-TK-062, EL-TK-055 | [EL-TK-064](tickets/EL-TK-064.md) |
-| EL-TK-065 | Cerrar manualmente un evento ACTIVE | EL-EP-003 | DRAFT | P0 | EL-TK-064 | [EL-TK-065](tickets/EL-TK-065.md) |
-| EL-TK-066 | Reabrir un evento CLOSED antes de vencer | EL-EP-003 | DRAFT | P0 | EL-TK-065, EL-TK-062 | [EL-TK-066](tickets/EL-TK-066.md) |
-| EL-TK-067 | Avanzar automáticamente por vencimiento y fin de gracia | EL-EP-003 | DRAFT | P0 | EL-TK-062,064,065,055; contrato EL-EP-015 | [EL-TK-067](tickets/EL-TK-067.md) |
-| EL-TK-068 | Suspender administrativamente un evento conservando su estado previo | EL-EP-003 | DRAFT | P0 | EL-TK-044 | [EL-TK-068](tickets/EL-TK-068.md) |
-| EL-TK-069 | Reactivar un evento SUSPENDED recalculando su estado vigente | EL-EP-003 | DRAFT | P0 | EL-TK-062,067,068,044 | [EL-TK-069](tickets/EL-TK-069.md) |
-| EL-TK-070 | Extender la vigencia autorizada de un evento | EL-EP-003 | DRAFT | P0 | EL-TK-062, contrato EL-EP-011 | [EL-TK-070](tickets/EL-TK-070.md) |
-| EL-TK-071 | Consultar lifecycle y capacidades vigentes de un evento | EL-EP-003 | DRAFT | P0 | EL-TK-063..070 | [EL-TK-071](tickets/EL-TK-071.md) |
-| EL-TK-072 | Aplicar restricciones de acceso según el lifecycle vigente | EL-EP-003 | DRAFT | P0 | EL-TK-064,065,067,068,069,071 | [EL-TK-072](tickets/EL-TK-072.md) |
-| EL-TK-073 | Integrar el lifecycle en la interfaz de organizador e invitado | EL-EP-003 | DRAFT | P0 | EL-TK-071, EL-TK-072 | [EL-TK-073](tickets/EL-TK-073.md) |
-| EL-TK-074 | Resolver acceso público a un evento mediante credencial no adivinable | EL-EP-004 | DRAFT | P0 | EL-TK-020, EL-TK-072 | [EL-TK-074](tickets/EL-TK-074.md) |
-| EL-TK-075 | Validar PIN opcional y establecer una sesión anónima guest | EL-EP-004 | DRAFT | P0 | EL-TK-027, EL-TK-074 | [EL-TK-075](tickets/EL-TK-075.md) |
-| EL-TK-076 | Registrar consentimiento versionado antes de la primera carga | EL-EP-004 | DRAFT | P0 | EL-TK-075 | [EL-TK-076](tickets/EL-TK-076.md) |
-| EL-TK-077 | Registrar nombre o apodo del aportante en la sesión guest | EL-EP-004 | DRAFT | P0 | EL-TK-075 | [EL-TK-077](tickets/EL-TK-077.md) |
-| EL-TK-078 | Consultar Mis aportes mediante la sesión guest | EL-EP-004 | DRAFT | P0 | EL-TK-075,077,072 | [EL-TK-078](tickets/EL-TK-078.md) |
-| EL-TK-079 | Cambiar el PIN de acceso y revocar sesiones guest existentes | EL-EP-004 | DRAFT | P0 | EL-TK-027, EL-TK-075 | [EL-TK-079](tickets/EL-TK-079.md) |
-| EL-TK-080 | Regenerar la credencial pública y revocar el enlace anterior | EL-EP-004 | DRAFT | P0 | EL-TK-074, EL-TK-075 | [EL-TK-080](tickets/EL-TK-080.md) |
-| EL-TK-081 | Consultar datos de compartir y QR del acceso vigente | EL-EP-004 | DRAFT | P0 | EL-TK-074, EL-TK-080 | [EL-TK-081](tickets/EL-TK-081.md) |
-| EL-TK-082 | Derivar a solicitud de retiro cuando la sesión guest no está disponible | EL-EP-004 | DRAFT | P0 | EL-TK-074,075; contrato EL-EP-009 | [EL-TK-082](tickets/EL-TK-082.md) |
-| EL-TK-083 | Integrar la experiencia guest de acceso, consentimiento y Mis aportes | EL-EP-004 | DRAFT | P0 | EL-TK-074..082 | [EL-TK-083](tickets/EL-TK-083.md) |
+| EL-TK-062 | Calcular la línea temporal canónica del lifecycle de un evento | EL-EP-003 | READY | P0 | EL-TK-023, contrato EL-EP-011 | [EL-TK-062](tickets/EL-TK-062.md) |
+| EL-TK-063 | Programar un evento DRAFT para apertura futura | EL-EP-003 | READY | P0 | EL-TK-020, EL-TK-023, EL-TK-062 | [EL-TK-063](tickets/EL-TK-063.md) |
+| EL-TK-064 | Activar un evento SCHEDULED manual o automáticamente | EL-EP-003 | READY | P0 | EL-TK-063, EL-TK-062, EL-TK-055 | [EL-TK-064](tickets/EL-TK-064.md) |
+| EL-TK-065 | Cerrar manualmente un evento ACTIVE | EL-EP-003 | READY | P0 | EL-TK-064 | [EL-TK-065](tickets/EL-TK-065.md) |
+| EL-TK-066 | Reabrir un evento CLOSED antes de vencer | EL-EP-003 | READY | P0 | EL-TK-065, EL-TK-062 | [EL-TK-066](tickets/EL-TK-066.md) |
+| EL-TK-067 | Avanzar automáticamente por vencimiento y fin de gracia | EL-EP-003 | READY | P0 | EL-TK-062,064,065,055; contrato EL-EP-015 | [EL-TK-067](tickets/EL-TK-067.md) |
+| EL-TK-068 | Suspender administrativamente un evento conservando su estado previo | EL-EP-003 | READY | P0 | EL-TK-044 | [EL-TK-068](tickets/EL-TK-068.md) |
+| EL-TK-069 | Reactivar un evento SUSPENDED recalculando su estado vigente | EL-EP-003 | READY | P0 | EL-TK-062,067,068,044 | [EL-TK-069](tickets/EL-TK-069.md) |
+| EL-TK-070 | Extender la vigencia autorizada de un evento | EL-EP-003 | READY | P0 | EL-TK-062, contrato EL-EP-011 | [EL-TK-070](tickets/EL-TK-070.md) |
+| EL-TK-071 | Consultar lifecycle y capacidades vigentes de un evento | EL-EP-003 | READY | P0 | EL-TK-063..070 | [EL-TK-071](tickets/EL-TK-071.md) |
+| EL-TK-072 | Aplicar restricciones de acceso según el lifecycle vigente | EL-EP-003 | READY | P0 | EL-TK-064,065,067,068,069,071 | [EL-TK-072](tickets/EL-TK-072.md) |
+| EL-TK-073 | Integrar el lifecycle en la interfaz de organizador e invitado | EL-EP-003 | READY | P0 | EL-TK-071, EL-TK-072 | [EL-TK-073](tickets/EL-TK-073.md) |
+| EL-TK-074 | Resolver acceso público a un evento mediante credencial no adivinable | EL-EP-004 | READY | P0 | EL-TK-020, EL-TK-072 | [EL-TK-074](tickets/EL-TK-074.md) |
+| EL-TK-075 | Validar PIN opcional y establecer una sesión anónima guest | EL-EP-004 | READY | P0 | EL-TK-027, EL-TK-074 | [EL-TK-075](tickets/EL-TK-075.md) |
+| EL-TK-076 | Registrar consentimiento versionado antes de la primera carga | EL-EP-004 | READY | P0 | EL-TK-075 | [EL-TK-076](tickets/EL-TK-076.md) |
+| EL-TK-077 | Registrar nombre o apodo del aportante en la sesión guest | EL-EP-004 | READY | P0 | EL-TK-075 | [EL-TK-077](tickets/EL-TK-077.md) |
+| EL-TK-078 | Consultar Mis aportes mediante la sesión guest | EL-EP-004 | READY | P0 | EL-TK-075,077,072 | [EL-TK-078](tickets/EL-TK-078.md) |
+| EL-TK-079 | Cambiar el PIN de acceso y revocar sesiones guest existentes | EL-EP-004 | READY | P0 | EL-TK-027, EL-TK-075 | [EL-TK-079](tickets/EL-TK-079.md) |
+| EL-TK-080 | Regenerar la credencial pública y revocar el enlace anterior | EL-EP-004 | READY | P0 | EL-TK-074, EL-TK-075 | [EL-TK-080](tickets/EL-TK-080.md) |
+| EL-TK-081 | Consultar datos de compartir y QR del acceso vigente | EL-EP-004 | READY | P0 | EL-TK-074, EL-TK-080 | [EL-TK-081](tickets/EL-TK-081.md) |
+| EL-TK-082 | Derivar a solicitud de retiro cuando la sesión guest no está disponible | EL-EP-004 | READY | P0 | EL-TK-074,075; contrato EL-EP-009 | [EL-TK-082](tickets/EL-TK-082.md) |
+| EL-TK-083 | Integrar la experiencia guest de acceso, consentimiento y Mis aportes | EL-EP-004 | READY | P0 | EL-TK-074..082 | [EL-TK-083](tickets/EL-TK-083.md) |
 
 **HISTÓRICO CONFIRMED:** EL-TK-005..019 sustituyeron la descomposición anterior y quedaron READY el 2026-10-07. [Dictamen](sessions/2026-10-07-el-ep-001-ticket-redesign-review.md). **CONFIRMED — 2026-10-08:** la remediación autorizada de EL-TK-005..019 y EL-TK-043..046 fue APPROVED; los 19 activos están READY de requisitos. READY_FOR_IMPLEMENTATION: PARTIAL; YES sólo para 008 backend, 043 provisión operativa y 046 integración del puerto MOD-001, con los límites del [dictamen final](sessions/2026-10-08-el-ep-001-ticket-remediation-review.md). La UI de EL-EP-001 sigue con gate PARTIAL: no se generan tickets frontend.
 
@@ -127,7 +127,9 @@
 
 **HISTÓRICO CONFIRMED — paquete TB-01..05 ratificado (previo a ejecución/adopción):** ocho owners033/035/036/041/042/044/056/058 y tres nuevos059..061, once READY de requisitos tras [dictamen final APPROVED](sessions/2026-10-08-technical-blockers-ticket-review.md). REQUIREMENTS_READY:YES; READY_FOR_IMPLEMENTATION:PARTIAL (044/059YES propio,otros9NO full con scopes preparatorios habilitados). Dictámenes previos de001/006 conservan historia; el paquete sólo actualiza estos scopes. TB-03 contrato APPROVED, auth aún no implementada. PREPARATORY_SCOPE_READY/BLOCKED_SCOPE/BLOCKED_BY en cada owner;059 mínimo YES para implementación propia,060/061 NO hasta entorno real/PASS requerido. [Fuente ratificada](sessions/2026-10-08-technical-blockers-approved-contracts.md), [sesión del paquete](sessions/2026-10-08-technical-blockers-ticket-integration.md). No spikes ejecutados ni PASS declarados.
 
-**DRAFT — 2026-10-10, EL-EP-003:** ticket_writer descompuso lifecycle en EL-TK-062..073. Los 12 tickets permanecen DRAFT hasta requirements_reviewer; no implican implementación ni cierre de dependencias de EL-EP-011/015. La automatización GitHub debe reflejar estos artefactos activos sin publicar históricos SUPERSEDED.
+**CONFIRMED — EL-TK-035 DONE, 2026-10-10:** candidatos fotográficos privados con rendiciones ARCH-015 implementados. Suite enfocada PASS 60/60; regresión combinada PASS 139/139; EL-TK-056 PASS 21/21; typecheck/build/migraciones y reviewers PASS. Véase el [cierre del ticket](tickets/EL-TK-035.md) y [evidencia](../../infra/validation/media-inspection/README.md#el-tk-035-photo-derivatives-final-validation). La dependencia 033→035 queda satisfecha; 037 aún depende de 036. Gates MEDIA-001/CAP-001/DR-001/EXPORT-001 siguen NOT_EVALUATED; no se selecciona storage definitivo.
+
+**CONFIRMED — 2026-10-10, EL-EP-003:** requirements_reviewer aprobó el quality gate de EL-TK-062..073; los 12 tickets están READY de requisitos. REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: PARTIAL (sujeto a contratos técnicos y dependencias de EL-EP-011/015 y auth administrativa EL-TK-044). [Dictamen](sessions/2026-10-10-el-ep-003-ticket-review.md).
 
 **DRAFT — 2026-10-10, EL-EP-004:** ticket_writer descompuso acceso guest en EL-TK-074..083. Los 10 tickets permanecen DRAFT hasta requirements_reviewer; no implican implementación ni cierre de dependencias de EL-EP-003/009. GitHub Issues se crearán sólo cuando este cambio llegue a main mediante el workflow de sincronización.
 

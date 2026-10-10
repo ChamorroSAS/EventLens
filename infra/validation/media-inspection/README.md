@@ -51,3 +51,18 @@ Reproduce the combined suite from the repository root with:
 The focused result and source manifest are in [`evidence/quarantine-independent`](evidence/quarantine-independent/); the combined result and reports are in [`evidence/quarantine-inspection-regression`](evidence/quarantine-inspection-regression/). The queue regression result is in [`../job-queue/evidence/quarantine-regression`](../job-queue/evidence/quarantine-regression/).
 
 This is implementation-scope evidence. The durable production `RecoveryAuthority` adapter remains unimplemented; focused tests use a laboratory authority, and missing required capability fails closed. MEDIA-001, CAP-001, DR-001, and EXPORT-001 remain NOT_EVALUATED; the definitive Beta/production object-storage provider remains DEFERRED.
+
+## EL-TK-035 photo derivatives (final validation)
+
+Run the photo-only unit and PostgreSQL integration suite from the repository root. It uses the existing validation lab, verified ClamAV signature snapshot, and permitted corpus inputs; use a new evidence directory for each run.
+
+```powershell
+$photoEvidence = ".\infra\validation\media-inspection\evidence\photo-$([DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss'))"
+.\infra\validation\media-inspection\Run.ps1 -PhotosOnly -Build -EvidenceDirectory $photoEvidence
+```
+
+The implementer's focused run passed **60/60 tests**. The independent tester's final combined media-inspection, quarantine, and photo-derivative regression passed **139/139 tests**; the aggregate result retains its primary `ticket` marker `EL-TK-033` and does not relabel that historical field. The separate independent EL-TK-056 regression passed **21/21**. Typecheck, build, migration assembly/repeat application, and final source verification passed: all 14 workspace source files matched, and all 12 embedded files matched the validation image.
+
+Evidence: [focused photo run](evidence/photo-buffer-validation/), [combined independent run](evidence/photo-independent-final/), [EL-TK-056 regression](../media-execution/evidence/photo-independent-final/), [source manifest](evidence/photo-final-source/source-manifest.json), and [source/image verification](evidence/photo-final-source/verification.json). The source manifest covers the final implementation; historical corpus and physical-result files were not regenerated.
+
+The operation stores only private, verified candidates and does not publish them or complete the processing job. Durable production `RecoveryAuthority` and object-storage adapters, worker composition, and observer wiring remain future integration work. No object-storage provider was selected. MEDIA-001, CAP-001, DR-001, and EXPORT-001 remain `NOT_EVALUATED`.

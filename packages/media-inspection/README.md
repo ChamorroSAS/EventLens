@@ -18,7 +18,13 @@ The operation prepares a restriction with the existing `RecoveryAuthority`, then
 
 Quarantined media is denied by the normal-access guard for read, download, retry, release, transform, and promotion. For other media states the guard defers to the owning policy; it does not grant access. This operation does not complete the processing job, drain a worker, purge or replace the original, expose an HTTP download/release route, or implement an administrative release flow. Those responsibilities remain with their owning pipeline and product tickets. No storage provider is selected here.
 
-This package is an internal backend contract. It does not expose an HTTP endpoint or generate derivatives.
+## Photo derivatives (EL-TK-035)
+
+`GeneratePhotoDerivatives.execute(...)` consumes the current approved inspection fact and the exact immutable original. Under the supervised media-execution runtime it creates two private JPEG candidates: a thumbnail up to 320 px wide and a preview up to 960 px wide. It preserves orientation and proportions, does not upscale, omits EXIF/location metadata, validates and decodes each output, and verifies its hash and immutable object version by reading it back. The original is only read and remains unchanged.
+
+Metadata, dimensions, strict decoding, size, and SHA-256 are validated from the same buffer inside the isolated runtime. Emitted bytes and stored object readback must match that evidence before the candidate pair, audit fact, and compatible operation receipt are recorded atomically for the media generation and execution token. A retry with a new token retains the earlier candidate history. Stale authority, invalid/partial output, failed verification, or unknown writer drain does not register a candidate. This operation does not publish candidates, complete the processing job, or clean up attempt objects; publication belongs to EL-TK-037 and cleanup to EL-TK-057.
+
+This remains an internal backend operation with no HTTP endpoint. Production worker composition, durable `RecoveryAuthority` and object-storage adapters, and observer wiring remain future integration work. The validation harness uses laboratory adapters; no definitive storage provider is selected. See the [EL-TK-035 validation evidence](../../infra/validation/media-inspection/README.md#el-tk-035-photo-derivatives-final-validation).
 
 ## Local checks
 
@@ -30,4 +36,4 @@ pnpm --filter @eventlens/media-inspection build
 pnpm --filter @eventlens/media-inspection test
 ```
 
-The real PostgreSQL and isolated-engine validation harness, including the quarantine-only run, is documented in [`infra/validation/media-inspection/README.md`](../../infra/validation/media-inspection/README.md). EL-TK-033's independent 46/46 result and EL-TK-034's final test evidence remain recorded there as separate runs.
+The real PostgreSQL and isolated-engine validation harness, including inspection, photo-derivative, and quarantine runs, is documented in [`infra/validation/media-inspection/README.md`](../../infra/validation/media-inspection/README.md). EL-TK-033 and EL-TK-034 evidence remains recorded as separate scopes.

@@ -3,6 +3,7 @@
 import {createServer,type Server} from 'node:http';
 import {S3Client,GetObjectCommand,PutObjectCommand,HeadObjectCommand} from '@aws-sdk/client-s3';
 import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 import type {ObjectStorage,ObjectRef,OutputRef,DrainProof} from '../src/contracts.js';
 type Entry={state:'ACTIVE'|'TERMINAL';ref:OutputRef;error?:boolean;release:()=>void;done:Promise<void>};
 export class LaboratoryStorage implements ObjectStorage {
@@ -39,11 +40,18 @@ export class LaboratoryStorage implements ObjectStorage {
   for await(const chunk of bytes){size+=chunk.length;if(size>1_000_000)throw Error('FIXTURE_OUTPUT_LIMIT');chunks.push(Buffer.from(chunk));}
   const response=await fetch(this.url,{method:'POST',body:JSON.stringify({id,ref,data:Buffer.concat(chunks).toString('base64')}),signal});if(!response.ok)throw Error('LAB_WRITE_FAILED');
  }
+ async verifyOutput(ref:OutputRef,id:string,maxBytes:number,signal:AbortSignal):Promise<ObjectRef>{
+  if(this.sealed.has(id))throw Error('SEALED');let ended=false;let source:(AsyncIterable<Uint8Array>&{destroy?:()=>void})|undefined;
+  // Verification is part of the durable write operation, including GET ACK loss.
+  this.reads.set(id,{stop:()=>source?.destroy?.(),terminal:()=>ended});
+  try{const r=await this.s3.send(new GetObjectCommand({Bucket:ref.namespace,Key:ref.key}),{abortSignal:signal});source=r.Body as typeof source;if(this.sealed.has(id)||signal.aborted)throw Error('SEALED');if(!r.VersionId||r.VersionId==='null'||!source)throw Error('IMMUTABLE_VERSION_REQUIRED');const hash=createHash('sha256');let size=0;for await(const chunk of source){size+=chunk.length;if(size>maxBytes)throw Error('OUTPUT_LIMIT');hash.update(chunk);}return {...ref,immutableVersion:r.VersionId,sha256:hash.digest('hex'),sizeBytes:size};}
+  finally{source?.destroy?.();ended=true;}
+ }
  async reconcileAndDrain(id:string,_signal:AbortSignal):Promise<DrainProof|'UNKNOWN'>{
   // Sealing in the external fixture handler excludes a request which has not yet
   // arrived; existing accepted requests remain ACTIVE despite client abort/HEAD.
   this.sealed.add(id);const read=this.reads.get(id);read?.stop();const entry=this.entries.get(id);
-  if(entry?.state==='ACTIVE')return 'UNKNOWN';
+  if(entry?.state==='ACTIVE'||read&&!read.terminal())return 'UNKNOWN';
   return {terminal:true,operationId:id,evidenceId:'fixture-dispatch-sealed-terminal:'+id};
  }
  async exists(ref:OutputRef):Promise<boolean>{try{await this.s3.send(new HeadObjectCommand({Bucket:ref.namespace,Key:ref.key}));return true;}catch(error){if((error as {$metadata?:{httpStatusCode:number}}).$metadata?.httpStatusCode===404)return false;throw error;}}

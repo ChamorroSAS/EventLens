@@ -4,7 +4,7 @@
 EL-EP-003
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** organizador, **quiero** pasar un evento DRAFT a SCHEDULED, **para** que quede preparado para abrir en su instante programado.
@@ -47,11 +47,11 @@ Permisos, transición válida, configuración incompleta, concurrencia y rollbac
 ## Observabilidad / auditoría
 Registrar actor, estado anterior/nuevo y revisión sin secretos.
 
-## Prioridad
-P0
+## Prioridad / estimación
+P0 / S
 
-## Estimación
-S
+## Traceability
+Q-015; DEC-017, DEC-077, DEC-082; EL-EP-003, EL-EP-002.
 
 ## Definition of Ready
 - [x] Comportamiento inequívoco
@@ -59,3 +59,6 @@ S
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación — 2026-10-10
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el comando de programación DRAFT→SCHEDULED consumido por EventScheduleForm según el handoff UI/UX de EL-EP-003.
