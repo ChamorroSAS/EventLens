@@ -38,11 +38,11 @@ Lista vacía, sesión revocada, evento eliminado y media retirada.
 GuestContributionSummary, media ownership por sessionId.
 
 ## Dependencias técnicas y funcionales
-GuestSession, GuestIdentity y policy lifecycle.
+GuestSession y policy de lifecycle de EL-EP-003. La identidad de aportante (EL-TK-077) se adjunta en cargas pero no condiciona la consulta de propiedad de media por sessionId.
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-075, EL-TK-077, EL-TK-072.
-- **blocks:** EL-TK-082, EL-TK-083 y flujo propio de retiro EL-EP-009.
+- **depends_on:** EL-TK-075, EL-TK-072.
+- **blocks:** EL-TK-083 y flujo propio de retiro EL-EP-009.
 
 ## Pruebas requeridas
 Aislamiento entre sesiones, CLOSED/GRACE, galería off, lista vacía y sesión revocada.

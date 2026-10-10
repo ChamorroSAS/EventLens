@@ -38,8 +38,8 @@ ShareAccessSnapshot / QR payload.
 Acceso público y regeneración.
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-074, EL-TK-080.
-- **blocks:** EL-TK-083.
+- **depends_on:** EL-TK-074, EL-TK-084.
+- **blocks:** EL-TK-085.
 
 ## Pruebas requeridas
 Credencial vigente, post-regeneración, autorización y equivalencia enlace/QR.
