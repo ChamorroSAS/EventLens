@@ -119,6 +119,8 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
+- 2026-10-10: ticket_writer crea EL-TK-103..112 como DRAFT para moderación cotidiana, visibilidad, papelera/restauración, vencimiento, cambio de modo, UI owner y validación integrada. Pendientes de requirements_reviewer; sin implementación.
+
 - 2026-10-08: requirements_reviewer aprueba READY de requisitos sin hallazgos; implementacion/UI conservan gates aplicables. [Dictamen](../sessions/2026-10-08-precisiones-finales-mvp.md).
 
 - 2026-10-08: DEC-086/087 registran aprobaciones; PL-006 conserva precisión de estados permitidos. Sin regeneración ni tickets.
