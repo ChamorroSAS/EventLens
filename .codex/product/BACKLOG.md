@@ -104,6 +104,16 @@
 | EL-TK-071 | Consultar lifecycle y capacidades vigentes de un evento | EL-EP-003 | DRAFT | P0 | EL-TK-063..070 | [EL-TK-071](tickets/EL-TK-071.md) |
 | EL-TK-072 | Aplicar restricciones de acceso según el lifecycle vigente | EL-EP-003 | DRAFT | P0 | EL-TK-064,065,067,068,069,071 | [EL-TK-072](tickets/EL-TK-072.md) |
 | EL-TK-073 | Integrar el lifecycle en la interfaz de organizador e invitado | EL-EP-003 | DRAFT | P0 | EL-TK-071, EL-TK-072 | [EL-TK-073](tickets/EL-TK-073.md) |
+| EL-TK-074 | Resolver acceso público a un evento mediante credencial no adivinable | EL-EP-004 | DRAFT | P0 | EL-TK-020, EL-TK-072 | [EL-TK-074](tickets/EL-TK-074.md) |
+| EL-TK-075 | Validar PIN opcional y establecer una sesión anónima guest | EL-EP-004 | DRAFT | P0 | EL-TK-027, EL-TK-074 | [EL-TK-075](tickets/EL-TK-075.md) |
+| EL-TK-076 | Registrar consentimiento versionado antes de la primera carga | EL-EP-004 | DRAFT | P0 | EL-TK-075 | [EL-TK-076](tickets/EL-TK-076.md) |
+| EL-TK-077 | Registrar nombre o apodo del aportante en la sesión guest | EL-EP-004 | DRAFT | P0 | EL-TK-075 | [EL-TK-077](tickets/EL-TK-077.md) |
+| EL-TK-078 | Consultar Mis aportes mediante la sesión guest | EL-EP-004 | DRAFT | P0 | EL-TK-075,077,072 | [EL-TK-078](tickets/EL-TK-078.md) |
+| EL-TK-079 | Cambiar el PIN de acceso y revocar sesiones guest existentes | EL-EP-004 | DRAFT | P0 | EL-TK-027, EL-TK-075 | [EL-TK-079](tickets/EL-TK-079.md) |
+| EL-TK-080 | Regenerar la credencial pública y revocar el enlace anterior | EL-EP-004 | DRAFT | P0 | EL-TK-074, EL-TK-075 | [EL-TK-080](tickets/EL-TK-080.md) |
+| EL-TK-081 | Consultar datos de compartir y QR del acceso vigente | EL-EP-004 | DRAFT | P0 | EL-TK-074, EL-TK-080 | [EL-TK-081](tickets/EL-TK-081.md) |
+| EL-TK-082 | Derivar a solicitud de retiro cuando la sesión guest no está disponible | EL-EP-004 | DRAFT | P0 | EL-TK-074,075; contrato EL-EP-009 | [EL-TK-082](tickets/EL-TK-082.md) |
+| EL-TK-083 | Integrar la experiencia guest de acceso, consentimiento y Mis aportes | EL-EP-004 | DRAFT | P0 | EL-TK-074..082 | [EL-TK-083](tickets/EL-TK-083.md) |
 
 **HISTÓRICO CONFIRMED:** EL-TK-005..019 sustituyeron la descomposición anterior y quedaron READY el 2026-10-07. [Dictamen](sessions/2026-10-07-el-ep-001-ticket-redesign-review.md). **CONFIRMED — 2026-10-08:** la remediación autorizada de EL-TK-005..019 y EL-TK-043..046 fue APPROVED; los 19 activos están READY de requisitos. READY_FOR_IMPLEMENTATION: PARTIAL; YES sólo para 008 backend, 043 provisión operativa y 046 integración del puerto MOD-001, con los límites del [dictamen final](sessions/2026-10-08-el-ep-001-ticket-remediation-review.md). La UI de EL-EP-001 sigue con gate PARTIAL: no se generan tickets frontend.
 
@@ -118,6 +128,8 @@
 **HISTÓRICO CONFIRMED — paquete TB-01..05 ratificado (previo a ejecución/adopción):** ocho owners033/035/036/041/042/044/056/058 y tres nuevos059..061, once READY de requisitos tras [dictamen final APPROVED](sessions/2026-10-08-technical-blockers-ticket-review.md). REQUIREMENTS_READY:YES; READY_FOR_IMPLEMENTATION:PARTIAL (044/059YES propio,otros9NO full con scopes preparatorios habilitados). Dictámenes previos de001/006 conservan historia; el paquete sólo actualiza estos scopes. TB-03 contrato APPROVED, auth aún no implementada. PREPARATORY_SCOPE_READY/BLOCKED_SCOPE/BLOCKED_BY en cada owner;059 mínimo YES para implementación propia,060/061 NO hasta entorno real/PASS requerido. [Fuente ratificada](sessions/2026-10-08-technical-blockers-approved-contracts.md), [sesión del paquete](sessions/2026-10-08-technical-blockers-ticket-integration.md). No spikes ejecutados ni PASS declarados.
 
 **DRAFT — 2026-10-10, EL-EP-003:** ticket_writer descompuso lifecycle en EL-TK-062..073. Los 12 tickets permanecen DRAFT hasta requirements_reviewer; no implican implementación ni cierre de dependencias de EL-EP-011/015. La automatización GitHub debe reflejar estos artefactos activos sin publicar históricos SUPERSEDED.
+
+**DRAFT — 2026-10-10, EL-EP-004:** ticket_writer descompuso acceso guest en EL-TK-074..083. Los 10 tickets permanecen DRAFT hasta requirements_reviewer; no implican implementación ni cierre de dependencias de EL-EP-003/009. GitHub Issues se crearán sólo cuando este cambio llegue a main mediante el workflow de sincronización.
 
 ## Superseded/deprecated
 
