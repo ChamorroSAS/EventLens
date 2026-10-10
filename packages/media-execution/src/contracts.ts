@@ -7,7 +7,7 @@ export interface Limits {
  heartbeatMs:number;leaseMs:number;controlTimeoutMs:number;maxControlBytes:number;
 }
 /** Created by trusted infrastructure adapters, never an HTTP/job payload command. */
-export interface ProcessStep {tool:'ffprobe'|'ffmpeg'|'heif-convert'|'clamscan'|'input-header'|'photo-output-report';args:readonly string[];}
+export interface ProcessStep {tool:'ffprobe'|'ffmpeg'|'heif-convert'|'clamscan'|'input-header'|'photo-output-report'|'video-output-report';args:readonly string[];}
 export interface OutputProof extends ObjectRef {file:string;}
 export interface ValidatedOutput {file:string;sha256:string;sizeBytes:number;}
 export interface ExecutionPlan {

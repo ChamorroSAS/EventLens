@@ -1,0 +1,98 @@
+﻿{
+    "ticket":  "EL-TK-036",
+    "validationStage":  "COMBINED_MEDIA_INSPECTION_REGRESSION",
+    "capturedAtUtc":  "2026-10-10T20:11:35.8185351Z",
+    "image":  "sha256:c47c90d934e33a7eb06d51542e6bbe577efe7be906a7c68ded8205309c7bdba4",
+    "files":  [
+                  {
+                      "path":  "packages/media-execution/src/contracts.ts",
+                      "sha256":  "a2801f98cb03f038ca8b534794a4831e54ddc45aff209a3d438d2f2a10018b54",
+                      "sizeBytes":  4524
+                  },
+                  {
+                      "path":  "packages/media-execution/src/docker-runtime.ts",
+                      "sha256":  "9003a7edb7d770530fbf0007930306b0fc9eb8bdf799f22bae1edda99f85e188",
+                      "sizeBytes":  18684
+                  },
+                  {
+                      "path":  "packages/media-execution/src/supervisor.ts",
+                      "sha256":  "c636792eacc1c5f23a5bd647b921ba2b11084597ff1527be61277949be3333bf",
+                      "sizeBytes":  12214
+                  },
+                  {
+                      "path":  "packages/media-execution/src/video-output-report.ts",
+                      "sha256":  "0abb4277470cab8a91107d76a4c8dd0395df7adeaad4c2caa0bf32d473e6c279",
+                      "sizeBytes":  5502
+                  },
+                  {
+                      "path":  "packages/media-execution/test/laboratory-storage.ts",
+                      "sha256":  "530b84831da65d760d8bbfc27a83ca87d1ca9019fc42a9ca0d1ecdbe708dfc13",
+                      "sizeBytes":  6265
+                  },
+                  {
+                      "path":  "packages/media-inspection/package.json",
+                      "sha256":  "8f272e7c3bb4888eb5fb0bfee033c869b6d0a4b00d0c3fdbd47e386202a57e91",
+                      "sizeBytes":  1033
+                  },
+                  {
+                      "path":  "packages/media-inspection/prisma/schema.prisma",
+                      "sha256":  "000bd80bf9f6d9cb0a5a2eb594ca6072933f838d8b23c0485638d9cd2540b476",
+                      "sizeBytes":  597
+                  },
+                  {
+                      "path":  "packages/media-inspection/prisma/migrations/202610100009_video_candidates/migration.sql",
+                      "sha256":  "7754d6710fdbb60b868652a32c8ea2ac6cd54b234634582da180d12e9afbb602",
+                      "sizeBytes":  609
+                  },
+                  {
+                      "path":  "packages/media-inspection/src/adapters.ts",
+                      "sha256":  "5940b94eec783e897385fa0b192c304be0672e3992dcc02ebdca2312bc65acc9",
+                      "sizeBytes":  13390
+                  },
+                  {
+                      "path":  "packages/media-inspection/src/contracts.ts",
+                      "sha256":  "673d58462fbc93ef930e58de4ddf4abb1820e37a9762441303434fcff0d02470",
+                      "sizeBytes":  2080
+                  },
+                  {
+                      "path":  "packages/media-inspection/src/index.ts",
+                      "sha256":  "d3bc16aaef31bc480536c5951f5e41f1ef6f0a9b575d88f1c5c4fd60614646c9",
+                      "sizeBytes":  242
+                  },
+                  {
+                      "path":  "packages/media-inspection/src/repository.ts",
+                      "sha256":  "45284d18958593592f62a2bcba7d66ff589359e10645af997d82514dbaf0d7a0",
+                      "sizeBytes":  3009
+                  },
+                  {
+                      "path":  "packages/media-inspection/src/video-derivatives.ts",
+                      "sha256":  "17f1409cd21a6b36c235b0aca74b22dbbee6d56383d8e37e6503f286e64950f3",
+                      "sizeBytes":  13737
+                  },
+                  {
+                      "path":  "packages/media-inspection/test/video-derivatives.test.ts",
+                      "sha256":  "ecf2cbee57f5b6be0bbbdd37c4caea770bcc72e793fd2f8194979af2dc8e54b0",
+                      "sizeBytes":  2502
+                  },
+                  {
+                      "path":  "packages/media-inspection/test/video-derivatives.integration.test.ts",
+                      "sha256":  "f2d10bf76f98e04918de0839ce21531f7f68eb967d9ede0baa1a0309ade5e5d4",
+                      "sizeBytes":  22847
+                  },
+                  {
+                      "path":  "infra/validation/media-inspection/Dockerfile",
+                      "sha256":  "3559baeac0901463a415c5cd7e7f50bb1100b95d332716ffad1dc30198b3d433",
+                      "sizeBytes":  1072
+                  },
+                  {
+                      "path":  "infra/validation/media-inspection/Run.ps1",
+                      "sha256":  "c4d0a13e80f31497af69306116060c19fb2ff8101cd9cd9d86f47e7890281618",
+                      "sizeBytes":  2717
+                  },
+                  {
+                      "path":  "infra/validation/media-inspection/run.mjs",
+                      "sha256":  "e0f3d5e8fa2d2f22e5968c63ef1deab9891f8d9eec2edcac0143c2005f2b2855",
+                      "sizeBytes":  2522
+                  }
+              ]
+}

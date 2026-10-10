@@ -6,7 +6,7 @@ EL-EP-006
 
 ## Status
 
-READY
+DONE
 
 **HISTÓRICO CONFIRMED — 2026-10-07:** requirements_reviewer aprobó este conjunto sin hallazgos pendientes. Véase [dictamen](../sessions/2026-10-07-el-ep-006-ticket-review.md). READY expresa preparación de requisitos; se conservan las dependencias de ejecución.
 
@@ -96,3 +96,13 @@ REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: NO. [Dictamen final](../sessi
 **CONFIRMED:** REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES. Implementar thumbnail/preview JPEG y playback oficial MP4 H.264/yuv420p, AAC sólo si hay audio original. Paso/remux sólo si valida el mismo target sin reemplazar original. Integración requiere033/056; sin throughput certificado.
 
 Fuente: [contrato ARCH-015](../../context/media-and-jobs-architecture.md#pipeline-multimedia-adoptado--arch-015) y [impacto](../sessions/2026-10-09-arch-015-backlog-impact.md). TB-01/TB-02 resueltos experimentalmente; no bloqueadores activos. Cuando YES, describe construcción del alcance propio por contratos cerrados, no integración usable ni upstream implementado. Los dictámenes/scopes anteriores conservan historia donde difieren. MEDIA-001/CAP-001/DR-001/EXPORT-001 siguen VALIDATION_REQUIRED; sin proveedor adoptado.
+
+## Cierre de implementación — 2026-10-10
+
+**CONFIRMED — DONE:** el reviewer aprobó el cambio sin hallazgos. El tester independiente aprobó la suite enfocada de video (60/60), la regresión combinada (199/199) y la regresión de EL-TK-056 (21/21). El resultado combinado conserva su marcador histórico `EL-TK-033`; no se reclasifica como una corrida exclusiva de este ticket.
+
+La implementación siempre transcodifica al target adoptado; el paso/remux descrito como opción en el texto histórico no quedó implementado. Los candidatos privados se validan antes del registro; el original se preserva byte-identical y las salidas parciales o resultados sin autorización vigente no se registran.
+
+Evidencia: [corrida enfocada](../../../infra/validation/media-inspection/evidence/video-focused-final/), [regresión combinada independiente](../../../infra/validation/media-inspection/evidence/video-independent-final-3/), [regresión de runtime EL-TK-056](../../../infra/validation/media-execution/evidence/video-independent-regression/) e [integridad final de fuentes, imagen y migraciones](../../../infra/validation/media-inspection/evidence/video-independent-final-3/integrity-check.json). Se verificaron 18/18 hashes de fuente; la imagen de validación coincide con el digest registrado; el ensamblado contiene 9 migraciones con IDs únicos y hashes de origen/copia coincidentes.
+
+Las pruebas usan PostgreSQL 16, MinIO y el runtime de laboratorio. No certifican throughput máximo ni composición productiva. MEDIA-001, CAP-001, DR-001 y EXPORT-001 permanecen `NOT_EVALUATED`; el proveedor definitivo de object storage continúa `DEFERRED`. EL-TK-035 y EL-TK-036 satisfacen las dependencias documentadas de EL-TK-037; 037 permanece `READY` y no fue ejecutado en este cierre.

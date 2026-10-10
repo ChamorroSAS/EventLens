@@ -4,6 +4,7 @@ import {mkdir,open,chmod,type FileHandle} from 'node:fs/promises';
 import {isAbsolute,join} from 'node:path';
 import type {Limits,ObjectRef,ProcessRuntime,ProcessStep,RuntimeProof} from './contracts.js';
 import {ExecutionError} from './contracts.js';
+import {VIDEO_OUTPUT_REPORT} from './video-output-report.js';
 export const ADOPTED_MEDIA_IMAGE='sha256:bfdca4987f5afc676c208f7d31b8fb0663413d7fceafeaf17161209b7bf6a857';
 export const ADOPTED_SCANNER_IMAGE='sha256:e4df73bcde9afeb6bd1b464091f053537b3df86d8bf5a0431ae87c1760b332ae';
 export interface ScannerRuntimeProfile {image:typeof ADOPTED_SCANNER_IMAGE;signaturesRoot:string;snapshotId:string;maxFileBytes:number;maxScanBytes:number;maxFiles:number;maxRecursion:number;maxScanTimeMs:number;}
@@ -88,6 +89,10 @@ export class DockerProcessRuntime implements ProcessRuntime {
    return this.cli(['exec','--user','1000:1000',container(id),'sh','-c','for f in /signatures/* /signatures/.[!.]* /signatures/..?*; do if [ ! -e "$f" ] && [ ! -L "$f" ]; then continue; fi; case "$f" in /signatures/main.cvd|/signatures/daily.cvd|/signatures/bytecode.cvd|/signatures/manifest.json) ;; *) exit 2 ;; esac; done; sha256sum /input/original /signatures/main.cvd /signatures/daily.cvd /signatures/bytecode.cvd; clamscan "$@"; code=$?; sha256sum /input/original /signatures/main.cvd /signatures/daily.cvd /signatures/bytecode.cvd; exit "$code"','scanner','--database=/signatures','--stdout','--verbose','--allmatch=yes','--alert-exceeds-max=yes','--alert-encrypted=yes',`--max-filesize=${p.maxFileBytes}`,`--max-scansize=${p.maxScanBytes}`,`--max-files=${p.maxFiles}`,`--max-recursion=${p.maxRecursion}`,`--max-scantime=${p.maxScanTimeMs}`,'--tempdir=/scratch','/input/original'],l.maxControlBytes,l.wallMs,signal,true);
   }
   if(step.tool==='clamscan')throw new ExecutionError('INVALID_PLAN');
+  if(step.tool==='video-output-report'){
+   if(step.args.length!==1||Number(step.args[0])!==l.maxOutputBytes)throw new ExecutionError('INVALID_PLAN');
+   return this.cli(['exec','--user','1000:1000',container(id),'node','-e',VIDEO_OUTPUT_REPORT,...step.args],l.maxControlBytes,l.wallMs,signal);
+  }
   if(step.tool==='photo-output-report'){
    if(step.args.length!==2||!['/input/original','/scratch/heif.png'].includes(step.args[0])||Number(step.args[1])!==l.maxOutputBytes)throw new ExecutionError('INVALID_PLAN');
    // Binary inspection remains INSIDE the unprivileged parser runtime. Only this

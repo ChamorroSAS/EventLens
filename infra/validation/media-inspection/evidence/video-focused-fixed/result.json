@@ -1,0 +1,12 @@
+{
+  "ticket": "EL-TK-036",
+  "runId": "media_inspection_d1475bf71918468498ef92e57f33c08d",
+  "testedAt": "2026-10-10T19:59:58.424Z",
+  "result": "FAIL",
+  "gates": {
+    "MEDIA-001": "NOT_EVALUATED",
+    "CAP-001": "NOT_EVALUATED",
+    "DR-001": "NOT_EVALUATED",
+    "EXPORT-001": "NOT_EVALUATED"
+  }
+}

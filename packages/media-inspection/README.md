@@ -26,6 +26,18 @@ Metadata, dimensions, strict decoding, size, and SHA-256 are validated from the 
 
 This remains an internal backend operation with no HTTP endpoint. Production worker composition, durable `RecoveryAuthority` and object-storage adapters, and observer wiring remain future integration work. The validation harness uses laboratory adapters; no definitive storage provider is selected. See the [EL-TK-035 validation evidence](../../infra/validation/media-inspection/README.md#el-tk-035-photo-derivatives-final-validation).
 
+## Video derivatives (EL-TK-036)
+
+`GenerateVideoDerivatives.execute(...)` consumes a current approved inspection fact and creates three private candidates under the existing supervised runtime: JPEG thumbnail up to 320 px wide, JPEG preview up to 960 px wide, and faststart MP4 playback with H.264/yuv420p up to 960 px wide. Playback has even dimensions and AAC only when the original has audio. Rotation and pixel aspect ratio are normalized while preserving visual proportions without upscaling. The immutable original is only read.
+
+The implementation always transcodes to the adopted target; stream-copy/remux is not implemented. The fixed isolated reporter validates and decodes the same bounded output buffers it hashes, rejects sensitive metadata, and verifies playback codecs, audio, duration and MP4 faststart before any output write. Stored immutable versions must match the validated bytes on readback. Rotation and pixel aspect ratio are normalized, including conversion to the adopted TV-range output; this does not certify universal HDR handling.
+
+Candidate references, audit and compatible operation receipt are committed atomically under the current inspection fingerprint, revision, generation, token, fence and recovery epoch. Partial outputs, stale authority and unknown writer drain cannot register a candidate. This operation does not publish, complete the processing job or delete attempt objects; those remain EL-TK-037 and EL-TK-057 responsibilities. Runtime budgets and Beta throughput still require their applicable validation gates.
+
+The operation is internal, with no new HTTP endpoint. Production worker composition, durable authority and definitive object-storage adapters retain their existing integration boundaries. See the [video validation harness](../../infra/validation/media-inspection/README.md#video-derivatives-el-tk-036).
+
+The independent closeout passed the focused video suite (60/60), the combined regression (199/199; its evidence retains the primary marker `EL-TK-033`), and the EL-TK-056 runtime regression (21/21). Final verification matched all 18 source hashes and the validation-image digest, with 9 unique migrations whose source and assembled-copy hashes match. See the [final video evidence](../../infra/validation/media-inspection/README.md#el-tk-036-final-validation). These results do not pass MEDIA-001, CAP-001, DR-001 or EXPORT-001; the definitive object-storage provider remains deferred.
+
 ## Local checks
 
 From the repository root:

@@ -1,0 +1,24 @@
+﻿{
+    "ticket":  "EL-TK-036",
+    "stage":  "FOCUSED_VIDEO_SUITE",
+    "runId":  "media_inspection_d1475bf71918468498ef92e57f33c08d",
+    "testedAt":  "2026-10-10T19:59:58.424Z",
+    "status":  "FAIL",
+    "testFiles":  2,
+    "testsTotal":  60,
+    "testsPassed":  55,
+    "testsFailed":  5,
+    "failureCases":  [
+                         "real \u0027ANDROID-MP4-574790f5df52\u0027 private JPEG pair versions/hashes/original preserve compatible replay",
+                         "real \u0027ANDROID-MP4-0a23dabadb68\u0027 private JPEG pair versions/hashes/original preserve compatible replay",
+                         "controlled 34 x 18 SAR 2:1 rotation false preserves display proportion and removes location",
+                         "controlled 34 x 18 SAR 1:2 rotation false preserves display proportion and removes location",
+                         "controlled 34 x 18 SAR 1:1 rotation true preserves display proportion and removes location"
+                     ],
+    "gates":  {
+                  "CAP_001":  "NOT_EVALUATED",
+                  "MEDIA_001":  "NOT_EVALUATED",
+                  "DR_001":  "NOT_EVALUATED",
+                  "EXPORT_001":  "NOT_EVALUATED"
+              }
+}
