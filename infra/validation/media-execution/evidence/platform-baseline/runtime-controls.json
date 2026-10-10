@@ -1,0 +1,40 @@
+{
+  "boundaries": {
+    "denied": [
+      "/input/original",
+      "/root/x",
+      "/run/secrets/pg_admin",
+      "/var/run/docker.sock",
+      "/input-other/original"
+    ],
+    "network": "DENIED",
+    "root": "DENIED",
+    "uid": 1000,
+    "status": "Name:\tMainThread\nUmask:\t0022\nState:\tR (running)\nTgid:\t8\nNgid:\t0\nPid:\t8\nPPid:\t0\nTracerPid:\t0\nUid:\t1000\t1000\t1000\t1000\nGid:\t1000\t1000\t1000\t1000\nFDSize:\t64\nGroups:\t1000 \nNStgid:\t8\nNSpid:\t8\nNSpgid:\t8\nNSsid:\t8\nKthread:\t0\nVmPeak:\t 1082832 kB\nVmSize:\t 1082584 kB\nVmLck:\t       0 kB\nVmPin:\t       0 kB\nVmHWM:\t   52420 kB\nVmRSS:\t   52420 kB\nRssAnon:\t   10444 kB\nRssFile:\t   41976 kB\nRssShmem:\t       0 kB\nVmData:\t  575364 kB\nVmStk:\t     132 kB\nVmExe:\t   47504 kB\nVmLib:\t      52 kB\nVmPTE:\t     528 kB\nVmSwap:\t       0 kB\nHugetlbPages:\t       0 kB\nCoreDumping:\t0\nTHP_enabled:\t1\nuntag_mask:\t0xffffffffffffffff\nThreads:\t7\nSigQ:\t2/57385\nSigPnd:\t0000000000000000\nShdPnd:\t0000000000000000\nSigBlk:\t0000000000000000\nSigIgn:\t0000000201001000\nSigCgt:\t0000000000004602\nCapInh:\t0000000000000000\nCapPrm:\t0000000000000000\nCapEff:\t0000000000000000\nCapBnd:\t0000000000000000\nCapAmb:\t0000000000000000\nNoNewPrivs:\t1\nSeccomp:\t2\nSeccomp_filters:\t2\nSpeculation_Store_Bypass:\tthread vulnerable\nSpeculationIndirectBranch:\tconditional enabled\nCpus_allowed:\tffff\nCpus_allowed_list:\t0-15\nMems_allowed:\t00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000001\nMems_allowed_list:\t0\nvoluntary_ctxt_switches:\t34\nnonvoluntary_ctxt_switches:\t2",
+    "cpu": "50000 100000",
+    "memory": "134217728",
+    "pids": "32"
+  },
+  "cpu": {
+    "before": "usage_usec 87933\nuser_usec 50247\nsystem_usec 37685\nnice_usec 0\nnr_periods 2\nnr_throttled 1\nthrottled_usec 133\nnr_bursts 0\nburst_usec 0",
+    "after": "usage_usec 686778\nuser_usec 635760\nsystem_usec 51017\nnice_usec 0\nnr_periods 14\nnr_throttled 13\nthrottled_usec 602846\nnr_bursts 0\nburst_usec 0"
+  },
+  "scratch": {
+    "bytes": 16777216,
+    "error": "ENOSPC"
+  },
+  "processes": {
+    "denied": 25,
+    "current": "32",
+    "events": "max 25"
+  },
+  "memory": {
+    "exit": 137,
+    "events": "low 0\nhigh 0\nmax 36\noom 1\noom_kill 1\noom_group_kill 0\n"
+  },
+  "descendants": {
+    "terminal": true,
+    "container": "eventlens-media-execution-6105c163-8024-4e2d-b8a4-967bf36cab3d",
+    "evidenceId": "docker-identity-removed:ca62611bd230cf84807eeda8b1bd5cabc2c6dd89768f22fb2bc00074952316b0:2026-10-10T01:34:34.303832006Z"
+  }
+}

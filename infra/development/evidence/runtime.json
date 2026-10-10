@@ -1,0 +1,35 @@
+{
+    "testedAt":  "2026-10-10T01:42:02.511Z",
+    "scope":  "local platform only; no Beta gate evaluation",
+    "migrationsBefore":  6,
+    "databaseLoss":  {
+                         "liveness":  200,
+                         "readiness":  503,
+                         "code":  "DEPENDENCY_UNAVAILABLE",
+                         "sanitized":  true
+                     },
+    "migrationsAfter":  6,
+    "readyAfter":  200,
+    "restoredMigrations":  6,
+    "persistence":  "PASS",
+    "isolatedRestore":  "PASS",
+    "e2e":  {
+                "runner":  "Playwright Chromium",
+                "passed":  1,
+                "failed":  0
+            },
+    "reservedCredentialRealPostgres":  "PASS",
+    "existingPackageRegressions":  {
+                                       "mediaExecution":  21,
+                                       "mediaInspection":  46,
+                                       "failed":  0,
+                                       "mediaAcceptance":  26,
+                                       "jobQueue":  25
+                                   },
+    "finalPublicBuild":  {
+                             "result":  "PASS",
+                             "testedAt":  "2026-10-10T01:51:04.3576127Z",
+                             "command":  "node scripts/workspace.mjs build"
+                         },
+    "review":  "APPROVED"
+}

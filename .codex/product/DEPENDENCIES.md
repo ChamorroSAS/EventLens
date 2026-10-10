@@ -121,7 +121,7 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | Ticket | Depende de | Bloquea |
 |---|---|---|
 | EL-TK-032 (DONE) | Contrato de carga aceptada de EL-EP-005 | EL-TK-033, EL-TK-038, EL-TK-041 |
-| EL-TK-033 | EL-TK-032, EL-TK-056 | EL-TK-034, EL-TK-035, EL-TK-036, EL-TK-039, EL-TK-040 |
+| EL-TK-033 (DONE) | EL-TK-032, EL-TK-056 | EL-TK-034, EL-TK-035, EL-TK-036, EL-TK-039, EL-TK-040 |
 | EL-TK-034 | EL-TK-033 | EL-TK-041, EL-TK-042 |
 | EL-TK-035 | EL-TK-033 | EL-TK-037 |
 | EL-TK-036 | EL-TK-033 | EL-TK-037 |
@@ -162,13 +162,15 @@ EL-TK-001..004 están SUPERSEDED y no son predecesoras de ejecución. Su grafo h
 
 **Gate UI actual - 2026-10-08:** [matriz vigente](../context/ui-mvp-epic-review.md), [gate intake](sessions/2026-10-08-removal-intake.md). Todas16 MVP READY de requisitos; 15 UI requeridas UX READY,016 NOT_REQUIRED. PL-024..026 respondidas DEC-103..105. Frontend001015 PARTIAL tecnico localizado. EL-EP-017 juridico publico pendiente. Sin tickets/codigo.
 
-## Dependencias/readiness vigentes tras ARCH-015 — 2026-10-09
+## Dependencias/readiness tras ARCH-015 — 2026-10-09 (HISTÓRICO pre-implementación de EL-TK-033)
 
 [Dictamen por ticket](sessions/2026-10-09-arch-015-backlog-impact.md) distingue construcción propia por contrato de ejecución integrada.059DONE →060PASS →061PASS →ARCH-015 ACCEPTED_SIMPLIFIED satisface experimentos/adopción; no implementa055/056/adapters. La recomendación de ejecutar056 en ese dictamen era vigente antes de su implementación; véase su estado DONE actual abajo.
 
 Cadena productiva:055 DONE →056 →033;032 →033;033 →035/036 →037 →057 →058;032/055 →038 →058.041 consume032/034/038 y044;042 consume034/044.044 conserva043/046.060/061 no requieren pipeline productivo, sin ciclo enabler→producción→enabler. En la fecha del dictamen, EL-TK-056 era la siguiente capacidad P0 habilitada por sus dependencias satisfechas.
 
 **CONFIRMED — EL-TK-032 DONE, 2026-10-09:** quedan satisfechos los nodos 032 y 056 para la cadena hacia 033. Las aristas funcionales no cambian: 033 sigue dependiendo también de 032 y 056; 038 y 041 consumen el trabajo de 032 además de sus otras dependencias. La finalización no cambia automáticamente readiness de downstream ni cierra gates operativos.
+
+**CONFIRMED — EL-TK-033 DONE, 2026-10-09 hora local:** dependencias EL-TK-032/056 satisfechas; evidencia independiente 46/46 PASS y regresiones 055/056 PASS en el [cierre del ticket](tickets/EL-TK-033.md#cierre-de-implementación--2026-10-09-hora-local). No cambian las aristas downstream ni su readiness por inferencia; cada ticket conserva sus propios requisitos y predecesoras.
 
 Portada:049 →050 →051 →052 conserva cadena funcional.050 consume contratos/adapters033/035/056/055 para integración real, no toda implementación guest ni pipeline duplicado.052 y057 comparten inventory/drain, no dependen bidireccionalmente.031 permite portada opcional; no exige procesamiento para preview sin portada. Son colaboraciones/precondiciones de integración explícitas, no nuevas predecesoras duras para construir handlers por puertos.
 

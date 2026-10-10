@@ -10,6 +10,8 @@ An attempt is `QUIESCENT` only after runtime and storage termination proofs have
 
 The runtime applies the ARCH-015 Docker isolation contract. Integration callers still own format inspection, media transformation policy, and any later authorized commit through the queue's current fencing and policy checks. See the [accepted media-processing contract](../../.codex/context/media-and-jobs-architecture.md#pipeline-multimedia-adoptado--arch-015) and the [EL-TK-056 completion record](../../.codex/product/sessions/2026-10-09-el-tk-056-implementation.md).
 
+EL-TK-033 extends the trusted runtime with a separate ClamAV profile and bounded observations, preserving the adopted media image. A trusted `phaseId` (default `processing`) permits sequential phases under one reservation; an `ACTIVE` or `UNKNOWN` attempt prevents another phase for the same token. The pipeline owner retains the reservation across phases and releases it only after terminal quiescence. See [ARCH-016](../../.codex/context/media-and-jobs-architecture.md#inspección-antimalware-local-adoptada--arch-016) and [media inspection](../media-inspection/README.md) for the inspection and checkpoint contracts.
+
 The package scripts must run inside the approved Dockerized workspace, where the pinned pnpm and dependencies are installed. For the integrated PostgreSQL/MinIO/runtime validation, use the [Docker harness instructions](../../infra/validation/media-execution/README.md); do not treat running pnpm directly on the host as the integrated validation path. The workspace scripts available inside the container are:
 
 ```powershell

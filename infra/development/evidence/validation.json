@@ -1,0 +1,191 @@
+﻿{
+    "capturedAt":  "2026-10-10T01:41:13Z",
+    "environment":  "Docker Compose local development baseline; PostgreSQL healthy; platform test commands run in tools container",
+    "imageState":  "Validation used the already-built initial tools image, before the root\u0027s follow-up API mapping rebuild.",
+    "results":  [
+                    {
+                        "command":  "docker compose --profile tools run --rm tools node scripts/workspace.mjs test",
+                        "status":  "PASS",
+                        "evidence":  {
+                                         "database":  "2 files, 2 tests passed",
+                                         "api":  "2 files, 3 tests passed",
+                                         "web":  "1 file, 2 tests passed",
+                                         "total":  "5 files, 7 tests passed"
+                                     }
+                    },
+                    {
+                        "command":  "docker compose --profile tools run --rm tools node scripts/workspace.mjs typecheck",
+                        "status":  "PASS",
+                        "evidence":  [
+                                         "database",
+                                         "API",
+                                         "generated API client",
+                                         "Angular web",
+                                         "E2E TypeScript config"
+                                     ]
+                    },
+                    {
+                        "command":  "docker compose --profile tools run --rm tools node scripts/workspace.mjs integration",
+                        "status":  "PASS",
+                        "evidence":  {
+                                         "files":  2,
+                                         "tests":  3,
+                                         "database":  "real PostgreSQL",
+                                         "cases":  [
+                                                       "health endpoints",
+                                                       "liveness independent of database",
+                                                       "readiness fails closed without credential leakage"
+                                                   ]
+                                     }
+                    },
+                    {
+                        "command":  "docker compose --profile tools run --rm tools node scripts/workspace.mjs build",
+                        "status":  "FAIL",
+                        "evidence":  {
+                                         "compiled":  [
+                                                          "database",
+                                                          "job-queue",
+                                                          "media-execution",
+                                                          "media-acceptance",
+                                                          "media-inspection",
+                                                          "API",
+                                                          "generated API client",
+                                                          "Angular bundle"
+                                                      ],
+                                         "error":  "Angular generated its bundle, then failed writing /workspace/apps/web/dist: EACCES: permission denied, mkdir \u0027/workspace/apps/web/dist\u0027.",
+                                         "exitCode":  1
+                                     }
+                    },
+                    {
+                        "command":  "docker compose --profile tools run --rm tools node scripts/workspace.mjs client-check",
+                        "status":  "PASS",
+                        "evidence":  "Generated TypeScript client matches the OpenAPI contract."
+                    }
+                ],
+    "notRun":  [
+                   "Playwright E2E smoke; root is handling E2E validation separately."
+               ],
+    "scope":  "Validation only. No source, baseline, ticket, gate, or existing evidence files modified.",
+    "reruns":  [
+                   {
+                       "imageState":  "API mapping updates present; OpenAPI export still ran as a write",
+                       "results":  [
+                                       {
+                                           "status":  "FAIL",
+                                           "command":  "docker compose --profile tools run --rm tools node scripts/workspace.mjs test",
+                                           "error":  "open /workspace/contracts/openapi.json: EACCES during openapi:export, before Vitest"
+                                       },
+                                       {
+                                           "status":  "FAIL",
+                                           "command":  "docker compose --profile tools run --rm tools node scripts/workspace.mjs build",
+                                           "error":  "open /workspace/contracts/openapi.json: EACCES during openapi:export after TypeScript builds"
+                                       },
+                                       {
+                                           "status":  "FAIL",
+                                           "command":  "docker compose --profile tools run --rm tools node scripts/workspace.mjs integration",
+                                           "error":  "open /workspace/contracts/openapi.json: EACCES during openapi:export before integration tests"
+                                       },
+                                       {
+                                           "evidence":  "Generated API client matches OpenAPI contract.",
+                                           "status":  "PASS",
+                                           "command":  "docker compose --profile tools run --rm tools node scripts/workspace.mjs client-check"
+                                       }
+                                   ]
+                   },
+                   {
+                       "imageState":  "Current Compose config with tools uid 0 and DAC_OVERRIDE; no source edits from tester",
+                       "results":  [
+                                       {
+                                           "status":  "FAIL",
+                                           "command":  "docker compose --profile tools run --rm tools node scripts/workspace.mjs test",
+                                           "error":  "Prisma media-inspection generate failed EPERM copying query_compiler_fast_bg.postgresql.js into node_modules/.prisma/client, before Vitest"
+                                       },
+                                       {
+                                           "status":  "FAIL",
+                                           "command":  "docker compose --profile tools run --rm tools node scripts/workspace.mjs build",
+                                           "error":  "Same EPERM in media-inspection Prisma generate, before builds"
+                                       },
+                                       {
+                                           "status":  "FAIL",
+                                           "command":  "docker compose --profile tools run --rm tools node scripts/workspace.mjs integration",
+                                           "error":  "Same EPERM in media-inspection Prisma generate, before API integration"
+                                       },
+                                       {
+                                           "evidence":  "Generated API client matches OpenAPI contract.",
+                                           "status":  "PASS",
+                                           "command":  "docker compose --profile tools run --rm tools node scripts/workspace.mjs client-check"
+                                       }
+                                   ]
+                   }
+               ],
+    "finalImage":  {
+                       "image":  "Final workspace image 13060",
+                       "results":  [
+                                       {
+                                           "evidence":  "5 test files, 16 tests: database 2, API 12, web 2.",
+                                           "status":  "PASS",
+                                           "command":  "docker compose --profile tools run --rm tools node scripts/workspace.mjs test"
+                                       },
+                                       {
+                                           "evidence":  "Database and existing packages, API, OpenAPI export, generated API client, Angular production bundle.",
+                                           "status":  "PASS",
+                                           "command":  "docker compose --profile tools run --rm tools node scripts/workspace.mjs build"
+                                       },
+                                       {
+                                           "evidence":  "2 files, 3 API integration tests against real PostgreSQL; readiness failure remains closed without credential leakage.",
+                                           "status":  "PASS",
+                                           "command":  "docker compose --profile tools run --rm tools node scripts/workspace.mjs integration"
+                                       },
+                                       {
+                                           "evidence":  "Database, API, generated API client, Angular, and E2E TypeScript configuration.",
+                                           "status":  "PASS",
+                                           "command":  "docker compose --profile tools run --rm tools node scripts/workspace.mjs typecheck"
+                                       },
+                                       {
+                                           "evidence":  "OpenAPI and generated client match, both before and after generation.",
+                                           "status":  "PASS",
+                                           "command":  "docker compose --profile tools run --rm contracts node scripts/workspace.mjs client-check"
+                                       },
+                                       {
+                                           "evidence":  "Generated OpenAPI-derived TypeScript schema.",
+                                           "status":  "PASS",
+                                           "command":  "docker compose --profile tools run --rm contracts node scripts/workspace.mjs client"
+                                       }
+                                   ]
+                   },
+    "finalDatabaseConfig":  {
+                                "results":  [
+                                                {
+                                                    "evidence":  "3 test files, 30 tests: database 15, API 13, web 2.",
+                                                    "status":  "PASS",
+                                                    "command":  "docker compose --profile tools run --rm tools node scripts/workspace.mjs test"
+                                                },
+                                                {
+                                                    "evidence":  "2 files, 3 API integration tests with PostgreSQL healthy and migration service exit 0.",
+                                                    "status":  "PASS",
+                                                    "command":  "docker compose --profile tools run --rm tools node scripts/workspace.mjs integration"
+                                                },
+                                                {
+                                                    "evidence":  "Database, API, generated client, Angular, and E2E TypeScript.",
+                                                    "status":  "PASS",
+                                                    "command":  "docker compose --profile tools run --rm tools node scripts/workspace.mjs typecheck"
+                                                },
+                                                {
+                                                    "evidence":  "Root requested test/integration/typecheck only; full build passed on the immediately preceding source image.",
+                                                    "status":  "NOT_RERUN",
+                                                    "command":  "build"
+                                                }
+                                            ],
+                                "gates":  "No CPU or operational validation gates asserted by this run.",
+                                "imageTag":  "eventlens-development:workspace",
+                                "capturedAt":  "2026-10-10T01:49:13Z",
+                                "phaseIdentifiers":  [
+                                                         "postgres.healthy",
+                                                         "migrate.exit-0",
+                                                         "tools.test",
+                                                         "tools.integration",
+                                                         "tools.typecheck"
+                                                     ],
+                                "databaseConfiguration":  "Shared connection configuration accepts explicit DATABASE_URL or PostgreSQL fields; Compose validation uses PostgreSQL fields."
+                            }
+}

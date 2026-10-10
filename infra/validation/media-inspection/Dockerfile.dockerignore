@@ -3,14 +3,11 @@
 !pnpm-workspace.yaml
 !pnpm-lock.yaml
 !packages/
-!packages/job-queue/
-!packages/job-queue/**
-!packages/media-execution/
-!packages/media-execution/**
-!packages/media-acceptance/
-!packages/media-acceptance/**
-!packages/media-inspection/
-!packages/media-inspection/**
+!packages/**
+!config/
+!config/database-modules.json
+!scripts/
+!scripts/database.mjs
 !infra/
 !infra/validation/
 !infra/validation/media-inspection/
@@ -18,3 +15,4 @@
 **/node_modules/
 **/dist/
 **/src/generated/
+packages/database/prisma/

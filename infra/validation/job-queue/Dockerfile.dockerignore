@@ -1,16 +1,20 @@
-# Only the EL-TK-055 workspace and runner enter this build context.
+# Shared workspace sources, database registry and the focused runner only.
 **
 !package.json
 !pnpm-workspace.yaml
 !pnpm-lock.yaml
 !packages/
-!packages/job-queue/
-!packages/job-queue/**
+!packages/**
+!config/
+!config/database-modules.json
+!scripts/
+!scripts/database.mjs
 !infra/
 !infra/validation/
 !infra/validation/job-queue/
 !infra/validation/job-queue/**
 **/node_modules/
 **/dist/
-packages/job-queue/src/generated/
+**/src/generated/
+packages/database/prisma/
 infra/validation/job-queue/evidence/

@@ -123,6 +123,16 @@ it('claimed fresh snapshot A cannot approve different actual mounted official da
  const p=await prepared(Buffer.from('neutral valid scanner fixture'));
  try{const result=await mismatched.inspect(p.input,p.job,{jobs:p.reservation.jobs,releaseAfterQuiescence(){}});observations.push({case:'snapshot-A-runtime-B',result});expect(result.status).toBe('INCONCLUSIVE');expect(result.reason).toBe('SNAPSHOT_MISMATCH');}finally{p.reservation.releaseAfterQuiescence();}
 },180000);
+it('unexpected hidden scanner database cannot be used or approved',async()=>{
+ const folder='signature-hidden-'+randomUUID(),directory='/inputs/'+folder;await mkdir(directory);
+ for(const file of manifest.files)await copyFile('/signatures/'+file.name,directory+'/'+file.name);
+ await copyFile('/signatures/manifest.json',directory+'/manifest.json');
+ await writeFile(directory+'/.unexpected.ign2','controlled unexpected database');
+ const profile={...scannerProfile,signaturesRoot:process.env.DOCKER_INPUT_ROOT+'/'+folder};
+ const untrustedSet=new ClamAvInspection(new MediaExecutionSupervisor(queue,authority,storage,new DockerProcessRuntime({inputRoot:'/inputs',dockerInputRoot:process.env.DOCKER_INPUT_ROOT!,scanner:profile}),inventory,limits),configuration);
+ const p=await prepared(Buffer.from('neutral hidden-database fixture'));
+ try{const result=await untrustedSet.inspect(p.input,p.job,{jobs:p.reservation.jobs,releaseAfterQuiescence(){}});observations.push({case:'hidden-database',result});expect(result.status).toBe('INCONCLUSIVE');expect(result.reason).toBe('EXECUTION_PROCESSING_ERROR');}finally{p.reservation.releaseAfterQuiescence();}
+},180000);
 it.each(['encrypted','nested-limit'] as const)('actual %s archive coverage cannot be approved',async mode=>{
  const directory='/tmp/inspection-archive-'+randomUUID();await mkdir(directory);await writeFile(directory+'/neutral.txt','controlled neutral archive fixture');
  const zip=(target:string,input:string,password?:string)=>{const result=spawnSync('zip',['-q','-j',...(password?['-P',password]:[]),target,input],{encoding:'utf8'});if(result.status!==0)throw Error('CONTROLLED_ZIP_FIXTURE_FAILED');};

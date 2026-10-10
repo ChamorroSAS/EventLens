@@ -3,9 +3,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssl docker.
 WORKDIR /workspace
 ENV DOCKER_API_VERSION=1.44
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY packages/job-queue ./packages/job-queue
-COPY packages/media-execution ./packages/media-execution
-RUN pnpm install --frozen-lockfile && pnpm --filter @eventlens/job-queue generate && pnpm --filter @eventlens/job-queue build && pnpm --filter @eventlens/media-execution generate && pnpm --filter @eventlens/media-execution build
+COPY packages ./packages
+COPY config/database-modules.json ./config/database-modules.json
+COPY scripts/database.mjs ./scripts/database.mjs
+RUN pnpm install --frozen-lockfile && pnpm --filter @eventlens/database generate && pnpm --filter @eventlens/database build && pnpm --filter @eventlens/job-queue generate && pnpm --filter @eventlens/job-queue build && pnpm --filter @eventlens/media-execution generate && pnpm --filter @eventlens/media-execution build
 COPY infra/validation/media-execution ./infra/validation/media-execution
 RUN chmod +x /workspace/infra/validation/media-execution/late-docker.mjs
 CMD ["node","infra/validation/media-execution/run.mjs"]

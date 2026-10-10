@@ -14,3 +14,15 @@ AGENTS.md
 .codex/config.toml
 .codex/ROUTING.md
 .codex/product/sessions/
+
+.env
+.env.*
+!.env.example
+.local/
+apps/*/dist/
+apps/*/.angular/
+e2e/test-results/
+e2e/playwright-report/
+packages/database/prisma/schema.prisma
+packages/database/prisma/migrations/
+packages/database/prisma/migration-manifest.json

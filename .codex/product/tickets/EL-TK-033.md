@@ -6,7 +6,7 @@ EL-EP-006
 
 ## Status
 
-READY
+DONE
 
 **HISTÓRICO CONFIRMED — 2026-10-07:** requirements_reviewer aprobó este conjunto sin hallazgos pendientes. Véase [dictamen](../sessions/2026-10-07-el-ep-006-ticket-review.md). READY expresa preparación de requisitos; se conservan las dependencias de ejecución.
 
@@ -109,6 +109,14 @@ PREPARATORY_SCOPE_READY: contratos, invariantes, fixtures y validación de forma
 
 Propuesta RECOMMENDED/PENDING de architect: ClamAV local por intento aislado, firmas actualizadas fuera del parser y resultados incompletos fallando cerrado. No se adoptó motor, versión ni imagen y no se implementó código. El gate anterior YES conserva su alcance contractual histórico; este gate precisa el bloqueo del alcance completo. [Handoff y propuesta](../sessions/2026-10-09-el-tk-033-security-gate.md).
 
-## Gate vigente — ARCH-016
+## Gate ARCH-016 antes de implementación — HISTÓRICO
 
 **CONFIRMED:** el usuario aprobó ClamAV; ARCH-016 cierra el mecanismo antimalware. REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para construir y validar el alcance propio. Dependencias032/056 DONE. Los resultados reales aprobados necesitan evidencia focal de motor/imagen, firmas, perfil, límites y aislamiento; no se presume PASS ni ticket completado. [Contrato y handoff](../sessions/2026-10-09-el-tk-033-clamav-contract.md).
+
+## Cierre de implementación — 2026-10-09 (hora local)
+
+**CONFIRMED — DONE:** la implementación y sus revisiones normal y crítica fueron aprobadas. El tester independiente obtuvo **46/46 PASS** (32 pruebas de integración con PostgreSQL real y 14 unitarias), `runId: media_inspection_e0b210a74a464bc88c99bd12a050661d`. Evidencia: [resultado](../../../infra/validation/media-inspection/evidence/tester-final/result.json), [pruebas](../../../infra/validation/media-inspection/evidence/tester-final/tests.json) y [manifest de hashes de fuente](../../../infra/validation/media-inspection/evidence/tester-final/implementation-source-hashes.json). El manifest de 29 archivos coincidió con el código revisado; las regresiones de EL-TK-055 (25/25) y EL-TK-056 (21/21) también pasaron. La imagen ejecutada fue ClamAV 1.4.6 con digest fijado y snapshot oficial de firmas verificado.
+
+El alcance implementa inspección real de formato y decodificación acotada, escaneo ClamAV por intento con snapshot oficial inmutable, resultados de seguridad tipados y checkpoint/auditoría PostgreSQL bajo la autorización vigente del job. El checkpoint no finaliza el job del pipeline. Los resultados inconclusos o no aprobados no habilitan el original.
+
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES (satisfecho; ticket DONE). EL-TK-032 y EL-TK-056 estaban DONE antes de iniciar. Se preservan las dependencias y los bloqueos downstream registrados arriba; su satisfacción no cambia automáticamente el readiness de EL-TK-034/035/036/039/040. MEDIA-001, CAP-001, DR-001 y EXPORT-001 permanecen NOT_EVALUATED. No se certifica disponibilidad Beta ni ausencia universal de malware.

@@ -1,0 +1,11 @@
+{
+  "attemptId": "43fe014c-e323-41ed-ad60-8db9c815fe6e",
+  "realFileHandle": true,
+  "writeHeldAfterAbort": true,
+  "unknownUntilDescriptorClosed": true,
+  "slotHeldWhileWriterActive": true,
+  "partialWriteBytes": 1,
+  "writeCalls": 1,
+  "fsyncCalls": 0,
+  "recoveryAfterClose": "PASS"
+}

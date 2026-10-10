@@ -2,7 +2,7 @@
 
 **HISTÓRICO — gate de ejecución EL-TK-033, 2026-10-09:** requisitos READY y dependencias032/056 DONE; el alcance completo permaneció bloqueado hasta decidir `MalwareInspection`. [Hallazgo conservado](sessions/2026-10-09-el-tk-033-security-gate.md).
 
-**CONFIRMED — ARCH-016:** el usuario aprobó ClamAV local y architect cerró su contrato. EL-TK-033 REQUIREMENTS_READY YES y READY_FOR_IMPLEMENTATION YES para construir/validar el alcance propio; la aprobación factual requiere evidencia de scanner/firmas/perfil/aislamiento. [Handoff vigente](sessions/2026-10-09-el-tk-033-clamav-contract.md). No se reabren TB-01/TB-02 ni se convierten gates Beta en bloqueos del ticket.
+**HISTÓRICO — ARCH-016 antes de la implementación:** el usuario aprobó ClamAV local y architect cerró su contrato. El readiness autorizaba construir y validar el alcance; el resultado final de EL-TK-033 se registra abajo.
 
 **RECOMMENDED:** primera descomposición funcional; prioridad P0 = necesaria para beta operativa segura; P1 = evaluación beta o preparación pública. Estado READY significa DoR de épica, no autorización de lanzar ni dependencias ya realizadas. NOT_READY conserva bloqueantes explícitos. Los tickets existentes se enumeran en su sección y permanecen sujetos a sus puertas de revisión.
 
@@ -67,7 +67,7 @@
 | EL-TK-030 | Configurar la galería invitada en un borrador | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-030](tickets/EL-TK-030.md) |
 | EL-TK-031 | Previsualizar un borrador como invitado | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-031](tickets/EL-TK-031.md) |
 | EL-TK-032 | Encolar el procesamiento de un original aceptado | EL-EP-006 | DONE | P0 | Contrato de carga aceptada de EL-EP-005 | [EL-TK-032](tickets/EL-TK-032.md) |
-| EL-TK-033 | Inspeccionar un original antes de transformarlo | EL-EP-006 | READY | P0 | EL-TK-032, EL-TK-056 | [EL-TK-033](tickets/EL-TK-033.md) |
+| EL-TK-033 | Inspeccionar un original antes de transformarlo | EL-EP-006 | DONE | P0 | EL-TK-032, EL-TK-056 | [EL-TK-033](tickets/EL-TK-033.md) |
 | EL-TK-034 | Aislar un original sospechoso en cuarentena | EL-EP-006 | READY | P0 | EL-TK-033 | [EL-TK-034](tickets/EL-TK-034.md) |
 | EL-TK-035 | Generar derivados web de una fotografía aprobada | EL-EP-006 | READY | P0 | EL-TK-033 | [EL-TK-035](tickets/EL-TK-035.md) |
 | EL-TK-036 | Generar derivados web de un video aprobado | EL-EP-006 | READY | P0 | EL-TK-033 | [EL-TK-036](tickets/EL-TK-036.md) |
@@ -123,4 +123,6 @@ EL-TK-001..004 — SUPERSEDED por EL-TK-005..019; se preservan como historial. E
 
 **CONFIRMED — EL-TK-056 DONE, 2026-10-09:** implementación y gates de código aprobados; evidencia y alcance en [sesión](sessions/2026-10-09-el-tk-056-implementation.md).
 
-**CONFIRMED — EL-TK-032 DONE, 2026-10-09:** aceptación transaccional del original y encolado idempotente implementados y revisados; [sesión](sessions/2026-10-09-el-tk-032-implementation.md). Se satisfacen las dependencias de 033, 038 y 041 que corresponden a 032; para ejecutar esos tickets aún deben verificarse sus otras predecesoras y readiness vigentes. El siguiente candidato por esta cadena es EL-TK-033, sujeto a confirmar 056 y 032 como satisfechos y su propio gate antes de ejecución. Continuar procesa un solo ticket por solicitud; no ejecutar el candidato automáticamente. MEDIA-001/CAP-001/DR-001/EXPORT-001 siguen VALIDATION_REQUIRED; storage definitivo DEFERRED.
+**CONFIRMED — EL-TK-032 DONE, 2026-10-09:** aceptación transaccional del original y encolado idempotente implementados y revisados; [sesión](sessions/2026-10-09-el-tk-032-implementation.md). Se satisfacen las dependencias de 033, 038 y 041 que corresponden a 032; cada ticket aún requiere verificar sus otras predecesoras y readiness.
+
+**CONFIRMED — EL-TK-033 DONE, 2026-10-09 hora local:** el tester independiente reportó 46/46 PASS (32 integración PostgreSQL real y 14 unitarias); regresiones 055: 25/25 y 056: 21/21 PASS. El manifest de 29 archivos coincide con el código revisado. Véase [cierre y evidencia](tickets/EL-TK-033.md#cierre-de-implementación--2026-10-09-hora-local). Se preservan sus aristas downstream; completar 033 no aprueba automáticamente readiness de 034/035/036/039/040. MEDIA-001/CAP-001/DR-001/EXPORT-001 permanecen NOT_EVALUATED; almacenamiento definitivo sigue DEFERRED. El siguiente candidato por prioridad P0 y dependencia es EL-TK-034, sujeto a su propia verificación de readiness y predecesoras cuando se solicite continuar. No se inicia otro ticket en este cierre.
