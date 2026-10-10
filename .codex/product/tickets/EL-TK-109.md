@@ -1,0 +1,64 @@
+# EL-TK-109 — Entregar a purga una media cuya papelera venció
+
+## Parent epic
+EL-EP-008
+
+## Status
+DRAFT
+
+## User story
+**Como** sistema, **quiero** marcar y entregar a purga una media TRASHED vencida, **para** completar la eliminación normal sin ampliar indebidamente la ventana de restauración.
+
+## Alcance funcional
+Detectar expiración de la ventana de siete días, cerrar restauración y emitir idempotentemente el contrato de purga que ejecuta la capacidad propietaria de EL-EP-015.
+
+## Fuera de alcance
+Implementar toda la purga física/backups, retención jurídica o eliminar antes del deadline.
+
+## Criterios de aceptación
+### Escenario 1
+**Dado** una media TRASHED alcanza su restoreDeadline, **cuando** el scheduler la procesa, **entonces** queda no restaurable y se emite una única solicitud de purga.
+
+### Escenario 2
+**Dado** el job se repite, **cuando** se reintenta, **entonces** no duplica la solicitud de purga.
+
+### Escenario 3
+**Dado** la media fue restaurada antes del deadline, **cuando** se procesa un job atrasado, **entonces** no se purga ni se invalida la restauración.
+
+## Reglas de negocio
+La ventana normal de papelera es siete días. La ejecución física y máximos de retención pertenecen a EL-EP-015.
+
+## Validaciones y permisos
+Automatización de sistema; no comando directo guest/owner para omitir ventana normal.
+
+## Casos de error y estados vacíos
+Job atrasado, media ya restaurada, purge ya solicitada, fallo de publicación y conflicto.
+
+## Datos / contratos afectados
+Trash expiry scheduler/event, PurgeRequest contract, idempotency key.
+
+## Dependencias técnicas y funcionales
+Scheduler/JobQueue y contrato de eliminación EL-EP-015.
+
+## Dependencias de tickets
+- **depends_on:** EL-TK-107, EL-TK-055; contrato EL-EP-015
+- **blocks:** EL-TK-112; consumidor de purga EL-EP-015
+
+## Pruebas requeridas
+Deadline, replay, restauración en carrera, publicación fallida e idempotencia.
+
+## Observabilidad / auditoría
+Auditar transición a no restaurable y referencia de purge request.
+
+## Prioridad / estimación
+P0 / M
+
+## Traceability
+Q-019; DEC-022, DEC-045, DEC-092; EL-EP-008, EL-EP-015.
+
+## Definition of Ready
+- [x] Comportamiento inequívoco
+- [x] Criterios comprobables
+- [x] Dependencias identificadas
+- [x] Permisos/errores definidos cuando aplican
+- [x] Sin preguntas BLOCKER
