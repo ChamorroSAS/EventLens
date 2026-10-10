@@ -92,6 +92,18 @@
 | EL-TK-059 | Habilitar el entorno mínimo real requerido para spikes técnicos | EL-EP-006 | DONE | P0 | — | [EL-TK-059](tickets/EL-TK-059.md) |
 | EL-TK-060 | Evaluar aislamiento efectivo y quiescencia mediante spike controlado | EL-EP-006 | DONE | P0 | EL-TK-059 | [EL-TK-060](tickets/EL-TK-060.md) |
 | EL-TK-061 | Evaluar inspección y rendiciones con corpus móvil mediante spike | EL-EP-006 | DONE | P0 | EL-TK-059, EL-TK-060 | [EL-TK-061](tickets/EL-TK-061.md) |
+| EL-TK-062 | Calcular la línea temporal canónica del lifecycle de un evento | EL-EP-003 | DRAFT | P0 | EL-TK-023, contrato EL-EP-011 | [EL-TK-062](tickets/EL-TK-062.md) |
+| EL-TK-063 | Programar un evento DRAFT para apertura futura | EL-EP-003 | DRAFT | P0 | EL-TK-020, EL-TK-023, EL-TK-062 | [EL-TK-063](tickets/EL-TK-063.md) |
+| EL-TK-064 | Activar un evento SCHEDULED manual o automáticamente | EL-EP-003 | DRAFT | P0 | EL-TK-063, EL-TK-062, EL-TK-055 | [EL-TK-064](tickets/EL-TK-064.md) |
+| EL-TK-065 | Cerrar manualmente un evento ACTIVE | EL-EP-003 | DRAFT | P0 | EL-TK-064 | [EL-TK-065](tickets/EL-TK-065.md) |
+| EL-TK-066 | Reabrir un evento CLOSED antes de vencer | EL-EP-003 | DRAFT | P0 | EL-TK-065, EL-TK-062 | [EL-TK-066](tickets/EL-TK-066.md) |
+| EL-TK-067 | Avanzar automáticamente por vencimiento y fin de gracia | EL-EP-003 | DRAFT | P0 | EL-TK-062,064,065,055; contrato EL-EP-015 | [EL-TK-067](tickets/EL-TK-067.md) |
+| EL-TK-068 | Suspender administrativamente un evento conservando su estado previo | EL-EP-003 | DRAFT | P0 | EL-TK-044 | [EL-TK-068](tickets/EL-TK-068.md) |
+| EL-TK-069 | Reactivar un evento SUSPENDED recalculando su estado vigente | EL-EP-003 | DRAFT | P0 | EL-TK-062,067,068,044 | [EL-TK-069](tickets/EL-TK-069.md) |
+| EL-TK-070 | Extender la vigencia autorizada de un evento | EL-EP-003 | DRAFT | P0 | EL-TK-062, contrato EL-EP-011 | [EL-TK-070](tickets/EL-TK-070.md) |
+| EL-TK-071 | Consultar lifecycle y capacidades vigentes de un evento | EL-EP-003 | DRAFT | P0 | EL-TK-063..070 | [EL-TK-071](tickets/EL-TK-071.md) |
+| EL-TK-072 | Aplicar restricciones de acceso según el lifecycle vigente | EL-EP-003 | DRAFT | P0 | EL-TK-064,065,067,068,069,071 | [EL-TK-072](tickets/EL-TK-072.md) |
+| EL-TK-073 | Integrar el lifecycle en la interfaz de organizador e invitado | EL-EP-003 | DRAFT | P0 | EL-TK-071, EL-TK-072 | [EL-TK-073](tickets/EL-TK-073.md) |
 
 **HISTÓRICO CONFIRMED:** EL-TK-005..019 sustituyeron la descomposición anterior y quedaron READY el 2026-10-07. [Dictamen](sessions/2026-10-07-el-ep-001-ticket-redesign-review.md). **CONFIRMED — 2026-10-08:** la remediación autorizada de EL-TK-005..019 y EL-TK-043..046 fue APPROVED; los 19 activos están READY de requisitos. READY_FOR_IMPLEMENTATION: PARTIAL; YES sólo para 008 backend, 043 provisión operativa y 046 integración del puerto MOD-001, con los límites del [dictamen final](sessions/2026-10-08-el-ep-001-ticket-remediation-review.md). La UI de EL-EP-001 sigue con gate PARTIAL: no se generan tickets frontend.
 
@@ -104,6 +116,8 @@
 **CONFIRMED — 2026-10-08, EL-EP-006:** remediación APPROVED de nueve existentes032/033/035/036/037/038/040/041/042 y seis nuevos053..058;034/039 VALID KEEP intactos. Total17 READY de requisitos; REQUIREMENTS_READY:YES; READY_FOR_IMPLEMENTATION:PARTIAL con7 gates técnicos localizados. UI006 YES. [Dictamen final](sessions/2026-10-08-el-ep-006-ticket-remediation-review.md). [Sesión](sessions/2026-10-08-el-ep-006-ticket-remediation.md).
 
 **HISTÓRICO CONFIRMED — paquete TB-01..05 ratificado (previo a ejecución/adopción):** ocho owners033/035/036/041/042/044/056/058 y tres nuevos059..061, once READY de requisitos tras [dictamen final APPROVED](sessions/2026-10-08-technical-blockers-ticket-review.md). REQUIREMENTS_READY:YES; READY_FOR_IMPLEMENTATION:PARTIAL (044/059YES propio,otros9NO full con scopes preparatorios habilitados). Dictámenes previos de001/006 conservan historia; el paquete sólo actualiza estos scopes. TB-03 contrato APPROVED, auth aún no implementada. PREPARATORY_SCOPE_READY/BLOCKED_SCOPE/BLOCKED_BY en cada owner;059 mínimo YES para implementación propia,060/061 NO hasta entorno real/PASS requerido. [Fuente ratificada](sessions/2026-10-08-technical-blockers-approved-contracts.md), [sesión del paquete](sessions/2026-10-08-technical-blockers-ticket-integration.md). No spikes ejecutados ni PASS declarados.
+
+**DRAFT — 2026-10-10, EL-EP-003:** ticket_writer descompuso lifecycle en EL-TK-062..073. Los 12 tickets permanecen DRAFT hasta requirements_reviewer; no implican implementación ni cierre de dependencias de EL-EP-011/015. La automatización GitHub debe reflejar estos artefactos activos sin publicar históricos SUPERSEDED.
 
 ## Superseded/deprecated
 
