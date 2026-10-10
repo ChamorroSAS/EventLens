@@ -4,7 +4,7 @@
 EL-EP-009
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** invitado o reportante, **quiero** reportar o retirar mediante los flujos apropiados, **para** completar la acción desde móvil con consecuencias claras.
@@ -62,3 +62,9 @@ DEC-084, DEC-089, DEC-097, DEC-103..105; EL-EP-009; ui-mvp-epic-review.md#el-ep-
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación y UI/UX — 2026-10-10
+- **REQUIREMENTS_READY:** YES (requisitos, alcances, criterios Gherkin y reglas canónicas DEC-088/089/097/103..105 validados sin blockers).
+- **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §5.26..27 y §12.11..15; sin componentes nuevos ni duplicación de flujos).
+- **READY_FOR_FRONTEND_PLANNING:** YES
+- **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).

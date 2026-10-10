@@ -185,7 +185,7 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 7 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de galería guest PUBLISHED, grants temporales de derivados (DEC-063), biblioteca de media para el organizador, revalidación server-side y superficies UI aprobadas en ui-mvp-epic-review.md#el-ep-007. Se corrigió el ciclo 099 ↔ 101 (099 consume 101; 099 solo bloquea 102), se desacopló MediaViewGrant (097) de la consulta de galería guest (096) permitiendo su consumo compartido, y se eliminaron bloqueos asimétricos hacia 101. Moderación, retiro y descargas conservan ownership en EL-EP-008, EL-EP-009 y EL-EP-010 respectivamente.
 
-## Tickets propuestos — EL-EP-008 (DRAFT; pendiente requirements_reviewer)
+## Tickets vigentes — EL-EP-008 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
@@ -200,9 +200,9 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-111 | 100,103..108,110 | 112 |
 | EL-TK-112 | 103..111 | validación EL-EP-008 |
 
-EL-TK-103..112 son DRAFT. Moderación cotidiana/papelera permanecen en EL-EP-008; seguridad/cuarentena en EL-EP-006 y purga física/retención en EL-EP-015.
+10 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de moderación cotidiana, papelera de 7 días (DEC-096), restauración fiel a previous_state (DEC-086), entrega a purga al vencer (contrato EL-EP-015), cambio de modo de moderación sin impacto retroactivo (DEC-087) e integración en OrganizerMediaLibrary. Superficies UI reutilizadas del catálogo canónico (§8.5..9), sin componentes nuevos. Seguridad/cuarentena en EL-EP-006 y purga física en EL-EP-015.
 
-## Tickets propuestos — EL-EP-009 (DRAFT; pendiente requirements_reviewer)
+## Tickets vigentes — EL-EP-009 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
@@ -218,9 +218,9 @@ EL-TK-103..112 son DRAFT. Moderación cotidiana/papelera permanecen en EL-EP-008
 | EL-TK-122 | 116..120; contrato EL-EP-012 | 123 |
 | EL-TK-123 | 113..122 | validación EL-EP-009 |
 
-EL-TK-113..123 son DRAFT. Recepción no equivale a resolución ni auto-ocultamiento; retiro propio es irreversible; intake sin sesión sigue DEC-103..105; purga/auditoría/comunicaciones permanecen en sus épicas propietarias.
+11 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de reportes (sin auto-ocultamiento, DEC-088), retiro propio inmediato e irreversible con sesión guest (DEC-089, DEC-097), intake sin sesión con campos mínimos requeridos (DEC-103..105), clasificación de severidad y prioridad, acceso administrativo justificado a media de casos, ocultamiento preventivo administrativo y resolución formal con trazabilidad. Superficies UI reutilizadas del catálogo canónico (§5.26..27 y §12.11..15), sin componentes nuevos. Purga en EL-EP-015, auditoría en EL-EP-014 y consola administrativa en EL-EP-012.
 
-## Tickets propuestos — EL-EP-010 (DRAFT; pendiente requirements_reviewer)
+## Tickets vigentes — EL-EP-010 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
@@ -235,7 +235,7 @@ EL-TK-113..123 son DRAFT. Recepción no equivale a resolución ni auto-ocultamie
 | EL-TK-132 | 100,124..131 | 133 |
 | EL-TK-133 | 124..132 | validación EL-EP-010 |
 
-EL-TK-124..133 son DRAFT. Export usa snapshot fijo al solicitar, revalida al preparar/descargar, storage privado y JobQueue; descargas guest siguen fuera de alcance.
+10 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de descarga individual de original seguro para organizador (DEC-009/013/075), exportación asíncrona multipartes con snapshot fijo (DEC-046..049/079/090), disponibilidad 48h, invalidación inmediata ante retiros de privacidad o revocación de acceso (DEC-090), grants temporales de partes, regeneración/retry autorizado y consulta de estado/partes/progreso real en OrganizerMediaLibrary. Superficies UI reutilizadas del catálogo canónico (§9.1..8), sin centros de exportación paralelos ni componentes nuevos. Descargas guest siguen fuera de alcance.
 
 ## Tickets vigentes — EL-EP-006 (quality gate APPROVED)
 

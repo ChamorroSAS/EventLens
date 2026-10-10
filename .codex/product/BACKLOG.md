@@ -133,43 +133,47 @@
 | EL-TK-100 | Integrar la biblioteca de media en la interfaz del organizador | EL-EP-007 | READY | P0 | EL-TK-098, EL-TK-053, EL-TK-054 | [EL-TK-100](tickets/EL-TK-100.md) |
 | EL-TK-101 | Revalidar visibilidad cuando cambia el acceso o la media | EL-EP-007 | READY | P0 | EL-TK-096, EL-TK-097, EL-TK-072, EL-TK-074 | [EL-TK-101](tickets/EL-TK-101.md) |
 | EL-TK-102 | Validar privacidad y experiencia móvil de galería y biblioteca | EL-EP-007 | READY | P0 | EL-TK-096..101 | [EL-TK-102](tickets/EL-TK-102.md) |
-| EL-TK-103 | Aprobar una media pendiente de revisión | EL-EP-008 | DRAFT | P0 | 098,037 | [EL-TK-103](tickets/EL-TK-103.md) |
-| EL-TK-104 | Rechazar una media pendiente de revisión | EL-EP-008 | DRAFT | P0 | 098 | [EL-TK-104](tickets/EL-TK-104.md) |
-| EL-TK-105 | Ocultar una media publicada sin eliminarla | EL-EP-008 | DRAFT | P0 | 098,101 | [EL-TK-105](tickets/EL-TK-105.md) |
-| EL-TK-106 | Volver a publicar una media oculta cuando sigue autorizada | EL-EP-008 | DRAFT | P0 | 105,101 | [EL-TK-106](tickets/EL-TK-106.md) |
-| EL-TK-107 | Mover una media elegible a papelera conservando su estado previo | EL-EP-008 | DRAFT | P0 | 098,053; contrato EL-EP-006 | [EL-TK-107](tickets/EL-TK-107.md) |
-| EL-TK-108 | Restaurar una media de papelera respetando bloqueos vigentes | EL-EP-008 | DRAFT | P0 | 107 | [EL-TK-108](tickets/EL-TK-108.md) |
-| EL-TK-109 | Entregar a purga una media cuya papelera venció | EL-EP-008 | DRAFT | P0 | 107,055; contrato EL-EP-015 | [EL-TK-109](tickets/EL-TK-109.md) |
-| EL-TK-110 | Cambiar el modo de moderación sin reescribir contenido existente | EL-EP-008 | DRAFT | P0 | 028,037 | [EL-TK-110](tickets/EL-TK-110.md) |
-| EL-TK-111 | Integrar acciones de moderación y papelera en la biblioteca del organizador | EL-EP-008 | DRAFT | P0 | 100,103..108,110 | [EL-TK-111](tickets/EL-TK-111.md) |
-| EL-TK-112 | Validar moderación, papelera y restauración de extremo a extremo | EL-EP-008 | DRAFT | P0 | 103..111 | [EL-TK-112](tickets/EL-TK-112.md) |
-| EL-TK-113 | Registrar una denuncia sobre contenido visible | EL-EP-009 | DRAFT | P0 | 099; contrato EL-EP-014 | [EL-TK-113](tickets/EL-TK-113.md) |
-| EL-TK-114 | Retirar irreversiblemente un aporte propio con sesión guest válida | EL-EP-009 | DRAFT | P0 | 078; contrato EL-EP-015 | [EL-TK-114](tickets/EL-TK-114.md) |
-| EL-TK-115 | Registrar una solicitud de retiro sin sesión válida | EL-EP-009 | DRAFT | P0 | 082 | [EL-TK-115](tickets/EL-TK-115.md) |
-| EL-TK-116 | Clasificar severidad y priorizar denuncias para revisión administrativa | EL-EP-009 | DRAFT | P0 | 113,044; contrato EL-EP-014 | [EL-TK-116](tickets/EL-TK-116.md) |
-| EL-TK-117 | Autorizar acceso administrativo justificado a la media de un caso | EL-EP-009 | DRAFT | P0 | 116,044,097; contrato EL-EP-014 | [EL-TK-117](tickets/EL-TK-117.md) |
-| EL-TK-118 | Aplicar ocultamiento preventivo por decisión administrativa | EL-EP-009 | DRAFT | P0 | 116,117,101 | [EL-TK-118](tickets/EL-TK-118.md) |
-| EL-TK-119 | Resolver un caso de reporte o retiro registrando la intervención | EL-EP-009 | DRAFT | P0 | 116,117; contratos EL-EP-013/014/015 | [EL-TK-119](tickets/EL-TK-119.md) |
-| EL-TK-120 | Consultar la cola y detalle de casos para revisión administrativa | EL-EP-009 | DRAFT | P0 | 113,115,116 | [EL-TK-120](tickets/EL-TK-120.md) |
-| EL-TK-121 | Integrar reporte y retiro en la experiencia pública/guest | EL-EP-009 | DRAFT | P0 | 113,114,115 | [EL-TK-121](tickets/EL-TK-121.md) |
-| EL-TK-122 | Integrar cola y resolución de casos en la consola administrativa | EL-EP-009 | DRAFT | P0 | 116..120; contrato EL-EP-012 | [EL-TK-122](tickets/EL-TK-122.md) |
-| EL-TK-123 | Validar privacidad y resolución de reportes/retiros de extremo a extremo | EL-EP-009 | DRAFT | P0 | 113..122 | [EL-TK-123](tickets/EL-TK-123.md) |
-| EL-TK-124 | Autorizar la descarga individual de un original elegible | EL-EP-010 | DRAFT | P0 | 098,053; contrato EL-EP-006 | [EL-TK-124](tickets/EL-TK-124.md) |
-| EL-TK-125 | Crear una solicitud de exportación con snapshot fijo de elegibles | EL-EP-010 | DRAFT | P0 | 098; contrato EL-EP-008 | [EL-TK-125](tickets/EL-TK-125.md) |
-| EL-TK-126 | Encolar y preparar una exportación asíncrona multipartes | EL-EP-010 | DRAFT | P0 | 125,055 | [EL-TK-126](tickets/EL-TK-126.md) |
-| EL-TK-127 | Publicar disponibilidad y expiración de una exportación preparada | EL-EP-010 | DRAFT | P0 | 126 | [EL-TK-127](tickets/EL-TK-127.md) |
-| EL-TK-128 | Invalidar exportaciones afectadas por retiro o pérdida de acceso | EL-EP-010 | DRAFT | P0 | 125,126; contratos EL-EP-008/009/015 | [EL-TK-128](tickets/EL-TK-128.md) |
-| EL-TK-129 | Autorizar la descarga temporal de una parte de exportación | EL-EP-010 | DRAFT | P0 | 127,128 | [EL-TK-129](tickets/EL-TK-129.md) |
-| EL-TK-130 | Reintentar o regenerar una exportación fallida o expirada cuando siga autorizada | EL-EP-010 | DRAFT | P0 | 126,127,128 | [EL-TK-130](tickets/EL-TK-130.md) |
-| EL-TK-131 | Consultar estado, partes y disponibilidad de una exportación | EL-EP-010 | DRAFT | P0 | 125..130 | [EL-TK-131](tickets/EL-TK-131.md) |
-| EL-TK-132 | Integrar descarga individual y exportación en la biblioteca del organizador | EL-EP-010 | DRAFT | P0 | 100,124..131 | [EL-TK-132](tickets/EL-TK-132.md) |
-| EL-TK-133 | Validar recuperación individual y exportación de extremo a extremo | EL-EP-010 | DRAFT | P0 | 124..132 | [EL-TK-133](tickets/EL-TK-133.md) |
+| EL-TK-103 | Aprobar una media pendiente de revisión | EL-EP-008 | READY | P0 | 098,037 | [EL-TK-103](tickets/EL-TK-103.md) |
+| EL-TK-104 | Rechazar una media pendiente de revisión | EL-EP-008 | READY | P0 | 098 | [EL-TK-104](tickets/EL-TK-104.md) |
+| EL-TK-105 | Ocultar una media publicada sin eliminarla | EL-EP-008 | READY | P0 | 098,101 | [EL-TK-105](tickets/EL-TK-105.md) |
+| EL-TK-106 | Volver a publicar una media oculta cuando sigue autorizada | EL-EP-008 | READY | P0 | 105,101 | [EL-TK-106](tickets/EL-TK-106.md) |
+| EL-TK-107 | Mover una media elegible a papelera conservando su estado previo | EL-EP-008 | READY | P0 | 098,053; contrato EL-EP-006 | [EL-TK-107](tickets/EL-TK-107.md) |
+| EL-TK-108 | Restaurar una media de papelera respetando bloqueos vigentes | EL-EP-008 | READY | P0 | 107 | [EL-TK-108](tickets/EL-TK-108.md) |
+| EL-TK-109 | Entregar a purga una media cuya papelera venció | EL-EP-008 | READY | P0 | 107,055; contrato EL-EP-015 | [EL-TK-109](tickets/EL-TK-109.md) |
+| EL-TK-110 | Cambiar el modo de moderación sin reescribir contenido existente | EL-EP-008 | READY | P0 | 028,037 | [EL-TK-110](tickets/EL-TK-110.md) |
+| EL-TK-111 | Integrar acciones de moderación y papelera en la biblioteca del organizador | EL-EP-008 | READY | P0 | 100,103..108,110 | [EL-TK-111](tickets/EL-TK-111.md) |
+| EL-TK-112 | Validar moderación, papelera y restauración de extremo a extremo | EL-EP-008 | READY | P0 | 103..111 | [EL-TK-112](tickets/EL-TK-112.md) |
+| EL-TK-113 | Registrar una denuncia sobre contenido visible | EL-EP-009 | READY | P0 | 099; contrato EL-EP-014 | [EL-TK-113](tickets/EL-TK-113.md) |
+| EL-TK-114 | Retirar irreversiblemente un aporte propio con sesión guest válida | EL-EP-009 | READY | P0 | 078; contrato EL-EP-015 | [EL-TK-114](tickets/EL-TK-114.md) |
+| EL-TK-115 | Registrar una solicitud de retiro sin sesión válida | EL-EP-009 | READY | P0 | 082 | [EL-TK-115](tickets/EL-TK-115.md) |
+| EL-TK-116 | Clasificar severidad y priorizar denuncias para revisión administrativa | EL-EP-009 | READY | P0 | 113,044; contrato EL-EP-014 | [EL-TK-116](tickets/EL-TK-116.md) |
+| EL-TK-117 | Autorizar acceso administrativo justificado a la media de un caso | EL-EP-009 | READY | P0 | 116,044,097; contrato EL-EP-014 | [EL-TK-117](tickets/EL-TK-117.md) |
+| EL-TK-118 | Aplicar ocultamiento preventivo por decisión administrativa | EL-EP-009 | READY | P0 | 116,117,101 | [EL-TK-118](tickets/EL-TK-118.md) |
+| EL-TK-119 | Resolver un caso de reporte o retiro registrando la intervención | EL-EP-009 | READY | P0 | 116,117; contratos EL-EP-013/014/015 | [EL-TK-119](tickets/EL-TK-119.md) |
+| EL-TK-120 | Consultar la cola y detalle de casos para revisión administrativa | EL-EP-009 | READY | P0 | 113,115,116 | [EL-TK-120](tickets/EL-TK-120.md) |
+| EL-TK-121 | Integrar reporte y retiro en la experiencia pública/guest | EL-EP-009 | READY | P0 | 113,114,115 | [EL-TK-121](tickets/EL-TK-121.md) |
+| EL-TK-122 | Integrar cola y resolución de casos en la consola administrativa | EL-EP-009 | READY | P0 | 116..120; contrato EL-EP-012 | [EL-TK-122](tickets/EL-TK-122.md) |
+| EL-TK-123 | Validar privacidad y resolución de reportes/retiros de extremo a extremo | EL-EP-009 | READY | P0 | 113..122 | [EL-TK-123](tickets/EL-TK-123.md) |
+| EL-TK-124 | Autorizar la descarga individual de un original elegible | EL-EP-010 | READY | P0 | 098,053; contrato EL-EP-006 | [EL-TK-124](tickets/EL-TK-124.md) |
+| EL-TK-125 | Crear una solicitud de exportación con snapshot fijo de elegibles | EL-EP-010 | READY | P0 | 098; contrato EL-EP-008 | [EL-TK-125](tickets/EL-TK-125.md) |
+| EL-TK-126 | Encolar y preparar una exportación asíncrona multipartes | EL-EP-010 | READY | P0 | 125,055 | [EL-TK-126](tickets/EL-TK-126.md) |
+| EL-TK-127 | Publicar disponibilidad y expiración de una exportación preparada | EL-EP-010 | READY | P0 | 126 | [EL-TK-127](tickets/EL-TK-127.md) |
+| EL-TK-128 | Invalidar exportaciones afectadas por retiro o pérdida de acceso | EL-EP-010 | READY | P0 | 125,126; contratos EL-EP-008/009/015 | [EL-TK-128](tickets/EL-TK-128.md) |
+| EL-TK-129 | Autorizar la descarga temporal de una parte de exportación | EL-EP-010 | READY | P0 | 127,128 | [EL-TK-129](tickets/EL-TK-129.md) |
+| EL-TK-130 | Reintentar o regenerar una exportación fallida o expirada cuando siga autorizada | EL-EP-010 | READY | P0 | 126,127,128 | [EL-TK-130](tickets/EL-TK-130.md) |
+| EL-TK-131 | Consultar estado, partes y disponibilidad de una exportación | EL-EP-010 | READY | P0 | 125..130 | [EL-TK-131](tickets/EL-TK-131.md) |
+| EL-TK-132 | Integrar descarga individual y exportación en la biblioteca del organizador | EL-EP-010 | READY | P0 | 100,124..131 | [EL-TK-132](tickets/EL-TK-132.md) |
+| EL-TK-133 | Validar recuperación individual y exportación de extremo a extremo | EL-EP-010 | READY | P0 | 124..132 | [EL-TK-133](tickets/EL-TK-133.md) |
 
 **CONFIRMED — 2026-10-10, EL-EP-005:** EL-TK-086..095 aprobados por requirements_reviewer como READY; cubren autorización/reserva atómica vinculada a consentimiento (076) e identidad (077), carga directa a storage privado, confirmación real, validación de restricciones (089 conserva gate técnico PARTIAL para inspección segura de archivos no confiables), aceptación/handoff al contrato downstream transaccional de EL-TK-032 (DONE), retry por archivo, cancelación por policy (DEC-085), consulta de lote, interfaz guest accesible e integración E2E. Implementación conforme a dependencias técnicas y ObjectStorage privado (DEC-063).
 
 **CONFIRMED — 2026-10-10, EL-EP-007:** EL-TK-096..102 aprobados por requirements_reviewer como READY; cubren consulta de galería guest PUBLISHED, grants temporales de derivados privados (DEC-063, desacoplado en EL-TK-097 para consumo guest/owner), biblioteca de media para el organizador con estados de EL-EP-006, integración UI guest (EL-TK-099 con ciclo 099 ↔ 101 resuelto) y organizador conforme al catálogo (§5.20..24/§8.1..4), revalidación server-side (EL-TK-101) y validación integrada E2E. Moderación, retiro y descargas conservan ownership en EL-EP-008, EL-EP-009 y EL-EP-010 respectivamente.
 
-**DRAFT — 2026-10-10, EL-EP-008/009/010:** ticket_writer creó EL-TK-103..133 para moderación/papelera, reportes/retiros y recuperación/exportaciones. Los 31 tickets permanecen DRAFT pendientes de requirements_reviewer; no implican implementación. Se preserva ownership de seguridad/procesamiento en EL-EP-006, galería/biblioteca en EL-EP-007, purga en EL-EP-015, auditoría en EL-EP-014 y comunicaciones en EL-EP-013.
+**CONFIRMED — 2026-10-10, EL-EP-008:** EL-TK-103..112 aprobados por requirements_reviewer y validados desde UI/UX como READY; cubren aprobación/rechazo/ocultamiento de media, papelera de 7 días (DEC-096), restauración fiel a previous_state sin bypass de moderación/seguridad (DEC-086), entrega a purga al vencer (DEC-086/096, contrato EL-EP-015), cambio de modo de moderación sin impacto retroactivo (DEC-087), integración en OrganizerMediaLibrary y validación E2E. Catálogo UI reutilizado (§8.5..9), sin nuevos componentes.
+
+**CONFIRMED — 2026-10-10, EL-EP-009:** EL-TK-113..123 aprobados por requirements_reviewer y validados desde UI/UX como READY; cubren registro de denuncias sin auto-ocultamiento (DEC-088), retiro propio inmediato e irreversible con sesión guest (DEC-089, DEC-097), intake sin sesión con campos mínimos requeridos (DEC-103..105), clasificación de severidad y prioridad, acceso administrativo justificado a media de casos, ocultamiento preventivo administrativo, resolución formal con trazabilidad, consulta de cola/detalle, integración pública y de consola administrativa, y validación integrada E2E. Catálogo UI reutilizado (§5.26..27 y §12.11..15), sin nuevos componentes.
+
+**CONFIRMED — 2026-10-10, EL-EP-010:** EL-TK-124..133 aprobados por requirements_reviewer y validados desde UI/UX como READY; cubren autorización de descarga individual de original seguro para organizador (DEC-009/013/075), solicitud de exportación con snapshot fijo de elegibles (DEC-046/090), preparación asíncrona multipartes (~5GB configurable, DEC-047/063/064/079), disponibilidad 48h (DEC-048), invalidación inmediata ante retiro o pérdida de acceso (DEC-090), grants temporales de partes, regeneración/retry autorizado, consulta de estado/partes/progreso real, integración en OrganizerMediaLibrary y validación integrada E2E. Catálogo UI reutilizado (§9.1..8), sin centros paralelos ni componentes nuevos.
 
 **HISTÓRICO CONFIRMED:** EL-TK-005..019 sustituyeron la descomposición anterior y quedaron READY el 2026-10-07. [Dictamen](sessions/2026-10-07-el-ep-001-ticket-redesign-review.md). **CONFIRMED — 2026-10-08:** la remediación autorizada de EL-TK-005..019 y EL-TK-043..046 fue APPROVED; los 19 activos están READY de requisitos. READY_FOR_IMPLEMENTATION: PARTIAL; YES sólo para 008 backend, 043 provisión operativa y 046 integración del puerto MOD-001, con los límites del [dictamen final](sessions/2026-10-08-el-ep-001-ticket-remediation-review.md). La UI de EL-EP-001 sigue con gate PARTIAL: no se generan tickets frontend.
 

@@ -4,7 +4,7 @@
 EL-EP-008
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** sistema, **quiero** marcar y entregar a purga una media TRASHED vencida, **para** completar la eliminación normal sin ampliar indebidamente la ventana de restauración.
@@ -62,3 +62,9 @@ Q-019; DEC-022, DEC-045, DEC-092; EL-EP-008, EL-EP-015.
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación y UI/UX — 2026-10-10
+- **REQUIREMENTS_READY:** YES (requisitos, alcances, criterios Gherkin y reglas canónicas DEC-086/087/096 validados sin blockers).
+- **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §8.5..9; sin componentes nuevos).
+- **READY_FOR_FRONTEND_PLANNING:** YES
+- **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).

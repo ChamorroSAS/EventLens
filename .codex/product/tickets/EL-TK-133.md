@@ -4,7 +4,7 @@
 EL-EP-010
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** equipo de producto, **quiero** validar descargas y exportaciones privadas, **para** comprobar exactitud, aislamiento e invalidación bajo cambios de permiso.
@@ -62,3 +62,9 @@ Q-027; DEC-009, DEC-046, DEC-047, DEC-048, DEC-049, DEC-063, DEC-064, DEC-090; E
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación y UI/UX — 2026-10-10
+- **REQUIREMENTS_READY:** YES (requisitos, alcances, criterios Gherkin y reglas canónicas DEC-009/013/046..049/063/064/075/079/090 validados sin blockers).
+- **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §9.1..8; sin componentes nuevos ni centros de exportación paralelos).
+- **READY_FOR_FRONTEND_PLANNING:** YES
+- **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
