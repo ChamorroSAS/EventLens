@@ -135,6 +135,23 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 EL-TK-062..073 son una descomposición DRAFT del resultado de EL-EP-003. No se consideran READY hasta dictamen de requirements_reviewer. Los contratos de EL-EP-011 y EL-EP-015 se consumen por interfaz y no se reinterpretan dentro de lifecycle.
 
+## Tickets propuestos — EL-EP-004 (DRAFT; pendiente requirements_reviewer)
+
+| Ticket | Depende de | Bloquea |
+|---|---|---|
+| EL-TK-074 | 020,072 | 075,081,082,083 |
+| EL-TK-075 | 027,074 | 076,077,078,082,083 |
+| EL-TK-076 | 075 | primera carga EL-EP-005; 083 |
+| EL-TK-077 | 075 | integración carga EL-EP-005; 078,083 |
+| EL-TK-078 | 075,077,072 | 082,083; retiro propio EL-EP-009 |
+| EL-TK-079 | 027,075 | 083 |
+| EL-TK-080 | 074,075 | 081,083 |
+| EL-TK-081 | 074,080 | 083 |
+| EL-TK-082 | 074,075; contrato EL-EP-009 | 083 |
+| EL-TK-083 | 074..082 | integración UI downstream |
+
+EL-TK-074..083 son una descomposición DRAFT del resultado de EL-EP-004. No se consideran READY hasta dictamen de requirements_reviewer. La resolución de solicitudes de retiro permanece en EL-EP-009 y la carga de archivos en EL-EP-005; esta épica sólo entrega acceso, sesión, consentimiento, identidad guest y superficies propias.
+
 ## Tickets vigentes — EL-EP-006 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |

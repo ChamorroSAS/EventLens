@@ -125,6 +125,8 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
+- 2026-10-10: ticket_writer crea EL-TK-074..083 como DRAFT para acceso público, PIN/sesión guest, consentimiento, identidad, Mis aportes, revocación/regeneración, compartir/QR, ruta de retiro sin sesión e integración UI. Pendientes de requirements_reviewer; sin implementación.
+
 - 2026-10-08: requirements_reviewer y ui_designer aprueban gate final DEC-103..105; epica READY, UX READY, frontend planning YES. Sin tickets/codigo; texto juridico final pendiente.
 
 - 2026-10-08: PL-024 respondida en DEC-103; intake permanece PARTIAL solo por PL-025/026, sin cambios a reglas previas ni tickets/codigo.
