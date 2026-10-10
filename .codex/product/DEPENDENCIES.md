@@ -154,6 +154,23 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 12 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de acceso guest, consentimiento, identidad, emisión inicial y superficies UI aprobadas en ui-mvp-epic-review.md#el-ep-004. La resolución de solicitudes de retiro permanece en EL-EP-009 y la carga de archivos en EL-EP-005; esta épica sólo entrega acceso, sesión, consentimiento, identidad guest y superficies de gestión y participación.
 
+## Tickets propuestos — EL-EP-005 (DRAFT; pendiente requirements_reviewer)
+
+| Ticket | Depende de | Bloquea |
+|---|---|---|
+| EL-TK-086 | 075,072; contrato EL-EP-011 | 087,090,091,092,093,094,095 |
+| EL-TK-087 | 086 | 088,091,094,095 |
+| EL-TK-088 | 087 | 089,090,092,094,095 |
+| EL-TK-089 | 088; contrato EL-EP-011 | 090,092,094,095 |
+| EL-TK-090 | 089 | contrato aceptado por 032; 092,094,095 |
+| EL-TK-091 | 086,087 | 094,095 |
+| EL-TK-092 | 086,088,072,075 | 093,094,095 |
+| EL-TK-093 | 086,088,089,090,092 | 094,095 |
+| EL-TK-094 | 086..093 | 095; integración UI downstream |
+| EL-TK-095 | 086..094 | validación integrada de EL-EP-005 |
+
+EL-TK-086..095 son una descomposición DRAFT de EL-EP-005. EL-TK-090 produce el contrato de original aceptado que consume EL-TK-032; no duplica procesamiento de EL-EP-006. Capacidad comercial permanece propiedad de EL-EP-011 y lifecycle/acceso de EL-EP-003/004.
+
 ## Tickets vigentes — EL-EP-006 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
