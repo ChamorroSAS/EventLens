@@ -134,14 +134,17 @@ export class JobQueuePostgres {
       assert();return 'COMMITTED';
     });
   }
-  async complete(job:Execution,operationId:string,outcome:Json,effect:(tx:SqlTransaction)=>Promise<void>):Promise<'COMPLETED'|'ALREADY_COMMITTED'>{return this.finish(job,operationId,outcome,'COMPLETED',null,effect);}
+  async complete(job:Execution,operationId:string,outcome:Json,effect:(tx:SqlTransaction)=>Promise<void>,lockOwner?:(tx:SqlTransaction)=>Promise<void>):Promise<'COMPLETED'|'ALREADY_COMMITTED'>{return this.finish(job,operationId,outcome,'COMPLETED',null,effect,lockOwner);}
   /** Retry scheduling/disposition is supplied by owner038; budget and recovery are not implemented here. */
   async retry(job:Execution,operationId:string,outcome:Json,retryAt:Date|null,disposition:'RETRYING'|'FAILED'|'DEAD',effect:(tx:SqlTransaction)=>Promise<void>):Promise<'COMPLETED'|'ALREADY_COMMITTED'>{
     if(disposition==='RETRYING'&&(!retryAt||!Number.isFinite(retryAt.getTime())))throw new QueueError('INVALID_ARGUMENT');return this.finish(job,operationId,outcome,disposition,retryAt,effect);
   }
-  private async finish(job:Execution,operationId:string,outcome:Json,disposition:string,retryAt:Date|null,effect:(tx:SqlTransaction)=>Promise<void>):Promise<'COMPLETED'|'ALREADY_COMMITTED'>{
+  private async finish(job:Execution,operationId:string,outcome:Json,disposition:string,retryAt:Date|null,effect:(tx:SqlTransaction)=>Promise<void>,lockOwner?:(tx:SqlTransaction)=>Promise<void>):Promise<'COMPLETED'|'ALREADY_COMMITTED'>{
     if(!operationId)throw new QueueError('INVALID_ARGUMENT');const hash=fingerprint({jobId:job.jobId,resourceRef:job.resourceRef,attempt:job.attempt,token:job.token,owner:job.owner,fence:job.fence,epoch:job.epoch,generation:job.generation,outcome,disposition,retryAt});
     return this.authorized(job,disposition==='COMPLETED'?'COMPLETE':'RETRY',async tx=>{
+      // Owner locks precede job locks, including ACK replay. The ResourcePolicy
+      // must already hold common ancestor locks before any owner resource lock.
+      if(lockOwner)await lockOwner(tx);
       // Serialize ACK retries by job row before checking receipt; repeated committed attempt need not have a live lease.
       await tx.query(`SELECT id FROM job_queue WHERE id=$1::uuid FOR UPDATE`,job.jobId);
       const receipt=await tx.query<{fingerprint:string}>(`SELECT fingerprint FROM job_receipt WHERE operation_id=$1`,operationId);

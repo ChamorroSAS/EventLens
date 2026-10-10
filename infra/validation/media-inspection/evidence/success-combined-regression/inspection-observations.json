@@ -1,0 +1,481 @@
+{
+  "runId": "media_inspection_2b869690b1f34c67bc29c485891d776d",
+  "snapshotId": "45ed99001d94237d6b2a8054a796946f3151909c3f61c913591a970702f206b4",
+  "profileHash": "c901492ec584968a976f29b38e3484fd5a7b525636fc61fc3f5bf01a2104f891",
+  "observations": [
+    {
+      "case": "EICAR",
+      "result": {
+        "engine": "ClamAV",
+        "engineVersion": "1.4.6",
+        "imageDigest": "sha256:e4df73bcde9afeb6bd1b464091f053537b3df86d8bf5a0431ae87c1760b332ae",
+        "snapshotId": "45ed99001d94237d6b2a8054a796946f3151909c3f61c913591a970702f206b4",
+        "profileHash": "c901492ec584968a976f29b38e3484fd5a7b525636fc61fc3f5bf01a2104f891",
+        "originalSha256": "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f",
+        "validUntil": "2026-10-16T06:25:00.000Z",
+        "attemptId": "f5d44ee5-1fc1-43f4-900e-5a519b50b920",
+        "status": "THREAT_DETECTED",
+        "reason": "SIGNATURE_DETECTION"
+      }
+    },
+    {
+      "case": "GEN-PNG-05e900ac07dc",
+      "fact": {
+        "schemaVersion": 1,
+        "jobId": "4129fcdd-96b8-41bb-a7d9-1605a918a43b",
+        "executionToken": "0481b69d-7a6b-46a3-b37e-72857a26a57d",
+        "fence": "1",
+        "epoch": "inspection-epoch",
+        "mediaRef": "media:8e2f6f92-4813-4dd6-a191-78fc72b99535",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "05e900ac07dcb96eb193f852a1ae780ca25411e0542afab9abf06f0633a6d3c0",
+        "originalVersion": "bb72953c-83a0-445e-a6c7-b889cc178437",
+        "outcome": "APPROVED",
+        "format": {
+          "status": "VALID",
+          "reason": "REAL_FORMAT_VALIDATED",
+          "metadata": {
+            "format": "PNG",
+            "width": 320,
+            "height": 240,
+            "streams": 1,
+            "audio": false
+          },
+          "attemptId": "e1d25a6b-af1d-4396-b13e-eb815d325931"
+        },
+        "malware": {
+          "engine": "ClamAV",
+          "engineVersion": "1.4.6",
+          "imageDigest": "sha256:e4df73bcde9afeb6bd1b464091f053537b3df86d8bf5a0431ae87c1760b332ae",
+          "snapshotId": "45ed99001d94237d6b2a8054a796946f3151909c3f61c913591a970702f206b4",
+          "profileHash": "c901492ec584968a976f29b38e3484fd5a7b525636fc61fc3f5bf01a2104f891",
+          "originalSha256": "05e900ac07dcb96eb193f852a1ae780ca25411e0542afab9abf06f0633a6d3c0",
+          "validUntil": "2026-10-16T06:25:00.000Z",
+          "attemptId": "c4346807-59fd-401c-84e8-d5736ab5ca53",
+          "status": "NO_THREAT_DETECTED",
+          "reason": "COMPLETE_PROFILE"
+        }
+      }
+    },
+    {
+      "case": "GEN-WEBP-c5d9b671d66e",
+      "fact": {
+        "schemaVersion": 1,
+        "jobId": "f07ad6d1-baf9-4856-8825-01909ea613c5",
+        "executionToken": "4173ef41-9988-4ca7-a559-260ac42c1856",
+        "fence": "1",
+        "epoch": "inspection-epoch",
+        "mediaRef": "media:363182ff-542e-4f6b-9db2-a5f9739d99de",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "c5d9b671d66e0d4031fb8b9cc5196713597cf8c10dcc0bddc44ac12f2d097f76",
+        "originalVersion": "59cd09f9-c6d4-4d48-9df6-30f1efa65c5a",
+        "outcome": "APPROVED",
+        "format": {
+          "status": "VALID",
+          "reason": "REAL_FORMAT_VALIDATED",
+          "metadata": {
+            "format": "WEBP",
+            "width": 320,
+            "height": 240,
+            "streams": 1,
+            "audio": false
+          },
+          "attemptId": "9279b308-bb01-40b6-a10a-1e29dbcce4e5"
+        },
+        "malware": {
+          "engine": "ClamAV",
+          "engineVersion": "1.4.6",
+          "imageDigest": "sha256:e4df73bcde9afeb6bd1b464091f053537b3df86d8bf5a0431ae87c1760b332ae",
+          "snapshotId": "45ed99001d94237d6b2a8054a796946f3151909c3f61c913591a970702f206b4",
+          "profileHash": "c901492ec584968a976f29b38e3484fd5a7b525636fc61fc3f5bf01a2104f891",
+          "originalSha256": "c5d9b671d66e0d4031fb8b9cc5196713597cf8c10dcc0bddc44ac12f2d097f76",
+          "validUntil": "2026-10-16T06:25:00.000Z",
+          "attemptId": "29a3ecd2-a8cf-46e2-a74a-7250365401d6",
+          "status": "NO_THREAT_DETECTED",
+          "reason": "COMPLETE_PROFILE"
+        }
+      }
+    },
+    {
+      "case": "GEN-WEBM-c86a93607e60",
+      "fact": {
+        "schemaVersion": 1,
+        "jobId": "56980905-aa4e-4997-a01a-5a300f762692",
+        "executionToken": "0f10d98a-c2fe-45ab-8104-7a018df6b68a",
+        "fence": "1",
+        "epoch": "inspection-epoch",
+        "mediaRef": "media:f32c079d-bab0-47ec-b780-cc0b2bc4d7a4",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "c86a93607e601bc9475d16b4c8fdd42203a3f3b24eda28ffe7f621d5b8ec94ff",
+        "originalVersion": "3ff7e78f-c0f2-49ae-b652-9bcbf78db286",
+        "outcome": "APPROVED",
+        "format": {
+          "status": "VALID",
+          "reason": "REAL_FORMAT_VALIDATED",
+          "metadata": {
+            "format": "WEBM",
+            "width": 320,
+            "height": 240,
+            "streams": 2,
+            "audio": true,
+            "durationSeconds": 2.008
+          },
+          "attemptId": "f6945842-5611-4bcc-95d9-f1d4731a2562"
+        },
+        "malware": {
+          "engine": "ClamAV",
+          "engineVersion": "1.4.6",
+          "imageDigest": "sha256:e4df73bcde9afeb6bd1b464091f053537b3df86d8bf5a0431ae87c1760b332ae",
+          "snapshotId": "45ed99001d94237d6b2a8054a796946f3151909c3f61c913591a970702f206b4",
+          "profileHash": "c901492ec584968a976f29b38e3484fd5a7b525636fc61fc3f5bf01a2104f891",
+          "originalSha256": "c86a93607e601bc9475d16b4c8fdd42203a3f3b24eda28ffe7f621d5b8ec94ff",
+          "validUntil": "2026-10-16T06:25:00.000Z",
+          "attemptId": "4827b0e0-df45-4dd0-9b48-423beb97d2f5",
+          "status": "NO_THREAT_DETECTED",
+          "reason": "COMPLETE_PROFILE"
+        }
+      }
+    },
+    {
+      "case": "IOS-HEIC-7de05716ae9b",
+      "fact": {
+        "schemaVersion": 1,
+        "jobId": "a617a452-91e0-4cbf-a3d9-65f084116237",
+        "executionToken": "cf315a93-f633-4780-be13-a2cbce3b59ab",
+        "fence": "1",
+        "epoch": "inspection-epoch",
+        "mediaRef": "media:d9ac8055-e526-4127-ae1d-f409d2929972",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "7de05716ae9b3e7d3b8a49121e131a8356f276b02e355350edd2cfbba020eda6",
+        "originalVersion": "61577601-fb9a-4748-b696-0a9b50de94f3",
+        "outcome": "APPROVED",
+        "format": {
+          "status": "VALID",
+          "reason": "REAL_FORMAT_VALIDATED",
+          "metadata": {
+            "format": "HEIF",
+            "width": 4032,
+            "height": 3024,
+            "streams": 2,
+            "audio": false
+          },
+          "attemptId": "957979e3-caa5-4c3f-a959-497d99621453"
+        },
+        "malware": {
+          "engine": "ClamAV",
+          "engineVersion": "1.4.6",
+          "imageDigest": "sha256:e4df73bcde9afeb6bd1b464091f053537b3df86d8bf5a0431ae87c1760b332ae",
+          "snapshotId": "45ed99001d94237d6b2a8054a796946f3151909c3f61c913591a970702f206b4",
+          "profileHash": "c901492ec584968a976f29b38e3484fd5a7b525636fc61fc3f5bf01a2104f891",
+          "originalSha256": "7de05716ae9b3e7d3b8a49121e131a8356f276b02e355350edd2cfbba020eda6",
+          "validUntil": "2026-10-16T06:25:00.000Z",
+          "attemptId": "d0cc5665-f78e-4e2d-80a3-3795b7c6d48c",
+          "status": "NO_THREAT_DETECTED",
+          "reason": "COMPLETE_PROFILE"
+        }
+      }
+    },
+    {
+      "case": "IOS-MOV-70098a8e6331",
+      "fact": {
+        "schemaVersion": 1,
+        "jobId": "7fff7ce6-3c92-4498-b8d7-8688cc20970c",
+        "executionToken": "f6e44f11-1a9e-42c7-949f-7a8b926c6b71",
+        "fence": "1",
+        "epoch": "inspection-epoch",
+        "mediaRef": "media:445a6537-14cd-4d9e-823a-d0bfa5f94602",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "70098a8e6331824c8f8544dcfeea8f5858b5dc9e58ba17b98368a63c314ed3b0",
+        "originalVersion": "8f52af22-1432-4e5b-8461-bb3ac67bb834",
+        "outcome": "APPROVED",
+        "format": {
+          "status": "VALID",
+          "reason": "REAL_FORMAT_VALIDATED",
+          "metadata": {
+            "format": "MOV",
+            "width": 1920,
+            "height": 1080,
+            "streams": 7,
+            "audio": true,
+            "durationSeconds": 7.533333
+          },
+          "attemptId": "7f407a21-b1d2-4684-bb46-1daae201d27b"
+        },
+        "malware": {
+          "engine": "ClamAV",
+          "engineVersion": "1.4.6",
+          "imageDigest": "sha256:e4df73bcde9afeb6bd1b464091f053537b3df86d8bf5a0431ae87c1760b332ae",
+          "snapshotId": "45ed99001d94237d6b2a8054a796946f3151909c3f61c913591a970702f206b4",
+          "profileHash": "c901492ec584968a976f29b38e3484fd5a7b525636fc61fc3f5bf01a2104f891",
+          "originalSha256": "70098a8e6331824c8f8544dcfeea8f5858b5dc9e58ba17b98368a63c314ed3b0",
+          "validUntil": "2026-10-16T06:25:00.000Z",
+          "attemptId": "d2c605cd-7762-4995-9538-5b7d81d7ccfb",
+          "status": "NO_THREAT_DETECTED",
+          "reason": "COMPLETE_PROFILE"
+        }
+      }
+    },
+    {
+      "case": "ANDROID-JPEG-5ee797c1e05a",
+      "fact": {
+        "schemaVersion": 1,
+        "jobId": "7bbc3f0f-c4df-4e0d-ad57-0c1575490717",
+        "executionToken": "48bf248a-0bb7-4238-9c6f-e36dcf997742",
+        "fence": "1",
+        "epoch": "inspection-epoch",
+        "mediaRef": "media:e590f49d-74be-492f-8627-a2c5dfa3e81f",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "5ee797c1e05ae18ce26dbb4c25afb5a2e0cf65bb38f5a6d7040659ad960f0853",
+        "originalVersion": "c66442ca-d39f-475d-b485-53ba4c1f62d3",
+        "outcome": "APPROVED",
+        "format": {
+          "status": "VALID",
+          "reason": "REAL_FORMAT_VALIDATED",
+          "metadata": {
+            "format": "JPEG",
+            "width": 3264,
+            "height": 2448,
+            "streams": 1,
+            "audio": false
+          },
+          "attemptId": "8f822ea7-a709-47cb-879c-37509438f4f5"
+        },
+        "malware": {
+          "engine": "ClamAV",
+          "engineVersion": "1.4.6",
+          "imageDigest": "sha256:e4df73bcde9afeb6bd1b464091f053537b3df86d8bf5a0431ae87c1760b332ae",
+          "snapshotId": "45ed99001d94237d6b2a8054a796946f3151909c3f61c913591a970702f206b4",
+          "profileHash": "c901492ec584968a976f29b38e3484fd5a7b525636fc61fc3f5bf01a2104f891",
+          "originalSha256": "5ee797c1e05ae18ce26dbb4c25afb5a2e0cf65bb38f5a6d7040659ad960f0853",
+          "validUntil": "2026-10-16T06:25:00.000Z",
+          "attemptId": "82609943-d685-4698-add7-6fead5d6ea2b",
+          "status": "NO_THREAT_DETECTED",
+          "reason": "COMPLETE_PROFILE"
+        }
+      }
+    },
+    {
+      "case": "ANDROID-MP4-0a23dabadb68",
+      "fact": {
+        "schemaVersion": 1,
+        "jobId": "7e942b37-67df-4aa6-a7b6-4c994a95fc66",
+        "executionToken": "6e764477-fb85-4ce6-86fc-780896369b43",
+        "fence": "1",
+        "epoch": "inspection-epoch",
+        "mediaRef": "media:c6b71121-a5cf-46c7-836d-0addd360623c",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "0a23dabadb68d1e26ab73738e9eabb11903b0a783e08c5ee3594a0837432a12b",
+        "originalVersion": "c945a074-649f-4711-bb2f-69307d343290",
+        "outcome": "APPROVED",
+        "format": {
+          "status": "VALID",
+          "reason": "REAL_FORMAT_VALIDATED",
+          "metadata": {
+            "format": "MP4",
+            "width": 1920,
+            "height": 1080,
+            "streams": 2,
+            "audio": true,
+            "durationSeconds": 5.433969
+          },
+          "attemptId": "fa94e2cf-19ea-4e53-857a-df6765b3460c"
+        },
+        "malware": {
+          "engine": "ClamAV",
+          "engineVersion": "1.4.6",
+          "imageDigest": "sha256:e4df73bcde9afeb6bd1b464091f053537b3df86d8bf5a0431ae87c1760b332ae",
+          "snapshotId": "45ed99001d94237d6b2a8054a796946f3151909c3f61c913591a970702f206b4",
+          "profileHash": "c901492ec584968a976f29b38e3484fd5a7b525636fc61fc3f5bf01a2104f891",
+          "originalSha256": "0a23dabadb68d1e26ab73738e9eabb11903b0a783e08c5ee3594a0837432a12b",
+          "validUntil": "2026-10-16T06:25:00.000Z",
+          "attemptId": "e3a2bb94-f047-4f88-a36d-27ce416bd84b",
+          "status": "NO_THREAT_DETECTED",
+          "reason": "COMPLETE_PROFILE"
+        }
+      }
+    },
+    {
+      "case": "HEIF-GENERIC-MIF1",
+      "fact": {
+        "schemaVersion": 1,
+        "jobId": "8f1e890b-4c0f-48cd-a9f3-05e6b41f3ed7",
+        "executionToken": "c71acb86-6f92-4b77-a4c7-f482a9f7f744",
+        "fence": "1",
+        "epoch": "inspection-epoch",
+        "mediaRef": "media:0a6feaad-6821-43ec-9e0e-72ad00520dac",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "94b622a02f65d9e88a15b8b106b744ecdda439bb67aedca9296ecfb28b96d459",
+        "originalVersion": "c87e966f-ef52-468b-8c85-1ab3a763c299",
+        "outcome": "APPROVED",
+        "format": {
+          "status": "VALID",
+          "reason": "REAL_FORMAT_VALIDATED",
+          "metadata": {
+            "format": "HEIF",
+            "width": 160,
+            "height": 120,
+            "streams": 1,
+            "audio": false
+          },
+          "attemptId": "cab2489c-7a36-49d1-ac14-d288b84d413f"
+        },
+        "malware": {
+          "engine": "ClamAV",
+          "engineVersion": "1.4.6",
+          "imageDigest": "sha256:e4df73bcde9afeb6bd1b464091f053537b3df86d8bf5a0431ae87c1760b332ae",
+          "snapshotId": "45ed99001d94237d6b2a8054a796946f3151909c3f61c913591a970702f206b4",
+          "profileHash": "c901492ec584968a976f29b38e3484fd5a7b525636fc61fc3f5bf01a2104f891",
+          "originalSha256": "94b622a02f65d9e88a15b8b106b744ecdda439bb67aedca9296ecfb28b96d459",
+          "validUntil": "2026-10-16T06:25:00.000Z",
+          "attemptId": "66124810-bee5-4981-8c09-01d4f50a3d4b",
+          "status": "NO_THREAT_DETECTED",
+          "reason": "COMPLETE_PROFILE"
+        }
+      }
+    },
+    {
+      "case": "file-limit",
+      "result": {
+        "engine": "ClamAV",
+        "engineVersion": "1.4.6",
+        "imageDigest": "sha256:e4df73bcde9afeb6bd1b464091f053537b3df86d8bf5a0431ae87c1760b332ae",
+        "snapshotId": "45ed99001d94237d6b2a8054a796946f3151909c3f61c913591a970702f206b4",
+        "profileHash": "cb297f3d18de013709193c4edfad263a9505a7528d02bc36c65bc3b85b061b62",
+        "originalSha256": "1fa5ee7722ad0a1966892a548ff9dd96c361cb1e53654f977f823fa0997ff54d",
+        "validUntil": "2026-10-16T06:25:00.000Z",
+        "attemptId": "8480d456-4240-4a0d-8074-79c17ca176c9",
+        "status": "INCONCLUSIVE",
+        "reason": "INCOMPLETE_COVERAGE"
+      }
+    },
+    {
+      "case": "timeout",
+      "result": {
+        "engine": "ClamAV",
+        "engineVersion": "1.4.6",
+        "imageDigest": "sha256:e4df73bcde9afeb6bd1b464091f053537b3df86d8bf5a0431ae87c1760b332ae",
+        "snapshotId": "45ed99001d94237d6b2a8054a796946f3151909c3f61c913591a970702f206b4",
+        "profileHash": "8bafad088ec37b9d2a8c514118c248c1993c947c26796a347ea369671de31708",
+        "originalSha256": "1fa5ee7722ad0a1966892a548ff9dd96c361cb1e53654f977f823fa0997ff54d",
+        "validUntil": "2026-10-16T06:25:00.000Z",
+        "status": "INCONCLUSIVE",
+        "reason": "EXECUTION_LIMIT_EXCEEDED",
+        "attemptId": "e46468f7-7214-4941-acd3-254dfd16c64a"
+      }
+    },
+    {
+      "case": "oom",
+      "result": {
+        "engine": "ClamAV",
+        "engineVersion": "1.4.6",
+        "imageDigest": "sha256:e4df73bcde9afeb6bd1b464091f053537b3df86d8bf5a0431ae87c1760b332ae",
+        "snapshotId": "45ed99001d94237d6b2a8054a796946f3151909c3f61c913591a970702f206b4",
+        "profileHash": "86c5494637c67fb7bb4f2fb00c5bfc762f70245760d90a1c966e3f2b3d64d021",
+        "originalSha256": "1fa5ee7722ad0a1966892a548ff9dd96c361cb1e53654f977f823fa0997ff54d",
+        "validUntil": "2026-10-16T06:25:00.000Z",
+        "status": "INCONCLUSIVE",
+        "reason": "EXECUTION_PROCESSING_ERROR",
+        "attemptId": "1df45d37-b18e-41cb-80d4-6a9ea4b71e45"
+      }
+    },
+    {
+      "case": "cancel",
+      "result": {
+        "engine": "ClamAV",
+        "engineVersion": "1.4.6",
+        "imageDigest": "sha256:e4df73bcde9afeb6bd1b464091f053537b3df86d8bf5a0431ae87c1760b332ae",
+        "snapshotId": "45ed99001d94237d6b2a8054a796946f3151909c3f61c913591a970702f206b4",
+        "profileHash": "e23c8739e3e1f1d4f70e8ee8edf0f4ff33ce4dd75afc9932864045a410ab73be",
+        "originalSha256": "1fa5ee7722ad0a1966892a548ff9dd96c361cb1e53654f977f823fa0997ff54d",
+        "validUntil": "2026-10-16T06:25:00.000Z",
+        "status": "INCONCLUSIVE",
+        "reason": "EXECUTION_CANCELLED",
+        "attemptId": "28fc397c-e7d3-4226-b587-dbcde52e68b6"
+      }
+    },
+    {
+      "case": "snapshot-A-runtime-B",
+      "result": {
+        "engine": "ClamAV",
+        "engineVersion": "1.4.6",
+        "imageDigest": "sha256:e4df73bcde9afeb6bd1b464091f053537b3df86d8bf5a0431ae87c1760b332ae",
+        "snapshotId": "45ed99001d94237d6b2a8054a796946f3151909c3f61c913591a970702f206b4",
+        "profileHash": "c901492ec584968a976f29b38e3484fd5a7b525636fc61fc3f5bf01a2104f891",
+        "originalSha256": "b23b5b7a420ad9ddbb785c65e23b0311245824f19b0c581f33c180e073dc14f0",
+        "validUntil": "2026-10-16T06:25:00.000Z",
+        "attemptId": "46eb68c1-f6d7-4714-b71c-68aeb9582342",
+        "status": "INCONCLUSIVE",
+        "reason": "SNAPSHOT_MISMATCH"
+      }
+    },
+    {
+      "case": "hidden-database",
+      "result": {
+        "engine": "ClamAV",
+        "engineVersion": "1.4.6",
+        "imageDigest": "sha256:e4df73bcde9afeb6bd1b464091f053537b3df86d8bf5a0431ae87c1760b332ae",
+        "snapshotId": "45ed99001d94237d6b2a8054a796946f3151909c3f61c913591a970702f206b4",
+        "profileHash": "c901492ec584968a976f29b38e3484fd5a7b525636fc61fc3f5bf01a2104f891",
+        "originalSha256": "3b0c1c8637d3c67b79d44bb7143398080160f877f18b42801531de91c143b5a1",
+        "validUntil": "2026-10-16T06:25:00.000Z",
+        "status": "INCONCLUSIVE",
+        "reason": "EXECUTION_PROCESSING_ERROR",
+        "attemptId": "e81e9be6-3b3a-49f4-9896-e0d9e6a34b74"
+      }
+    },
+    {
+      "case": "encrypted",
+      "result": {
+        "engine": "ClamAV",
+        "engineVersion": "1.4.6",
+        "imageDigest": "sha256:e4df73bcde9afeb6bd1b464091f053537b3df86d8bf5a0431ae87c1760b332ae",
+        "snapshotId": "45ed99001d94237d6b2a8054a796946f3151909c3f61c913591a970702f206b4",
+        "profileHash": "54c6f8fd6b36fc23a67c94dd0101ae261195db9d5a456252f332abf0883d9505",
+        "originalSha256": "797e4e889fefedb8a168fe049ebd568ea70379d4bda5d842d52b265fc3e4e492",
+        "validUntil": "2026-10-16T06:25:00.000Z",
+        "attemptId": "258930eb-c0e0-4073-9c74-02ffa30331db",
+        "status": "INCONCLUSIVE",
+        "reason": "INCOMPLETE_COVERAGE"
+      }
+    },
+    {
+      "case": "nested-limit",
+      "result": {
+        "engine": "ClamAV",
+        "engineVersion": "1.4.6",
+        "imageDigest": "sha256:e4df73bcde9afeb6bd1b464091f053537b3df86d8bf5a0431ae87c1760b332ae",
+        "snapshotId": "45ed99001d94237d6b2a8054a796946f3151909c3f61c913591a970702f206b4",
+        "profileHash": "5f90183a4e4a6891c0383e2ac9305cb22ec26eb5d95979ee108a101f32ac27e8",
+        "originalSha256": "3fffd5eac1feecb3d9afac0af083510bbbcac293342e96b28b58cfec36354a2a",
+        "validUntil": "2026-10-16T06:25:00.000Z",
+        "attemptId": "2d7b9baf-396d-421d-948a-a7911c6b6c47",
+        "status": "INCONCLUSIVE",
+        "reason": "INCOMPLETE_COVERAGE"
+      }
+    },
+    {
+      "case": "GEN-INVALID-f74d60194fec",
+      "result": {
+        "status": "INCONCLUSIVE",
+        "reason": "EXECUTION_PROCESSING_ERROR",
+        "attemptId": "5202b105-f2f5-454d-8c75-20d1b972cd88"
+      }
+    },
+    {
+      "case": "GEN-CORRUPT-5edaad67769f",
+      "result": {
+        "status": "INVALID",
+        "reason": "PIXEL_LIMIT",
+        "attemptId": "d4f04d3d-266c-4f27-8677-86e2ea2b6516"
+      }
+    }
+  ]
+}

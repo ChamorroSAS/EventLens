@@ -6,9 +6,9 @@ EL-EP-006
 
 ## Status
 
-READY
+DONE
 
-**HISTÓRICO CONFIRMED — 2026-10-07:** requirements_reviewer aprobó este conjunto sin hallazgos pendientes. Véase [dictamen](../sessions/2026-10-07-el-ep-006-ticket-review.md). READY expresa preparación de requisitos; se conservan las dependencias de ejecución.
+**CONFIRMED — DONE (2026-10-10):** implementación aprobada por reviewer y tester independiente. Véase evidencia de cierre al final.
 
 ## User story
 
@@ -74,3 +74,17 @@ Trazabilidad de remediación: GAP-EL-EP-006-06/08/10.
 **CONFIRMED:** REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES. Promoción/policy/CAS por contratos035/036 y MediaGovernance vigentes implementables. Integración requiere035/036 y autoridad/executor055/056; permisos no se trasladan al codec.
 
 Fuente: [contrato ARCH-015](../../context/media-and-jobs-architecture.md#pipeline-multimedia-adoptado--arch-015) y [impacto](../sessions/2026-10-09-arch-015-backlog-impact.md). TB-01/TB-02 resueltos experimentalmente; no bloqueadores activos. Cuando YES, describe construcción del alcance propio por contratos cerrados, no integración usable ni upstream implementado. Los dictámenes/scopes anteriores conservan historia donde difieren. MEDIA-001/CAP-001/DR-001/EXPORT-001 siguen VALIDATION_REQUIRED; sin proveedor adoptado.
+
+## Cierre de implementación — 2026-10-10
+
+**CONFIRMED — DONE:** el reviewer y tester independiente aprobaron la implementación.
+- **Suite enfocada (EL-TK-037):** PASS 63/63 (55 pruebas de integración con PostgreSQL real y 8 pruebas unitarias).
+- **Regresión combinada (media-inspection):** PASS 262/262 en 10 archivos de test (inspection, quarantine, photo-derivatives, video-derivatives y successful-processing).
+- **Regresión de runtime (EL-TK-056):** PASS 21/21 en `media-execution`.
+- **Typecheck, build y migraciones repetidas:** PASS.
+
+La implementación aplica la decisión versionada de `MediaGovernance` mediante CAS atómico en SQL corto (`PUBLISHED` en `AUTO`, `PENDING_REVIEW` en `PRE_REVIEW`), maneja cambios de modo concurrentes sin fallo terminal (DEC-087), protege contra sobreescritura de estados restrictivos (`HIDDEN`, `TRASHED`, `DELETED`, `QUARANTINED`, `REJECTED`, `PROCESSING_FAILED`), soporta ACK replay idempotente y exige locking canónico en orden estricto de ancestro/padre -> media -> job para prevenir interbloqueos.
+
+Evidencia: [corrida enfocada](../../../infra/validation/media-inspection/evidence/success-focused-final/), [regresión combinada](../../../infra/validation/media-inspection/evidence/success-combined-regression/), [regresión runtime EL-TK-056](../../../infra/validation/media-execution/evidence/success-independent-regression/) y [documentación](../../../infra/validation/media-inspection/README.md#el-tk-037-successful-processing-final-validation).
+
+MEDIA-001, CAP-001, DR-001 y EXPORT-001 permanecen `NOT_EVALUATED`; proveedor de storage definitivo continúa `DEFERRED`. Se desbloquea downstream EL-TK-057 y consumidores de galería de EL-EP-007.

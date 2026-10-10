@@ -1,0 +1,100 @@
+{
+  "runId": "media_inspection_c452e04befba407bb904653b07bd127a",
+  "fixture": "policy/candidate/quiescence facts; real PostgreSQL transactions, not scanner/codec efficacy",
+  "observations": [
+    {
+      "kind": "PHOTO",
+      "mode": "AUTO",
+      "result": {
+        "result": "COMPLETED",
+        "receipt": {
+          "operationId": "7704cff6-72f1-4c0c-b6d7-121ca44241e1",
+          "status": "PUBLISHED",
+          "revision": "2",
+          "governance": {
+            "mode": "AUTO",
+            "decision": "ALLOW",
+            "revision": "1",
+            "decisionRevision": "1"
+          },
+          "candidateFingerprint": "378ede35223699dc03acf28480d01c7df1ddd9bfe9700b6670070ab6afdda241"
+        }
+      },
+      "activeRoles": [
+        "PREVIEW",
+        "THUMBNAIL"
+      ]
+    },
+    {
+      "kind": "PHOTO",
+      "mode": "PRE_REVIEW",
+      "result": {
+        "result": "COMPLETED",
+        "receipt": {
+          "operationId": "80fb0a96-0c48-4aa1-b8b0-797592afa1ce",
+          "status": "PENDING_REVIEW",
+          "revision": "2",
+          "governance": {
+            "mode": "PRE_REVIEW",
+            "decision": "ALLOW",
+            "revision": "1",
+            "decisionRevision": "1"
+          },
+          "candidateFingerprint": "a5489797709e4bf63e36c24058a83f6a742fd6e4885dd4ed3c23033b72455690"
+        }
+      },
+      "activeRoles": [
+        "PREVIEW",
+        "THUMBNAIL"
+      ]
+    },
+    {
+      "kind": "VIDEO",
+      "mode": "AUTO",
+      "result": {
+        "result": "COMPLETED",
+        "receipt": {
+          "operationId": "2820dcab-d370-468b-8ecd-0d29b00e321f",
+          "status": "PUBLISHED",
+          "revision": "2",
+          "governance": {
+            "mode": "AUTO",
+            "decision": "ALLOW",
+            "revision": "1",
+            "decisionRevision": "1"
+          },
+          "candidateFingerprint": "3d8bdd76d92106819c6d4f18726eff6f68f71412cfc3aeba26296cf67b3b4666"
+        }
+      },
+      "activeRoles": [
+        "PLAYBACK",
+        "PREVIEW",
+        "THUMBNAIL"
+      ]
+    },
+    {
+      "kind": "VIDEO",
+      "mode": "PRE_REVIEW",
+      "result": {
+        "result": "COMPLETED",
+        "receipt": {
+          "operationId": "48a304bb-667f-43a8-bda5-7cdc9de8c561",
+          "status": "PENDING_REVIEW",
+          "revision": "2",
+          "governance": {
+            "mode": "PRE_REVIEW",
+            "decision": "ALLOW",
+            "revision": "1",
+            "decisionRevision": "1"
+          },
+          "candidateFingerprint": "5f0aec60339ae5a1d6de502f156629cf12cc8cd565718b528574104b7fd77c00"
+        }
+      },
+      "activeRoles": [
+        "PLAYBACK",
+        "PREVIEW",
+        "THUMBNAIL"
+      ]
+    }
+  ]
+}
