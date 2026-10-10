@@ -116,6 +116,25 @@ La [aprobación final de 2026-10-07](sessions/2026-10-07-el-ep-002-ticket-final-
 
 EL-TK-048 compone navegación frontend compartida. Los formularios existentes consumen su superficie durante ejecución frontend; esta integración no añade una predecesora artificial al backend aislado ni un ciclo020 ↔ 048. 031 usa EventSnapshot y assets opcionales por contrato sin requerir ejecutar reemplazos para preview sin portada.
 
+## Tickets propuestos — EL-EP-003 (DRAFT; pendiente requirements_reviewer)
+
+| Ticket | Depende de | Bloquea |
+|---|---|---|
+| EL-TK-062 | EL-TK-023; contrato vigencia EL-EP-011 | 063,064,067,069,070 |
+| EL-TK-063 | 020,023,062 | 064,071 |
+| EL-TK-064 | 063,062,055 | 065,067,071,072 |
+| EL-TK-065 | 064 | 066,067,071,072 |
+| EL-TK-066 | 065,062 | 071,072 |
+| EL-TK-067 | 062,064,065,055; contrato EL-EP-015 | 069,071,072 |
+| EL-TK-068 | 044 | 069,071,072 |
+| EL-TK-069 | 062,067,068,044 | 071,072 |
+| EL-TK-070 | 062; contrato ampliaciones EL-EP-011 | 071,072 |
+| EL-TK-071 | 063..070 | 072,073 |
+| EL-TK-072 | 064,065,067,068,069,071 | consumidores guest/upload/gallery/export |
+| EL-TK-073 | 071,072 | integración UX downstream |
+
+EL-TK-062..073 son una descomposición DRAFT del resultado de EL-EP-003. No se consideran READY hasta dictamen de requirements_reviewer. Los contratos de EL-EP-011 y EL-EP-015 se consumen por interfaz y no se reinterpretan dentro de lifecycle.
+
 ## Tickets vigentes — EL-EP-006 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
