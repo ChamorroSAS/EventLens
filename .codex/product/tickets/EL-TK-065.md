@@ -1,0 +1,61 @@
+# EL-TK-065 — Cerrar manualmente un evento ACTIVE
+
+## Parent epic
+EL-EP-003
+
+## Status
+DRAFT
+
+## User story
+**Como** organizador, **quiero** cerrar un evento ACTIVE, **para** detener la participación general sin pausar su vigencia.
+
+## Alcance funcional
+ACTIVE→CLOSED antes del vencimiento.
+
+## Fuera de alcance
+Pausa de vigencia, suspensión administrativa o purga.
+
+## Criterios de aceptación
+### Escenario 1
+**Dado** un evento propio ACTIVE antes de vencer, **cuando** el organizador lo cierra, **entonces** queda CLOSED y conserva expiresAt/graceEndsAt.
+
+### Escenario 2
+**Dado** un evento ya vencido, **cuando** llega un cierre manual tardío, **entonces** prevalece la transición temporal correspondiente y no se resucita CLOSED.
+
+## Reglas de negocio
+CLOSED no pausa vigencia.
+
+## Validaciones y permisos
+Solo propietario autorizado; DELETED nunca transiciona.
+
+## Casos de error y estados vacíos
+Conflicto temporal/concurrente devuelve estado vigente sin efecto parcial.
+
+## Datos / contratos afectados
+status, previous transition metadata, lifecycle revision.
+
+## Dependencias técnicas y funcionales
+Lifecycle ACTIVE y cálculo temporal vigente.
+
+## Dependencias de tickets
+- **depends_on:** EL-TK-064.
+- **blocks:** EL-TK-066, EL-TK-067, EL-TK-071, EL-TK-072.
+
+## Pruebas requeridas
+Happy path, permiso, carrera con vencimiento, replay y rollback.
+
+## Observabilidad / auditoría
+Auditar actor, ACTIVE→CLOSED y resultado.
+
+## Prioridad
+P0
+
+## Estimación
+S
+
+## Definition of Ready
+- [x] Comportamiento inequívoco
+- [x] Criterios comprobables
+- [x] Dependencias identificadas
+- [x] Permisos/errores definidos cuando aplican
+- [x] Sin preguntas BLOCKER
