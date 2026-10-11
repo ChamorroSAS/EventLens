@@ -2,6 +2,7 @@ import {
   AlertSeverity,
   AvailabilityMeasurement,
   AvailabilityProbe,
+  BackupExecutionSignal,
   HealthSignal,
   InfrastructureAlert,
   InfrastructureComponent,
@@ -237,6 +238,44 @@ export class InfrastructureAlertService {
           component: comp,
           severity: 'WARNING',
           task: signal.task
+        });
+      }
+
+      return alert;
+    }
+
+    if (signal.status === 'SUCCESS') {
+      this.resolveAlertIfActive(alertId);
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Consumes PostgreSQL backup execution failure signals (EL-TK-171).
+   */
+  public handleBackupSignal(signal: BackupExecutionSignal): InfrastructureAlert | undefined {
+    const alertId = 'infrastructure:backup:postgres';
+
+    if (signal.status === 'FAILURE') {
+      const rawMsg = signal.errorMessage ?? `PostgreSQL backup execution failed for run ${signal.runId}`;
+
+      const alert = this.triggerOrUpdateAlert(
+        alertId,
+        'infrastructure.postgres_backup_failed',
+        'DATABASE',
+        'CRITICAL',
+        rawMsg,
+        signal.durationMs,
+        undefined,
+        { runId: signal.runId, backupType: signal.backupType }
+      );
+
+      if (this.telemetryService) {
+        this.telemetryService.emitMetric('infrastructure.alert.triggered', 'COUNTER', 1, 'count', {
+          component: 'DATABASE',
+          severity: 'CRITICAL',
+          task: 'POSTGRES_BACKUP'
         });
       }
 

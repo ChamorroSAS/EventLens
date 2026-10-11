@@ -353,4 +353,107 @@ export interface IncidentFilter {
   offset?: number;
 }
 
+export type BackupType = 'FULL_DAILY' | 'WAL_ARCHIVE' | 'PITR_BASE';
+export type BackupStatus = 'SUCCESS' | 'FAILED' | 'IN_PROGRESS';
+
+export interface BackupArtifactRef {
+  artifactId: string;
+  backupType: BackupType;
+  storageLocationUri: string;
+  isOffHost: boolean;
+  fileSizeBytes: number;
+  checksumSha256: string;
+  createdAt: Date;
+  retentionUntil: Date;
+  metadata?: Record<string, unknown>;
+}
+
+export interface WalCheckpointCoverage {
+  startLsn: string;
+  endLsn: string;
+  checkpointTimestamp: Date;
+  rpoCoverageMinutes: number;
+  isWithinRpoTarget: boolean; // RPO <= 60 mins (DEC-062)
+  walFilesCount: number;
+  hasGaps: boolean;
+}
+
+export interface BackupRetentionSummary {
+  policyDays: number;
+  prunedArtifactIds: string[];
+  retainedArtifactIds: string[];
+}
+
+export interface BackupRun {
+  runId: string;
+  backupType: BackupType;
+  status: BackupStatus;
+  startedAt: Date;
+  completedAt: Date;
+  durationMs: number;
+  databaseName: string;
+  artifact: BackupArtifactRef | null;
+  walCoverage?: WalCheckpointCoverage | null;
+  retentionApplied?: BackupRetentionSummary | null;
+  errorMessage?: string | null;
+}
+
+export interface BackupExecutionSignal {
+  task: 'POSTGRES_BACKUP';
+  runId: string;
+  status: 'SUCCESS' | 'FAILURE';
+  backupType: BackupType;
+  durationMs: number;
+  fileSizeBytes?: number;
+  errorMessage?: string;
+  timestamp: Date;
+}
+
+export interface ExecuteBackupCommand {
+  callerActor: AuditActor;
+  retentionDays?: number;
+  backupType?: BackupType;
+  storageLocationUri?: string;
+  dryRun?: boolean;
+  forceFailure?: boolean;
+  onSignal?: (signal: BackupExecutionSignal) => void;
+}
+
+export interface BackupIntegrityReport {
+  valid: boolean;
+  artifactId: string;
+  expectedSha256: string;
+  calculatedSha256: string;
+  expectedSizeBytes: number;
+  calculatedSizeBytes: number;
+  error?: string;
+}
+
+export interface ProtectedBackupStorage {
+  readonly storageType: 'EXTERNAL_VOLUME' | 'OBJECT_STORAGE' | 'ISOLATED_REMOTE';
+  readonly baseUri: string;
+  isOffHost(): boolean;
+  storeArtifact(
+    name: string,
+    content: Buffer | Uint8Array,
+    options: {
+      backupType: BackupType;
+      retentionDays: number;
+      createdAt?: Date;
+      metadata?: Record<string, unknown>;
+    }
+  ): Promise<BackupArtifactRef>;
+  getArtifact(artifactId: string): Promise<{ ref: BackupArtifactRef; content: Buffer }>;
+  listArtifacts(): Promise<BackupArtifactRef[]>;
+  pruneExpired(now?: Date): Promise<string[]>;
+  deleteArtifact(artifactId: string): Promise<boolean>;
+}
+
+export interface DatabaseBackupSource {
+  readonly databaseName: string;
+  captureDatabaseDump(): Promise<{ dumpContent: Buffer; startLsn: string; endLsn: string }>;
+  getWalCheckpoint(): Promise<{ currentLsn: string; lastCheckpointAt: Date; walFilesCount: number }>;
+  checkWalContinuity(startLsn: string, endLsn: string): Promise<{ hasGaps: boolean; walFilesCount: number }>;
+}
+
 

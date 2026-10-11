@@ -9,3 +9,4 @@ export * from './infrastructure-alert-service.js';
 export * from './incident-service.js';
 export * from './beta-metrics.js';
 export * from './beta-cohort-window-service.js';
+export * from './postgres-backup-service.js';
