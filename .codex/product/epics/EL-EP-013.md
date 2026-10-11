@@ -111,6 +111,8 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
+- 2026-10-10: ticket_writer crea EL-TK-156..165 como DRAFT para intents de notificación, email async, avisos contextuales de lifecycle/capacidad/export/seguridad/casos, UI y validación integrada. Pendientes de requirements_reviewer; sin implementación.
+
 - 2026-10-07: CR-002 resuelve TC aplicables y sustituye restricciones CR-001; estado/bloqueantes de producto conservados.
 
 - 2026-10-07: creación por product_planner con trazabilidad Q-018; DEC-021; estado inicial READY; sin tickets.
