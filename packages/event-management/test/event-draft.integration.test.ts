@@ -52,6 +52,9 @@ describeIntegration('EventDraftService (Real PostgreSQL Integration Tests — EL
         details TEXT,
         timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
+
+      ALTER TABLE admin_audit_event
+        ADD COLUMN IF NOT EXISTS target_principal_id UUID;
     `);
   });
 

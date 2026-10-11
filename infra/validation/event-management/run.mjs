@@ -41,21 +41,23 @@ try {
   const eventExports = await import('/workspace/packages/event-management/dist/index.js');
   if (
     typeof eventExports.EventDraftService !== 'function' ||
-    typeof eventExports.EventAccessPolicy !== 'function'
+    typeof eventExports.EventAccessPolicy !== 'function' ||
+    typeof eventExports.resolveScheduleLocalTime !== 'function'
   ) {
     throw Error('PUBLIC_IMPORT_FAILED');
   }
-  const exitCode = run(['--filter', '@eventlens/event-management', 'exec', 'vitest', 'run', '--reporter=default', '--reporter=json', '--outputFile=/evidence/tests.json'], true);
+  const exitCode = run(['--filter', '@eventlens/event-management', 'exec', 'vitest', 'run', '--no-file-parallelism', '--reporter=default', '--reporter=json', '--outputFile=/evidence/tests.json'], true);
   const tests = JSON.parse(readFileSync('/evidence/tests.json', 'utf8'));
   writeFileSync('/evidence/result.json', JSON.stringify({
-    ticket: 'EL-TK-020',
+    ticket: 'EL-TK-023',
+    precedingTicket: 'EL-TK-020',
     runId: database,
     testedAt: new Date().toISOString(),
     result: tests.success && exitCode === 0 ? 'PASS' : 'FAIL',
     tests: tests.numTotalTests,
     passed: tests.numPassedTests,
     postgresql: '16 real isolated laboratory database',
-    eventDraft: 'Event draft creation with DEC-069 defaults, owner isolation, strict guest blocking, and idempotent replay',
+    eventSchedule: 'Local draft schedule definition with DEC-070 timezone resolution, DST gap/overlap guards, and owner isolation',
     gates: {
       'MEDIA-001': 'NOT_EVALUATED',
       'CAP-001': 'NOT_EVALUATED',
