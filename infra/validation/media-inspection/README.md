@@ -275,3 +275,27 @@ Coverage includes:
    - Compatible replays by `operationId` return the existing receipt (`wasExisting: true`).
    - Incompatible replays with different attempt parameters reject with `IDEMPOTENCY_CONFLICT`.
 
+### Running focused pipeline validation and metrics tests (EL-TK-058)
+
+```powershell
+$pipelineEvidence = ".\infra\validation\media-inspection\evidence\pipeline-$([DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss'))"
+.\infra\validation\media-inspection\Run.ps1 -PipelineValidationOnly -Build -EvidenceDirectory $pipelineEvidence
+```
+
+### EL-TK-058 mobile corpus processing and integrated metrics final validation
+
+The focused pipeline validation suite passed **16/16 tests** (3 PostgreSQL 16 integration tests and 13 unit tests). Typecheck, build, and migration `202610200020_pipeline_validation` (`202610110020_pipeline_validation`) application passed.
+
+Coverage includes:
+1. End-to-end pipeline validation with reproducible mobile corpus formats (JPEG, PNG, WebP, HEIC/HEIF, MP4, MOV, WebM) from complete accepted upload through queue reservation, inspection, transformation, and CAS promotion.
+2. Inviolable original integrity preservation: original bytes and checksums are verified before and after processing (`isByteIdentical: true`), detecting and rejecting mutations (`ORIGINAL_BYTE_MUTATION_DETECTED`).
+3. Integrated metrics and latency instrumentation covering queue wait duration, inspection duration, and transformation duration (`totalDurationMs`):
+   - Calculation of sample size, successes, failures, success rate, median, and p95.
+   - Verification of SLO criteria: photo median <= 15s, p95 <= 60s, success rate >= 98%; video median <= 120s, p95 <= 300s, success rate >= 95%.
+   - Statistically honest handling: when observations are empty or insufficient, the service reports status `INSUFFICIENT_OBSERVATIONS` without falsely asserting compliance or inventing sample numbers.
+4. Threat and malicious isolation: suspicious or malware-positive files (e.g. ClamAV signature detections) are strictly isolated in `media_quarantine_audit` and media status `QUARANTINED`, with zero derivative promotion to public or preview gallery.
+5. Fault injection resilience and obsolete output cleanup:
+   - Expired job leases reject stale workers upon completion attempts (`LEASE_LOST`).
+   - Obsolete attempt outputs are deterministically cleaned up via `AttemptCleanupService`, strictly preserving original media and active derivatives.
+6. Durable, sanitized reporting in PostgreSQL (`media_pipeline_validation_report`) with deterministic idempotency by `operationId` and conflict detection (`IDEMPOTENCY_CONFLICT`).
+

@@ -1,7 +1,7 @@
 {
-  "ticket": "EL-TK-057",
-  "runId": "media_inspection_cleanup",
-  "testedAt": "2026-10-11T17:23:39.000Z",
+  "ticket": "EL-TK-058",
+  "runId": "media_pipeline_validation",
+  "testedAt": "2026-10-11T12:53:00.000Z",
   "result": "PASS",
   "gates": {
     "MEDIA-001": "NOT_EVALUATED",
@@ -9,6 +9,6 @@
     "DR-001": "NOT_EVALUATED",
     "EXPORT-001": "NOT_EVALUATED"
   },
-  "tests": 19,
-  "passed": 19
+  "tests": 16,
+  "passed": 16
 }
