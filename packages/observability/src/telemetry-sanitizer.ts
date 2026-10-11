@@ -80,7 +80,10 @@ export class TelemetrySanitizer {
 
     let sanitized = message.replace(CONNECTION_STRING_PATTERN, '$1[REDACTED]$3');
     sanitized = sanitized.replace(/Bearer\s+[A-Za-z0-9\-._~+/]+=*/gi, 'Bearer [REDACTED]');
-    sanitized = sanitized.replace(/password\s*[:=]\s*[^\s,]+/gi, 'password=[REDACTED]');
+    sanitized = sanitized.replace(
+      /(password|secret|token|apiKey|api_key|secret_token)\s*[:=]\s*[^\s,]+/gi,
+      '$1=[REDACTED]'
+    );
     sanitized = sanitized.replace(/password\s+authentication\s+failed\s+for\s+user\s+"[^"]+"/gi, 'authentication failed for user "[REDACTED]"');
 
     // Strip stack traces

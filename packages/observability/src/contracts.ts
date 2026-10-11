@@ -203,3 +203,41 @@ export interface QueueSnapshot {
   highRetryCount: number;
   timestamp: Date;
 }
+
+export interface AuditRetentionPolicy {
+  retentionDays?: number;
+  batchSize?: number;
+  dryRun?: boolean;
+  onSignal?: (signal: PurgeExecutionSignal) => void;
+}
+
+export interface AuditPurgeResult {
+  deletedCount: number;
+  cutoffDate: Date;
+  durationMs: number;
+  batchCount: number;
+  dryRun: boolean;
+}
+
+export interface LogRotationConfig {
+  logDirectory: string;
+  maxRetentionDays?: number;
+  maxFileSizeBytes?: number;
+  onSignal?: (signal: PurgeExecutionSignal) => void;
+}
+
+export interface LogRotationResult {
+  rotatedFiles: string[];
+  purgedFiles: string[];
+  bytesReclaimed: number;
+  durationMs: number;
+}
+
+export interface PurgeExecutionSignal {
+  task: 'AUDIT_RETENTION' | 'LOG_ROTATION';
+  status: 'SUCCESS' | 'FAILURE';
+  itemsPurged: number;
+  bytesReclaimed?: number;
+  errorMessage?: string;
+  timestamp: Date;
+}
