@@ -36,7 +36,7 @@
 
 | ID | Nombre | Épica | Estado | Prioridad | Depende de | Archivo |
 |---|---|---|---|---|---|---|
-| EL-TK-005 | Emitir una invitación BETA | EL-EP-001 | READY | P0 | EL-TK-044 | [EL-TK-005](tickets/EL-TK-005.md) |
+| EL-TK-005 | Emitir una invitación BETA | EL-EP-001 | DONE | P0 | EL-TK-044 | [EL-TK-005](tickets/EL-TK-005.md) |
 | EL-TK-006 | Revocar una invitación BETA no usada | EL-EP-001 | READY | P0 | EL-TK-005, EL-TK-044, EL-TK-046 | [EL-TK-006](tickets/EL-TK-006.md) |
 | EL-TK-007 | Consultar invitaciones BETA | EL-EP-001 | READY | P0 | EL-TK-005, EL-TK-044 | [EL-TK-007](tickets/EL-TK-007.md) |
 | EL-TK-008 | Solicitar acceso a la BETA | EL-EP-001 | READY | P0 | — | [EL-TK-008](tickets/EL-TK-008.md) |

@@ -66,7 +66,7 @@
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
-| EL-TK-005 | EL-TK-044 | EL-TK-006, EL-TK-007, EL-TK-010 |
+| EL-TK-005 (DONE) | EL-TK-044 | EL-TK-006, EL-TK-007, EL-TK-010 |
 | EL-TK-006 | EL-TK-005, EL-TK-044, EL-TK-046 | — |
 | EL-TK-007 | EL-TK-005, EL-TK-044 | — |
 | EL-TK-008 | — | EL-TK-009 |

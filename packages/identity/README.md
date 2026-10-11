@@ -48,10 +48,27 @@
     - Sesiones con watermark desactualizado o creadas antes del `recoveryEpoch` vigente se invalidan.
   - Confirmación durable de reconciliación mediante `ackReconciled`.
 
+### 4. Emisión y control de invitaciones BETA (EL-TK-005)
+- **Autorización y validación estricta**:
+  - Exige `AdminActorContext` con actor `ADMIN_HUMAN` emitido por EL-TK-044; rechaza intentos anónimos o no autorizados (`InvitationError('UNAUTHORIZED')`).
+  - Validación de formato de correo bajo estándares RFC 5322; correos inválidos se rechazan sin interactuar con la base de datos (`InvitationError('INVALID_EMAIL')`).
+- **Ciclo de vida y vigencia funcional de 7 días**:
+  - Generación de token opaco de alta entropía de 256 bits (`randomBytes(32)`), persistiendo únicamente su digest SHA-256 (`token_digest`) en PostgreSQL `beta_invitation`.
+  - Expiración a exactamente 7 días desde la emisión (`expiresAt = createdAt + 7 días`).
+- **Idempotencia y prevención de duplicados**:
+  - Bloqueo y verificación transaccional bajo `SELECT ... FOR UPDATE`.
+  - Si existe invitación `PENDING` vigente (`expiresAt > now`), devuelve la existente con indicación «ya está pendiente» (`ALREADY_PENDING`) sin crear nuevos registros.
+  - Si existe invitación consumida (`status = 'CONSUMED'`), devuelve la existente con indicación «ya utilizada» (`ALREADY_CONSUMED`) sin alterar cuentas.
+- **Renovación tras expiración**:
+  - Si la invitación anterior estaba `PENDING` pero vencida (`expiresAt <= now`), marca la anterior como `EXPIRED` y emite una nueva con ID, token y 7 días propios (`RENEWED_EXPIRED`).
+- **Observabilidad sin secretos**:
+  - Emite auditoría append-only para creación, duplicado y renovación registrando actor y destinatario sin exponer el token de invitación en logs ni eventos.
+
 ## Validation
 
-La implementación cuenta con una suite completa de 49 pruebas automatizadas (36 unitarias + 13 de integración contra PostgreSQL 16 real):
-- Pruebas unitarias: `test/provisioning.unit.test.ts`, `test/authentication.unit.test.ts`, `test/recovery.unit.test.ts`
-- Pruebas de integración PostgreSQL 16: `test/provisioning.integration.test.ts`, `test/authentication.integration.test.ts`, `test/recovery.integration.test.ts`
+La implementación cuenta con una suite completa de 59 pruebas automatizadas (42 unitarias + 17 de integración contra PostgreSQL 16 real):
+- Pruebas unitarias: `test/provisioning.unit.test.ts`, `test/authentication.unit.test.ts`, `test/recovery.unit.test.ts`, `test/invitation.unit.test.ts`
+- Pruebas de integración PostgreSQL 16: `test/provisioning.integration.test.ts`, `test/authentication.integration.test.ts`, `test/recovery.integration.test.ts`, `test/invitation.integration.test.ts`
 
 Evidencia de validación reproducible registrada en [infra/validation/identity](../../infra/validation/identity/README.md).
+
