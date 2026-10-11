@@ -4,7 +4,7 @@
 EL-EP-011
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** sistema, **quiero** reservar bytes y cupos de archivo contra los límites efectivos, **para** evitar sobreasignación cuando varias cargas compiten cerca de la cuota.
@@ -68,3 +68,14 @@ DEC-079, DEC-080, DEC-085; EL-EP-011, EL-EP-005.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-capacity-lifecycle.md y ui-mvp-epic-review.md §EL-EP-011; sin componentes nuevos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Resolución e implementación — 2026-10-11
+- **Paquete:** `@eventlens/capacity-management` en `packages/capacity-management`.
+- **Modelos:** `CapacityReservation` y `EventCapacityBalance` en PostgreSQL con Prisma (migración `202610110028_capacity_reservation`).
+- **Servicio:** `CapacityReservationService`:
+  - `reserveCapacity`: compromiso atómico de bytes y cupos de archivo con serialización a nivel de fila (`event_capacity_balance FOR UPDATE`) que previene matemáticamente la sobreasignación ante cargas concurrentes (DEC-080).
+  - Idempotencia por `(eventId, idempotencyKey)`: peticiones repetidas retornan la reserva activa existente sin duplicar deducciones.
+  - `releaseReservation`: liberación idempotente de intentos cancelados o vencidos con motivo; reintentos sobre reservas ya liberadas son seguros y no causan errores ni dobles liberaciones.
+  - `commitReservation`: consolida reservas activas en consumo firme en `event_capacity_balance`.
+  - `getCapacitySnapshot`: snapshot consistente de límites efectivos, uso firme, reservas y capacidad disponible.
+- **Verificación:** 19/19 pruebas pasando (13 unitarias + 6 de integración sobre PostgreSQL 16 real en Docker, gate `CAP-001: PASS`).
