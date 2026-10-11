@@ -74,7 +74,7 @@ describeIntegration('AdminProvisioningService (Real PostgreSQL Integration Tests
   });
 
   beforeEach(async () => {
-    await sql('TRUNCATE "admin_audit_event", "admin_principal", "operational_bootstrap_state"');
+    await sql('TRUNCATE "admin_audit_event", "admin_credential", "admin_session", "admin_principal", "operational_bootstrap_state" CASCADE');
     await sql(`
       INSERT INTO "operational_bootstrap_state" ("id", "is_consumed", "consumed_at", "consumed_by")
       VALUES ('SYSTEM_BOOTSTRAP', false, NULL, NULL)
