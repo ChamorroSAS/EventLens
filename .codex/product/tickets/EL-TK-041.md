@@ -6,7 +6,7 @@ EL-EP-006
 
 ## Status
 
-READY
+DONE
 
 **HISTÓRICO CONFIRMED — 2026-10-07:** requirements_reviewer aprobó este conjunto sin hallazgos pendientes. Véase [dictamen](../sessions/2026-10-07-el-ep-006-ticket-review.md). READY expresa preparación de requisitos; se conservan las dependencias de ejecución.
 
@@ -97,3 +97,26 @@ REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: NO. [Dictamen final](../sessi
 **CONFIRMED:** REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES. TB-03/044 tienen contrato aprobado: policy/handler/encolado implementables sin decisión nueva. Ruta humana usable requiere044 (043/046), grant MOD-007 y032/034/038; reprocesamiento real requiere033/035/036/056. Automatización conserva identidad/policy propia. Upstream no implementado no impide construir por puertos cerrados.
 
 Fuente: [contrato ARCH-015](../../context/media-and-jobs-architecture.md#pipeline-multimedia-adoptado--arch-015) y [impacto](../sessions/2026-10-09-arch-015-backlog-impact.md). TB-01/TB-02 resueltos experimentalmente; no bloqueadores activos. Cuando YES, describe construcción del alcance propio por contratos cerrados, no integración usable ni upstream implementado. Los dictámenes/scopes anteriores conservan historia donde difieren. MEDIA-001/CAP-001/DR-001/EXPORT-001 siguen VALIDATION_REQUIRED; sin proveedor adoptado.
+ 
+## Implementación y Verificación — 2026-10-11
+
+- **Componentes:**
+  - `packages/media-inspection/src/quarantine-release.ts`: Servicio `QuarantineReleaseService`, clase de error `QuarantineReleaseDeniedError`, tipos `QuarantineReleaseCommand`, `QuarantineReleaseReceipt`, `QuarantineReleaseActor`, `AdminInterventionGrant`.
+  - Migración Prisma `202610110017_quarantine_release`: Tablas `media_quarantine_release_receipt`, `media_quarantine_release_audit`, `media_quarantine_release_denial_audit`, y `media_quarantine_notification_intent`.
+  - Exportación pública en `packages/media-inspection/src/index.ts`.
+- **Invariantes contractuales y de gobernanza verificados (DEC-038 / DEC-064 / MOD-006 / MOD-007 / ARCH-015):**
+  - **Estado y avance de generación:** Solo aplica a medias en estado `QUARANTINED`. Avanza atómicamente la generación y revisión (`generation + 1n`, `revision + 1n`) y asigna `status = 'UPLOADED'`.
+  - **Re-inspección obligatoria:** Encola un trabajo `'MEDIA_INSPECTION'` para la nueva generación en `job_queue`. El comando de liberación nunca marca el medio como seguro, `PUBLISHED` ni concede entrega directa al usuario o galería.
+  - **Inmutabilidad histórica:** Las auditorías de cuarentenas previas en `media_quarantine_audit` correspondientes a generaciones anteriores permanecen intactas e inmutables.
+  - **Justificación obligatoria y discriminación estricta de actores:**
+    - Organizadores de eventos: Estrictamente denegados (`ORGANIZER_DENIED`), auditando el intento en `media_quarantine_release_denial_audit` sin alterar el estado del medio.
+    - Administradores humanos: Exigen contexto autenticado `AdminActorContext` (`EL-TK-044`) y un grant activo MOD-007 (`action: 'RELEASE_QUARANTINE'`, con principal y `targetRef` coincidentes y justificación formal).
+    - Automatización de seguridad: Utiliza identidad de servicio explícita (`serviceId`) y scope autorizado (`securityScope`), desacoplada de sesiones o cookies humanas.
+  - **Idempotencia determinista:** Replays compatibles con el mismo `operationId` retornan el recibo previo (`wasExisting: true`) sin duplicar trabajos ni reiniciar el presupuesto de intentos. Replays conflictivos lanzan `IDEMPOTENCY_CONFLICT`.
+  - **Intención de notificación:** Registra un `NotificationIntent` durable en `media_quarantine_notification_intent` con tipo `ADMINISTRATIVE_INTERVENTION_QUARANTINE_RELEASE` y clave de deduplicación determinista para el organizador del evento (conforme a EL-EP-013).
+- **Evidencia en Docker con PostgreSQL 16 (`infra/validation/media-inspection/Run.ps1`):**
+  - Pruebas unitarias: `test/quarantine-release.test.ts` (13/13 passed).
+  - Pruebas integradas con PG 16 real: `test/quarantine-release.integration.test.ts` (6/6 passed).
+  - Suite enfocada: 19/19 tests passed.
+  - Typecheck (`tsc --noEmit`) y build (`tsc -p tsconfig.build.json`): 0 errores.
+  - Veredicto de testing: **PASS** (`infra/validation/media-inspection/evidence/result.json`).
