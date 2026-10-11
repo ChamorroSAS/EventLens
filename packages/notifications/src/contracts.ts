@@ -189,3 +189,76 @@ export interface InAppNoticeProjection {
   projectedAt: Date;
 }
 
+/**
+ * Contracts for account, security and event lifecycle notice generation (EL-TK-162).
+ */
+export type SecurityNoticeEventType =
+  | 'NEW_LOGIN'
+  | 'PASSWORD_CHANGED'
+  | 'SESSION_REVOKED'
+  | 'RECOVERY_REQUESTED'
+  | 'CREDENTIAL_UPDATED';
+
+export interface AccountSecurityFact {
+  actorContext: DomainFactActorContext;
+  accountRef: string;
+  recipientEmail?: string | null;
+  eventType: SecurityNoticeEventType;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  occurredAt?: Date;
+  dedupKey?: string;
+}
+
+export interface EventSuspensionFact {
+  actorContext: DomainFactActorContext;
+  eventRef: string;
+  organizerRef: string;
+  recipientEmail?: string | null;
+  reason?: string | null;
+  isRestrictedReason?: boolean;
+  suppressNotice?: boolean;
+  suspendedAt?: Date;
+}
+
+export interface EventReactivationFact {
+  actorContext: DomainFactActorContext;
+  eventRef: string;
+  organizerRef: string;
+  recipientEmail?: string | null;
+  reactivatedAt?: Date;
+  previousSuspensionDedupKey?: string;
+}
+
+export interface EventUpcomingFact {
+  actorContext: DomainFactActorContext;
+  eventRef: string;
+  eventName: string;
+  organizerRef: string;
+  recipientEmail?: string | null;
+  startsAt: Date;
+}
+
+export interface EventConfigurationChangedFact {
+  actorContext: DomainFactActorContext;
+  eventRef: string;
+  organizerRef: string;
+  recipientEmail?: string | null;
+  changeType: 'DATES_CHANGED' | 'ACCESS_POLICY_UPDATED' | 'GALLERY_VISIBILITY_UPDATED';
+  summary: string;
+  effectiveAt?: Date;
+}
+
+export type NoticeGenerationOutcome =
+  | 'NOTICE_GENERATED'
+  | 'NOTICE_SUPPRESSED'
+  | 'IDEMPOTENT_REPLAY'
+  | 'SUPERSEDED_PREVIOUS';
+
+export interface GenerateNoticeResult {
+  outcome: NoticeGenerationOutcome;
+  intent?: NotificationIntentRecord | null;
+  suppressedReason?: string | null;
+  supersededCount?: number;
+}
+
