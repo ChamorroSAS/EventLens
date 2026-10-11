@@ -42,22 +42,23 @@ try {
   if (
     typeof eventExports.EventDraftService !== 'function' ||
     typeof eventExports.EventAccessPolicy !== 'function' ||
-    typeof eventExports.resolveScheduleLocalTime !== 'function'
+    typeof eventExports.resolveScheduleLocalTime !== 'function' ||
+    typeof eventExports.calculateEventLifecycleTimeline !== 'function'
   ) {
     throw Error('PUBLIC_IMPORT_FAILED');
   }
   const exitCode = run(['--filter', '@eventlens/event-management', 'exec', 'vitest', 'run', '--no-file-parallelism', '--reporter=default', '--reporter=json', '--outputFile=/evidence/tests.json'], true);
   const tests = JSON.parse(readFileSync('/evidence/tests.json', 'utf8'));
   writeFileSync('/evidence/result.json', JSON.stringify({
-    ticket: 'EL-TK-023',
-    precedingTicket: 'EL-TK-020',
+    ticket: 'EL-TK-062',
+    precedingTicket: 'EL-TK-023',
     runId: database,
     testedAt: new Date().toISOString(),
     result: tests.success && exitCode === 0 ? 'PASS' : 'FAIL',
     tests: tests.numTotalTests,
     passed: tests.numPassedTests,
     postgresql: '16 real isolated laboratory database',
-    eventSchedule: 'Local draft schedule definition with DEC-070 timezone resolution, DST gap/overlap guards, and owner isolation',
+    lifecycleTimeline: 'Canonical deterministic lifecycle calculation (DEC-077, DEC-082) with physical N×24h validity and 7×24h grace under DST',
     gates: {
       'MEDIA-001': 'NOT_EVALUATED',
       'CAP-001': 'NOT_EVALUATED',
