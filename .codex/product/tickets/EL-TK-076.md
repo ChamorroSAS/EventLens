@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** invitado, **quiero** aceptar explícitamente las condiciones aplicables antes de mi primera carga, **para** que mi consentimiento quede trazable sin crear una cuenta.

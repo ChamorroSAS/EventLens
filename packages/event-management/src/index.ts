@@ -46,6 +46,10 @@ export {
   type GuestSessionRecord,
   type CreateGuestSessionCommand,
   type CreateGuestSessionResult,
+  type RecordGuestConsentCommand,
+  type RecordGuestConsentResult,
+  type CheckGuestConsentCommand,
+  type CheckGuestConsentResult,
   type EventAuditRecord,
   type EventAuditSink
 } from './contracts.js';

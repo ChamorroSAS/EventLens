@@ -143,6 +143,22 @@ function createMockRunner(db: MockDb): TransactionRunner {
             return 1;
           }
 
+          // UPDATE guest_session SET consent_recorded_at
+          if (normalized.includes('UPDATE guest_session') && normalized.includes('consent_recorded_at')) {
+            const [id, consent_recorded_at, consent_version] = params;
+            const sess = db.sessions.get(id as string);
+            if (sess) {
+              sess.consent_recorded_at = consent_recorded_at;
+              sess.consent_version = consent_version;
+            }
+            return 1;
+          }
+
+          // INSERT INTO guest_consent_record
+          if (normalized.includes('INSERT INTO guest_consent_record')) {
+            return 1;
+          }
+
           // UPDATE guest_session SET revoked_at = NOW() WHERE id = $1
           if (normalized.includes('UPDATE guest_session SET revoked_at')) {
             const id = params[0] as string;
@@ -411,5 +427,121 @@ describe('EL-TK-075: GuestSessionService (Unit Tests)', () => {
     await expect(
       service.resolveGuestSession(session.token)
     ).rejects.toMatchObject({ code: 'SESSION_REVOKED' });
+  });
+
+  describe('EL-TK-076: recordConsent (Unit Tests)', () => {
+    it('Escenario 1: Una sesión recién creada requiere consentimiento antes de cargar', async () => {
+      const { lookupKey } = setupEventWithoutPin();
+      const { session } = await service.createGuestSession({ lookupKey });
+
+      const check = await service.checkConsent({
+        sessionToken: session.token,
+        requiredVersion: 'v1.0.0'
+      });
+
+      expect(check.hasConsented).toBe(false);
+      expect(check.requiresAcceptance).toBe(true);
+      expect(check.consentVersion).toBeNull();
+      expect(check.consentRecordedAt).toBeNull();
+    });
+
+    it('Escenario 2: Registra consentimiento válido de forma mínima y auditable', async () => {
+      const { lookupKey } = setupEventWithoutPin();
+      const { session } = await service.createGuestSession({ lookupKey });
+
+      const result = await service.recordConsent({
+        sessionToken: session.token,
+        documentVersion: 'v1.0.0',
+        accepted: true
+      });
+
+      expect(result.sessionId).toBe(session.id);
+      expect(result.eventId).toBe(session.eventId);
+      expect(result.documentVersion).toBe('v1.0.0');
+      expect(result.outcome).toBe('RECORDED');
+      expect(result.acceptedAt).toBeInstanceOf(Date);
+
+      // checkConsent ahora refleja aceptación
+      const check = await service.checkConsent({
+        sessionToken: session.token,
+        requiredVersion: 'v1.0.0'
+      });
+      expect(check.hasConsented).toBe(true);
+      expect(check.requiresAcceptance).toBe(false);
+      expect(check.consentVersion).toBe('v1.0.0');
+
+      // Auditoría
+      const audit = db.auditEvents.find((a) => a.procedure === 'GUEST_CONSENT_RECORDED');
+      expect(audit).toBeDefined();
+      expect(audit?.result).toBe('SUCCESS');
+      expect(audit?.targetIdentifier).toBe(session.eventId);
+      expect(audit?.details).toContain('v1.0.0');
+      expect(audit?.details).not.toContain(session.token);
+    });
+
+    it('Escenario 3: Rechaza y no registra si el invitado no acepta (accepted: false / cancelado)', async () => {
+      const { lookupKey } = setupEventWithoutPin();
+      const { session } = await service.createGuestSession({ lookupKey });
+
+      await expect(
+        service.recordConsent({
+          sessionToken: session.token,
+          documentVersion: 'v1.0.0',
+          accepted: false // Cancelado o checkbox no marcado
+        })
+      ).rejects.toMatchObject({ code: 'CONSENT_REJECTED' });
+
+      // Sigue sin consentimiento
+      const check = await service.checkConsent({ sessionToken: session.token });
+      expect(check.hasConsented).toBe(false);
+      expect(check.requiresAcceptance).toBe(true);
+    });
+
+    it('Idempotencia: Re-envío de la misma versión aceptada devuelve IDEMPOTENT_REPLAY', async () => {
+      const { lookupKey } = setupEventWithoutPin();
+      const { session } = await service.createGuestSession({ lookupKey });
+
+      const first = await service.recordConsent({
+        sessionToken: session.token,
+        documentVersion: 'v1.0.0',
+        accepted: true
+      });
+      expect(first.outcome).toBe('RECORDED');
+
+      const second = await service.recordConsent({
+        sessionToken: session.token,
+        documentVersion: 'v1.0.0',
+        accepted: true
+      });
+      expect(second.outcome).toBe('IDEMPOTENT_REPLAY');
+      expect(second.documentVersion).toBe('v1.0.0');
+    });
+
+    it('Rechaza versión documental inválida o vacía (INVALID_CONSENT_VERSION)', async () => {
+      const { lookupKey } = setupEventWithoutPin();
+      const { session } = await service.createGuestSession({ lookupKey });
+
+      await expect(
+        service.recordConsent({
+          sessionToken: session.token,
+          documentVersion: '',
+          accepted: true
+        })
+      ).rejects.toMatchObject({ code: 'INVALID_CONSENT_VERSION' });
+    });
+
+    it('Rechaza registrar consentimiento en sesión revocada (SESSION_REVOKED)', async () => {
+      const { lookupKey } = setupEventWithoutPin();
+      const { session } = await service.createGuestSession({ lookupKey });
+      await service.revokeGuestSession(session.id);
+
+      await expect(
+        service.recordConsent({
+          sessionToken: session.token,
+          documentVersion: 'v1.0.0',
+          accepted: true
+        })
+      ).rejects.toMatchObject({ code: 'SESSION_REVOKED' });
+    });
   });
 });

@@ -95,6 +95,14 @@ describeIntegration('GuestSessionService (Real PostgreSQL Integration Tests — 
         last_attempt_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
       );
 
+      CREATE TABLE IF NOT EXISTS guest_consent_record (
+        id UUID PRIMARY KEY,
+        guest_session_id UUID NOT NULL,
+        event_id UUID NOT NULL,
+        document_version TEXT NOT NULL,
+        accepted_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+
       CREATE TABLE IF NOT EXISTS admin_audit_event (
         id UUID PRIMARY KEY,
         procedure TEXT NOT NULL,
@@ -108,6 +116,7 @@ describeIntegration('GuestSessionService (Real PostgreSQL Integration Tests — 
   });
 
   beforeEach(async () => {
+    await sql('DELETE FROM guest_consent_record');
     await sql('DELETE FROM guest_session');
     await sql('DELETE FROM guest_pin_attempt');
     await sql('DELETE FROM public_access_credential');
@@ -262,5 +271,111 @@ describeIntegration('GuestSessionService (Real PostgreSQL Integration Tests — 
       sessionResult.session.id
     );
     expect(sessionRows[0].count).toBe(1);
+  });
+
+  describe('EL-TK-076: recordConsent (Real PostgreSQL 16 Integration)', () => {
+    it('Escenario 1 y 2: Registra consentimiento en PostgreSQL y persiste en guest_session y guest_consent_record', async () => {
+      const eventId = randomUUID();
+      const organizerId = randomUUID();
+
+      await sql(
+        `INSERT INTO event (id, organizer_id, name, status, pin_enabled)
+         VALUES ($1, $2, 'Festival Consentimiento', 'ACTIVE', false)`,
+        eventId,
+        organizerId
+      );
+
+      const lookupKey = 'lookup_consent_integ_test_1';
+      await sql(
+        `INSERT INTO public_access_credential (id, event_id, lookup_key, token_hash, generation, pin_required)
+         VALUES ($1, $2, $3, 'hash', 1, false)`,
+        randomUUID(),
+        eventId,
+        lookupKey
+      );
+
+      const { session } = await guestService.createGuestSession({ lookupKey });
+
+      // Verificar que inicialmente no tiene consentimiento
+      const initialCheck = await guestService.checkConsent({
+        sessionToken: session.token,
+        requiredVersion: 'v2026.1'
+      });
+      expect(initialCheck.hasConsented).toBe(false);
+      expect(initialCheck.requiresAcceptance).toBe(true);
+
+      // Registrar aceptación
+      const consentResult = await guestService.recordConsent({
+        sessionToken: session.token,
+        documentVersion: 'v2026.1',
+        accepted: true
+      });
+
+      expect(consentResult.outcome).toBe('RECORDED');
+      expect(consentResult.documentVersion).toBe('v2026.1');
+      expect(consentResult.sessionId).toBe(session.id);
+
+      // Verificar persistencia en guest_session
+      const sessionInDb = await query<{ consent_recorded_at: Date; consent_version: string }>(
+        'SELECT consent_recorded_at, consent_version FROM guest_session WHERE id = $1',
+        session.id
+      );
+      expect(sessionInDb[0].consent_recorded_at).not.toBeNull();
+      expect(sessionInDb[0].consent_version).toBe('v2026.1');
+
+      // Verificar persistencia en guest_consent_record
+      const recordInDb = await query<{ count: number }>(
+        'SELECT count(*)::int as count FROM guest_consent_record WHERE guest_session_id = $1 AND document_version = $2',
+        session.id,
+        'v2026.1'
+      );
+      expect(recordInDb[0].count).toBe(1);
+
+      // checkConsent refleja aceptación
+      const verifiedCheck = await guestService.checkConsent({
+        sessionToken: session.token,
+        requiredVersion: 'v2026.1'
+      });
+      expect(verifiedCheck.hasConsented).toBe(true);
+      expect(verifiedCheck.requiresAcceptance).toBe(false);
+    });
+
+    it('Escenario 3: Rechaza si accepted=false y no inserta registro en PostgreSQL', async () => {
+      const eventId = randomUUID();
+      const organizerId = randomUUID();
+
+      await sql(
+        `INSERT INTO event (id, organizer_id, name, status, pin_enabled)
+         VALUES ($1, $2, 'Festival Rechazo', 'ACTIVE', false)`,
+        eventId,
+        organizerId
+      );
+
+      const lookupKey = 'lookup_consent_reject_test';
+      await sql(
+        `INSERT INTO public_access_credential (id, event_id, lookup_key, token_hash, generation, pin_required)
+         VALUES ($1, $2, $3, 'hash', 1, false)`,
+        randomUUID(),
+        eventId,
+        lookupKey
+      );
+
+      const { session } = await guestService.createGuestSession({ lookupKey });
+
+      await expect(
+        guestService.recordConsent({
+          sessionToken: session.token,
+          documentVersion: 'v2026.1',
+          accepted: false
+        })
+      ).rejects.toMatchObject({ code: 'CONSENT_REJECTED' });
+
+      // Ningún registro insertado
+      const records = await query<{ count: number }>(
+        'SELECT count(*)::int as count FROM guest_consent_record WHERE guest_session_id = $1',
+        session.id
+      );
+      expect(records[0].count).toBe(0);
+    });
   });
 });

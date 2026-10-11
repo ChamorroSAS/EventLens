@@ -72,7 +72,10 @@ export type EventManagementErrorCode =
   | 'RATE_LIMIT_EXCEEDED'
   | 'EVENT_NOT_ACCESSIBLE'
   | 'SESSION_EXPIRED'
-  | 'SESSION_REVOKED';
+  | 'SESSION_REVOKED'
+  | 'CONSENT_REQUIRED'
+  | 'INVALID_CONSENT_VERSION'
+  | 'CONSENT_REJECTED';
 
 export class EventManagementError extends Error {
   constructor(
@@ -414,6 +417,34 @@ export interface CreateGuestSessionResult {
   };
 }
 
+export interface RecordGuestConsentCommand {
+  readonly sessionToken: string;
+  readonly documentVersion: string;
+  readonly accepted: boolean;
+  readonly now?: Date;
+}
+
+export interface RecordGuestConsentResult {
+  readonly sessionId: string;
+  readonly eventId: string;
+  readonly documentVersion: string;
+  readonly acceptedAt: Date;
+  readonly outcome: 'RECORDED' | 'IDEMPOTENT_REPLAY';
+}
+
+export interface CheckGuestConsentCommand {
+  readonly sessionToken: string;
+  readonly requiredVersion?: string;
+  readonly now?: Date;
+}
+
+export interface CheckGuestConsentResult {
+  readonly hasConsented: boolean;
+  readonly consentVersion: string | null;
+  readonly consentRecordedAt: Date | null;
+  readonly requiresAcceptance: boolean;
+}
+
 export interface EventAuditRecord {
   readonly id: string;
   readonly procedure:
@@ -431,7 +462,8 @@ export interface EventAuditRecord {
     | 'EVENT_PUBLIC_CREDENTIAL_ISSUED'
     | 'EVENT_PUBLIC_ACCESS_RESOLVED'
     | 'GUEST_SESSION_CREATED'
-    | 'GUEST_PIN_VALIDATION_FAILED';
+    | 'GUEST_PIN_VALIDATION_FAILED'
+    | 'GUEST_CONSENT_RECORDED';
   readonly actorId: string;
   readonly targetIdentifier: string;
   readonly result:

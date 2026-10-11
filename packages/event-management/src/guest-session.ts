@@ -5,6 +5,10 @@ import {
   type CreateGuestSessionCommand,
   type CreateGuestSessionResult,
   type GuestSessionRecord,
+  type RecordGuestConsentCommand,
+  type RecordGuestConsentResult,
+  type CheckGuestConsentCommand,
+  type CheckGuestConsentResult,
   type EventStatus,
   type EventRecord,
   type EventAuditSink
@@ -417,5 +421,159 @@ export class GuestSessionService {
         sessionId
       );
     });
+  }
+
+  /**
+   * Records explicit versioned consent before the first upload (EL-TK-076).
+   * - Escenario 1: Si no ha aceptado, la primera carga requiere aceptación explícita.
+   * - Escenario 2: Registra versión documental, fecha/hora, evento y sesión de forma mínima y auditable.
+   * - Escenario 3: Si cancela o accepted=false, rechaza con CONSENT_REJECTED sin registrar nada.
+   * - Idempotencia: Si ya aceptó la misma versión, devuelve IDEMPOTENT_REPLAY sin duplicar.
+   */
+  public async recordConsent(
+    command: RecordGuestConsentCommand
+  ): Promise<RecordGuestConsentResult> {
+    if (!command || typeof command !== 'object') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Record consent command is required');
+    }
+
+    const { sessionToken, documentVersion, accepted, now: providedNow } = command;
+
+    if (!sessionToken || typeof sessionToken !== 'string') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Session token is required');
+    }
+
+    if (!documentVersion || typeof documentVersion !== 'string' || documentVersion.trim().length === 0) {
+      throw new EventManagementError('INVALID_CONSENT_VERSION', 'Valid document version string is required');
+    }
+
+    // Escenario 3: Si no acepta explícitamente (checkbox no marcado o cancelado)
+    if (!accepted) {
+      throw new EventManagementError('CONSENT_REJECTED', 'Explicit consent acceptance is required');
+    }
+
+    const trimmedVersion = documentVersion.trim();
+    const tokenHash = createHash('sha256').update(sessionToken.trim()).digest('hex');
+    const now = providedNow ?? new Date();
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      // 1. Pessimistic lock on guest session
+      const sessionRows = await tx.query<GuestSessionRow>(
+        `SELECT
+           id, event_id, token_hash, credential_generation, created_at, expires_at,
+           revoked_at, consent_recorded_at, consent_version, contributor_nickname
+         FROM guest_session
+         WHERE token_hash = $1
+         FOR UPDATE`,
+        tokenHash
+      );
+
+      if (sessionRows.length === 0) {
+        throw new EventManagementError('UNAUTHORIZED', 'Guest session not found');
+      }
+
+      const session = sessionRows[0];
+
+      if (session.revoked_at !== null) {
+        throw new EventManagementError('SESSION_REVOKED', 'Guest session has been revoked');
+      }
+
+      const expiresAt = new Date(session.expires_at);
+      if (expiresAt.getTime() <= now.getTime()) {
+        throw new EventManagementError('SESSION_EXPIRED', 'Guest session has expired');
+      }
+
+      // 2. Check if identical version was already accepted (Idempotent replay)
+      if (
+        session.consent_version === trimmedVersion &&
+        session.consent_recorded_at !== null
+      ) {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'GUEST_CONSENT_RECORDED',
+          actorId: 'GUEST_ANONYMOUS',
+          targetIdentifier: session.event_id,
+          result: 'IDEMPOTENT_REPLAY',
+          details: `Consent version '${trimmedVersion}' replay for session '${session.id}'`,
+          timestamp: now
+        });
+
+        return {
+          sessionId: session.id,
+          eventId: session.event_id,
+          documentVersion: trimmedVersion,
+          acceptedAt: new Date(session.consent_recorded_at),
+          outcome: 'IDEMPOTENT_REPLAY'
+        };
+      }
+
+      // 3. Update guest_session with versioned consent timestamp (Escenario 2)
+      await tx.execute(
+        `UPDATE guest_session
+         SET consent_recorded_at = $2,
+             consent_version = $3
+         WHERE id = $1`,
+        session.id,
+        now,
+        trimmedVersion
+      );
+
+      // 4. Insert into immutable audit table guest_consent_record
+      await tx.execute(
+        `INSERT INTO guest_consent_record (id, guest_session_id, event_id, document_version, accepted_at)
+         VALUES ($1, $2, $3, $4, $5)`,
+        randomUUID(),
+        session.id,
+        session.event_id,
+        trimmedVersion,
+        now
+      );
+
+      // 5. Audit consent acceptance without storing redundant legal text or tokens
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'GUEST_CONSENT_RECORDED',
+        actorId: 'GUEST_ANONYMOUS',
+        targetIdentifier: session.event_id,
+        result: 'SUCCESS',
+        details: `Consent accepted for version '${trimmedVersion}'`,
+        timestamp: now
+      });
+
+      return {
+        sessionId: session.id,
+        eventId: session.event_id,
+        documentVersion: trimmedVersion,
+        acceptedAt: now,
+        outcome: 'RECORDED'
+      };
+    });
+  }
+
+  /**
+   * Checks whether the guest session has accepted required consent.
+   */
+  public async checkConsent(
+    command: CheckGuestConsentCommand
+  ): Promise<CheckGuestConsentResult> {
+    if (!command || typeof command !== 'object' || !command.sessionToken) {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Session token is required');
+    }
+
+    const { sessionToken, requiredVersion, now: providedNow } = command;
+    const now = providedNow ?? new Date();
+
+    const session = await this.resolveGuestSession(sessionToken, now);
+
+    const hasConsented = session.consentRecordedAt !== null;
+    const versionMatches = requiredVersion ? session.consentVersion === requiredVersion : true;
+    const requiresAcceptance = !hasConsented || !versionMatches;
+
+    return {
+      hasConsented,
+      consentVersion: session.consentVersion,
+      consentRecordedAt: session.consentRecordedAt,
+      requiresAcceptance
+    };
   }
 }

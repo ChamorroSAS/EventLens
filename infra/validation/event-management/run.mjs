@@ -53,15 +53,15 @@ try {
   const exitCode = run(['--filter', '@eventlens/event-management', 'exec', 'vitest', 'run', '--no-file-parallelism', '--reporter=default', '--reporter=json', '--outputFile=/evidence/tests.json'], true);
   const tests = JSON.parse(readFileSync('/evidence/tests.json', 'utf8'));
   writeFileSync('/evidence/result.json', JSON.stringify({
-    ticket: 'EL-TK-075',
-    precedingTicket: 'EL-TK-074',
+    ticket: 'EL-TK-076',
+    precedingTicket: 'EL-TK-075',
     runId: database,
     testedAt: new Date().toISOString(),
     result: tests.success && exitCode === 0 ? 'PASS' : 'FAIL',
     tests: tests.numTotalTests,
     passed: tests.numPassedTests,
     postgresql: '16 real isolated laboratory database',
-    guestSession: 'Optional PIN validation, rate limiting and anonymous guest session establishment (DEC-004, DEC-013, DEC-083, AQR-003)',
+    consent: 'Versioned guest consent recording before upload (DEC-041, DEC-042)',
     gates: {
       'MEDIA-001': 'NOT_EVALUATED',
       'CAP-001': 'NOT_EVALUATED',
