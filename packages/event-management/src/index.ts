@@ -8,6 +8,8 @@ export {
   type CreateEventDraftResult,
   type SetEventScheduleCommand,
   type SetEventScheduleResult,
+  type SetInitialPinCommand,
+  type SetInitialPinResult,
   type ScheduleDraftEventCommand,
   type ScheduleDraftEventResult,
   type ActivationTrigger,

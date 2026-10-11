@@ -41,6 +41,22 @@ function createInMemoryRunner(db: InMemoryDb): TransactionRunner {
             return [] as unknown as T[];
           }
 
+          // UPDATE event
+          if (normalized.includes('UPDATE event')) {
+            const id = params[0] as string;
+            const existing = db.events.get(id);
+            if (!existing) throw new Error(`Event not found for update: ${id}`);
+            if (normalized.includes('pin_enabled = true')) {
+              existing.pin_enabled = true;
+              existing.pin_hash = params[1];
+              existing.pin_salt = params[2];
+              if (params[3]) existing.idempotency_key = params[3];
+              if (params[4]) existing.idempotency_payload_hash = params[4];
+              existing.updated_at = params[5];
+            }
+            return [{ ...existing }] as unknown as T[];
+          }
+
           throw new Error(`Unhandled mock SQL query: ${sql}`);
         },
 
@@ -248,4 +264,156 @@ describe('EL-TK-020: EventDraftService (Unit Tests)', () => {
       code: 'IDEMPOTENCY_CONFLICT'
     });
   });
+
+  describe('EL-TK-027: EventDraftService.setInitialPin (Unit Tests)', () => {
+    it('Escenario 1: Establece PIN inicial de 6 dígitos con ceros a la izquierda, habilita pin_enabled y no expone hash ni secreto', async () => {
+      const { event: draft } = await service.createDraft({
+        actorContext: mockActor,
+        name: 'Evento con PIN Inicial'
+      });
+
+      const pinResult = await service.setInitialPin({
+        actorContext: mockActor,
+        eventId: draft.id,
+        pin: '001234'
+      });
+
+      expect(pinResult.outcome).toBe('PIN_SET');
+      expect(pinResult.event.pinEnabled).toBe(true);
+      // No expone pin ni secretos en el EventRecord
+      expect((pinResult.event as any).pin).toBeUndefined();
+      expect((pinResult.event as any).pinHash).toBeUndefined();
+      expect((pinResult.event as any).pinSalt).toBeUndefined();
+
+      // Auditoría sin texto plano ni hash
+      const pinAudits = db.auditEvents.filter((a) => a.procedure === 'EVENT_INITIAL_PIN_SET');
+      expect(pinAudits).toHaveLength(1);
+      expect(pinAudits[0].result).toBe('SUCCESS');
+      expect(pinAudits[0].details).not.toContain('001234');
+    });
+
+    it('Escenario 2: Rechaza PIN que no cumpla exactamente 6 dígitos numéricos (INVALID_PIN_FORMAT)', async () => {
+      const { event: draft } = await service.createDraft({
+        actorContext: mockActor,
+        name: 'Evento Validación PIN'
+      });
+
+      const invalidPins = ['12345', '1234567', 'abcdef', '12345a', ' 12345', '12345 ', '12-345', ''];
+
+      for (const invalidPin of invalidPins) {
+        await expect(
+          service.setInitialPin({
+            actorContext: mockActor,
+            eventId: draft.id,
+            pin: invalidPin
+          })
+        ).rejects.toMatchObject({
+          code: 'INVALID_PIN_FORMAT'
+        });
+      }
+    });
+
+    it('Escenario 2: Rechaza si el actor no es el organizador propietario (UNAUTHORIZED)', async () => {
+      const { event: draft } = await service.createDraft({
+        actorContext: mockActor,
+        name: 'Evento Aislamiento PIN'
+      });
+
+      const otherOrganizer: OrganizerActorContext = {
+        ...mockActor,
+        accountId: randomUUID()
+      };
+
+      await expect(
+        service.setInitialPin({
+          actorContext: otherOrganizer,
+          eventId: draft.id,
+          pin: '987654'
+        })
+      ).rejects.toMatchObject({
+        code: 'UNAUTHORIZED'
+      });
+    });
+
+    it('Escenario 2: Rechaza si el evento no está en DRAFT (EVENT_NOT_IN_DRAFT)', async () => {
+      const { event: draft } = await service.createDraft({
+        actorContext: mockActor,
+        name: 'Evento No Draft'
+      });
+
+      // Modificamos a SCHEDULED en la base de datos simulada
+      db.events.get(draft.id)!.status = 'SCHEDULED';
+
+      await expect(
+        service.setInitialPin({
+          actorContext: mockActor,
+          eventId: draft.id,
+          pin: '112233'
+        })
+      ).rejects.toMatchObject({
+        code: 'EVENT_NOT_IN_DRAFT'
+      });
+    });
+
+    it('Escenario 2: Rechaza intento de cambiar/desactivar un PIN ya establecido (PIN_ALREADY_CONFIGURED)', async () => {
+      const { event: draft } = await service.createDraft({
+        actorContext: mockActor,
+        name: 'Evento PIN Repetido'
+      });
+
+      await service.setInitialPin({
+        actorContext: mockActor,
+        eventId: draft.id,
+        pin: '123456'
+      });
+
+      // Segundo intento con otro PIN se rechaza bajo EL-EP-002
+      await expect(
+        service.setInitialPin({
+          actorContext: mockActor,
+          eventId: draft.id,
+          pin: '654321'
+        })
+      ).rejects.toMatchObject({
+        code: 'PIN_ALREADY_CONFIGURED'
+      });
+    });
+
+    it('Idempotencia: Replay idéntico devuelve IDEMPOTENT_REPLAY; cambio de PIN da conflicto', async () => {
+      const { event: draft } = await service.createDraft({
+        actorContext: mockActor,
+        name: 'Evento Idempotencia PIN'
+      });
+
+      const key = 'pin-idem-key-1';
+
+      const res1 = await service.setInitialPin({
+        actorContext: mockActor,
+        eventId: draft.id,
+        pin: '445566',
+        idempotencyKey: key
+      });
+      expect(res1.outcome).toBe('PIN_SET');
+
+      const res2 = await service.setInitialPin({
+        actorContext: mockActor,
+        eventId: draft.id,
+        pin: '445566',
+        idempotencyKey: key
+      });
+      expect(res2.outcome).toBe('IDEMPOTENT_REPLAY');
+
+      await expect(
+        service.setInitialPin({
+          actorContext: mockActor,
+          eventId: draft.id,
+          pin: '778899',
+          idempotencyKey: key
+        })
+      ).rejects.toMatchObject({
+        code: 'IDEMPOTENCY_CONFLICT'
+      });
+    });
+  });
 });
+

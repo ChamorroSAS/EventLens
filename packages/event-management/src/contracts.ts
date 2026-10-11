@@ -63,7 +63,9 @@ export type EventManagementErrorCode =
   | 'INVALID_PREVIOUS_STATUS'
   | 'EXTENSION_REASON_REQUIRED'
   | 'INVALID_VALIDITY_EXTENSION'
-  | 'EVENT_NOT_EXTENDABLE';
+  | 'EVENT_NOT_EXTENDABLE'
+  | 'PIN_ALREADY_CONFIGURED'
+  | 'INVALID_PIN_FORMAT';
 
 export class EventManagementError extends Error {
   constructor(
@@ -98,6 +100,18 @@ export interface SetEventScheduleCommand {
 export interface SetEventScheduleResult {
   readonly event: EventRecord;
   readonly outcome: 'UPDATED' | 'IDEMPOTENT_REPLAY';
+}
+
+export interface SetInitialPinCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly eventId: string;
+  readonly pin: string;
+  readonly idempotencyKey?: string;
+}
+
+export interface SetInitialPinResult {
+  readonly event: EventRecord;
+  readonly outcome: 'PIN_SET' | 'IDEMPOTENT_REPLAY';
 }
 
 export interface ScheduleDraftEventCommand {
@@ -319,7 +333,8 @@ export interface EventAuditRecord {
     | 'EVENT_TEMPORAL_ADVANCE'
     | 'EVENT_SUSPENDED'
     | 'EVENT_REACTIVATED'
-    | 'EVENT_VALIDITY_EXTENDED';
+    | 'EVENT_VALIDITY_EXTENDED'
+    | 'EVENT_INITIAL_PIN_SET';
   readonly actorId: string;
   readonly targetIdentifier: string;
   readonly result:
@@ -350,6 +365,8 @@ export interface EventAuditRecord {
     | 'REJECTED_EXTENSION_REASON_REQUIRED'
     | 'REJECTED_INVALID_VALIDITY_EXTENSION'
     | 'REJECTED_EVENT_NOT_EXTENDABLE'
+    | 'REJECTED_PIN_ALREADY_CONFIGURED'
+    | 'REJECTED_INVALID_PIN_FORMAT'
     | 'IDEMPOTENT_REPLAY';
   readonly details?: string;
   readonly timestamp: Date;
