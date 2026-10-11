@@ -19,6 +19,10 @@ import {
   type ReactivateEventResult,
   type ExtendEventValidityCommand,
   type ExtendEventValidityResult,
+  type LifecycleSnapshot,
+  type LifecycleCapabilities,
+  type GetLifecycleSnapshotCommand,
+  type EventLifecycleActorContext,
   type EventAuditSink,
   type EventRecord,
   type EventStatus,
@@ -1589,6 +1593,150 @@ export class EventLifecycleService {
         previousGraceEndsAt,
         outcome: 'EXTENDED'
       };
+    });
+  }
+
+  /**
+   * Consulta el snapshot de lifecycle y capacidades vigentes de un evento diferenciadas por actor (EL-TK-071).
+   */
+  async getLifecycleSnapshot(command: GetLifecycleSnapshotCommand): Promise<LifecycleSnapshot> {
+    const { eventId, actorContext, now: providedNow } = command;
+    const now = providedNow ?? new Date();
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      const rows = await tx.query<EventRow>(
+        `SELECT id, organizer_id, name, status, timezone, starts_at_local,
+                scheduled_at, utc_offset_minutes, expires_at, grace_ends_at,
+                activated_at, closed_at, purge_started_at, suspended_at,
+                suspension_reason, previous_status, validity_duration_days,
+                grace_days, uploads_enabled, guest_gallery_enabled,
+                moderation_mode, pin_enabled, idempotency_key,
+                idempotency_payload_hash, created_at, updated_at
+         FROM event
+         WHERE id = $1`,
+        eventId
+      );
+
+      if (rows.length === 0) {
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event '${eventId}' not found`);
+      }
+
+      const current = rows[0];
+      const status = current.status as EventStatus;
+      const isAdmin = actorContext?.actorType === 'ADMIN_HUMAN';
+      const isOrganizer = actorContext?.actorType === 'ORGANIZER_HUMAN';
+      const isOwner = isOrganizer && (actorContext as { accountId?: string }).accountId === current.organizer_id;
+
+      // 1. Aislamiento y no enumeración:
+      // Si el actor es un organizador pero no es el propietario del evento, denegar con EVENT_NOT_FOUND (no enumeración per AQR-003).
+      if (isOrganizer && !isOwner) {
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event '${eventId}' not found`);
+      }
+
+      // Si el actor es un invitado / anónimo / no especificado:
+      // Los eventos en DRAFT o estados terminales (PENDING_DELETION, ARCHIVED) no existen para el público.
+      if (!isAdmin && !isOwner) {
+        if (status === 'DRAFT' || status === 'PENDING_DELETION' || status === 'ARCHIVED') {
+          throw new EventManagementError('EVENT_NOT_FOUND', `Event '${eventId}' not found`);
+        }
+      }
+
+      const expiresAt = current.expires_at ? new Date(current.expires_at) : null;
+      const isStillValid = expiresAt ? now.getTime() < expiresAt.getTime() : true;
+
+      // 2. Capacidades derivadas por actor:
+      let capabilities: LifecycleCapabilities;
+
+      if (isAdmin) {
+        capabilities = {
+          canSchedule: status === 'DRAFT',
+          canActivateEarly: status === 'SCHEDULED',
+          canClose: status === 'ACTIVE',
+          canReopen: status === 'CLOSED' && isStillValid,
+          canSuspend: status !== 'PENDING_DELETION' && status !== 'ARCHIVED' && status !== 'SUSPENDED',
+          canReactivate: status === 'SUSPENDED',
+          canExtendValidity: status !== 'PENDING_DELETION' && status !== 'ARCHIVED' && status !== 'DRAFT',
+          canUpload: false,
+          canViewGuestGallery: true,
+          canParticipate: false,
+          isClosed: status === 'CLOSED',
+          isInGracePeriod: status === 'GRACE_PERIOD',
+          isSuspended: status === 'SUSPENDED',
+          isTerminal: status === 'PENDING_DELETION' || status === 'ARCHIVED'
+        };
+      } else if (isOwner) {
+        capabilities = {
+          canSchedule: status === 'DRAFT',
+          canActivateEarly: status === 'SCHEDULED',
+          canClose: status === 'ACTIVE',
+          canReopen: status === 'CLOSED' && isStillValid,
+          canSuspend: false,
+          canReactivate: false,
+          canExtendValidity: false,
+          canUpload: status === 'ACTIVE' && Boolean(current.uploads_enabled),
+          canViewGuestGallery: status !== 'DRAFT' && status !== 'PENDING_DELETION' && status !== 'ARCHIVED',
+          canParticipate: status === 'ACTIVE',
+          isClosed: status === 'CLOSED',
+          isInGracePeriod: status === 'GRACE_PERIOD',
+          isSuspended: status === 'SUSPENDED',
+          isTerminal: status === 'PENDING_DELETION' || status === 'ARCHIVED'
+        };
+      } else {
+        // Invitado / Público
+        capabilities = {
+          canSchedule: false,
+          canActivateEarly: false,
+          canClose: false,
+          canReopen: false,
+          canSuspend: false,
+          canReactivate: false,
+          canExtendValidity: false,
+          canUpload: status === 'ACTIVE' && Boolean(current.uploads_enabled),
+          canViewGuestGallery: Boolean(current.guest_gallery_enabled) && (status === 'ACTIVE' || status === 'CLOSED' || status === 'GRACE_PERIOD'),
+          canParticipate: status === 'ACTIVE',
+          isClosed: status === 'CLOSED',
+          isInGracePeriod: status === 'GRACE_PERIOD',
+          isSuspended: status === 'SUSPENDED',
+          isTerminal: status === 'PENDING_DELETION' || status === 'ARCHIVED'
+        };
+      }
+
+      // 3. Proyección de campos según rol:
+      const baseSnapshot: LifecycleSnapshot = {
+        eventId: current.id,
+        name: current.name,
+        status,
+        timezone: current.timezone,
+        startsAtLocal: current.starts_at_local ?? null,
+        scheduledAt: current.scheduled_at ? new Date(current.scheduled_at) : null,
+        expiresAt,
+        graceEndsAt: current.grace_ends_at ? new Date(current.grace_ends_at) : null,
+        activatedAt: current.activated_at ? new Date(current.activated_at) : null,
+        closedAt: current.closed_at ? new Date(current.closed_at) : null,
+        capabilities
+      };
+
+      if (isOwner || isAdmin) {
+        Object.assign(baseSnapshot, {
+          organizerId: current.organizer_id,
+          validityDurationDays: current.validity_duration_days ?? null,
+          graceDays: current.grace_days ?? null,
+          uploadsEnabled: Boolean(current.uploads_enabled),
+          guestGalleryEnabled: Boolean(current.guest_gallery_enabled),
+          moderationMode: (current.moderation_mode as ModerationMode) ?? 'AUTO_PUBLISH'
+        });
+      }
+
+      if (isAdmin) {
+        Object.assign(baseSnapshot, {
+          suspendedAt: current.suspended_at ? new Date(current.suspended_at) : null,
+          suspensionReason: current.suspension_reason ?? null,
+          previousStatus: (current.previous_status as EventStatus) ?? null,
+          purgeStartedAt: current.purge_started_at ? new Date(current.purge_started_at) : null
+        });
+      }
+
+      return baseSnapshot;
     });
   }
 }

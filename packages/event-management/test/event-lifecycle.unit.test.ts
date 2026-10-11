@@ -2415,4 +2415,256 @@ describe('EL-TK-063: EventLifecycleService (Unit Tests)', () => {
       expect(replay.outcome).toBe('IDEMPOTENT_REPLAY');
     });
   });
+
+  describe('EL-TK-071: EventLifecycleService.getLifecycleSnapshot (Unit Tests)', () => {
+    it('Escenario 1: Administrador y organizador reciben snapshots con capacidades y campos respectivos', async () => {
+      const eventId = '88880000-0000-0000-0000-000000000001';
+      const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+      const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+      const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+      const now = new Date('2026-11-15T00:00:00.000Z');
+
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Para Snapshot',
+        status: 'ACTIVE',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: null,
+        purge_started_at: null,
+        suspended_at: null,
+        suspension_reason: null,
+        previous_status: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      // Admin consulta
+      const adminSnap = await service.getLifecycleSnapshot({
+        eventId,
+        actorContext: adminActor,
+        now
+      });
+      expect(adminSnap.status).toBe('ACTIVE');
+      expect(adminSnap.capabilities.canClose).toBe(true);
+      expect(adminSnap.capabilities.canSuspend).toBe(true);
+      expect(adminSnap.capabilities.canExtendValidity).toBe(true);
+      expect(adminSnap.capabilities.canUpload).toBe(false); // Admin no es uploader
+      expect(adminSnap.organizerId).toBe(ownerActor.accountId);
+
+      // Organizador propietario consulta
+      const ownerSnap = await service.getLifecycleSnapshot({
+        eventId,
+        actorContext: ownerActor,
+        now
+      });
+      expect(ownerSnap.status).toBe('ACTIVE');
+      expect(ownerSnap.capabilities.canClose).toBe(true);
+      expect(ownerSnap.capabilities.canSuspend).toBe(false); // No tiene permisos de admin
+      expect(ownerSnap.capabilities.canExtendValidity).toBe(false);
+      expect(ownerSnap.capabilities.canUpload).toBe(true);
+      expect(ownerSnap.organizerId).toBe(ownerActor.accountId);
+      expect(ownerSnap.suspendedAt).toBeUndefined(); // Campos internos ocultos para organizador
+    });
+
+    it('Escenario 2: Invitado consulta evento ACTIVE o CLOSED recibiendo solo disponibilidad pública', async () => {
+      const eventId = '88880000-0000-0000-0000-000000000002';
+      const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+      const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+      const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+      const now = new Date('2026-11-15T00:00:00.000Z');
+
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Público Invitado',
+        status: 'ACTIVE',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: null,
+        purge_started_at: null,
+        suspended_at: null,
+        suspension_reason: null,
+        previous_status: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      const guestSnap = await service.getLifecycleSnapshot({
+        eventId,
+        actorContext: { actorType: 'GUEST_ANONYMOUS' },
+        now
+      });
+
+      expect(guestSnap.eventId).toBe(eventId);
+      expect(guestSnap.name).toBe('Evento Público Invitado');
+      expect(guestSnap.status).toBe('ACTIVE');
+      expect(guestSnap.organizerId).toBeUndefined(); // Sin filtrar ID ni datos privados del organizador
+      expect(guestSnap.capabilities.canUpload).toBe(true);
+      expect(guestSnap.capabilities.canViewGuestGallery).toBe(true);
+      expect(guestSnap.capabilities.canClose).toBe(false);
+      expect(guestSnap.capabilities.canSchedule).toBe(false);
+    });
+
+    it('No enumeración: Invitado recibe EVENT_NOT_FOUND para borradores o eventos terminales', async () => {
+      const eventIdDraft = '88880000-0000-0000-0000-000000000003';
+      eventsMap.set(eventIdDraft, {
+        id: eventIdDraft,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Borrador Oculto',
+        status: 'DRAFT',
+        timezone: 'America/Bogota',
+        starts_at_local: null,
+        scheduled_at: null,
+        utc_offset_minutes: null,
+        expires_at: null,
+        grace_ends_at: null,
+        activated_at: null,
+        closed_at: null,
+        purge_started_at: null,
+        suspended_at: null,
+        suspension_reason: null,
+        previous_status: null,
+        validity_duration_days: null,
+        grace_days: null,
+        uploads_enabled: false,
+        guest_gallery_enabled: false,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      await expect(
+        service.getLifecycleSnapshot({
+          eventId: eventIdDraft,
+          actorContext: { actorType: 'GUEST_ANONYMOUS' }
+        })
+      ).rejects.toMatchObject({
+        code: 'EVENT_NOT_FOUND'
+      });
+    });
+
+    it('No enumeración: Organizador ajeno recibe EVENT_NOT_FOUND para eventos que no le pertenecen', async () => {
+      const eventId = '88880000-0000-0000-0000-000000000004';
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Privado de Propietario',
+        status: 'ACTIVE',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: new Date(),
+        utc_offset_minutes: -300,
+        expires_at: new Date(),
+        grace_ends_at: new Date(),
+        activated_at: new Date(),
+        closed_at: null,
+        purge_started_at: null,
+        suspended_at: null,
+        suspension_reason: null,
+        previous_status: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      await expect(
+        service.getLifecycleSnapshot({
+          eventId,
+          actorContext: otherActor // Organizador ajeno
+        })
+      ).rejects.toMatchObject({
+        code: 'EVENT_NOT_FOUND'
+      });
+    });
+
+    it('Evalúa vigencia temporal para canReopen: true si no ha vencido, false si ya venció', async () => {
+      const eventId = '88880000-0000-0000-0000-000000000005';
+      const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+      const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+      const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Cerrado Temporal',
+        status: 'CLOSED',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: new Date('2026-11-10T00:00:00.000Z'),
+        purge_started_at: null,
+        suspended_at: null,
+        suspension_reason: null,
+        previous_status: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      // Dentro de vigencia -> canReopen = true
+      const validSnap = await service.getLifecycleSnapshot({
+        eventId,
+        actorContext: ownerActor,
+        now: new Date('2026-11-15T00:00:00.000Z')
+      });
+      expect(validSnap.capabilities.canReopen).toBe(true);
+
+      // Fuera de vigencia -> canReopen = false
+      const expiredSnap = await service.getLifecycleSnapshot({
+        eventId,
+        actorContext: ownerActor,
+        now: new Date('2026-12-02T00:00:00.000Z')
+      });
+      expect(expiredSnap.capabilities.canReopen).toBe(false);
+    });
+  });
 });

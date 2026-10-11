@@ -217,6 +217,63 @@ export interface ExtendEventValidityResult {
   readonly outcome: 'EXTENDED' | 'IDEMPOTENT_REPLAY';
 }
 
+export interface GuestActorContext {
+  readonly actorType: 'GUEST_ANONYMOUS';
+  readonly guestSessionId?: string;
+}
+
+export type EventLifecycleActorContext =
+  | AdminActorContext
+  | OrganizerActorContext
+  | GuestActorContext;
+
+export interface LifecycleCapabilities {
+  readonly canSchedule: boolean;
+  readonly canActivateEarly: boolean;
+  readonly canClose: boolean;
+  readonly canReopen: boolean;
+  readonly canSuspend: boolean;
+  readonly canReactivate: boolean;
+  readonly canExtendValidity: boolean;
+  readonly canUpload: boolean;
+  readonly canViewGuestGallery: boolean;
+  readonly canParticipate: boolean;
+  readonly isClosed: boolean;
+  readonly isInGracePeriod: boolean;
+  readonly isSuspended: boolean;
+  readonly isTerminal: boolean;
+}
+
+export interface LifecycleSnapshot {
+  readonly eventId: string;
+  readonly name: string;
+  readonly status: EventStatus;
+  readonly timezone: string;
+  readonly startsAtLocal: string | null;
+  readonly scheduledAt: Date | null;
+  readonly expiresAt: Date | null;
+  readonly graceEndsAt: Date | null;
+  readonly activatedAt: Date | null;
+  readonly closedAt: Date | null;
+  readonly capabilities: LifecycleCapabilities;
+  readonly organizerId?: string;
+  readonly validityDurationDays?: number | null;
+  readonly graceDays?: number | null;
+  readonly uploadsEnabled?: boolean;
+  readonly guestGalleryEnabled?: boolean;
+  readonly moderationMode?: ModerationMode;
+  readonly suspendedAt?: Date | null;
+  readonly suspensionReason?: string | null;
+  readonly previousStatus?: EventStatus | null;
+  readonly purgeStartedAt?: Date | null;
+}
+
+export interface GetLifecycleSnapshotCommand {
+  readonly eventId: string;
+  readonly actorContext?: EventLifecycleActorContext | null;
+  readonly now?: Date;
+}
+
 export interface EventAuditRecord {
   readonly id: string;
   readonly procedure:

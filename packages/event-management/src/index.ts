@@ -26,6 +26,11 @@ export {
   type ReactivateEventResult,
   type ExtendEventValidityCommand,
   type ExtendEventValidityResult,
+  type GuestActorContext,
+  type EventLifecycleActorContext,
+  type LifecycleCapabilities,
+  type LifecycleSnapshot,
+  type GetLifecycleSnapshotCommand,
   type EventAuditRecord,
   type EventAuditSink
 } from './contracts.js';

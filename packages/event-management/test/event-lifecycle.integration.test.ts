@@ -901,4 +901,139 @@ describeIntegration('EventLifecycleService (Real PostgreSQL Integration Tests �
     );
     expect(rows[0].status).toBe('ACTIVE');
   });
+
+  it('EL-TK-071: Devuelve snapshot completo y capacidades de administración a ADMIN_HUMAN en PostgreSQL', async () => {
+    const eventId = randomUUID();
+    const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+    const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+    const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+    const suspendedAt = new Date('2026-11-10T12:00:00.000Z');
+
+    await sql(
+      `INSERT INTO event (id, organizer_id, name, status, scheduled_at, expires_at, grace_ends_at, activated_at, validity_duration_days, grace_days, suspended_at, suspension_reason)
+       VALUES ($1, $2, $3, 'SUSPENDED', $4, $5, $6, $4, 30, 7, $7, 'Reporte de abuso')`,
+      eventId,
+      ownerActor.accountId,
+      'Evento Suspendido Admin SQL',
+      scheduledAt,
+      expiresAt,
+      graceEndsAt,
+      suspendedAt
+    );
+
+    const snapshot = await service.getLifecycleSnapshot({
+      eventId,
+      actorContext: adminActor
+    });
+
+    expect(snapshot.eventId).toBe(eventId);
+    expect(snapshot.status).toBe('SUSPENDED');
+    expect(snapshot.organizerId).toBe(ownerActor.accountId);
+    expect(snapshot.suspendedAt).toEqual(suspendedAt);
+    expect(snapshot.suspensionReason).toBe('Reporte de abuso');
+    expect(snapshot.capabilities.canSuspend).toBe(false); // Ya está suspendido
+    expect(snapshot.capabilities.canReactivate).toBe(true);
+    expect(snapshot.capabilities.canExtendValidity).toBe(true);
+  });
+
+  it('EL-TK-071: Organizador propietario consulta capacidades; organizador ajeno recibe EVENT_NOT_FOUND (aislamiento AQR-003)', async () => {
+    const eventId = randomUUID();
+    const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+    const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+    const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+
+    await sql(
+      `INSERT INTO event (id, organizer_id, name, status, scheduled_at, expires_at, grace_ends_at, activated_at, validity_duration_days, grace_days, uploads_enabled)
+       VALUES ($1, $2, $3, 'ACTIVE', $4, $5, $6, $4, 30, 7, true)`,
+      eventId,
+      ownerActor.accountId,
+      'Evento Activo Owner SQL',
+      scheduledAt,
+      expiresAt,
+      graceEndsAt
+    );
+
+    // Propietario consulta exitosamente
+    const ownerSnapshot = await service.getLifecycleSnapshot({
+      eventId,
+      actorContext: ownerActor
+    });
+    expect(ownerSnapshot.eventId).toBe(eventId);
+    expect(ownerSnapshot.status).toBe('ACTIVE');
+    expect(ownerSnapshot.capabilities.canUpload).toBe(true);
+    expect(ownerSnapshot.capabilities.canClose).toBe(true);
+    expect(ownerSnapshot.capabilities.canReopen).toBe(false);
+
+    // Organizador ajeno es rechazado sin revelar existencia
+    const otherOrganizer: OrganizerActorContext = {
+      actorType: 'ORGANIZER_HUMAN',
+      accountId: randomUUID(),
+      email: 'other-organizer@eventlens.local',
+      sessionId: randomUUID(),
+      authTime: new Date(),
+      credentialRevision: 1n,
+      sessionWatermark: 1n,
+      recoveryEpoch: 1n
+    };
+    await expect(
+      service.getLifecycleSnapshot({
+        eventId,
+        actorContext: otherOrganizer
+      })
+    ).rejects.toMatchObject({ code: 'EVENT_NOT_FOUND' });
+  });
+
+  it('EL-TK-071: Invitado anónimo ve capacidades públicas sin datos privados; borrador o terminal da EVENT_NOT_FOUND', async () => {
+    const activeEventId = randomUUID();
+    const draftEventId = randomUUID();
+    const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+    const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+    const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+
+    await sql(
+      `INSERT INTO event (id, organizer_id, name, status, scheduled_at, expires_at, grace_ends_at, activated_at, guest_gallery_enabled, uploads_enabled)
+       VALUES ($1, $2, $3, 'ACTIVE', $4, $5, $6, $4, true, true)`,
+      activeEventId,
+      ownerActor.accountId,
+      'Evento Activo Invitado SQL',
+      scheduledAt,
+      expiresAt,
+      graceEndsAt
+    );
+
+    await sql(
+      `INSERT INTO event (id, organizer_id, name, status, guest_gallery_enabled, uploads_enabled)
+       VALUES ($1, $2, $3, 'DRAFT', true, true)`,
+      draftEventId,
+      ownerActor.accountId,
+      'Evento Borrador Invitado SQL'
+    );
+
+    const guestActor = {
+      actorType: 'GUEST_ANONYMOUS' as const,
+      guestSessionId: randomUUID()
+    };
+
+    const guestSnapshot = await service.getLifecycleSnapshot({
+      eventId: activeEventId,
+      actorContext: guestActor
+    });
+
+    expect(guestSnapshot.eventId).toBe(activeEventId);
+    expect(guestSnapshot.status).toBe('ACTIVE');
+    expect(guestSnapshot.organizerId).toBeUndefined();
+    expect(guestSnapshot.validityDurationDays).toBeUndefined();
+    expect(guestSnapshot.capabilities.canUpload).toBe(true);
+    expect(guestSnapshot.capabilities.canViewGuestGallery).toBe(true);
+    expect(guestSnapshot.capabilities.canClose).toBe(false);
+
+    // Consultar borrador debe dar EVENT_NOT_FOUND para evitar enumeración
+    await expect(
+      service.getLifecycleSnapshot({
+        eventId: draftEventId,
+        actorContext: guestActor
+      })
+    ).rejects.toMatchObject({ code: 'EVENT_NOT_FOUND' });
+  });
 });
+

@@ -101,7 +101,7 @@
 | EL-TK-068 | Suspender administrativamente un evento conservando su estado previo | EL-EP-003 | READY | P0 | EL-TK-044 | [EL-TK-068](tickets/EL-TK-068.md) |
 | EL-TK-069 | Reactivar un evento SUSPENDED recalculando su estado vigente | EL-EP-003 | READY | P0 | EL-TK-062,067,068,044 | [EL-TK-069](tickets/EL-TK-069.md) |
 | EL-TK-070 | Extender la vigencia autorizada de un evento | EL-EP-003 | READY | P0 | EL-TK-062, contrato EL-EP-011 | [EL-TK-070](tickets/EL-TK-070.md) |
-| EL-TK-071 | Consultar lifecycle y capacidades vigentes de un evento | EL-EP-003 | READY | P0 | EL-TK-063..070 | [EL-TK-071](tickets/EL-TK-071.md) |
+| EL-TK-071 | Consultar lifecycle y capacidades vigentes de un evento | EL-EP-003 | DONE | P0 | EL-TK-063..070 | [EL-TK-071](tickets/EL-TK-071.md) |
 | EL-TK-072 | Aplicar restricciones de acceso según el lifecycle vigente | EL-EP-003 | READY | P0 | EL-TK-064,065,067,068,069,071 | [EL-TK-072](tickets/EL-TK-072.md) |
 | EL-TK-073 | Integrar el lifecycle en la interfaz de organizador e invitado | EL-EP-003 | READY | P0 | EL-TK-071, EL-TK-072 | [EL-TK-073](tickets/EL-TK-073.md) |
 | EL-TK-074 | Resolver acceso público a un evento mediante credencial no adivinable | EL-EP-004 | READY | P0 | EL-TK-020, EL-TK-072, EL-TK-084 | [EL-TK-074](tickets/EL-TK-074.md) |

@@ -1,11 +1,11 @@
 {
-  "ticket": "EL-TK-070",
-  "precedingTicket": "EL-TK-069",
-  "runId": "event_mgmt_6b114c99f27a4d208f3cb448e5b0f3d3",
-  "testedAt": "2026-10-11T22:10:27.781Z",
+  "ticket": "EL-TK-071",
+  "precedingTicket": "EL-TK-070",
+  "runId": "event_mgmt_b91914459d3a4c338d27cdb985ac5056",
+  "testedAt": "2026-10-11T22:20:32.901Z",
   "result": "PASS",
-  "tests": 91,
-  "passed": 91,
+  "tests": 99,
+  "passed": 99,
   "postgresql": "16 real isolated laboratory database",
   "lifecycleExtension": "Authorized event validity extension recalculating canonical timeline and reconciling lifecycle without stale drops (DEC-095, DEC-100, DEC-102)",
   "gates": {
