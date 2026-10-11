@@ -35,3 +35,20 @@ model Event {
   @@index([organizerId, status])
   @@map("event")
 }
+
+model PublicAccessCredential {
+  id                     String    @id @db.Uuid
+  eventId                String    @map("event_id") @db.Uuid
+  lookupKey              String    @unique @map("lookup_key")
+  tokenHash              String    @map("token_hash")
+  generation             Int       @default(1)
+  pinRequired            Boolean   @default(false) @map("pin_required")
+  createdAt              DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  revokedAt              DateTime? @map("revoked_at") @db.Timestamptz
+  idempotencyKey         String?   @unique @map("idempotency_key")
+  idempotencyPayloadHash String?   @map("idempotency_payload_hash")
+
+  @@index([eventId, revokedAt])
+  @@map("public_access_credential")
+}
+

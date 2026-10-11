@@ -36,6 +36,9 @@ export {
   type EventAction,
   type EvaluateAccessParams,
   type AccessDecision,
+  type PublicAccessCredentialRecord,
+  type IssueInitialPublicCredentialCommand,
+  type IssueInitialPublicCredentialResult,
   type EventAuditRecord,
   type EventAuditSink
 } from './contracts.js';
@@ -43,6 +46,7 @@ export {
 export { EventAccessPolicy } from './access-policy.js';
 export { EventDraftService } from './event-draft.js';
 export { EventLifecycleService } from './event-lifecycle.js';
+export { EventPublicAccessService } from './event-public-access.js';
 export { resolveScheduleLocalTime, type ResolvedLocalSchedule } from './timezone.js';
 export {
   calculateEventLifecycleTimeline,

@@ -320,6 +320,28 @@ export interface AccessDecision {
   readonly reason: string;
 }
 
+export interface PublicAccessCredentialRecord {
+  readonly id: string;
+  readonly eventId: string;
+  readonly lookupKey: string;
+  readonly tokenHash: string;
+  readonly generation: number;
+  readonly pinRequired: boolean;
+  readonly createdAt: Date;
+  readonly revokedAt: Date | null;
+}
+
+export interface IssueInitialPublicCredentialCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly eventId: string;
+  readonly idempotencyKey?: string;
+  readonly now?: Date;
+}
+
+export interface IssueInitialPublicCredentialResult {
+  readonly credential: PublicAccessCredentialRecord;
+  readonly outcome: 'ISSUED' | 'IDEMPOTENT_REPLAY';
+}
 
 export interface EventAuditRecord {
   readonly id: string;
@@ -334,7 +356,8 @@ export interface EventAuditRecord {
     | 'EVENT_SUSPENDED'
     | 'EVENT_REACTIVATED'
     | 'EVENT_VALIDITY_EXTENDED'
-    | 'EVENT_INITIAL_PIN_SET';
+    | 'EVENT_INITIAL_PIN_SET'
+    | 'EVENT_PUBLIC_CREDENTIAL_ISSUED';
   readonly actorId: string;
   readonly targetIdentifier: string;
   readonly result:

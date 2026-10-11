@@ -44,22 +44,23 @@ try {
     typeof eventExports.EventAccessPolicy !== 'function' ||
     typeof eventExports.resolveScheduleLocalTime !== 'function' ||
     typeof eventExports.calculateEventLifecycleTimeline !== 'function' ||
-    typeof eventExports.EventLifecycleService !== 'function'
+    typeof eventExports.EventLifecycleService !== 'function' ||
+    typeof eventExports.EventPublicAccessService !== 'function'
   ) {
     throw Error('PUBLIC_IMPORT_FAILED');
   }
   const exitCode = run(['--filter', '@eventlens/event-management', 'exec', 'vitest', 'run', '--no-file-parallelism', '--reporter=default', '--reporter=json', '--outputFile=/evidence/tests.json'], true);
   const tests = JSON.parse(readFileSync('/evidence/tests.json', 'utf8'));
   writeFileSync('/evidence/result.json', JSON.stringify({
-    ticket: 'EL-TK-027',
-    precedingTicket: 'EL-TK-072',
+    ticket: 'EL-TK-084',
+    precedingTicket: 'EL-TK-027',
     runId: database,
     testedAt: new Date().toISOString(),
     result: tests.success && exitCode === 0 ? 'PASS' : 'FAIL',
     tests: tests.numTotalTests,
     passed: tests.numPassedTests,
     postgresql: '16 real isolated laboratory database',
-    initialPin: 'Initial draft PIN configuration with 6-digit preservation, zero plaintext exposure, and pessimistic concurrency (DEC-004, DEC-072, DEC-073)',
+    publicAccessCredential: 'High-entropy unguessable initial public access credential issuance with pin linkage and replay idempotency (DEC-004, DEC-013, AQR-003)',
     gates: {
       'MEDIA-001': 'NOT_EVALUATED',
       'CAP-001': 'NOT_EVALUATED',
