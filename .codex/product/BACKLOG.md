@@ -54,7 +54,7 @@
 | EL-TK-043 | Provisionar un principal administrativo mediante alta controlada | EL-EP-001 | DONE | P0 | — | [EL-TK-043](tickets/EL-TK-043.md) |
 | EL-TK-044 | Autenticar un principal administrativo provisto | EL-EP-001 | DONE | P0 | EL-TK-043, EL-TK-046 | [EL-TK-044](tickets/EL-TK-044.md) |
 | EL-TK-045 | Revocar un principal administrativo | EL-EP-001 | READY | P0 | EL-TK-044, EL-TK-046 | [EL-TK-045](tickets/EL-TK-045.md) |
-| EL-TK-046 | Reconciliar restricciones de MOD-001 tras recuperación | EL-EP-001 | READY | P0 | contrato RecoveryAuthority acordado | [EL-TK-046](tickets/EL-TK-046.md) |
+| EL-TK-046 | Reconciliar restricciones de MOD-001 tras recuperación | EL-EP-001 | DONE | P0 | contrato RecoveryAuthority acordado | [EL-TK-046](tickets/EL-TK-046.md) |
 | EL-TK-020 | Crear un borrador de evento | EL-EP-002 | READY | P0 | EL-TK-013 | [EL-TK-020](tickets/EL-TK-020.md) |
 | EL-TK-021 | Cambiar el nombre de un borrador | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-021](tickets/EL-TK-021.md) |
 | EL-TK-022 | Definir la bienvenida de un borrador | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-022](tickets/EL-TK-022.md) |

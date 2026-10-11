@@ -34,10 +34,24 @@
   - Patrón PREPARE externo -> SQL corto con receipt -> ACK externo previo a sesión usable.
   - Verificación de epoch, watermark y revisión de credencial para prevenir reactivación de credenciales previas a PITR.
 
+### 3. Reconciliación de restricciones y recuperación post-PITR (EL-TK-046, AQR-001)
+- **Protocolo transaccional PREPARE -> SQL -> ACK**:
+  - `prepareSensitiveOperation` instala la barrera en `RecoveryAuthority` previa a cualquier mutación de seguridad/privacidad en PostgreSQL.
+  - Ejecuta la transacción SQL emitiendo recibo durable y revisión de base de datos.
+  - Confirma con `ackCommit`; ante fallos de transacción ejecuta `resolveAbort` y ante fallos de ACK mantiene la barrera fail-closed.
+- **Reconciliación conservadora post-PITR (`reconcileMod001`)**:
+  - Lectura consistente de checkpoint y hechos externos de seguridad (`readCheckpoint`, `readFacts`).
+  - Detección estricta de gaps de secuencia en el journal (fail-closed inmediato con `GAP_DETECTED`).
+  - Reconciliación en PostgreSQL:
+    - Principales administrativos revocados se marcan `REVOKED` e incrementan `auth_revision`.
+    - Credenciales con revisión anterior al journal se marcan `REVOKED` impidiendo la reapertura con hashes restaurados.
+    - Sesiones con watermark desactualizado o creadas antes del `recoveryEpoch` vigente se invalidan.
+  - Confirmación durable de reconciliación mediante `ackReconciled`.
+
 ## Validation
 
-La implementación cuenta con una suite completa de 35 pruebas automatizadas (25 unitarias + 10 de integración contra PostgreSQL 16 real):
-- Pruebas unitarias: `test/provisioning.unit.test.ts`, `test/authentication.unit.test.ts`
-- Pruebas de integración PostgreSQL 16: `test/provisioning.integration.test.ts`, `test/authentication.integration.test.ts`
+La implementación cuenta con una suite completa de 49 pruebas automatizadas (36 unitarias + 13 de integración contra PostgreSQL 16 real):
+- Pruebas unitarias: `test/provisioning.unit.test.ts`, `test/authentication.unit.test.ts`, `test/recovery.unit.test.ts`
+- Pruebas de integración PostgreSQL 16: `test/provisioning.integration.test.ts`, `test/authentication.integration.test.ts`, `test/recovery.integration.test.ts`
 
 Evidencia de validación reproducible registrada en [infra/validation/identity](../../infra/validation/identity/README.md).

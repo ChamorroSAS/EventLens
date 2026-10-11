@@ -6,7 +6,7 @@ EL-EP-001
 
 ## Status
 
-READY
+DONE
 
 ## User story
 
@@ -87,3 +87,24 @@ GAP-EL-EP-001-05; ARCH-010; AQR-001; EL-EP-001; operations-and-recovery; testing
 ## Gate vigente — 2026-10-08
 
 **REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES.** YES limitado a integración MOD-001 con el puerto RecoveryAuthority; no construye adapter ni infraestructura compartida. [Dictamen final](../sessions/2026-10-08-el-ep-001-ticket-remediation-review.md). READY es preparación de requisitos; se conservan predecesoras y gates aplicables.
+
+## Resultado de implementación — 2026-10-11
+
+**CONFIRMED:** implementación completada y validada de forma independiente contra PostgreSQL 16 real cumpliendo todos los criterios de aceptación de EL-TK-046, AQR-001 y operations-and-recovery.
+
+- **Protocolo transaccional sensible PREPARE -> SQL -> ACK**: Implementado en `Mod001RecoveryCoordinator.executeSensitiveTransaction` con instalación previa de barrera (`prepareSensitiveOperation`), ejecución de transacción SQL con emisión de recibo durable y revisión, y confirmación final con `ackCommit`.
+- **Manejo de fallos y abortos**: En caso de fallo o rollback en la transacción SQL, invoca de manera segura `resolveAbort` con el recibo preparado para limpiar la intención.
+- **Fail-closed ante fallos de ACK**: Si `ackCommit` no puede confirmarse con RecoveryAuthority, falla cerrado impidiendo confirmar acceso ambiguo.
+- **Barrera de recuperación fail-closed**: Comprueba `isRecoveryBarrierActive` para denegar mutaciones sensibles mientras MOD-001 esté bajo barrera de recuperación.
+- **Reconciliación post-PITR (`reconcileMod001`)**:
+  - Lectura consistente de checkpoint y facts ordenados mediante `readCheckpoint` y `readFacts`.
+  - Detección de brechas de secuencia (gaps): falla cerrado de inmediato con `GAP_DETECTED`.
+  - Reconciliación en base de datos PostgreSQL:
+    - Principales con hecho `ADMIN_PRINCIPAL_REVOKED` se actualizan a `REVOKED` e incrementan `auth_revision`.
+    - Credenciales con revisión anterior a hechos `CREDENTIAL_ROTATED` se marcan `REVOKED` impidiendo reautorizar hashes antiguos restaurados.
+    - Sesiones con watermark desactualizado o creadas con anterioridad a `recoveryEpoch` se invalidan con `revocation_reason = 'RECOVERY_RECONCILIATION'` o `'RECOVERY_EPOCH_SUPERSEDED'`.
+  - Confirmación durable de reconciliación mediante `ackReconciled`.
+
+Paquete e interfaces: [@eventlens/identity](../../../packages/identity/README.md).
+Validación ejecutada: 14/14 pruebas propias (11 unitarias + 3 de integración contra PostgreSQL 16 real); suite total del paquete: 49/49 PASS. Evidencia: [registro](../../../infra/validation/identity/evidence/result.json) y [pruebas](../../../infra/validation/identity/evidence/tests.json).
+

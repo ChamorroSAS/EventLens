@@ -84,7 +84,7 @@
 | EL-TK-043 (DONE) | — | EL-TK-044 |
 | EL-TK-044 (DONE) | EL-TK-043, EL-TK-046 | EL-TK-005, EL-TK-006, EL-TK-007, EL-TK-009, EL-TK-025, EL-TK-041, EL-TK-042, EL-TK-045 |
 | EL-TK-045 | EL-TK-044, EL-TK-046 | — |
-| EL-TK-046 | contrato RecoveryAuthority acordado | EL-TK-006, EL-TK-011, EL-TK-013..019, EL-TK-044, EL-TK-045 |
+| EL-TK-046 (DONE) | contrato RecoveryAuthority acordado | EL-TK-006, EL-TK-011, EL-TK-013..019, EL-TK-044, EL-TK-045 |
 
 Contratos EL-EP-013/014 mediante interfaces acordadas; sin dependencia dura de su implementación completa. El [quality gate aprobado de 2026-10-07](sessions/2026-10-07-el-ep-001-ticket-redesign-review.md) es histórico. Los 19 tickets vigentes remediados están READY de requisitos tras el [dictamen final de 2026-10-08](sessions/2026-10-08-el-ep-001-ticket-remediation-review.md); implementación PARTIAL, con gates técnicos y frontend conservados.
 
