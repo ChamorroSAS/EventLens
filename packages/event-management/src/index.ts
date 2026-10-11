@@ -10,6 +10,9 @@ export {
   type SetEventScheduleResult,
   type ScheduleDraftEventCommand,
   type ScheduleDraftEventResult,
+  type ActivationTrigger,
+  type ActivateEventCommand,
+  type ActivateEventResult,
   type EventAuditRecord,
   type EventAuditSink
 } from './contracts.js';

@@ -4,6 +4,8 @@ import {
   EventManagementError,
   type ScheduleDraftEventCommand,
   type ScheduleDraftEventResult,
+  type ActivateEventCommand,
+  type ActivateEventResult,
   type EventAuditSink,
   type EventRecord,
   type EventStatus,
@@ -26,6 +28,7 @@ interface EventRow {
   utc_offset_minutes?: number | null;
   expires_at?: Date | string | null;
   grace_ends_at?: Date | string | null;
+  activated_at?: Date | string | null;
   validity_duration_days?: number | null;
   grace_days?: number | null;
   uploads_enabled: boolean;
@@ -50,6 +53,7 @@ function mapRowToRecord(row: EventRow): EventRecord {
     utcOffsetMinutes: row.utc_offset_minutes !== null && row.utc_offset_minutes !== undefined ? Number(row.utc_offset_minutes) : null,
     expiresAt: row.expires_at ? new Date(row.expires_at) : null,
     graceEndsAt: row.grace_ends_at ? new Date(row.grace_ends_at) : null,
+    activatedAt: row.activated_at ? new Date(row.activated_at) : null,
     validityDurationDays: row.validity_duration_days !== null && row.validity_duration_days !== undefined ? Number(row.validity_duration_days) : null,
     graceDays: row.grace_days !== null && row.grace_days !== undefined ? Number(row.grace_days) : null,
     uploadsEnabled: Boolean(row.uploads_enabled),
@@ -269,6 +273,162 @@ export class EventLifecycleService {
       return {
         event: updatedRecord,
         outcome: 'SCHEDULED'
+      };
+    });
+  }
+
+  /**
+   * Activates a SCHEDULED event either early manually by the organizer or automatically by the scheduler (EL-TK-064).
+   * - Trigger MANUAL_EARLY requires organizer ownership.
+   * - Trigger SCHEDULED_AUTO can be triggered by system scheduler.
+   * - DEC-077: Early activation NEVER shifts the scheduled expiration anchor.
+   *   expiresAt and graceEndsAt remain strictly anchored to scheduledAt.
+   * - Idempotent replay: if already ACTIVE, returns existing record without incompatible second transition.
+   * - Concurrent races (manual vs scheduler) are serialized via pessimistic row lock (FOR UPDATE).
+   */
+  async activateEvent(command: ActivateEventCommand): Promise<ActivateEventResult> {
+    const { actorContext, trigger, eventId, idempotencyKey } = command;
+
+    if (!eventId || typeof eventId !== 'string') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Event ID is required');
+    }
+
+    if (trigger === 'MANUAL_EARLY') {
+      if (!actorContext || !actorContext.accountId) {
+        throw new EventManagementError('UNAUTHORIZED', 'Authenticated organizer actor context is required for manual early activation');
+      }
+    }
+
+    const effectiveActorId = actorContext?.accountId ?? 'SYSTEM_SCHEDULER';
+
+    const payloadHash = idempotencyKey
+      ? createHash('sha256')
+          .update(JSON.stringify({
+            eventId,
+            actorId: effectiveActorId,
+            action: 'ACTIVATE_EVENT',
+            trigger
+          }))
+          .digest('hex')
+      : null;
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      // 1. Lock and retrieve current event record
+      const rows = await tx.query<EventRow>(
+        `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at,
+                utc_offset_minutes, expires_at, grace_ends_at, activated_at, validity_duration_days, grace_days,
+                uploads_enabled, guest_gallery_enabled, moderation_mode, pin_enabled,
+                idempotency_key, idempotency_payload_hash, created_at, updated_at
+         FROM event
+         WHERE id = $1
+         FOR UPDATE`,
+        eventId
+      );
+
+      if (rows.length === 0) {
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event '${eventId}' was not found`);
+      }
+
+      const current = rows[0];
+
+      // 2. Authorization check for manual activation
+      if (trigger === 'MANUAL_EARLY') {
+        if (current.organizer_id !== actorContext!.accountId) {
+          await this.auditSink?.record({
+            id: randomUUID(),
+            procedure: 'EVENT_ACTIVATED',
+            actorId: actorContext!.accountId,
+            targetIdentifier: eventId,
+            result: 'REJECTED_UNAUTHORIZED',
+            details: `Actor '${actorContext!.accountId}' is not authorized to activate event '${eventId}' manually`,
+            timestamp: new Date()
+          });
+          throw new EventManagementError('UNAUTHORIZED', 'Actor is not the owner of this event');
+        }
+      }
+
+      // 3. Idempotency & race handling: if already ACTIVE
+      if (current.status === 'ACTIVE') {
+        if (idempotencyKey && current.idempotency_key === idempotencyKey) {
+          if (current.idempotency_payload_hash !== payloadHash) {
+            throw new EventManagementError(
+              'IDEMPOTENCY_CONFLICT',
+              'Idempotency key has already been used with different parameters'
+            );
+          }
+        }
+
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_ACTIVATED',
+          actorId: effectiveActorId,
+          targetIdentifier: eventId,
+          result: 'IDEMPOTENT_REPLAY',
+          details: `Idempotent replay: event '${eventId}' is already ACTIVE (trigger: ${trigger})`,
+          timestamp: new Date()
+        });
+
+        return {
+          event: mapRowToRecord(current),
+          outcome: 'IDEMPOTENT_REPLAY'
+        };
+      }
+
+      // 4. State validation: Only SCHEDULED events can be activated
+      if (current.status !== 'SCHEDULED') {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_ACTIVATED',
+          actorId: effectiveActorId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_EVENT_NOT_IN_SCHEDULED',
+          details: `Event '${eventId}' cannot be activated from status '${current.status}'`,
+          timestamp: new Date()
+        });
+        throw new EventManagementError(
+          'EVENT_NOT_IN_SCHEDULED',
+          `Only SCHEDULED events can be activated (current status: '${current.status}')`
+        );
+      }
+
+      // 5. Atomic activation transition without altering expiration anchor (DEC-077)
+      const now = new Date();
+      await tx.execute(
+        `UPDATE event
+         SET status = 'ACTIVE',
+             activated_at = $1,
+             idempotency_key = COALESCE($2, idempotency_key),
+             idempotency_payload_hash = COALESCE($3, idempotency_payload_hash),
+             updated_at = $4
+         WHERE id = $5`,
+        now,
+        idempotencyKey ?? null,
+        payloadHash,
+        now,
+        eventId
+      );
+
+      const updatedRecord: EventRecord = {
+        ...mapRowToRecord(current),
+        status: 'ACTIVE',
+        activatedAt: now,
+        updatedAt: now
+      };
+
+      // 6. Audit successful activation
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_ACTIVATED',
+        actorId: effectiveActorId,
+        targetIdentifier: eventId,
+        result: 'SUCCESS',
+        details: `Event '${eventId}' activated via '${trigger}' at ${now.toISOString()}; expiresAt remains anchored at ${current.expires_at ? new Date(current.expires_at).toISOString() : 'none'}`,
+        timestamp: now
+      });
+
+      return {
+        event: updatedRecord,
+        outcome: 'ACTIVATED'
       };
     });
   }

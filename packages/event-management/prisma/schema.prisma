@@ -13,6 +13,7 @@ model Event {
   utcOffsetMinutes       Int?      @map("utc_offset_minutes")
   expiresAt              DateTime? @map("expires_at") @db.Timestamptz
   graceEndsAt            DateTime? @map("grace_ends_at") @db.Timestamptz
+  activatedAt            DateTime? @map("activated_at") @db.Timestamptz
   validityDurationDays   Int?      @map("validity_duration_days")
   graceDays              Int?      @map("grace_days")
   uploadsEnabled         Boolean   @default(false) @map("uploads_enabled")
