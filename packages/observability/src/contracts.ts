@@ -165,3 +165,41 @@ export interface TelemetryCollector {
   getHealthSignals(): Record<string, HealthSignal>;
   clear?(): void;
 }
+
+export type AlertSeverity = 'WARNING' | 'CRITICAL';
+export type AlertStatus = 'ACTIVE' | 'RESOLVED';
+
+export interface OperationalAlert {
+  id: string;
+  name: string;
+  severity: AlertSeverity;
+  status: AlertStatus;
+  queue: string;
+  message: string;
+  currentValue: number;
+  thresholdValue: number;
+  dimensions?: Record<string, string | number | boolean>;
+  firstTriggeredAt: Date;
+  lastTriggeredAt: Date;
+  resolvedAt?: Date;
+}
+
+export interface QueueThresholdConfig {
+  maxDepthWarning?: number;
+  maxDepthCritical?: number;
+  maxAgeSecondsWarning?: number;
+  maxAgeSecondsCritical?: number;
+  maxRetriesThreshold?: number;
+  abandonedLeaseGraceSeconds?: number;
+}
+
+export interface QueueSnapshot {
+  queue: string;
+  pendingDepth: number;
+  oldestPendingAgeSeconds: number;
+  processingCount: number;
+  abandonedCount: number;
+  deadCount: number;
+  highRetryCount: number;
+  timestamp: Date;
+}
