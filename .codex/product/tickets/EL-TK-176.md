@@ -4,8 +4,13 @@
 EL-EP-014
 
 ## Status
-READY
+DONE
 
+**CONFIRMED — 2026-10-11:** validación integrada E2E de EL-EP-014 implementada y superada al 100% mediante `EndToEndObservabilityValidator` (`packages/observability/src/e2e-validator.ts`), tests de integración contra PostgreSQL 16 real (`packages/observability/test/e2e-validator.integration.test.ts`), y runner de laboratorio `infra/validation/observability-audit-recovery/run.mjs`.
+- **Escenario 1 (Trazabilidad y Sanitización):** Registro de acciones sensibles auditables, enmascaramiento estricto de secretos (`password`, `token`, `secret`, `key`, connection strings) y exclusión de flujos crudos de multimedia/base64 sin fuga de credenciales, con bloqueo de llamadas no autorizadas.
+- **Escenario 2 (Alertas e Incidentes):** Simulación de condiciones críticas de infraestructura/base de datos, emisión y captura de alerta crítica, y correlación operativa de `OperationalIncident` con referencias de alerta y auditoría sin filtración de credenciales.
+- **Escenario 3 (Recuperación y No-Resurrección):** Simulacro de recuperación y PITR evaluando RPO observado $\le$ 1h y RTO observado $\le$ 4h con resultado PASS, y aplicación estricta de restricciones de lápidas de purga (`tombstoneCatalog`), impidiendo la resurrección de elementos purgados y respetando la retención legal (DEC-045, DEC-062, DEC-092).
+Gates evaluados: `DR-001: PASS`, `AUDIT-001: PASS`, `EL-EP-014: PASS`. Suite completa PASS (100/100 tests en 22 archivos en `@eventlens/observability`).
 **CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Validación integrada E2E de auditoría, telemetría, alertas, incidentes y evidencia de backup/restore para EL-EP-014. REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES.
 
 ## User story
