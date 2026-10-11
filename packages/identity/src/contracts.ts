@@ -144,10 +144,94 @@ export interface LogoutCommand {
   readonly csrfToken: string;
 }
 
+export type RecoveryErrorCode =
+  | 'AUTHORITY_UNAVAILABLE'
+  | 'BARRIER_ACTIVE'
+  | 'GAP_DETECTED'
+  | 'STALE_SNAPSHOT'
+  | 'RECONCILIATION_FAILED'
+  | 'INVALID_RECEIPT'
+  | 'ABORT_UNRESOLVED'
+  | 'INVALID_ARGUMENT';
+
+export class RecoveryError extends Error {
+  constructor(public readonly code: RecoveryErrorCode, message?: string) {
+    super(message ?? code);
+    this.name = 'RecoveryError';
+  }
+}
+
+export type Mod001FactType =
+  | 'BETA_INVITATION_EMITTED'
+  | 'BETA_INVITATION_CONSUMED'
+  | 'BETA_INVITATION_REVOKED'
+  | 'ADMIN_PRINCIPAL_PROVISIONED'
+  | 'ADMIN_PRINCIPAL_REVOKED'
+  | 'CREDENTIAL_ROTATED'
+  | 'SESSION_REVOKED'
+  | 'PASSWORD_RESET_CONSUMED'
+  | 'TOKEN_REVOKED';
+
+export interface Mod001RecoveryFact {
+  readonly type: Mod001FactType;
+  readonly subjectRef: string;
+  readonly revision: bigint;
+  readonly sequence: bigint;
+  readonly facts: Record<string, unknown>;
+  readonly timestamp: Date;
+}
+
+export interface RecoveryPreparedReceipt {
+  readonly preparedReceipt: string;
+  readonly sequence: bigint;
+  readonly operationId: string;
+  readonly subjectRef: string;
+}
+
+export interface RecoveryCheckpoint {
+  readonly epoch: bigint;
+  readonly checkpointSequence: bigint;
+  readonly checkpointDigest: string;
+}
+
+export interface PrepareSensitiveOperationCommand {
+  readonly operationId: string;
+  readonly subjectRef: string;
+  readonly expectedSequence?: bigint;
+  readonly fact: {
+    readonly type: Mod001FactType;
+    readonly data: Record<string, unknown>;
+  };
+}
+
+export interface ReconciliationResult {
+  readonly scope: string;
+  readonly epoch: bigint;
+  readonly checkpointSequence: bigint;
+  readonly factsEvaluated: number;
+  readonly restrictionsApplied: number;
+  readonly status: 'RECONCILED' | 'FAIL_CLOSED';
+  readonly details?: string;
+}
+
 export interface RecoveryAuthorityPort {
   getRecoveryEpoch(): Promise<bigint>;
   getCredentialRevision(principalId: string): Promise<bigint | null>;
   getAdminAuthWatermark(principalId: string): Promise<bigint>;
+  getInvitationRevision?(invitationId: string): Promise<bigint | null>;
+  getAccountRevision?(accountId: string): Promise<bigint | null>;
+
+  prepare?(command: PrepareSensitiveOperationCommand): Promise<RecoveryPreparedReceipt>;
+  ackCommit?(receipt: string, dbRevision: bigint): Promise<void>;
+  resolveAbort?(receipt: string, reason: string): Promise<void>;
+
+  readCheckpoint?(): Promise<RecoveryCheckpoint>;
+  readFacts?(afterSequence: bigint, throughCheckpoint: bigint): Promise<readonly Mod001RecoveryFact[]>;
+
+  setRecoveryBarrier?(epoch: bigint, scope: string): Promise<void>;
+  isRecoveryBarrierActive?(epoch: bigint, scope: string): Promise<boolean>;
+  ackReconciled?(scope: string, epoch: bigint, checkpoint: bigint, digest: string): Promise<void>;
+
   prepareSessionOperation?(operationId: string, principalId: string): Promise<{ receipt: string }>;
   ackSessionOperation?(receipt: string): Promise<void>;
 }

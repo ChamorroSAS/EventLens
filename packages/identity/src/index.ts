@@ -18,6 +18,14 @@ export {
   type AdminReauthResult,
   type LogoutCommand,
   type RecoveryAuthorityPort,
+  type RecoveryErrorCode,
+  RecoveryError,
+  type Mod001FactType,
+  type Mod001RecoveryFact,
+  type RecoveryPreparedReceipt,
+  type RecoveryCheckpoint,
+  type PrepareSensitiveOperationCommand,
+  type ReconciliationResult,
   type AuditEventRecord,
   type AuditSink,
   computeCredentialDigest,
@@ -32,3 +40,8 @@ export {
   AdminAuthenticationService,
   type AdminAuthenticationOptions
 } from './authentication.js';
+
+export {
+  Mod001RecoveryCoordinator,
+  type Mod001RecoveryCoordinatorOptions
+} from './recovery.js';
