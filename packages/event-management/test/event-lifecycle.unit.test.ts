@@ -21,6 +21,7 @@ interface MockEvent {
   utc_offset_minutes: number | null;
   expires_at: Date | null;
   grace_ends_at: Date | null;
+  activated_at?: Date | null;
   validity_duration_days: number | null;
   grace_days: number | null;
   uploads_enabled: boolean;
@@ -64,6 +65,23 @@ class InMemoryRunner implements TransactionRunner {
             existing.grace_ends_at = graceEndsAt;
             existing.validity_duration_days = validityDays;
             existing.grace_days = graceDays;
+            if (idempotencyKey) existing.idempotency_key = idempotencyKey;
+            if (payloadHash) existing.idempotency_payload_hash = payloadHash;
+            existing.updated_at = updatedAt;
+            return 1;
+          }
+        }
+        if (sql.includes('UPDATE event') && sql.includes('SET status = \'ACTIVE\'')) {
+          const activatedAt = params[0] as Date;
+          const idempotencyKey = params[1] as string | null;
+          const payloadHash = params[2] as string | null;
+          const updatedAt = params[3] as Date;
+          const eventId = params[4] as string;
+
+          const existing = this.events.get(eventId);
+          if (existing) {
+            existing.status = 'ACTIVE';
+            existing.activated_at = activatedAt;
             if (idempotencyKey) existing.idempotency_key = idempotencyKey;
             if (payloadHash) existing.idempotency_payload_hash = payloadHash;
             existing.updated_at = updatedAt;
@@ -372,6 +390,199 @@ describe('EL-TK-063: EventLifecycleService (Unit Tests)', () => {
           eventId,
           validityDurationDays: 90,
           idempotencyKey
+        })
+      ).rejects.toThrowError(EventManagementError);
+    });
+  });
+
+  describe('EL-TK-064: activateEvent (Unit Tests)', () => {
+    const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+    const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+    const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+
+    it('Escenario 1: Activación manual anticipada pasa a ACTIVE conservando expiresAt y graceEndsAt anclados (DEC-077)', async () => {
+      const eventId = '99999999-aaaa-bbbb-cccc-111111111111';
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Anticipado',
+        status: 'SCHEDULED',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: false,
+        guest_gallery_enabled: false,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      const res = await service.activateEvent({
+        actorContext: ownerActor,
+        trigger: 'MANUAL_EARLY',
+        eventId
+      });
+
+      expect(res.outcome).toBe('ACTIVATED');
+      expect(res.event.status).toBe('ACTIVE');
+      expect(res.event.activatedAt).toBeInstanceOf(Date);
+      // REGLA CRÍTICA: no se desplaza el ancla de vencimiento
+      expect(res.event.expiresAt?.toISOString()).toBe(expiresAt.toISOString());
+      expect(res.event.graceEndsAt?.toISOString()).toBe(graceEndsAt.toISOString());
+
+      const audit = auditLogs.find((a) => a.procedure === 'EVENT_ACTIVATED' && a.result === 'SUCCESS');
+      expect(audit).toBeDefined();
+    });
+
+    it('Escenario 2: Activación automática por el scheduler pasa idempotentemente a ACTIVE', async () => {
+      const eventId = '99999999-aaaa-bbbb-cccc-222222222222';
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Scheduler',
+        status: 'SCHEDULED',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: false,
+        guest_gallery_enabled: false,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      const res = await service.activateEvent({
+        trigger: 'SCHEDULED_AUTO',
+        eventId
+      });
+
+      expect(res.outcome).toBe('ACTIVATED');
+      expect(res.event.status).toBe('ACTIVE');
+      expect(res.event.activatedAt).toBeDefined();
+    });
+
+    it('Escenario 3: Si el evento ya está ACTIVE, repetición devuelve IDEMPOTENT_REPLAY sin transición incompatible', async () => {
+      const eventId = '99999999-aaaa-bbbb-cccc-333333333333';
+      const activatedAt = new Date('2026-10-31T20:00:00.000Z');
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Ya Activo',
+        status: 'ACTIVE',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: activatedAt,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: false,
+        guest_gallery_enabled: false,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      const res = await service.activateEvent({
+        actorContext: ownerActor,
+        trigger: 'MANUAL_EARLY',
+        eventId
+      });
+
+      expect(res.outcome).toBe('IDEMPOTENT_REPLAY');
+      expect(res.event.status).toBe('ACTIVE');
+      expect(res.event.activatedAt?.toISOString()).toBe(activatedAt.toISOString());
+    });
+
+    it('Rechaza activación si el evento no está en SCHEDULED (EVENT_NOT_IN_SCHEDULED)', async () => {
+      const eventId = '99999999-aaaa-bbbb-cccc-444444444444';
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento en Borrador',
+        status: 'DRAFT',
+        timezone: 'America/Bogota',
+        starts_at_local: null,
+        scheduled_at: null,
+        utc_offset_minutes: null,
+        expires_at: null,
+        grace_ends_at: null,
+        activated_at: null,
+        validity_duration_days: null,
+        grace_days: null,
+        uploads_enabled: false,
+        guest_gallery_enabled: false,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      await expect(
+        service.activateEvent({
+          actorContext: ownerActor,
+          trigger: 'MANUAL_EARLY',
+          eventId
+        })
+      ).rejects.toThrowError(EventManagementError);
+    });
+
+    it('Rechaza activación manual si el actor no es el organizador propietario (UNAUTHORIZED)', async () => {
+      const eventId = '99999999-aaaa-bbbb-cccc-555555555555';
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Ajeno',
+        status: 'SCHEDULED',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: false,
+        guest_gallery_enabled: false,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      await expect(
+        service.activateEvent({
+          actorContext: otherActor,
+          trigger: 'MANUAL_EARLY',
+          eventId
         })
       ).rejects.toThrowError(EventManagementError);
     });

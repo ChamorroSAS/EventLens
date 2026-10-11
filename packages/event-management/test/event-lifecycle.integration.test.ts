@@ -37,6 +37,7 @@ describeIntegration('EventLifecycleService (Real PostgreSQL Integration Tests 鈥
         utc_offset_minutes INTEGER,
         expires_at TIMESTAMPTZ,
         grace_ends_at TIMESTAMPTZ,
+        activated_at TIMESTAMPTZ,
         validity_duration_days INTEGER,
         grace_days INTEGER,
         uploads_enabled BOOLEAN NOT NULL DEFAULT false,
@@ -55,6 +56,7 @@ describeIntegration('EventLifecycleService (Real PostgreSQL Integration Tests 鈥
         ADD COLUMN IF NOT EXISTS utc_offset_minutes INTEGER,
         ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ,
         ADD COLUMN IF NOT EXISTS grace_ends_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS activated_at TIMESTAMPTZ,
         ADD COLUMN IF NOT EXISTS validity_duration_days INTEGER,
         ADD COLUMN IF NOT EXISTS grace_days INTEGER;
 
@@ -237,5 +239,92 @@ describeIntegration('EventLifecycleService (Real PostgreSQL Integration Tests 鈥
     );
     expect(finalRows[0].status).toBe('SCHEDULED');
     expect(finalRows[0].validity_duration_days).toBe(30);
+  });
+
+  it('persiste activaci贸n anticipada a ACTIVE conservando expiraci贸n anclada en PostgreSQL 16 real (EL-TK-064 Escenario 1)', async () => {
+    const eventId = randomUUID();
+    const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+    const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+    const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+
+    await sql(
+      `INSERT INTO event (id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes, expires_at, grace_ends_at, validity_duration_days, grace_days)
+       VALUES ($1, $2, $3, 'SCHEDULED', 'America/Bogota', '2026-11-01T10:00:00', $4, -300, $5, $6, 30, 7)`,
+      eventId,
+      ownerActor.accountId,
+      'Evento Programado Listo',
+      scheduledAt,
+      expiresAt,
+      graceEndsAt
+    );
+
+    const result = await service.activateEvent({
+      actorContext: ownerActor,
+      trigger: 'MANUAL_EARLY',
+      eventId
+    });
+
+    expect(result.outcome).toBe('ACTIVATED');
+    expect(result.event.status).toBe('ACTIVE');
+    expect(result.event.activatedAt).toBeInstanceOf(Date);
+
+    // Comprobar en base de datos real: expires_at permanece inalterado
+    const rows = await query<{ status: string; activated_at: Date; expires_at: Date; grace_ends_at: Date }>(
+      `SELECT status, activated_at, expires_at, grace_ends_at FROM event WHERE id = $1`,
+      eventId
+    );
+    expect(rows.length).toBe(1);
+    expect(rows[0].status).toBe('ACTIVE');
+    expect(rows[0].activated_at).toBeDefined();
+    expect(new Date(rows[0].expires_at).toISOString()).toBe(expiresAt.toISOString());
+    expect(new Date(rows[0].grace_ends_at).toISOString()).toBe(graceEndsAt.toISOString());
+
+    // Auditor铆a persistida
+    const audits = await query<{ procedure: string; result: string }>(
+      `SELECT procedure, result FROM admin_audit_event WHERE target_identifier = $1 AND procedure = 'EVENT_ACTIVATED'`,
+      eventId
+    );
+    expect(audits.length).toBe(1);
+    expect(audits[0].result).toBe('SUCCESS');
+  });
+
+  it('serializa carrera concurrente entre activaci贸n manual y autom谩tica resolviendo en ganador 煤nico y replay limpio', async () => {
+    const eventId = randomUUID();
+    const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+    const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+
+    await sql(
+      `INSERT INTO event (id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes, expires_at, validity_duration_days)
+       VALUES ($1, $2, $3, 'SCHEDULED', 'America/Bogota', '2026-11-01T10:00:00', $4, -300, $5, 30)`,
+      eventId,
+      ownerActor.accountId,
+      'Carrera Activaci贸n',
+      scheduledAt,
+      expiresAt
+    );
+
+    // Disparamos concurrencia: intento manual vs intento del scheduler del sistema
+    const [resManual, resAuto] = await Promise.all([
+      service.activateEvent({
+        actorContext: ownerActor,
+        trigger: 'MANUAL_EARLY',
+        eventId
+      }),
+      service.activateEvent({
+        trigger: 'SCHEDULED_AUTO',
+        eventId
+      })
+    ]);
+
+    const outcomes = [resManual.outcome, resAuto.outcome].sort();
+    // Uno gana la activaci贸n at贸mica y el otro recibe IDEMPOTENT_REPLAY limpio sin excepci贸n
+    expect(outcomes).toEqual(['ACTIVATED', 'IDEMPOTENT_REPLAY']);
+
+    const finalRows = await query<{ status: string; activated_at: Date }>(
+      `SELECT status, activated_at FROM event WHERE id = $1`,
+      eventId
+    );
+    expect(finalRows[0].status).toBe('ACTIVE');
+    expect(finalRows[0].activated_at).toBeDefined();
   });
 });
