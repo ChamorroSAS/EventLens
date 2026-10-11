@@ -21,6 +21,7 @@ export type AuthenticationErrorCode =
   | 'FRESH_AUTH_REQUIRED'
   | 'INVALID_ORIGIN'
   | 'CSRF_VALIDATION_FAILED'
+  | 'RATE_LIMITED'
   | 'TEMPORARY_FAILURE'
   | 'INVALID_ARGUMENT';
 
@@ -291,7 +292,10 @@ export interface AuditEventRecord {
     | 'BETA_INVITE_DUPLICATE_ATTEMPT'
     | 'BETA_INVITE_RENEW'
     | 'ORGANIZER_REGISTRATION'
-    | 'ORGANIZER_EMAIL_VERIFIED_AND_ACTIVATED';
+    | 'ORGANIZER_EMAIL_VERIFIED_AND_ACTIVATED'
+    | 'ORGANIZER_LOGIN'
+    | 'ORGANIZER_LOGOUT'
+    | 'ORGANIZER_SESSION_VALIDATE';
   readonly actorId: string;
   readonly targetIdentifier: string;
   readonly targetPrincipalId?: string | null;
@@ -469,6 +473,54 @@ export interface VerifyEmailAndActivateResult {
   readonly status: 'ACTIVE';
   readonly outcome: 'ACTIVATED' | 'ALREADY_ACTIVE';
   readonly verifiedAt: Date;
+}
+
+export interface OrganizerActorContext {
+  readonly actorType: 'ORGANIZER_HUMAN';
+  readonly accountId: string;
+  readonly email: string;
+  readonly sessionId: string;
+  readonly authTime: Date;
+  readonly credentialRevision: bigint;
+  readonly sessionWatermark: bigint;
+  readonly recoveryEpoch: bigint;
+}
+
+export interface OrganizerSessionCookieSpec {
+  readonly name: '__Host-el_session';
+  readonly value: string;
+  readonly httpOnly: true;
+  readonly secure: true;
+  readonly sameSite: 'Strict';
+  readonly path: '/';
+  readonly maxAgeSeconds: number;
+}
+
+export function serializeOrganizerSessionCookie(spec: OrganizerSessionCookieSpec): string {
+  return `${spec.name}=${spec.value}; Path=${spec.path}; Secure; HttpOnly; SameSite=${spec.sameSite}; Max-Age=${spec.maxAgeSeconds}`;
+}
+
+export interface OrganizerLoginCommand {
+  readonly email: string;
+  /** Plaintext password provided by organizer. Never logged, returned, or persisted. */
+  readonly password: string;
+  readonly origin?: string;
+}
+
+export interface OrganizerLoginResult {
+  readonly actorContext: OrganizerActorContext;
+  readonly sessionToken: string;
+  readonly csrfToken: string;
+  readonly cookieSpec: OrganizerSessionCookieSpec;
+  readonly account: OrganizerAccountRecord;
+}
+
+export interface ValidateOrganizerSessionCommand {
+  readonly sessionToken: string;
+}
+
+export interface ValidateOrganizerSessionResult {
+  readonly actorContext: OrganizerActorContext;
 }
 
 

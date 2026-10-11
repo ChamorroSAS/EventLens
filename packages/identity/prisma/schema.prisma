@@ -129,4 +129,23 @@ model EmailVerificationIntent {
   @@map("email_verification_intent")
 }
 
+model OrganizerSession {
+  id               String    @id @db.Uuid
+  accountId        String    @map("account_id") @db.Uuid
+  tokenDigest      String    @unique @map("token_digest")
+  csrfTokenDigest  String    @map("csrf_token_digest")
+  authTime         DateTime  @map("auth_time") @db.Timestamptz
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  expiresAt        DateTime  @map("expires_at") @db.Timestamptz
+  lastActiveAt     DateTime  @map("last_active_at") @db.Timestamptz
+  idleExpiresAt    DateTime  @map("idle_expires_at") @db.Timestamptz
+  revokedAt        DateTime? @map("revoked_at") @db.Timestamptz
+  revocationReason String?   @map("revocation_reason")
+  sessionWatermark BigInt    @default(1) @map("session_watermark")
+
+  @@index([accountId, revokedAt])
+  @@map("organizer_session")
+}
+
+
 

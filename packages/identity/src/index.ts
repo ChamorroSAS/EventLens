@@ -46,7 +46,14 @@ export {
   type VerificationErrorCode,
   VerificationError,
   type VerifyEmailAndActivateCommand,
-  type VerifyEmailAndActivateResult
+  type VerifyEmailAndActivateResult,
+  type OrganizerActorContext,
+  type OrganizerSessionCookieSpec,
+  serializeOrganizerSessionCookie,
+  type OrganizerLoginCommand,
+  type OrganizerLoginResult,
+  type ValidateOrganizerSessionCommand,
+  type ValidateOrganizerSessionResult
 } from './contracts.js';
 
 export { AdminProvisioningService } from './provisioning.js';
@@ -69,6 +76,11 @@ export {
 export { OrganizerRegistrationService } from './registration.js';
 
 export { EmailVerificationService } from './verification.js';
+
+export {
+  OrganizerAuthenticationService,
+  type OrganizerAuthOptions
+} from './organizer-auth.js';
 
 
 
