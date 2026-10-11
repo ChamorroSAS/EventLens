@@ -32,6 +32,68 @@ describeIntegration('AdminAuthenticationService (Real PostgreSQL Integration Tes
     return txs.run((tx) => tx.query<T>(statement, ...args));
   }
 
+  beforeAll(async () => {
+    await sql(`
+      CREATE TABLE IF NOT EXISTS "admin_principal" (
+        "id" UUID NOT NULL,
+        "identifier" TEXT NOT NULL,
+        "status" TEXT NOT NULL DEFAULT 'ACTIVE',
+        "auth_revision" BIGINT NOT NULL DEFAULT 1,
+        "provision_procedure" TEXT NOT NULL,
+        "provisioned_by" TEXT NOT NULL,
+        "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "admin_principal_pkey" PRIMARY KEY ("id")
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS "admin_principal_identifier_key" ON "admin_principal"("identifier");
+      CREATE TABLE IF NOT EXISTS "operational_bootstrap_state" (
+        "id" TEXT NOT NULL,
+        "is_consumed" BOOLEAN NOT NULL DEFAULT false,
+        "consumed_at" TIMESTAMPTZ,
+        "consumed_by" TEXT,
+        CONSTRAINT "operational_bootstrap_state_pkey" PRIMARY KEY ("id")
+      );
+      CREATE TABLE IF NOT EXISTS "admin_audit_event" (
+        "id" UUID NOT NULL,
+        "procedure" TEXT NOT NULL,
+        "actor_id" TEXT NOT NULL,
+        "target_identifier" TEXT NOT NULL,
+        "target_principal_id" UUID,
+        "result" TEXT NOT NULL,
+        "details" TEXT,
+        "timestamp" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "admin_audit_event_pkey" PRIMARY KEY ("id")
+      );
+      CREATE TABLE IF NOT EXISTS "admin_credential" (
+        "id" UUID NOT NULL,
+        "principal_id" UUID NOT NULL,
+        "purpose" TEXT NOT NULL DEFAULT 'ADMIN_AUTHENTICATION',
+        "secret_digest" TEXT NOT NULL,
+        "revision" BIGINT NOT NULL DEFAULT 1,
+        "status" TEXT NOT NULL DEFAULT 'ACTIVE',
+        "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "admin_credential_pkey" PRIMARY KEY ("id")
+      );
+      CREATE TABLE IF NOT EXISTS "admin_session" (
+        "id" UUID NOT NULL,
+        "principal_id" UUID NOT NULL,
+        "token_digest" TEXT NOT NULL,
+        "csrf_token_digest" TEXT NOT NULL,
+        "auth_time" TIMESTAMPTZ NOT NULL,
+        "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "expires_at" TIMESTAMPTZ NOT NULL,
+        "last_active_at" TIMESTAMPTZ NOT NULL,
+        "idle_expires_at" TIMESTAMPTZ NOT NULL,
+        "revoked_at" TIMESTAMPTZ,
+        "revocation_reason" TEXT,
+        "session_watermark" BIGINT NOT NULL DEFAULT 1,
+        CONSTRAINT "admin_session_pkey" PRIMARY KEY ("id")
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS "admin_session_token_digest_key" ON "admin_session"("token_digest");
+    `);
+  });
+
   beforeEach(async () => {
     // Clean tables between tests
     await sql('DELETE FROM admin_session');

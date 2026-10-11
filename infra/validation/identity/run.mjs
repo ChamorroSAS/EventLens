@@ -42,20 +42,23 @@ try {
   if (
     typeof identityExports.AdminProvisioningService !== 'function' ||
     typeof identityExports.AdminAuthenticationService !== 'function' ||
-    typeof identityExports.Mod001RecoveryCoordinator !== 'function'
+    typeof identityExports.Mod001RecoveryCoordinator !== 'function' ||
+    typeof identityExports.BetaInvitationService !== 'function' ||
+    typeof identityExports.OrganizerRegistrationService !== 'function'
   ) {
     throw Error('PUBLIC_IMPORT_FAILED');
   }
   const exitCode = run(['--filter', '@eventlens/identity', 'exec', 'vitest', 'run', '--reporter=default', '--reporter=json', '--outputFile=/evidence/tests.json'], true);
   const tests = JSON.parse(readFileSync('/evidence/tests.json', 'utf8'));
   writeFileSync('/evidence/result.json', JSON.stringify({
-    ticket: 'EL-TK-046',
+    ticket: 'EL-TK-010',
     runId: database,
     testedAt: new Date().toISOString(),
     result: tests.success && exitCode === 0 ? 'PASS' : 'FAIL',
     tests: tests.numTotalTests,
     passed: tests.numPassedTests,
     postgresql: '16 real isolated laboratory database',
+    registration: 'Organizer registration with adult declaration, pending verification, credential protection and idempotent preservation',
     recovery: 'MOD-001 RecoveryAuthority protocol PREPARE->SQL->ACK and post-PITR reconciliation',
     gates: {
       'MEDIA-001': 'NOT_EVALUATED',

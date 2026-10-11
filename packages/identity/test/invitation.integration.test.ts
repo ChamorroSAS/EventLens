@@ -62,6 +62,13 @@ describeIntegration('BetaInvitationService (Real PostgreSQL Integration Tests â€
   });
 
   beforeEach(async () => {
+    try {
+      await sql('DELETE FROM email_verification_intent');
+      await sql('DELETE FROM organizer_credential');
+      await sql('DELETE FROM organizer_account');
+    } catch {
+      // Ignored if organizer tables do not exist yet
+    }
     await sql('DELETE FROM beta_invitation');
     await sql('DELETE FROM admin_audit_event');
   });
