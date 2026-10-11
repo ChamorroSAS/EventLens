@@ -9,6 +9,8 @@ import {
   type RecordGuestConsentResult,
   type CheckGuestConsentCommand,
   type CheckGuestConsentResult,
+  type SetContributorNicknameCommand,
+  type SetContributorNicknameResult,
   type EventStatus,
   type EventRecord,
   type EventAuditSink
@@ -575,5 +577,79 @@ export class GuestSessionService {
       consentRecordedAt: session.consentRecordedAt,
       requiresAcceptance
     };
+  }
+
+  /**
+   * Registers or updates the contributor nickname/display name for the guest session.
+   * Sanitizes presentation, enforces length constraints (1..60 chars), rejects empty/invalid input
+   * without creating partial state, and audits without logging the full nickname value.
+   */
+  public async setContributorNickname(
+    command: SetContributorNicknameCommand
+  ): Promise<SetContributorNicknameResult> {
+    if (!command || typeof command !== 'object' || !command.sessionToken) {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Session token is required');
+    }
+
+    if (typeof command.nickname !== 'string') {
+      throw new EventManagementError('INVALID_CONTRIBUTOR_NICKNAME', 'Nickname must be a string');
+    }
+
+    // Sanitization: strip control characters, collapse whitespace, and trim edges
+    const stripped = command.nickname.replace(/[\x00-\x1F\x7F]/g, '');
+    const collapsed = stripped.replace(/\s+/g, ' ');
+    const sanitized = collapsed.trim();
+
+    if (sanitized.length < 1 || sanitized.length > 60) {
+      throw new EventManagementError(
+        'INVALID_CONTRIBUTOR_NICKNAME',
+        'Contributor nickname must be between 1 and 60 characters'
+      );
+    }
+
+    const now = command.now ?? new Date();
+
+    // Verify session is active and event is accessible
+    const session = await this.resolveGuestSession(command.sessionToken, now);
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      const rows = await tx.query<GuestSessionRow>(
+        `SELECT * FROM guest_session WHERE id = $1 FOR UPDATE`,
+        session.id
+      );
+      const currentRow = rows[0];
+      if (!currentRow || currentRow.revoked_at) {
+        throw new EventManagementError('SESSION_REVOKED', 'Guest session has been revoked');
+      }
+      if (new Date(currentRow.expires_at) <= now) {
+        throw new EventManagementError('SESSION_EXPIRED', 'Guest session has expired');
+      }
+
+      await tx.execute(
+        `UPDATE guest_session
+         SET contributor_nickname = $2
+         WHERE id = $1`,
+        session.id,
+        sanitized
+      );
+
+      // Audit without logging the full nickname value in operational logs
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'GUEST_NICKNAME_SET',
+        actorId: 'GUEST_ANONYMOUS',
+        targetIdentifier: session.eventId,
+        result: 'SUCCESS',
+        details: `Contributor nickname set with length ${sanitized.length}`,
+        timestamp: now
+      });
+
+      return {
+        sessionId: session.id,
+        eventId: session.eventId,
+        contributorNickname: sanitized,
+        updatedAt: now
+      };
+    });
   }
 }

@@ -75,7 +75,8 @@ export type EventManagementErrorCode =
   | 'SESSION_REVOKED'
   | 'CONSENT_REQUIRED'
   | 'INVALID_CONSENT_VERSION'
-  | 'CONSENT_REJECTED';
+  | 'CONSENT_REJECTED'
+  | 'INVALID_CONTRIBUTOR_NICKNAME';
 
 export class EventManagementError extends Error {
   constructor(
@@ -445,6 +446,19 @@ export interface CheckGuestConsentResult {
   readonly requiresAcceptance: boolean;
 }
 
+export interface SetContributorNicknameCommand {
+  readonly sessionToken: string;
+  readonly nickname: string;
+  readonly now?: Date;
+}
+
+export interface SetContributorNicknameResult {
+  readonly sessionId: string;
+  readonly eventId: string;
+  readonly contributorNickname: string;
+  readonly updatedAt: Date;
+}
+
 export interface EventAuditRecord {
   readonly id: string;
   readonly procedure:
@@ -463,7 +477,8 @@ export interface EventAuditRecord {
     | 'EVENT_PUBLIC_ACCESS_RESOLVED'
     | 'GUEST_SESSION_CREATED'
     | 'GUEST_PIN_VALIDATION_FAILED'
-    | 'GUEST_CONSENT_RECORDED';
+    | 'GUEST_CONSENT_RECORDED'
+    | 'GUEST_NICKNAME_SET';
   readonly actorId: string;
   readonly targetIdentifier: string;
   readonly result:

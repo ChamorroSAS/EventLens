@@ -50,6 +50,8 @@ export {
   type RecordGuestConsentResult,
   type CheckGuestConsentCommand,
   type CheckGuestConsentResult,
+  type SetContributorNicknameCommand,
+  type SetContributorNicknameResult,
   type EventAuditRecord,
   type EventAuditSink
 } from './contracts.js';

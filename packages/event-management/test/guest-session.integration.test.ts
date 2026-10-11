@@ -378,4 +378,92 @@ describeIntegration('GuestSessionService (Real PostgreSQL Integration Tests — 
       expect(records[0].count).toBe(0);
     });
   });
+
+  describe('setContributorNickname (EL-TK-077)', () => {
+    it('Escenario 1: Persiste apodo sanitizado en PostgreSQL 16 real y audita sin valor en claro', async () => {
+      const eventId = randomUUID();
+      const organizerId = randomUUID();
+
+      await sql(
+        `INSERT INTO event (id, organizer_id, name, status, pin_enabled)
+         VALUES ($1, $2, 'Boda Real Nickname', 'ACTIVE', false)`,
+        eventId,
+        organizerId
+      );
+
+      const lookupKey = 'lookup_nickname_persist_test';
+      await sql(
+        `INSERT INTO public_access_credential (id, event_id, lookup_key, token_hash, generation, pin_required)
+         VALUES ($1, $2, $3, 'hash', 1, false)`,
+        randomUUID(),
+        eventId,
+        lookupKey
+      );
+
+      const { session } = await guestService.createGuestSession({ lookupKey });
+
+      const result = await guestService.setContributorNickname({
+        sessionToken: session.token,
+        nickname: '  Invitado VIP   1 \x00 '
+      });
+
+      expect(result.contributorNickname).toBe('Invitado VIP 1');
+
+      // Verificar persistencia directa en PostgreSQL
+      const dbRow = await query<{ contributor_nickname: string | null }>(
+        'SELECT contributor_nickname FROM guest_session WHERE id = $1',
+        session.id
+      );
+      expect(dbRow[0].contributor_nickname).toBe('Invitado VIP 1');
+
+      // Verificar resolución de sesión
+      const resolved = await guestService.resolveGuestSession(session.token);
+      expect(resolved.contributorNickname).toBe('Invitado VIP 1');
+
+      // Verificar auditoría en base de datos
+      const auditInDb = await query<{ details: string }>(
+        "SELECT details FROM admin_audit_event WHERE procedure = 'GUEST_NICKNAME_SET' AND target_identifier = $1",
+        eventId
+      );
+      expect(auditInDb.length).toBeGreaterThan(0);
+      expect(auditInDb[0].details).not.toContain('Invitado VIP 1');
+      expect(auditInDb[0].details).toContain('Contributor nickname set with length 14');
+    });
+
+    it('Escenario 2: Rechaza apodo inválido en PostgreSQL sin modificar la base de datos', async () => {
+      const eventId = randomUUID();
+      const organizerId = randomUUID();
+
+      await sql(
+        `INSERT INTO event (id, organizer_id, name, status, pin_enabled)
+         VALUES ($1, $2, 'Evento Nickname Invalido', 'ACTIVE', false)`,
+        eventId,
+        organizerId
+      );
+
+      const lookupKey = 'lookup_nickname_invalid_test';
+      await sql(
+        `INSERT INTO public_access_credential (id, event_id, lookup_key, token_hash, generation, pin_required)
+         VALUES ($1, $2, $3, 'hash', 1, false)`,
+        randomUUID(),
+        eventId,
+        lookupKey
+      );
+
+      const { session } = await guestService.createGuestSession({ lookupKey });
+
+      await expect(
+        guestService.setContributorNickname({
+          sessionToken: session.token,
+          nickname: '    '
+        })
+      ).rejects.toMatchObject({ code: 'INVALID_CONTRIBUTOR_NICKNAME' });
+
+      const dbRow = await query<{ contributor_nickname: string | null }>(
+        'SELECT contributor_nickname FROM guest_session WHERE id = $1',
+        session.id
+      );
+      expect(dbRow[0].contributor_nickname).toBeNull();
+    });
+  });
 });

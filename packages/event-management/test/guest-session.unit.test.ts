@@ -82,6 +82,14 @@ function createMockRunner(db: MockDb): TransactionRunner {
             return [] as unknown as T[];
           }
 
+          // SELECT ... FROM guest_session WHERE id = $1
+          if (normalized.includes('FROM guest_session WHERE id = $1')) {
+            const id = params[0] as string;
+            const sess = db.sessions.get(id);
+            if (sess) return [{ ...sess }] as unknown as T[];
+            return [] as unknown as T[];
+          }
+
           throw new Error(`Unhandled mock query: ${sql}`);
         },
 
@@ -156,6 +164,16 @@ function createMockRunner(db: MockDb): TransactionRunner {
 
           // INSERT INTO guest_consent_record
           if (normalized.includes('INSERT INTO guest_consent_record')) {
+            return 1;
+          }
+
+          // UPDATE guest_session SET contributor_nickname
+          if (normalized.includes('UPDATE guest_session') && normalized.includes('contributor_nickname')) {
+            const [id, contributor_nickname] = params;
+            const sess = db.sessions.get(id as string);
+            if (sess) {
+              sess.contributor_nickname = contributor_nickname;
+            }
             return 1;
           }
 
@@ -542,6 +560,146 @@ describe('EL-TK-075: GuestSessionService (Unit Tests)', () => {
           accepted: true
         })
       ).rejects.toMatchObject({ code: 'SESSION_REVOKED' });
+    });
+  });
+
+  describe('setContributorNickname (EL-TK-077)', () => {
+    it('Escenario 1: Asocia nombre o apodo válido a una sesión guest vigente', async () => {
+      const { lookupKey } = setupEventWithoutPin();
+      const { session } = await service.createGuestSession({ lookupKey });
+
+      const result = await service.setContributorNickname({
+        sessionToken: session.token,
+        nickname: 'Carlos Gómez'
+      });
+
+      expect(result.sessionId).toBe(session.id);
+      expect(result.contributorNickname).toBe('Carlos Gómez');
+
+      // Verificable al resolver la sesión
+      const resolved = await service.resolveGuestSession(session.token);
+      expect(resolved.contributorNickname).toBe('Carlos Gómez');
+
+      // Verifica auditoría sin exponer el nickname completo
+      const audit = db.auditEvents.find((e: EventAuditRecord) => e.procedure === 'GUEST_NICKNAME_SET');
+      expect(audit).toBeDefined();
+      expect(audit?.actorId).toBe('GUEST_ANONYMOUS');
+      expect(audit?.details).toBe('Contributor nickname set with length 12');
+      expect(audit?.details).not.toContain('Carlos Gómez');
+    });
+
+    it('Escenario 1 (sanitización): Trim de extremos, colapso de espacios múltiples y eliminación de caracteres de control', async () => {
+      const { lookupKey } = setupEventWithoutPin();
+      const { session } = await service.createGuestSession({ lookupKey });
+
+      const result = await service.setContributorNickname({
+        sessionToken: session.token,
+        nickname: '  Ana   María \x00\x1f  '
+      });
+
+      expect(result.contributorNickname).toBe('Ana María');
+
+      const resolved = await service.resolveGuestSession(session.token);
+      expect(resolved.contributorNickname).toBe('Ana María');
+    });
+
+    it('Escenario 2: Rechaza entrada vacía o que contiene únicamente espacios (INVALID_CONTRIBUTOR_NICKNAME)', async () => {
+      const { lookupKey } = setupEventWithoutPin();
+      const { session } = await service.createGuestSession({ lookupKey });
+
+      await expect(
+        service.setContributorNickname({
+          sessionToken: session.token,
+          nickname: ''
+        })
+      ).rejects.toMatchObject({ code: 'INVALID_CONTRIBUTOR_NICKNAME' });
+
+      await expect(
+        service.setContributorNickname({
+          sessionToken: session.token,
+          nickname: '     '
+        })
+      ).rejects.toMatchObject({ code: 'INVALID_CONTRIBUTOR_NICKNAME' });
+
+      // No genera estado parcial
+      const resolved = await service.resolveGuestSession(session.token);
+      expect(resolved.contributorNickname).toBeNull();
+    });
+
+    it('Escenario 2: Rechaza apodo que excede los 60 caracteres (INVALID_CONTRIBUTOR_NICKNAME)', async () => {
+      const { lookupKey } = setupEventWithoutPin();
+      const { session } = await service.createGuestSession({ lookupKey });
+
+      await expect(
+        service.setContributorNickname({
+          sessionToken: session.token,
+          nickname: 'A'.repeat(61)
+        })
+      ).rejects.toMatchObject({ code: 'INVALID_CONTRIBUTOR_NICKNAME' });
+
+      const resolved = await service.resolveGuestSession(session.token);
+      expect(resolved.contributorNickname).toBeNull();
+    });
+
+    it('Escenario 2: Rechaza tipo no string (INVALID_CONTRIBUTOR_NICKNAME)', async () => {
+      const { lookupKey } = setupEventWithoutPin();
+      const { session } = await service.createGuestSession({ lookupKey });
+
+      await expect(
+        service.setContributorNickname({
+          sessionToken: session.token,
+          nickname: null as any
+        })
+      ).rejects.toMatchObject({ code: 'INVALID_CONTRIBUTOR_NICKNAME' });
+    });
+
+    it('Rechaza actualizar apodo en sesión revocada (SESSION_REVOKED)', async () => {
+      const { lookupKey } = setupEventWithoutPin();
+      const { session } = await service.createGuestSession({ lookupKey });
+      await service.revokeGuestSession(session.id);
+
+      await expect(
+        service.setContributorNickname({
+          sessionToken: session.token,
+          nickname: 'Invitado Tarde'
+        })
+      ).rejects.toMatchObject({ code: 'SESSION_REVOKED' });
+    });
+
+    it('Rechaza actualizar apodo en sesión expirada (SESSION_EXPIRED)', async () => {
+      const { lookupKey } = setupEventWithoutPin();
+      const { session } = await service.createGuestSession({ lookupKey });
+
+      const pastExpiry = new Date(Date.now() + 8 * 24 * 60 * 60 * 1000);
+
+      await expect(
+        service.setContributorNickname({
+          sessionToken: session.token,
+          nickname: 'Invitado Tardío',
+          now: pastExpiry
+        })
+      ).rejects.toMatchObject({ code: 'SESSION_EXPIRED' });
+    });
+
+    it('Aislamiento entre sesiones: dos sesiones guest en el mismo evento guardan apodos independientes', async () => {
+      const { lookupKey } = setupEventWithoutPin();
+      const { session: session1 } = await service.createGuestSession({ lookupKey });
+      const { session: session2 } = await service.createGuestSession({ lookupKey });
+
+      await service.setContributorNickname({
+        sessionToken: session1.token,
+        nickname: 'Fotógrafo 1'
+      });
+      await service.setContributorNickname({
+        sessionToken: session2.token,
+        nickname: 'Fotógrafo 2'
+      });
+
+      const res1 = await service.resolveGuestSession(session1.token);
+      const res2 = await service.resolveGuestSession(session2.token);
+
+      expect(res1.contributorNickname).toBe('Fotógrafo 1');
+      expect(res2.contributorNickname).toBe('Fotógrafo 2');
     });
   });
 });
