@@ -4,7 +4,7 @@
 EL-EP-013
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** sistema, **quiero** informar hitos de cuenta y cambios operativos relevantes, **para** mantener al organizador informado sin exponer detalles sensibles.
@@ -68,3 +68,19 @@ Q-018; DEC-021, DEC-081; EL-EP-013.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §EL-EP-013; sin componentes nuevos ni NotificationCenter obligatorio).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Evidencia de implementación — 2026-10-11
+- **Componentes y arquitectura:**
+  - Contratos tipados en `packages/notifications/src/contracts.ts`: `AccountSecurityFact`, `EventSuspensionFact`, `EventReactivationFact`, `EventUpcomingFact`, `EventConfigurationChangedFact`, `GenerateNoticeResult`, `SecurityNoticeEventType`, `NoticeGenerationOutcome`.
+  - Servicio `AccountEventNoticeService` en `packages/notifications/src/account-event-notice-service.ts`:
+    - `generateAccountSecurityNotice`: procesa hechos de cuenta y seguridad de EL-EP-001 (`NEW_LOGIN`, `PASSWORD_CHANGED`, `SESSION_REVOKED`, `RECOVERY_REQUESTED`, `CREDENTIAL_UPDATED`). Sanitiza metadatos (IP limpia, User-Agent acotado), garantiza ausencia total de tokens, contraseñas o secretos en el payload, y emite intenciones idempotentes en PostgreSQL con deduplicación por día (`sec:${accountRef}:${eventType}:${date}`).
+    - `generateEventSuspensionNotice`: procesa suspensiones de EL-EP-003. Si se activa `suppressNotice` por requerimiento legal o de seguridad, suprime la creación del aviso visible y registra la decisión en la auditoría sin exponer razones en logs públicos. Si `isRestrictedReason` es verdadero, oculta cualquier detalle de investigación confidencial y almacena un motivo administrativo seguro y neutral.
+    - `generateEventReactivationNotice`: procesa reactivaciones de EL-EP-003, generando la intención `EVENT_REACTIVATED` y aplicando supersession atómica en PostgreSQL sobre el aviso previo de suspensión (`supersedesDedupKeys: ['lifecycle:${eventRef}:suspended']`), garantizando que sólo la comunicación vigente quede activa en el panel.
+    - `generateEventUpcomingNotice`: programa el aviso de evento próximo con ventana temporal exacta (efectivo 24 horas antes de `startsAt`, expira en `startsAt`).
+    - `generateEventConfigurationChangedNotice`: procesa cambios autorizados en el evento (políticas de acceso, fechas, visibilidad de galería) con destino propietario `/events/:id/settings`.
+- **Pruebas y calidad:**
+  - 54/54 pruebas PASS en `@eventlens/notifications`:
+    - 9 pruebas unitarias (`account-event-notice.unit.test.ts`): cubren sanitización de copy de seguridad, deduplicación e idempotencia, no revelación de motivos restringidos, supresión legal/seguridad, supersession atómica ante reactivación, ventana de evento próximo, cambios de configuración y validaciones de argumentos.
+    - 3 pruebas de integración con PostgreSQL 16 real (`account-event-notice.integration.test.ts`): persistencia de hechos de seguridad con metadatos limpios, no fuga de motivos confidenciales en base de datos, y supersession en base de datos verificando con `NoticeProjectionService` que sólo la reactivación se proyecta al organizador.
+    - 42 pruebas previas (`notification-intent`, `email-notification`, `notice-projection`).
+  - TypeScript typecheck (`tsc --noEmit`) y build (`tsc -p tsconfig.build.json`) completados con 0 errores.
