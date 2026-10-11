@@ -57,6 +57,7 @@ describeIntegration('OrganizerRegistrationService (Real PostgreSQL Integration T
         declared_adult BOOLEAN NOT NULL DEFAULT false,
         declared_adult_at TIMESTAMPTZ,
         invitation_id UUID NOT NULL REFERENCES beta_invitation(id) ON DELETE CASCADE,
+        verified_at TIMESTAMPTZ,
         created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
       );

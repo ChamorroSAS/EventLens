@@ -1,11 +1,12 @@
 {
-  "ticket": "EL-TK-010",
-  "runId": "identity_954a7a09aa8d46db81c588a2c571d8c7",
-  "testedAt": "2026-10-11T17:02:46.619Z",
+  "ticket": "EL-TK-011",
+  "runId": "identity_f8f0330fe0a144e6abf514795d81de6f",
+  "testedAt": "2026-10-11T17:23:20.851Z",
   "result": "PASS",
-  "tests": 69,
-  "passed": 69,
+  "tests": 79,
+  "passed": 79,
   "postgresql": "16 real isolated laboratory database",
+  "verification": "Email verification and organizer account activation consuming beta invitation",
   "registration": "Organizer registration with adult declaration, pending verification, credential protection and idempotent preservation",
   "recovery": "MOD-001 RecoveryAuthority protocol PREPARE->SQL->ACK and post-PITR reconciliation",
   "gates": {
