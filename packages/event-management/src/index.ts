@@ -39,6 +39,10 @@ export {
   type PublicAccessCredentialRecord,
   type IssueInitialPublicCredentialCommand,
   type IssueInitialPublicCredentialResult,
+  type PublicAccessState,
+  type PublicAccessCapabilities,
+  type ResolvePublicAccessCommand,
+  type ResolvePublicAccessResult,
   type EventAuditRecord,
   type EventAuditSink
 } from './contracts.js';

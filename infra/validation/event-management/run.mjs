@@ -52,15 +52,15 @@ try {
   const exitCode = run(['--filter', '@eventlens/event-management', 'exec', 'vitest', 'run', '--no-file-parallelism', '--reporter=default', '--reporter=json', '--outputFile=/evidence/tests.json'], true);
   const tests = JSON.parse(readFileSync('/evidence/tests.json', 'utf8'));
   writeFileSync('/evidence/result.json', JSON.stringify({
-    ticket: 'EL-TK-084',
-    precedingTicket: 'EL-TK-027',
+    ticket: 'EL-TK-074',
+    precedingTicket: 'EL-TK-084',
     runId: database,
     testedAt: new Date().toISOString(),
     result: tests.success && exitCode === 0 ? 'PASS' : 'FAIL',
     tests: tests.numTotalTests,
     passed: tests.numPassedTests,
     postgresql: '16 real isolated laboratory database',
-    publicAccessCredential: 'High-entropy unguessable initial public access credential issuance with pin linkage and replay idempotency (DEC-004, DEC-013, AQR-003)',
+    publicAccessResolution: 'Public unguessable credential resolution with lifecycle policy compliance, non-enumeration and zero PII (DEC-004, DEC-013, DEC-083, DEC-084)',
     gates: {
       'MEDIA-001': 'NOT_EVALUATED',
       'CAP-001': 'NOT_EVALUATED',

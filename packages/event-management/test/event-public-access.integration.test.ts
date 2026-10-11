@@ -32,10 +32,47 @@ describeIntegration('EventPublicAccessService (Real PostgreSQL Integration Tests
         name TEXT NOT NULL,
         status TEXT NOT NULL DEFAULT 'DRAFT',
         timezone TEXT NOT NULL DEFAULT 'America/Bogota',
+        starts_at_local TEXT,
+        scheduled_at TIMESTAMPTZ,
+        utc_offset_minutes INTEGER,
+        expires_at TIMESTAMPTZ,
+        grace_ends_at TIMESTAMPTZ,
+        activated_at TIMESTAMPTZ,
+        closed_at TIMESTAMPTZ,
+        purge_started_at TIMESTAMPTZ,
+        suspended_at TIMESTAMPTZ,
+        suspension_reason TEXT,
+        previous_status TEXT,
+        validity_duration_days INTEGER,
+        grace_days INTEGER,
+        uploads_enabled BOOLEAN NOT NULL DEFAULT false,
+        guest_gallery_enabled BOOLEAN NOT NULL DEFAULT false,
+        moderation_mode TEXT NOT NULL DEFAULT 'AUTO_PUBLISH',
         pin_enabled BOOLEAN NOT NULL DEFAULT false,
+        idempotency_key TEXT UNIQUE,
+        idempotency_payload_hash TEXT,
         created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
       );
+
+      ALTER TABLE event
+        ADD COLUMN IF NOT EXISTS starts_at_local TEXT,
+        ADD COLUMN IF NOT EXISTS scheduled_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS utc_offset_minutes INTEGER,
+        ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS grace_ends_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS activated_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS closed_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS purge_started_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS suspended_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS suspension_reason TEXT,
+        ADD COLUMN IF NOT EXISTS previous_status TEXT,
+        ADD COLUMN IF NOT EXISTS validity_duration_days INTEGER,
+        ADD COLUMN IF NOT EXISTS grace_days INTEGER,
+        ADD COLUMN IF NOT EXISTS uploads_enabled BOOLEAN NOT NULL DEFAULT false,
+        ADD COLUMN IF NOT EXISTS guest_gallery_enabled BOOLEAN NOT NULL DEFAULT false,
+        ADD COLUMN IF NOT EXISTS moderation_mode TEXT NOT NULL DEFAULT 'AUTO_PUBLISH',
+        ADD COLUMN IF NOT EXISTS pin_enabled BOOLEAN NOT NULL DEFAULT false;
 
       CREATE TABLE IF NOT EXISTS public_access_credential (
         id UUID PRIMARY KEY,
@@ -216,5 +253,164 @@ describeIntegration('EventPublicAccessService (Real PostgreSQL Integration Tests
         eventId
       })
     ).rejects.toMatchObject({ code: 'UNAUTHORIZED' });
+  });
+
+  describe('EL-TK-074: resolvePublicAccess (PostgreSQL 16 Integration)', () => {
+    it('Escenario 1: Resuelve enlace vigente de evento ACTIVE concediendo acceso público y capacidades', async () => {
+      const eventId = randomUUID();
+      await sql(
+        `INSERT INTO event (id, organizer_id, name, status, timezone, uploads_enabled, guest_gallery_enabled, pin_enabled)
+         VALUES ($1, $2, $3, 'ACTIVE', 'America/Bogota', true, true, false)`,
+        eventId,
+        ownerActor.accountId,
+        'Festival Bogotá 2026'
+      );
+
+      // Emitir credencial inicial
+      const issued = await service.issueInitialCredential({
+        actorContext: ownerActor,
+        eventId
+      });
+
+      // Resolver credencial como invitado anónimo
+      const resolved = await service.resolvePublicAccess({
+        lookupKey: issued.credential.lookupKey
+      });
+
+      expect(resolved.accessState).toBe('ALLOWED');
+      expect(resolved.eventId).toBe(eventId);
+      expect(resolved.name).toBe('Festival Bogotá 2026');
+      expect(resolved.status).toBe('ACTIVE');
+      expect(resolved.timezone).toBe('America/Bogota');
+      expect(resolved.pinRequired).toBe(false);
+      expect(resolved.generation).toBe(1);
+      expect(resolved.capabilities).toEqual({
+        canViewLanding: true,
+        canUpload: true,
+        canViewGallery: true
+      });
+
+      // Verificar persistencia de auditoría
+      const auditRows = await query<{ procedure: string; target_identifier: string; result: string }>(
+        `SELECT procedure, target_identifier, result
+         FROM admin_audit_event
+         WHERE procedure = 'EVENT_PUBLIC_ACCESS_RESOLVED' AND target_identifier = $1`,
+        eventId
+      );
+      expect(auditRows.length).toBeGreaterThanOrEqual(1);
+      expect(auditRows[0].result).toBe('SUCCESS');
+    });
+
+    it('Escenario 1 con PIN: Resuelve enlace vigente de evento con PIN requiriendo pinRequired=true', async () => {
+      const eventId = randomUUID();
+      await sql(
+        `INSERT INTO event (id, organizer_id, name, status, timezone, uploads_enabled, guest_gallery_enabled, pin_enabled)
+         VALUES ($1, $2, $3, 'ACTIVE', 'America/Bogota', true, false, true)`,
+        eventId,
+        ownerActor.accountId,
+        'Evento Privado con PIN'
+      );
+
+      const issued = await service.issueInitialCredential({
+        actorContext: ownerActor,
+        eventId
+      });
+
+      const resolved = await service.resolvePublicAccess({
+        lookupKey: issued.credential.lookupKey
+      });
+
+      expect(resolved.accessState).toBe('ALLOWED');
+      expect(resolved.pinRequired).toBe(true);
+      expect(resolved.capabilities.canUpload).toBe(true);
+      expect(resolved.capabilities.canViewGallery).toBe(false);
+    });
+
+    it('Escenario 2: Rechaza enlace revocado o no existente en PostgreSQL fail-closed', async () => {
+      // 1. Inexistente
+      await expect(
+        service.resolvePublicAccess({ lookupKey: 'non_existent_key_xyz987' })
+      ).rejects.toMatchObject({ code: 'INVALID_CREDENTIAL' });
+
+      // 2. Revocado
+      const eventId = randomUUID();
+      await sql(
+        `INSERT INTO event (id, organizer_id, name, status)
+         VALUES ($1, $2, $3, 'ACTIVE')`,
+        eventId,
+        ownerActor.accountId,
+        'Evento con Enlace Revocado'
+      );
+
+      const issued = await service.issueInitialCredential({
+        actorContext: ownerActor,
+        eventId
+      });
+
+      // Marcar revocado en la base de datos
+      await sql(
+        'UPDATE public_access_credential SET revoked_at = NOW() WHERE id = $1',
+        issued.credential.id
+      );
+
+      await expect(
+        service.resolvePublicAccess({ lookupKey: issued.credential.lookupKey })
+      ).rejects.toMatchObject({ code: 'INVALID_CREDENTIAL' });
+    });
+
+    it('Escenario 3: Resuelve evento SUSPENDED y CLOSED aplicando restricciones canónicas de lifecycle', async () => {
+      // 1. Evento SUSPENDED
+      const suspendedId = randomUUID();
+      await sql(
+        `INSERT INTO event (id, organizer_id, name, status, uploads_enabled, guest_gallery_enabled)
+         VALUES ($1, $2, $3, 'SUSPENDED', true, true)`,
+        suspendedId,
+        ownerActor.accountId,
+        'Evento Suspendido'
+      );
+
+      // Insertar credencial activa directamente para el evento suspendido
+      const suspendedKey = 'suspended_event_token_key_123';
+      await sql(
+        `INSERT INTO public_access_credential (id, event_id, lookup_key, token_hash, generation, pin_required)
+         VALUES ($1, $2, $3, 'hash', 1, false)`,
+        randomUUID(),
+        suspendedId,
+        suspendedKey
+      );
+
+      const resSuspended = await service.resolvePublicAccess({ lookupKey: suspendedKey });
+      expect(resSuspended.accessState).toBe('UNAVAILABLE');
+      expect(resSuspended.status).toBe('SUSPENDED');
+      expect(resSuspended.capabilities.canViewLanding).toBe(false);
+      expect(resSuspended.capabilities.canUpload).toBe(false);
+      expect(resSuspended.capabilities.canViewGallery).toBe(false);
+
+      // 2. Evento CLOSED
+      const closedId = randomUUID();
+      await sql(
+        `INSERT INTO event (id, organizer_id, name, status, uploads_enabled, guest_gallery_enabled)
+         VALUES ($1, $2, $3, 'CLOSED', true, true)`,
+        closedId,
+        ownerActor.accountId,
+        'Evento Cerrado'
+      );
+
+      const closedKey = 'closed_event_token_key_456';
+      await sql(
+        `INSERT INTO public_access_credential (id, event_id, lookup_key, token_hash, generation, pin_required)
+         VALUES ($1, $2, $3, 'hash', 1, false)`,
+        randomUUID(),
+        closedId,
+        closedKey
+      );
+
+      const resClosed = await service.resolvePublicAccess({ lookupKey: closedKey });
+      expect(resClosed.accessState).toBe('RESTRICTED');
+      expect(resClosed.status).toBe('CLOSED');
+      expect(resClosed.capabilities.canViewLanding).toBe(true);
+      expect(resClosed.capabilities.canUpload).toBe(false);
+      expect(resClosed.capabilities.canViewGallery).toBe(true);
+    });
   });
 });

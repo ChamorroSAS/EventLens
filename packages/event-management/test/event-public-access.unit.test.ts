@@ -30,6 +30,46 @@ function createMockRunner(db: MockDb): TransactionRunner {
             return [] as unknown as T[];
           }
 
+          // SELECT ... FROM public_access_credential c JOIN event e ON e.id = c.event_id WHERE c.lookup_key = $1
+          if (normalized.includes('FROM public_access_credential c JOIN event e') && normalized.includes('WHERE c.lookup_key = $1')) {
+            const key = params[0] as string;
+            const cred = Array.from(db.credentials.values()).find((c) => c.lookup_key === key);
+            if (!cred) return [] as unknown as T[];
+            const ev = db.events.get(cred.event_id);
+            if (!ev) return [] as unknown as T[];
+            return [{
+              id: cred.id,
+              event_id: cred.event_id,
+              lookup_key: cred.lookup_key,
+              token_hash: cred.token_hash,
+              generation: cred.generation,
+              pin_required: cred.pin_required,
+              revoked_at: cred.revoked_at ?? null,
+              event_name: ev.name ?? 'Event Name',
+              event_status: ev.status,
+              event_timezone: ev.timezone ?? 'America/Bogota',
+              starts_at_local: ev.starts_at_local ?? null,
+              scheduled_at: ev.scheduled_at ?? null,
+              expires_at: ev.expires_at ?? null,
+              grace_ends_at: ev.grace_ends_at ?? null,
+              activated_at: ev.activated_at ?? null,
+              closed_at: ev.closed_at ?? null,
+              purge_started_at: ev.purge_started_at ?? null,
+              suspended_at: ev.suspended_at ?? null,
+              suspension_reason: ev.suspension_reason ?? null,
+              previous_status: ev.previous_status ?? null,
+              validity_duration_days: ev.validity_duration_days ?? null,
+              grace_days: ev.grace_days ?? null,
+              uploads_enabled: Boolean(ev.uploads_enabled),
+              guest_gallery_enabled: Boolean(ev.guest_gallery_enabled),
+              moderation_mode: ev.moderation_mode ?? 'AUTO_PUBLISH',
+              pin_enabled: Boolean(ev.pin_enabled),
+              organizer_id: ev.organizer_id,
+              created_at: cred.created_at,
+              updated_at: cred.created_at
+            }] as unknown as T[];
+          }
+
           // SELECT ... FROM public_access_credential WHERE event_id = $1 AND revoked_at IS NULL
           if (normalized.includes('FROM public_access_credential') && normalized.includes('event_id = $1 AND revoked_at IS NULL')) {
             const eventId = params[0] as string;
@@ -239,5 +279,240 @@ describe('EL-TK-084: EventPublicAccessService (Unit Tests)', () => {
         eventId: terminalId
       })
     ).rejects.toMatchObject({ code: 'EVENT_TERMINAL' });
+  });
+
+  describe('EL-TK-074: resolvePublicAccess', () => {
+    it('Escenario 1: Resuelve enlace vigente de evento ACTIVE concediendo capacidades autorizadas sin autenticación ni PII', async () => {
+      const eventId = randomUUID();
+      const lookupKey = 'valid_high_entropy_token_12345';
+      const credId = randomUUID();
+
+      db.events.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Tech Conference 2026',
+        status: 'ACTIVE',
+        timezone: 'America/Bogota',
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        pin_enabled: false
+      });
+
+      db.credentials.set(credId, {
+        id: credId,
+        event_id: eventId,
+        lookup_key: lookupKey,
+        token_hash: 'somehash',
+        generation: 1,
+        pin_required: false,
+        created_at: new Date(),
+        revoked_at: null
+      });
+
+      const result = await service.resolvePublicAccess({ lookupKey });
+
+      expect(result.accessState).toBe('ALLOWED');
+      expect(result.eventId).toBe(eventId);
+      expect(result.name).toBe('Tech Conference 2026');
+      expect(result.status).toBe('ACTIVE');
+      expect(result.timezone).toBe('America/Bogota');
+      expect(result.generation).toBe(1);
+      expect(result.pinRequired).toBe(false);
+      expect(result.capabilities).toEqual({
+        canViewLanding: true,
+        canUpload: true,
+        canViewGallery: true
+      });
+      // No contiene información privada del organizador
+      expect((result as any).organizerId).toBeUndefined();
+      expect((result as any).pinHash).toBeUndefined();
+
+      // Auditoría sanitizada
+      const audit = db.auditEvents.find((a) => a.procedure === 'EVENT_PUBLIC_ACCESS_RESOLVED');
+      expect(audit).toBeDefined();
+      expect(audit?.targetIdentifier).toBe(eventId);
+      expect(audit?.details).not.toContain(lookupKey);
+    });
+
+    it('Escenario 1 con PIN: Indica pinRequired=true si la credencial exige PIN según EL-TK-027', async () => {
+      const eventId = randomUUID();
+      const lookupKey = 'pin_protected_token_abcdef';
+      const credId = randomUUID();
+
+      db.events.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Private Gala',
+        status: 'ACTIVE',
+        timezone: 'America/Bogota',
+        uploads_enabled: true,
+        guest_gallery_enabled: false,
+        pin_enabled: true
+      });
+
+      db.credentials.set(credId, {
+        id: credId,
+        event_id: eventId,
+        lookup_key: lookupKey,
+        token_hash: 'somehash',
+        generation: 1,
+        pin_required: true,
+        created_at: new Date(),
+        revoked_at: null
+      });
+
+      const result = await service.resolvePublicAccess({ lookupKey });
+
+      expect(result.accessState).toBe('ALLOWED');
+      expect(result.pinRequired).toBe(true);
+      expect(result.capabilities.canUpload).toBe(true);
+      expect(result.capabilities.canViewGallery).toBe(false);
+    });
+
+    it('Escenario 2: Enlace revocado o inexistente devuelve INVALID_CREDENTIAL fail-closed sin filtrar datos del evento', async () => {
+      // 1. Inexistente
+      await expect(
+        service.resolvePublicAccess({ lookupKey: 'non_existent_token_0000000000' })
+      ).rejects.toMatchObject({ code: 'INVALID_CREDENTIAL' });
+
+      // 2. Revocado tras sustitución o regeneración
+      const eventId = randomUUID();
+      const revokedKey = 'old_revoked_token_1111111111';
+      const credId = randomUUID();
+
+      db.events.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Secret Party',
+        status: 'ACTIVE',
+        timezone: 'America/Bogota',
+        uploads_enabled: true,
+        guest_gallery_enabled: true
+      });
+
+      db.credentials.set(credId, {
+        id: credId,
+        event_id: eventId,
+        lookup_key: revokedKey,
+        token_hash: 'revokedhash',
+        generation: 1,
+        pin_required: false,
+        created_at: new Date(),
+        revoked_at: new Date() // Revocado
+      });
+
+      await expect(
+        service.resolvePublicAccess({ lookupKey: revokedKey })
+      ).rejects.toMatchObject({ code: 'INVALID_CREDENTIAL' });
+    });
+
+    it('Escenario 3: Evento SUSPENDED con credencial válida devuelve UNAVAILABLE respetando policy de lifecycle', async () => {
+      const eventId = randomUUID();
+      const lookupKey = 'suspended_token_2222222222';
+      const credId = randomUUID();
+
+      db.events.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Suspended Festival',
+        status: 'SUSPENDED',
+        timezone: 'America/Bogota',
+        uploads_enabled: true,
+        guest_gallery_enabled: true
+      });
+
+      db.credentials.set(credId, {
+        id: credId,
+        event_id: eventId,
+        lookup_key: lookupKey,
+        token_hash: 'suspendedhash',
+        generation: 1,
+        pin_required: false,
+        created_at: new Date(),
+        revoked_at: null
+      });
+
+      const result = await service.resolvePublicAccess({ lookupKey });
+
+      expect(result.accessState).toBe('UNAVAILABLE');
+      expect(result.status).toBe('SUSPENDED');
+      expect(result.capabilities).toEqual({
+        canViewLanding: false,
+        canUpload: false,
+        canViewGallery: false
+      });
+      expect(result.restrictionReason).toContain('suspended');
+    });
+
+    it('Escenario 3: Evento CLOSED con credencial válida devuelve RESTRICTED (uploads cerrados, galería accesible si está habilitada)', async () => {
+      const eventId = randomUUID();
+      const lookupKey = 'closed_token_3333333333';
+      const credId = randomUUID();
+
+      db.events.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Concluded Summit',
+        status: 'CLOSED',
+        timezone: 'America/Bogota',
+        uploads_enabled: true,
+        guest_gallery_enabled: true
+      });
+
+      db.credentials.set(credId, {
+        id: credId,
+        event_id: eventId,
+        lookup_key: lookupKey,
+        token_hash: 'closedhash',
+        generation: 1,
+        pin_required: false,
+        created_at: new Date(),
+        revoked_at: null
+      });
+
+      const result = await service.resolvePublicAccess({ lookupKey });
+
+      expect(result.accessState).toBe('RESTRICTED');
+      expect(result.status).toBe('CLOSED');
+      expect(result.capabilities.canViewLanding).toBe(true);
+      expect(result.capabilities.canUpload).toBe(false);
+      expect(result.capabilities.canViewGallery).toBe(true);
+      expect(result.restrictionReason).toBeDefined();
+    });
+
+    it('Escenario 3: Evento SCHEDULED con credencial válida devuelve RESTRICTED (landing accesible, uploads y galería cerrados)', async () => {
+      const eventId = randomUUID();
+      const lookupKey = 'scheduled_token_4444444444';
+      const credId = randomUUID();
+
+      db.events.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Upcoming Expo',
+        status: 'SCHEDULED',
+        timezone: 'America/Bogota',
+        uploads_enabled: true,
+        guest_gallery_enabled: true
+      });
+
+      db.credentials.set(credId, {
+        id: credId,
+        event_id: eventId,
+        lookup_key: lookupKey,
+        token_hash: 'scheduledhash',
+        generation: 1,
+        pin_required: false,
+        created_at: new Date(),
+        revoked_at: null
+      });
+
+      const result = await service.resolvePublicAccess({ lookupKey });
+
+      expect(result.accessState).toBe('RESTRICTED');
+      expect(result.status).toBe('SCHEDULED');
+      expect(result.capabilities.canViewLanding).toBe(true);
+      expect(result.capabilities.canUpload).toBe(false);
+      expect(result.capabilities.canViewGallery).toBe(false);
+    });
   });
 });

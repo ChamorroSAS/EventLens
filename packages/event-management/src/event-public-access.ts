@@ -4,9 +4,17 @@ import {
   EventManagementError,
   type IssueInitialPublicCredentialCommand,
   type IssueInitialPublicCredentialResult,
+  type ResolvePublicAccessCommand,
+  type ResolvePublicAccessResult,
+  type PublicAccessCapabilities,
+  type PublicAccessState,
   type PublicAccessCredentialRecord,
+  type EventRecord,
+  type EventStatus,
+  type GuestActorContext,
   type EventAuditSink
 } from './contracts.js';
+import { EventAccessPolicy } from './access-policy.js';
 
 interface CredentialRow {
   id: string;
@@ -199,4 +207,190 @@ export class EventPublicAccessService {
       };
     });
   }
+
+  /**
+   * Resolves a public access credential and determines authorized guest capabilities
+   * according to canonical lifecycle policy (EL-TK-074, DEC-004, DEC-013, DEC-083, DEC-084).
+   * - Validates unguessable lookupKey without internal IDs or PII.
+   * - Rejects invalid, nonexistent or revoked credentials fail-closed without leaking event info (Escenario 2).
+   * - Respects lifecycle policy for guest entry (Escenario 1 & 3):
+   *     - DRAFT / SUSPENDED / TERMINAL: accessState 'UNAVAILABLE'
+   *     - SCHEDULED / CLOSED / GRACE_PERIOD: accessState 'RESTRICTED'
+   *     - ACTIVE: accessState 'ALLOWED'
+   * - Audits access safely without logging complete unguessable secrets in plain text.
+   */
+  public async resolvePublicAccess(
+    command: ResolvePublicAccessCommand
+  ): Promise<ResolvePublicAccessResult> {
+    if (!command || typeof command !== 'object') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Resolve public access command is required');
+    }
+
+    const { lookupKey, now: providedNow } = command;
+
+    if (!lookupKey || typeof lookupKey !== 'string' || lookupKey.trim().length === 0) {
+      throw new EventManagementError('INVALID_CREDENTIAL', 'Valid public access lookupKey is required');
+    }
+
+    const trimmedKey = lookupKey.trim();
+    const now = providedNow ?? new Date();
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      // 1. Query active credential joined with event details
+      const rows = await tx.query<ResolvedCredentialRow>(
+        `SELECT
+           c.id, c.event_id, c.lookup_key, c.token_hash, c.generation, c.pin_required, c.revoked_at,
+           e.name AS event_name, e.status AS event_status, e.timezone AS event_timezone,
+           e.starts_at_local, e.scheduled_at, e.expires_at, e.grace_ends_at, e.activated_at,
+           e.closed_at, e.purge_started_at, e.suspended_at, e.suspension_reason, e.previous_status,
+           e.validity_duration_days, e.grace_days, e.uploads_enabled, e.guest_gallery_enabled,
+           e.moderation_mode, e.pin_enabled, e.organizer_id, e.created_at, e.updated_at
+         FROM public_access_credential c
+         JOIN event e ON e.id = c.event_id
+         WHERE c.lookup_key = $1
+         LIMIT 1`,
+        trimmedKey
+      );
+
+      // 2. Reject nonexistent or revoked credential fail-closed (Escenario 2)
+      if (rows.length === 0 || rows[0].revoked_at !== null) {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_PUBLIC_ACCESS_RESOLVED',
+          actorId: 'GUEST_ANONYMOUS',
+          targetIdentifier: 'UNKNOWN',
+          result: 'REJECTED_UNAUTHORIZED',
+          details: 'Public access resolution rejected for invalid or revoked credential',
+          timestamp: now
+        });
+        throw new EventManagementError('INVALID_CREDENTIAL', 'Public access credential is invalid or has been revoked');
+      }
+
+      const row = rows[0];
+
+      // 3. Construct EventRecord for lifecycle policy evaluation
+      const eventRecord: EventRecord = {
+        id: row.event_id,
+        organizerId: row.organizer_id,
+        name: row.event_name,
+        status: row.event_status as EventStatus,
+        timezone: row.event_timezone,
+        startsAtLocal: row.starts_at_local,
+        scheduledAt: row.scheduled_at ? new Date(row.scheduled_at) : null,
+        utcOffsetMinutes: null,
+        expiresAt: row.expires_at ? new Date(row.expires_at) : null,
+        graceEndsAt: row.grace_ends_at ? new Date(row.grace_ends_at) : null,
+        activatedAt: row.activated_at ? new Date(row.activated_at) : null,
+        closedAt: row.closed_at ? new Date(row.closed_at) : null,
+        purgeStartedAt: row.purge_started_at ? new Date(row.purge_started_at) : null,
+        suspendedAt: row.suspended_at ? new Date(row.suspended_at) : null,
+        suspensionReason: row.suspension_reason,
+        previousStatus: row.previous_status as EventStatus | null,
+        validityDurationDays: row.validity_duration_days,
+        graceDays: row.grace_days,
+        uploadsEnabled: Boolean(row.uploads_enabled),
+        guestGalleryEnabled: Boolean(row.guest_gallery_enabled),
+        moderationMode: row.moderation_mode as any,
+        pinEnabled: Boolean(row.pin_enabled),
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at)
+      };
+
+      // 4. Evaluate access policy for anonymous guest (DEC-083, DEC-084)
+      const guestContext: GuestActorContext = { actorType: 'GUEST_ANONYMOUS' };
+      const landingDecision = EventAccessPolicy.evaluate({
+        event: eventRecord,
+        action: 'GUEST_VIEW_LANDING',
+        actorContext: guestContext
+      });
+      const uploadDecision = EventAccessPolicy.evaluate({
+        event: eventRecord,
+        action: 'GUEST_UPLOAD',
+        actorContext: guestContext
+      });
+      const galleryDecision = EventAccessPolicy.evaluate({
+        event: eventRecord,
+        action: 'GUEST_VIEW_GALLERY',
+        actorContext: guestContext
+      });
+
+      const capabilities: PublicAccessCapabilities = {
+        canViewLanding: landingDecision.allowed,
+        canUpload: uploadDecision.allowed,
+        canViewGallery: galleryDecision.allowed
+      };
+
+      // 5. Determine public access state
+      let accessState: PublicAccessState;
+      let restrictionReason: string | undefined;
+
+      if (!landingDecision.allowed) {
+        // DRAFT, SUSPENDED, TERMINAL (Escenario 3)
+        accessState = 'UNAVAILABLE';
+        restrictionReason = landingDecision.reason;
+      } else if (eventRecord.status === 'ACTIVE') {
+        // ACTIVE (Escenario 1)
+        accessState = 'ALLOWED';
+      } else {
+        // SCHEDULED, CLOSED, GRACE_PERIOD (Escenario 3)
+        accessState = 'RESTRICTED';
+        restrictionReason = !uploadDecision.allowed ? uploadDecision.reason : undefined;
+      }
+
+      // 6. Audit resolution securely without logging full credential
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_PUBLIC_ACCESS_RESOLVED',
+        actorId: 'GUEST_ANONYMOUS',
+        targetIdentifier: row.event_id,
+        result: accessState === 'ALLOWED' ? 'SUCCESS' : 'NO_OP',
+        details: `Public access resolved for event '${row.event_id}' with state '${accessState}' (pinRequired: ${row.pin_required})`,
+        timestamp: now
+      });
+
+      return {
+        accessState,
+        eventId: row.event_id,
+        name: row.event_name,
+        status: eventRecord.status,
+        timezone: eventRecord.timezone,
+        generation: Number(row.generation),
+        pinRequired: Boolean(row.pin_required),
+        capabilities,
+        ...(restrictionReason ? { restrictionReason } : {})
+      };
+    });
+  }
+}
+
+interface ResolvedCredentialRow {
+  id: string;
+  event_id: string;
+  lookup_key: string;
+  token_hash: string;
+  generation: number;
+  pin_required: boolean;
+  revoked_at: Date | string | null;
+  event_name: string;
+  event_status: string;
+  event_timezone: string;
+  starts_at_local: string | null;
+  scheduled_at: Date | string | null;
+  expires_at: Date | string | null;
+  grace_ends_at: Date | string | null;
+  activated_at: Date | string | null;
+  closed_at: Date | string | null;
+  purge_started_at: Date | string | null;
+  suspended_at: Date | string | null;
+  suspension_reason: string | null;
+  previous_status: string | null;
+  validity_duration_days: number | null;
+  grace_days: number | null;
+  uploads_enabled: boolean;
+  guest_gallery_enabled: boolean;
+  moderation_mode: string;
+  pin_enabled: boolean;
+  organizer_id: string;
+  created_at: Date | string;
+  updated_at: Date | string;
 }

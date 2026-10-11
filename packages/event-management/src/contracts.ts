@@ -65,7 +65,8 @@ export type EventManagementErrorCode =
   | 'INVALID_VALIDITY_EXTENSION'
   | 'EVENT_NOT_EXTENDABLE'
   | 'PIN_ALREADY_CONFIGURED'
-  | 'INVALID_PIN_FORMAT';
+  | 'INVALID_PIN_FORMAT'
+  | 'INVALID_CREDENTIAL';
 
 export class EventManagementError extends Error {
   constructor(
@@ -343,6 +344,34 @@ export interface IssueInitialPublicCredentialResult {
   readonly outcome: 'ISSUED' | 'IDEMPOTENT_REPLAY';
 }
 
+export type PublicAccessState =
+  | 'ALLOWED'
+  | 'RESTRICTED'
+  | 'UNAVAILABLE';
+
+export interface PublicAccessCapabilities {
+  readonly canViewLanding: boolean;
+  readonly canUpload: boolean;
+  readonly canViewGallery: boolean;
+}
+
+export interface ResolvePublicAccessCommand {
+  readonly lookupKey: string;
+  readonly now?: Date;
+}
+
+export interface ResolvePublicAccessResult {
+  readonly accessState: PublicAccessState;
+  readonly eventId: string;
+  readonly name: string;
+  readonly status: EventStatus;
+  readonly timezone: string;
+  readonly generation: number;
+  readonly pinRequired: boolean;
+  readonly capabilities: PublicAccessCapabilities;
+  readonly restrictionReason?: string;
+}
+
 export interface EventAuditRecord {
   readonly id: string;
   readonly procedure:
@@ -357,7 +386,8 @@ export interface EventAuditRecord {
     | 'EVENT_REACTIVATED'
     | 'EVENT_VALIDITY_EXTENDED'
     | 'EVENT_INITIAL_PIN_SET'
-    | 'EVENT_PUBLIC_CREDENTIAL_ISSUED';
+    | 'EVENT_PUBLIC_CREDENTIAL_ISSUED'
+    | 'EVENT_PUBLIC_ACCESS_RESOLVED';
   readonly actorId: string;
   readonly targetIdentifier: string;
   readonly result:
