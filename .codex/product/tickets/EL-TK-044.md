@@ -6,7 +6,7 @@ EL-EP-001
 
 ## Status
 
-READY
+DONE
 
 ## User story
 
@@ -126,3 +126,19 @@ Vitest de verifier-purpose/subject/dummy, contexto y límites temporales; Postgr
 
 
 **Corrección documental 2026-10-09:** inversa blocks incorpora025, cuya depends_on ya incluía044; no nueva dependencia ni cambio de contrato/readiness administrativo/025. [Impacto](../sessions/2026-10-09-arch-015-backlog-impact.md).
+ 
+## Resultado de implementación — 2026-10-11
+
+**CONFIRMED:** implementación completada y validada de forma independiente contra PostgreSQL 16 real cumpliendo todos los criterios ratificados de TB-03, ARCH-013 y AQR-003.
+
+- **Verificación de credenciales de alta entropía**: secreto aleatorio uniforme de 256 bits verificado mediante digest SHA-256 con separación estricta de propósito y sujeto (`computeCredentialDigest`), comparación en tiempo constante (`timingSafeEqual`) y cálculo dummy en tiempo constante para sujetos inexistentes (prevención de ataques de temporización y enumeración).
+- **Error neutral uniforme**: respuesta de fallo unificada (`AuthenticationError('UNAUTHENTICATED')`) idéntica para principal desconocido, deshabilitado, credencial revocada o secreto incorrecto.
+- **Emisión privada sin fixation**: generación de tokens opacos de sesión y CSRF de 256 bits, persistencia exclusiva de digests en PostgreSQL `admin_session`, y especificación de cookie de sesión `__Host-el_admin_session` (`HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/`, sin atributo `Domain`).
+- **Expiración y control de concurrencia**: expiración absoluta a 8h y de inactividad a 30m; actualización monótona de inactividad que no extiende el límite absoluto; carreras de actividad con sesiones expiradas o revocadas fallan cerrado y no resucitan la sesión.
+- **Reautenticación explícita y rotación**: reautenticación valida secreto actual, Origin y CSRF, rota a nuevo token de sesión, revoca el token anterior y actualiza `auth_time`. Comandos sensibles exigen `auth_time <= 5 min` (`assertFreshAuthentication`).
+- **ActorContext administrativo**: emite `AdminActorContext` (`ADMIN_HUMAN`) sin permisos ni grants de MOD-007 estáticos (evaluados dinámicamente por recurso/motivo).
+- **Integración con RecoveryAuthority**: soporte de patrón PREPARE externo -> SQL corto con receipt -> ACK externo; validación de epoch, watermark y revisión de credencial (fail-closed ante restauraciones de snapshot desactualizadas).
+
+Paquete e interfaces: [@eventlens/identity](../../../packages/identity/README.md).
+Validación ejecutada: 17/17 pruebas propias (13 unitarias de verifier, dummy, tiempos, cookie y rotación + 4 de integración contra PostgreSQL 16 real para ciclo de vida, persistencia de digests, carreras de concurrencia y no-extensión de expiración absoluta); suite total del paquete: 35/35 PASS. Evidencia: [registro](../../../infra/validation/identity/evidence/result.json) y [pruebas](../../../infra/validation/identity/evidence/tests.json).
+
