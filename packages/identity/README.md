@@ -84,11 +84,27 @@
 - **Observabilidad sin secretos**:
   - Registra eventos de auditoría append-only sin incluir contraseñas ni tokens en texto plano.
 
+### 6. Verificación de correo y activación de cuenta de organizador (EL-TK-011)
+- **Consumo atómico de invitación y token de verificación**:
+  - Verifica token opaco mediante SHA-256 contra `email_verification_intent`.
+  - Exige que la invitación BETA asociada esté en estado `PENDING` y dentro de su ventana de vigencia funcional de 7 días.
+  - Actualiza en una sola transacción atómica:
+    - `organizer_account`: pasa de `PENDING_VERIFICATION` a `ACTIVE` estableciendo `verified_at = now()`.
+    - `beta_invitation`: pasa de `PENDING` a `CONSUMED` estableciendo `consumed_at = now()`.
+    - `email_verification_intent`: pasa de `PENDING` a `CONSUMED` estableciendo `consumed_at = now()`.
+- **Bloqueo estricto previo a verificación (`assertOrganizerActive`)**:
+  - Toda capacidad protegida de organizador (como inicio de sesión en EL-TK-013 u operaciones de eventos) invoca la guarda `assertOrganizerActive`.
+  - Cuentas en estado `PENDING_VERIFICATION` son rechazadas de manera estricta (`ACCOUNT_PENDING_VERIFICATION`).
+- **Idempotencia**:
+  - Si la cuenta ya se encuentra activa, la verificación devuelve `outcome: 'ALREADY_ACTIVE'` y la marca temporal de verificación sin duplicar ni corromper el estado.
+- **Auditoría append-only sin secretos**:
+  - Emite `ORGANIZER_EMAIL_VERIFIED_AND_ACTIVATED` en `admin_audit_event` registrando únicamente hashes y metadatos no sensibles.
+
 ## Validation
 
-La implementación cuenta con una suite completa de 69 pruebas automatizadas (49 unitarias + 20 de integración contra PostgreSQL 16 real):
-- Pruebas unitarias: `test/provisioning.unit.test.ts` (12), `test/authentication.unit.test.ts` (13), `test/recovery.unit.test.ts` (11), `test/invitation.unit.test.ts` (6), `test/registration.unit.test.ts` (7)
-- Pruebas de integración PostgreSQL 16: `test/provisioning.integration.test.ts` (6), `test/authentication.integration.test.ts` (4), `test/recovery.integration.test.ts` (3), `test/invitation.integration.test.ts` (4), `test/registration.integration.test.ts` (3)
+La implementación cuenta con una suite completa de 79 pruebas automatizadas (55 unitarias + 24 de integración contra PostgreSQL 16 real):
+- Pruebas unitarias: `test/provisioning.unit.test.ts` (12), `test/authentication.unit.test.ts` (13), `test/recovery.unit.test.ts` (11), `test/invitation.unit.test.ts` (6), `test/registration.unit.test.ts` (7), `test/verification.unit.test.ts` (6)
+- Pruebas de integración PostgreSQL 16: `test/provisioning.integration.test.ts` (6), `test/authentication.integration.test.ts` (4), `test/recovery.integration.test.ts` (3), `test/invitation.integration.test.ts` (4), `test/registration.integration.test.ts` (3), `test/verification.integration.test.ts` (4)
 
 Evidencia de validación reproducible registrada en [infra/validation/identity](../../infra/validation/identity/README.md).
 

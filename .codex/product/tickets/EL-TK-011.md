@@ -6,11 +6,11 @@ EL-EP-001
 
 ## Status
 
-READY
+DONE (2026-10-11)
 
 **HISTÓRICO — revisión de remediación:** el snapshot de 2026-10-08 permaneció DRAFT hasta el dictamen final; la aprobación de 2026-10-07 se conserva.
 
-**CONFIRMED:** requirements_reviewer aprobó este conjunto el 2026-10-07, sin hallazgos pendientes. Véase [dictamen](../sessions/2026-10-07-el-ep-001-ticket-redesign-review.md). READY expresa preparación de requisitos; se conservan las dependencias de ejecución.
+**CONFIRMED:** Implementado y validado el 2026-10-11. 79/79 pruebas automáticas superadas (55 unitarias + 24 de integración contra PostgreSQL 16 real). Suite de validación en Docker tools: PASS.
 
 ## User story
 
@@ -112,3 +112,15 @@ Q-024; DEC-040; EL-TK-002; EL-EP-001; DEPENDENCIES.md (MOD-001 → MOD-009).
 ## Gate vigente — 2026-10-08
 
 **REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: NO.** TTL y almacenamiento de token de verificación PENDING. [Dictamen final](../sessions/2026-10-08-el-ep-001-ticket-remediation-review.md). READY es preparación de requisitos; se conservan predecesoras y gates aplicables.
+
+## Resultado de implementación — 2026-10-11
+
+- **Migración de esquema**: Añadida columna `verified_at TIMESTAMPTZ` a `organizer_account` mediante migración `202610110019_organizer_account_activation`.
+- **Servicio y contratos**: `EmailVerificationService` (`verifyEmailAndActivate`, `assertOrganizerActive`) en `@eventlens/identity`, consumiendo atómicamente la invitación BETA y el token de verificación, y actualizando la cuenta a `ACTIVE`.
+- **Guarda de acceso**: Implementada la comprobación estricta `assertOrganizerActive` para bloquear capacidades de organizador en cuentas no verificadas.
+- **Idempotencia**: Verificación de cuentas ya activas devuelve de forma segura `ALREADY_ACTIVE` sin mutaciones colaterales.
+- **Validación automatizada**:
+  - 6 pruebas unitarias (`packages/identity/test/verification.unit.test.ts`).
+  - 4 pruebas de integración contra PostgreSQL 16 real en contenedor Docker (`packages/identity/test/verification.integration.test.ts`).
+  - Suite completa de identidad: 79/79 pruebas PASS en Docker `tools` (evidencia en `infra/validation/identity/evidence/result.json`).
+  - Typecheck y build limpios en todo el monorepo (`node scripts/workspace.mjs typecheck`).
