@@ -94,7 +94,7 @@
 | EL-TK-061 | Evaluar inspección y rendiciones con corpus móvil mediante spike | EL-EP-006 | DONE | P0 | EL-TK-059, EL-TK-060 | [EL-TK-061](tickets/EL-TK-061.md) |
 | EL-TK-062 | Calcular la línea temporal canónica del lifecycle de un evento | EL-EP-003 | DONE | P0 | EL-TK-023, contrato EL-EP-011 | [EL-TK-062](tickets/EL-TK-062.md) |
 | EL-TK-063 | Programar un evento DRAFT para apertura futura | EL-EP-003 | DONE | P0 | EL-TK-020, EL-TK-023, EL-TK-062 | [EL-TK-063](tickets/EL-TK-063.md) |
-| EL-TK-064 | Activar un evento SCHEDULED manual o automáticamente | EL-EP-003 | READY | P0 | EL-TK-063, EL-TK-062, EL-TK-055 | [EL-TK-064](tickets/EL-TK-064.md) |
+| EL-TK-064 | Activar un evento SCHEDULED manual o automáticamente | EL-EP-003 | DONE | P0 | EL-TK-063, EL-TK-062, EL-TK-055 | [EL-TK-064](tickets/EL-TK-064.md) |
 | EL-TK-065 | Cerrar manualmente un evento ACTIVE | EL-EP-003 | READY | P0 | EL-TK-064 | [EL-TK-065](tickets/EL-TK-065.md) |
 | EL-TK-066 | Reabrir un evento CLOSED antes de vencer | EL-EP-003 | READY | P0 | EL-TK-065, EL-TK-062 | [EL-TK-066](tickets/EL-TK-066.md) |
 | EL-TK-067 | Avanzar automáticamente por vencimiento y fin de gracia | EL-EP-003 | READY | P0 | EL-TK-062,064,065,055; contrato EL-EP-015 | [EL-TK-067](tickets/EL-TK-067.md) |
