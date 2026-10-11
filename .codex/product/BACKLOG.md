@@ -204,7 +204,7 @@
 | EL-TK-171 | Ejecutar backups PostgreSQL y retención operativa mínima | EL-EP-014 | DONE | P0 | baseline EL-TD-008; DEC-062 | [EL-TK-171](tickets/EL-TK-171.md) |
 | EL-TK-172 | Verificar restauración PostgreSQL y objetivos RPO RTO | EL-EP-014 | DONE | P0 | 171; contrato EL-EP-015 | [EL-TK-172](tickets/EL-TK-172.md) |
 | EL-TK-173 | Registrar y correlacionar incidentes operativos con evidencia mínima | EL-EP-014 | DONE | P0 | 166,169,170 | [EL-TK-173](tickets/EL-TK-173.md) |
-| EL-TK-174 | Validar backup, recuperación y alertamiento operativo integrado | EL-EP-014 | READY | P0 | 170,171,172 | [EL-TK-174](tickets/EL-TK-174.md) |
+| EL-TK-174 | Validar backup, recuperación y alertamiento operativo integrado | EL-EP-014 | DONE | P0 | 170,171,172 | [EL-TK-174](tickets/EL-TK-174.md) |
 | EL-TK-175 | Integrar visor de auditoría contextual en la consola administrativa | EL-EP-014 | READY | P0 | 167; contrato EL-EP-012 | [EL-TK-175](tickets/EL-TK-175.md) |
 | EL-TK-176 | Validar auditoría, observabilidad y recuperación de extremo a extremo | EL-EP-014 | READY | P0 | 166..175, 184 | [EL-TK-176](tickets/EL-TK-176.md) |
 | EL-TK-184 | Aplicar retención de auditoría y rotación de logs técnicos | EL-EP-014 | DONE | P0 | 166, 168 | [EL-TK-184](tickets/EL-TK-184.md) |

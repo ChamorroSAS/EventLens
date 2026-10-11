@@ -4,9 +4,16 @@
 EL-EP-014
 
 ## Status
-READY
+DONE
 
-**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Validación integrada de backup/restore, fault injection y alertamiento para gate DR-001 (DEC-034, DEC-062). REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES (UI_REQUIRED: NO).
+**IMPLEMENTED — 2026-10-11:** Implementado `IntegratedDrValidatorService` y `DefaultMediaRecoveryAuthority` en `@eventlens/observability` conforme a los criterios de aceptación y DEC-034, DEC-062, DEC-063 para el gate DR-001:
+- Validación integrada de inyección de fallos en backups (`forceFailure`), confirmando detección inmediata de la falla y disparo de alerta crítica en `InfrastructureAlertService` sin fuga de secretos (Escenario 1).
+- Medición conjunta de RPO (≤ 1h) y RTO (≤ 4h) en ejercicios de restauración de snapshots desde PostgreSQL 16 a entorno aislado, registrando consistencia referencial y evidencia sanitizada (Escenario 2).
+- Simulación de indisponibilidad de componentes críticos (`DATABASE`, `OBJECT_STORAGE`) con verificación estricta de que las alertas operativas se emiten sin exponer DSNs, contraseñas o claves de acceso (Escenario 3).
+- Verificación de consistencia referencial post-PITR entre base de datos y ObjectStorage multimedia mediante `MediaRecoveryAuthority`, confirmando que los originales cuentan con redundancia propia, reconciliando cargas posteriores al punto de corte y evitando desincronización o pérdida de datos sin prescribir proveedores no adoptados (DEC-062, DEC-063, Escenario 4).
+- Determinación formal del gate DR-001: evaluación binaria `PASS` / `FAIL` que escala ítems de acción requerida ante cualquier incumplimiento.
+- Control de acceso restringido a actores autorizados (`SYSTEM`, `ADMIN`).
+- Suite de pruebas completa: 6 pruebas (4 unitarias y 2 de integración contra PostgreSQL 16 real) con 100% de éxito.
 
 ## User story
 **Como** equipo operativo, **quiero** validar recuperación y señales críticas en conjunto, **para** evitar falsa confianza antes de la Beta.
