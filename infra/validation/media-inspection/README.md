@@ -192,3 +192,25 @@ Coverage includes:
 3. Strict guest isolation and non-enumeration: requests for nonexistent media, media in other events, or other guests' contributions in "Mis aportes" yield `MEDIA_NOT_FOUND` uniformly without leaking metadata.
 4. Barrier enforcement: barred events reject queries (`BARRED_EVENT`), and unauthorized organizers are denied (`ACCESS_DENIED`).
 5. Durable, sanitized query audit logging in PostgreSQL (`media_status_query_audit`).
+
+### Running focused quarantine release tests (EL-TK-041)
+
+```powershell
+$releaseEvidence = ".\infra\validation\media-inspection\evidence\release-$([DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss'))"
+.\infra\validation\media-inspection\Run.ps1 -ReleaseOnly -Build -EvidenceDirectory $releaseEvidence
+```
+
+### EL-TK-041 quarantine release by authorized actor final validation
+
+The focused quarantine release suite passed **19/19 tests** (6 PostgreSQL 16 integration tests and 13 unit tests). Typecheck, build, and migration `202610110017_quarantine_release` application passed.
+
+Coverage includes:
+1. Releasing media from `QUARANTINED` status requires explicit administrative justification and authorized principal credentials.
+2. Actor verification according to governance roles:
+   - Event organizers are strictly forbidden from releasing quarantined media (`ORGANIZER_DENIED`), and attempts are audited in `media_quarantine_release_denial_audit`.
+   - Human administrators require a valid `AdminActorContext` (`EL-TK-044`) and an active `AdminInterventionGrant` (`action: 'RELEASE_QUARANTINE'`, matching principal and target mediaRef).
+   - Security automation is supported via service identity and authorized scope without human session credentials.
+3. Advance generation and revision (`generation + 1n`, `revision + 1n`), setting media status to `'UPLOADED'` and enqueuing `'MEDIA_INSPECTION'` job (re-inspection mandatory; release command never directly marks media as safe or `PUBLISHED`).
+4. Invariant preservation: previous generation quarantine records in `media_quarantine_audit` remain immutable.
+5. Idempotent replay: compatible operations replay previous receipt without duplicating jobs or resetting attempt budget. Conflicting replays reject with `IDEMPOTENCY_CONFLICT`.
+6. Durable organizer notification intent recorded in `media_quarantine_notification_intent` per EL-EP-013.
