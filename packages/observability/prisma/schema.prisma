@@ -23,3 +23,28 @@ model AuditEvent {
   @@index([occurredAt])
   @@map("audit_event")
 }
+
+model OperationalIncident {
+  id              String    @id @db.Uuid
+  title           String    @db.VarChar(256)
+  severity        String    @db.VarChar(32)
+  status          String    @db.VarChar(32)
+  component       String    @db.VarChar(64)
+  description     String
+  alertRefs       Json      @default("[]") @map("alert_refs")
+  auditRefs       Json      @default("[]") @map("audit_refs")
+  resourceRefs    Json      @default("[]") @map("resource_refs")
+  openedBy        String    @map("opened_by") @db.VarChar(128)
+  openedAt        DateTime  @default(now()) @map("opened_at") @db.Timestamptz
+  resolvedBy      String?   @map("resolved_by") @db.VarChar(128)
+  resolvedAt      DateTime? @map("resolved_at") @db.Timestamptz
+  resolutionNotes String?   @map("resolution_notes")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([status, severity])
+  @@index([component, status])
+  @@index([openedAt(sort: Desc)])
+  @@map("operational_incident")
+}
+
