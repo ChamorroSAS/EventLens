@@ -7,8 +7,11 @@ model Event {
   organizerId            String   @map("organizer_id") @db.Uuid
   name                   String
   status                 String   @default("DRAFT")
-  timezone               String   @default("America/Bogota")
-  uploadsEnabled         Boolean  @default(false) @map("uploads_enabled")
+  timezone               String    @default("America/Bogota")
+  startsAtLocal          String?   @map("starts_at_local")
+  scheduledAt            DateTime? @map("scheduled_at") @db.Timestamptz
+  utcOffsetMinutes       Int?      @map("utc_offset_minutes")
+  uploadsEnabled         Boolean   @default(false) @map("uploads_enabled")
   guestGalleryEnabled    Boolean  @default(false) @map("guest_gallery_enabled")
   moderationMode         String   @default("AUTO_PUBLISH") @map("moderation_mode")
   pinEnabled             Boolean  @default(false) @map("pin_enabled")

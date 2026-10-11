@@ -9,6 +9,9 @@ export interface EventRecord {
   readonly name: string;
   readonly status: EventStatus;
   readonly timezone: string;
+  readonly startsAtLocal: string | null;
+  readonly scheduledAt: Date | null;
+  readonly utcOffsetMinutes: number | null;
   readonly uploadsEnabled: boolean;
   readonly guestGalleryEnabled: boolean;
   readonly moderationMode: ModerationMode;
@@ -23,10 +26,19 @@ export type EventManagementErrorCode =
   | 'IDEMPOTENCY_CONFLICT'
   | 'EVENT_NOT_FOUND'
   | 'INVALID_STATE'
-  | 'INVALID_ARGUMENT';
+  | 'INVALID_ARGUMENT'
+  | 'DST_GAP_TIME'
+  | 'AMBIGUOUS_LOCAL_TIME'
+  | 'INVALID_OFFSET'
+  | 'INVALID_DATE_TIME'
+  | 'EVENT_NOT_IN_DRAFT';
 
 export class EventManagementError extends Error {
-  constructor(public readonly code: EventManagementErrorCode, message?: string) {
+  constructor(
+    public readonly code: EventManagementErrorCode,
+    message?: string,
+    public readonly details?: unknown
+  ) {
     super(message ?? code);
     this.name = 'EventManagementError';
   }
@@ -43,12 +55,33 @@ export interface CreateEventDraftResult {
   readonly outcome: 'CREATED' | 'IDEMPOTENT_REPLAY';
 }
 
+export interface SetEventScheduleCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly eventId: string;
+  readonly startsAtLocal: string;
+  readonly utcOffsetMinutes?: number;
+  readonly idempotencyKey?: string;
+}
+
+export interface SetEventScheduleResult {
+  readonly event: EventRecord;
+  readonly outcome: 'UPDATED' | 'IDEMPOTENT_REPLAY';
+}
+
 export interface EventAuditRecord {
   readonly id: string;
-  readonly procedure: 'EVENT_DRAFT_CREATED';
+  readonly procedure: 'EVENT_DRAFT_CREATED' | 'EVENT_SCHEDULE_SET';
   readonly actorId: string;
   readonly targetIdentifier: string;
-  readonly result: 'SUCCESS' | 'REJECTED_INVALID_NAME' | 'REJECTED_UNAUTHORIZED' | 'IDEMPOTENT_REPLAY';
+  readonly result:
+    | 'SUCCESS'
+    | 'REJECTED_INVALID_NAME'
+    | 'REJECTED_UNAUTHORIZED'
+    | 'REJECTED_DST_GAP'
+    | 'REJECTED_AMBIGUOUS_TIME'
+    | 'REJECTED_INVALID_OFFSET'
+    | 'REJECTED_INVALID_STATE'
+    | 'IDEMPOTENT_REPLAY';
   readonly details?: string;
   readonly timestamp: Date;
 }
