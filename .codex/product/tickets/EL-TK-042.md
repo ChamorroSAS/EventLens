@@ -6,7 +6,7 @@ EL-EP-006
 
 ## Status
 
-READY
+DONE
 
 **HISTÓRICO CONFIRMED — 2026-10-07:** requirements_reviewer aprobó este conjunto sin hallazgos pendientes. Véase [dictamen](../sessions/2026-10-07-el-ep-006-ticket-review.md). READY expresa preparación de requisitos; se conservan las dependencias de ejecución.
 
@@ -97,3 +97,26 @@ REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: NO. [Dictamen final](../sessi
 **CONFIRMED:** REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES. Barrera/disposición/handoff implementables por contrato044 aprobado y retención/purga vigentes de sus owners. Ruta humana usable requiere044 (043/046) y034; eliminación física requiere owner retención/inventario/drain/adapter reales. No implementa toda purga ni presume delete confirmado.
 
 Fuente: [contrato ARCH-015](../../context/media-and-jobs-architecture.md#pipeline-multimedia-adoptado--arch-015) y [impacto](../sessions/2026-10-09-arch-015-backlog-impact.md). TB-01/TB-02 resueltos experimentalmente; no bloqueadores activos. Cuando YES, describe construcción del alcance propio por contratos cerrados, no integración usable ni upstream implementado. Los dictámenes/scopes anteriores conservan historia donde difieren. MEDIA-001/CAP-001/DR-001/EXPORT-001 siguen VALIDATION_REQUIRED; sin proveedor adoptado.
+
+## Implementación y Verificación — 2026-10-11
+
+- **Componentes:**
+  - `packages/media-inspection/src/quarantine-delete.ts`: Servicio `QuarantineDeleteService`, error `QuarantineDeleteDeniedError`, tipos `QuarantineDeleteCommand`, `QuarantineDeleteReceipt`, `QuarantineDeleteActor`, `AdminDeleteInterventionGrant`.
+  - Migración Prisma `202610110018_quarantine_delete`: Tablas `media_quarantine_delete_receipt`, `media_quarantine_delete_audit`, `media_quarantine_delete_denial_audit`, y `media_quarantine_purge_intent`.
+  - Exportación pública en `packages/media-inspection/src/index.ts`.
+- **Invariantes contractuales y de gobernanza verificados (DEC-037 / DEC-038 / MOD-006 / MOD-007 / ARCH-015):**
+  - **Barrera durable y disposición restrictiva:** Solo aplica a medias en estado `QUARANTINED`. Transiciona atómicamente a `status = 'DELETED'` y avanza revisión (`revision + 1n`), bloqueando de forma irreversible accesos normales, descargas de original y nuevos reintentos de procesamiento.
+  - **Cancelación de procesos activos:** Termina ciclos de procesamiento activos en `media_processing_cycle` (`status = 'TERMINATED'`) y cancela trabajos pendientes o en reintento en `job_queue` (`cancelled = true`).
+  - **Delegación de purga física:** Emite intención durable `QuarantinePurgeIntent` (`status = 'PENDING'`) con clave de deduplicación determinista para el contrato de retención/purga propietario (EL-EP-008 / EL-EP-015), sin asumir delete confirmado de almacenamiento físico.
+  - **Justificación obligatoria y discriminación estricta de actores:**
+    - Organizadores de eventos: Estrictamente denegados (`ORGANIZER_DENIED`), auditando el intento en `media_quarantine_delete_denial_audit` sin alterar el estado del medio.
+    - Administradores humanos: Exigen contexto autenticado `AdminActorContext` (`EL-TK-044`) y un grant activo MOD-007 (`action: 'DELETE_QUARANTINE'`, con principal y `targetRef` coincidentes y justificación formal).
+    - Automatización de seguridad: Utiliza identidad de servicio explícita (`serviceId`) y scope autorizado (`securityScope`), desacoplada de sesiones o cookies humanas.
+  - **Idempotencia determinista:** Replays compatibles con el mismo `operationId` retornan el recibo previo (`wasExisting: true`) sin duplicar efectos destructivos ni intenciones de purga. Replays conflictivos lanzan `IDEMPOTENCY_CONFLICT`.
+  - **Intención de notificación:** Registra un `NotificationIntent` durable en `media_quarantine_notification_intent` con tipo `ADMINISTRATIVE_INTERVENTION_QUARANTINE_DELETE` y clave de deduplicación determinista para el organizador del evento (conforme a EL-EP-013).
+- **Evidencia en Docker con PostgreSQL 16 (`infra/validation/media-inspection/Run.ps1`):**
+  - Pruebas unitarias: `test/quarantine-delete.test.ts` (13/13 passed).
+  - Pruebas integradas con PG 16 real: `test/quarantine-delete.integration.test.ts` (6/6 passed).
+  - Suite enfocada: 19/19 tests passed.
+  - Typecheck (`tsc --noEmit`) y build (`tsc -p tsconfig.build.json`): 0 errores.
+  - Veredicto de testing: **PASS** (`infra/validation/media-inspection/evidence/result.json`).

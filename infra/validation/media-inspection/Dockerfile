@@ -6,6 +6,6 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages ./packages
 COPY config/database-modules.json ./config/database-modules.json
 COPY scripts/database.mjs ./scripts/database.mjs
-RUN pnpm install --frozen-lockfile && pnpm --filter @eventlens/database generate && pnpm --filter @eventlens/database build && pnpm --filter @eventlens/job-queue generate && pnpm --filter @eventlens/job-queue build && pnpm --filter @eventlens/media-execution generate && pnpm --filter @eventlens/media-execution build && pnpm --filter @eventlens/media-inspection generate && pnpm --filter @eventlens/media-inspection build
+RUN pnpm install --frozen-lockfile && pnpm --filter @eventlens/database generate && pnpm --filter @eventlens/database build && pnpm --filter @eventlens/job-queue generate && pnpm --filter @eventlens/job-queue build && pnpm --filter @eventlens/media-execution generate && pnpm --filter @eventlens/media-execution build && pnpm --filter @eventlens/identity build && pnpm --filter @eventlens/media-inspection generate && pnpm --filter @eventlens/media-inspection build
 COPY infra/validation/media-inspection/run.mjs ./infra/validation/media-inspection/run.mjs
 CMD ["node","infra/validation/media-inspection/run.mjs"]

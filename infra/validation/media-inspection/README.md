@@ -182,7 +182,7 @@ Omit `-StatusOnly` to run the entire media-inspection suite (all 18 test files).
 
 ### EL-TK-053 media status and capabilities query final validation
 
-The focused media status suite passed **15/15 tests** (7 PostgreSQL 16 integration tests and 8 unit tests). The combined media-inspection regression passed **331/331 tests** across 18 test files. Typecheck, build, and migration `202610110014_media_status_query` application passed.
+The focused media status suite passed **15/15 tests** (7 PostgreSQL 16 integration tests and 8 unit tests). The combined media-inspection regression passed **331/331 tests** across 18 test files. Typecheck, build, and migration `202610110016_media_status_query` application passed.
 
 Coverage includes:
 1. Retrieval of media lifecycle status and observable sanitized progress (`phase`, `attempt`) without exposing admin error messages, stack traces, storage paths, credentials or execution tokens.
@@ -192,3 +192,110 @@ Coverage includes:
 3. Strict guest isolation and non-enumeration: requests for nonexistent media, media in other events, or other guests' contributions in "Mis aportes" yield `MEDIA_NOT_FOUND` uniformly without leaking metadata.
 4. Barrier enforcement: barred events reject queries (`BARRED_EVENT`), and unauthorized organizers are denied (`ACCESS_DENIED`).
 5. Durable, sanitized query audit logging in PostgreSQL (`media_status_query_audit`).
+
+### Running focused quarantine release tests (EL-TK-041)
+
+```powershell
+$releaseEvidence = ".\infra\validation\media-inspection\evidence\release-$([DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss'))"
+.\infra\validation\media-inspection\Run.ps1 -ReleaseOnly -Build -EvidenceDirectory $releaseEvidence
+```
+
+### EL-TK-041 quarantine release by authorized actor final validation
+
+The focused quarantine release suite passed **19/19 tests** (6 PostgreSQL 16 integration tests and 13 unit tests). Typecheck, build, and migration `202610110017_quarantine_release` application passed.
+
+Coverage includes:
+1. Releasing media from `QUARANTINED` status requires explicit administrative justification and authorized principal credentials.
+2. Actor verification according to governance roles:
+   - Event organizers are strictly forbidden from releasing quarantined media (`ORGANIZER_DENIED`), and attempts are audited in `media_quarantine_release_denial_audit`.
+   - Human administrators require a valid `AdminActorContext` (`EL-TK-044`) and an active `AdminInterventionGrant` (`action: 'RELEASE_QUARANTINE'`, matching principal and target mediaRef).
+   - Security automation is supported via service identity and authorized scope without human session credentials.
+3. Advance generation and revision (`generation + 1n`, `revision + 1n`), setting media status to `'UPLOADED'` and enqueuing `'MEDIA_INSPECTION'` job (re-inspection mandatory; release command never directly marks media as safe or `PUBLISHED`).
+4. Invariant preservation: previous generation quarantine records in `media_quarantine_audit` remain immutable.
+5. Idempotent replay: compatible operations replay previous receipt without duplicating jobs or resetting attempt budget. Conflicting replays reject with `IDEMPOTENCY_CONFLICT`.
+6. Durable organizer notification intent recorded in `media_quarantine_notification_intent` per EL-EP-013.
+
+### Running focused quarantine deletion tests (EL-TK-042)
+
+```powershell
+$deleteEvidence = ".\infra\validation\media-inspection\evidence\delete-$([DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss'))"
+.\infra\validation\media-inspection\Run.ps1 -DeleteOnly -Build -EvidenceDirectory $deleteEvidence
+```
+
+### EL-TK-042 quarantine deletion by authorized actor final validation
+
+The focused quarantine deletion suite passed **19/19 tests** (6 PostgreSQL 16 integration tests and 13 unit tests). Typecheck, build, and migration `202610110018_quarantine_delete` application passed.
+
+Coverage includes:
+1. Deleting media from `QUARANTINED` status requires explicit administrative justification and authorized credentials.
+2. Actor verification according to governance roles:
+   - Event organizers are strictly forbidden from deleting quarantined media (`ORGANIZER_DENIED`), and attempts are audited in `media_quarantine_delete_denial_audit`.
+   - Human administrators require a valid `AdminActorContext` (`EL-TK-044`) and an active `AdminDeleteInterventionGrant` (`action: 'DELETE_QUARANTINE'`, matching principal and target mediaRef).
+   - Security automation is supported via service identity and authorized scope without human session credentials.
+3. Durable restrictive barrier and disposition:
+   - Updates `media_catalog` to status `'DELETED'` and advances revision (`revision + 1n`).
+   - Terminates any active processing cycles in `media_processing_cycle` (`status = 'TERMINATED'`).
+   - Cancels any pending or retrying jobs in `job_queue` (`cancelled = true`).
+4. Physical purge delegation:
+   - Emits a durable `QuarantinePurgeIntent` in `media_quarantine_purge_intent` (`status = 'PENDING'`) with unique deduplication key, delegating physical storage purge to the owner retention/purge contract (EL-EP-008 / EL-EP-015).
+5. Invariant preservation:
+   - Previous generation quarantine records in `media_quarantine_audit` remain immutable.
+6. Idempotent replay:
+   - Compatible operations replay previous receipt and purge intent without duplicating destructive actions. Conflicting replays reject with `IDEMPOTENCY_CONFLICT`.
+7. Durable organizer notification intent recorded in `media_quarantine_notification_intent` per EL-EP-013 (`ADMINISTRATIVE_INTERVENTION_QUARANTINE_DELETE`).
+
+### Running focused attempt output cleanup tests (EL-TK-057)
+
+```powershell
+$cleanupEvidence = ".\infra\validation\media-inspection\evidence\cleanup-$([DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss'))"
+.\infra\validation\media-inspection\Run.ps1 -CleanupOnly -Build -EvidenceDirectory $cleanupEvidence
+```
+
+### EL-TK-057 attempt output cleanup final validation
+
+The focused attempt cleanup suite passed **19/19 tests** (6 PostgreSQL 16 integration tests and 13 unit tests). Typecheck, build, and migration `202610110019_attempt_cleanup` application passed.
+
+Coverage includes:
+1. Safe and deterministic cleanup of outputs/partials/scratch from failed or obsolete media processing attempts to free physical storage without touching active content.
+2. Inviolable preservation invariant:
+   - Media original in `media_catalog.original` is strictly protected and NEVER deleted under any circumstances (`reason: 'ORIGINAL'`).
+   - Active derivatives in `media_active_derivative` are strictly protected and NEVER deleted (`reason: 'ACTIVE_DERIVATIVE'`).
+3. Writer quiescence and drain verification:
+   - Attempts in `ACTIVE` state are rejected (`NON_QUIESCENT_WRITER`).
+   - Attempts with active job leases in `job_queue` (`status = 'PROCESSING'` and `lease_until > NOW()`) are rejected (`ACTIVE_LEASE_HELD`).
+4. Two-phase execution with atomic ledger advancement:
+   - Physical storage deletion occurs outside the SQL transaction.
+   - Confirmed deletions (`DELETED` or `MISSING`) are recorded in `media_physical_cleanup_ledger` with `UNIQUE(namespace, key)` to prevent double release.
+   - Audit trail recorded in `media_attempt_cleanup_audit` and receipt in `media_attempt_cleanup_receipt`.
+5. Promote-vs-cleanup race detection:
+   - CAS guard re-reads `media_active_derivative` at commit time; if an output was concurrently promoted while storage deletion was in flight, cleanup aborts (`PROMOTION_CLEANUP_RACE`).
+6. Partial failure and retry:
+   - Storage results returning `UNKNOWN` or `FAILED` transition attempt cleanup to `'PARTIAL'`, recording confirmed deletions and retaining unconfirmed items in `details.pending` for subsequent retries.
+7. Idempotent replay:
+   - Compatible replays by `operationId` return the existing receipt (`wasExisting: true`).
+   - Incompatible replays with different attempt parameters reject with `IDEMPOTENCY_CONFLICT`.
+
+### Running focused pipeline validation and metrics tests (EL-TK-058)
+
+```powershell
+$pipelineEvidence = ".\infra\validation\media-inspection\evidence\pipeline-$([DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss'))"
+.\infra\validation\media-inspection\Run.ps1 -PipelineValidationOnly -Build -EvidenceDirectory $pipelineEvidence
+```
+
+### EL-TK-058 mobile corpus processing and integrated metrics final validation
+
+The focused pipeline validation suite passed **16/16 tests** (3 PostgreSQL 16 integration tests and 13 unit tests). Typecheck, build, and migration `202610200020_pipeline_validation` (`202610110020_pipeline_validation`) application passed.
+
+Coverage includes:
+1. End-to-end pipeline validation with reproducible mobile corpus formats (JPEG, PNG, WebP, HEIC/HEIF, MP4, MOV, WebM) from complete accepted upload through queue reservation, inspection, transformation, and CAS promotion.
+2. Inviolable original integrity preservation: original bytes and checksums are verified before and after processing (`isByteIdentical: true`), detecting and rejecting mutations (`ORIGINAL_BYTE_MUTATION_DETECTED`).
+3. Integrated metrics and latency instrumentation covering queue wait duration, inspection duration, and transformation duration (`totalDurationMs`):
+   - Calculation of sample size, successes, failures, success rate, median, and p95.
+   - Verification of SLO criteria: photo median <= 15s, p95 <= 60s, success rate >= 98%; video median <= 120s, p95 <= 300s, success rate >= 95%.
+   - Statistically honest handling: when observations are empty or insufficient, the service reports status `INSUFFICIENT_OBSERVATIONS` without falsely asserting compliance or inventing sample numbers.
+4. Threat and malicious isolation: suspicious or malware-positive files (e.g. ClamAV signature detections) are strictly isolated in `media_quarantine_audit` and media status `QUARANTINED`, with zero derivative promotion to public or preview gallery.
+5. Fault injection resilience and obsolete output cleanup:
+   - Expired job leases reject stale workers upon completion attempts (`LEASE_LOST`).
+   - Obsolete attempt outputs are deterministically cleaned up via `AttemptCleanupService`, strictly preserving original media and active derivatives.
+6. Durable, sanitized reporting in PostgreSQL (`media_pipeline_validation_report`) with deterministic idempotency by `operationId` and conflict detection (`IDEMPOTENCY_CONFLICT`).
+

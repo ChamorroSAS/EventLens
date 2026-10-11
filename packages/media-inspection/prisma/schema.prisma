@@ -189,5 +189,188 @@ model StatusQueryAudit {
  @@map("media_status_query_audit")
 }
 
+model QuarantineReleaseReceipt {
+  operationId        String   @id @map("operation_id")
+  mediaRef           String   @map("media_ref")
+  previousGeneration BigInt   @map("previous_generation")
+  newGeneration      BigInt   @map("new_generation")
+  previousRevision   BigInt   @map("previous_revision")
+  newRevision        BigInt   @map("new_revision")
+  jobId              String   @map("job_id") @db.Uuid
+  cycleId            String   @map("cycle_id")
+  actorType          String   @map("actor_type")
+  actorId            String   @map("actor_id")
+  grantId            String?  @map("grant_id")
+  justification      String
+  committedAt        DateTime @map("committed_at") @db.Timestamptz
+
+  @@map("media_quarantine_release_receipt")
+}
+
+model QuarantineReleaseAudit {
+  id             String   @id @db.Uuid
+  operationId    String   @map("operation_id")
+  mediaRef       String   @map("media_ref")
+  generation     BigInt
+  actorType      String   @map("actor_type")
+  actorId        String   @map("actor_id")
+  grantId        String?  @map("grant_id")
+  justification  String
+  previousStatus String   @map("previous_status")
+  transition     String
+  committedAt    DateTime @map("committed_at") @db.Timestamptz
+
+  @@map("media_quarantine_release_audit")
+}
+
+model QuarantineReleaseDenialAudit {
+  id          String   @id @db.Uuid
+  operationId String   @map("operation_id")
+  mediaRef    String   @map("media_ref")
+  actorType   String   @map("actor_type")
+  actorId     String   @map("actor_id")
+  reason      String
+  attemptedAt DateTime @map("attempted_at") @db.Timestamptz
+
+  @@map("media_quarantine_release_denial_audit")
+}
+
+model QuarantineNotificationIntent {
+  id               String   @id @db.Uuid
+  operationId      String   @map("operation_id")
+  mediaRef         String   @map("media_ref")
+  eventRef         String   @map("event_ref")
+  organizerRef     String   @map("organizer_ref")
+  notificationType String   @map("notification_type")
+  dedupKey         String   @unique @map("dedup_key")
+  createdAt        DateTime @map("created_at") @db.Timestamptz
+
+  @@map("media_quarantine_notification_intent")
+}
+
+model QuarantineDeleteReceipt {
+  operationId      String   @id @map("operation_id")
+  mediaRef         String   @map("media_ref")
+  generation       BigInt
+  previousRevision BigInt   @map("previous_revision")
+  newRevision      BigInt   @map("new_revision")
+  status           String
+  actorType        String   @map("actor_type")
+  actorId          String   @map("actor_id")
+  grantId          String?  @map("grant_id")
+  justification    String
+  purgeIntentId    String   @map("purge_intent_id") @db.Uuid
+  committedAt      DateTime @map("committed_at") @db.Timestamptz
+
+  @@map("media_quarantine_delete_receipt")
+}
+
+model QuarantineDeleteAudit {
+  id             String   @id @db.Uuid
+  operationId    String   @map("operation_id")
+  mediaRef       String   @map("media_ref")
+  generation     BigInt
+  actorType      String   @map("actor_type")
+  actorId        String   @map("actor_id")
+  grantId        String?  @map("grant_id")
+  justification  String
+  previousStatus String   @map("previous_status")
+  transition     String
+  committedAt    DateTime @map("committed_at") @db.Timestamptz
+
+  @@map("media_quarantine_delete_audit")
+}
+
+model QuarantineDeleteDenialAudit {
+  id          String   @id @db.Uuid
+  operationId String   @map("operation_id")
+  mediaRef    String   @map("media_ref")
+  actorType   String   @map("actor_type")
+  actorId     String   @map("actor_id")
+  reason      String
+  attemptedAt DateTime @map("attempted_at") @db.Timestamptz
+
+  @@map("media_quarantine_delete_denial_audit")
+}
+
+model QuarantinePurgeIntent {
+  id          String   @id @db.Uuid
+  operationId String   @map("operation_id")
+  mediaRef    String   @map("media_ref")
+  eventRef    String   @map("event_ref")
+  generation  BigInt
+  status      String
+  dedupKey    String   @unique @map("dedup_key")
+  createdAt   DateTime @map("created_at") @db.Timestamptz
+
+  @@map("media_quarantine_purge_intent")
+}
+
+model AttemptCleanupReceipt {
+  operationId   String   @id @map("operation_id")
+  attemptId     String   @map("attempt_id")
+  mediaRef      String   @map("media_ref")
+  generation    BigInt
+  status        String
+  deletedCount  Int      @map("deleted_count")
+  retainedCount Int      @map("retained_count")
+  pendingCount  Int      @map("pending_count")
+  details       Json
+  committedAt   DateTime @map("committed_at") @db.Timestamptz
+
+  @@map("media_attempt_cleanup_receipt")
+}
+
+model PhysicalCleanupLedger {
+  id            String   @id @db.Uuid
+  operationId   String   @map("operation_id")
+  attemptId     String   @map("attempt_id")
+  mediaRef      String   @map("media_ref")
+  generation    BigInt
+  namespace     String
+  key           String
+  status        String
+  bytesReleased BigInt   @default(0) @map("bytes_released")
+  committedAt   DateTime @map("committed_at") @db.Timestamptz
+
+  @@unique([namespace, key])
+  @@map("media_physical_cleanup_ledger")
+}
+
+model AttemptCleanupAudit {
+  id          String   @id @db.Uuid
+  operationId String   @map("operation_id")
+  attemptId   String   @map("attempt_id")
+  mediaRef    String   @map("media_ref")
+  generation  BigInt
+  decision    String
+  reason      String
+  actor       String   @default("SYSTEM")
+  committedAt DateTime @map("committed_at") @db.Timestamptz
+
+  @@map("media_attempt_cleanup_audit")
+}
+
+model PipelineValidationReport {
+  id           String   @id @db.Uuid
+  operationId  String   @unique @map("operation_id")
+  target       String
+  sampleSize   Int      @map("sample_size")
+  successCount Int      @map("success_count")
+  failureCount Int      @map("failure_count")
+  medianMs     Float?   @map("median_ms")
+  p95Ms        Float?   @map("p95_ms")
+  meetsSlo     Boolean  @map("meets_slo")
+  status       String
+  metrics      Json
+  observations Json
+  recordedAt   DateTime @map("recorded_at") @db.Timestamptz
+
+  @@map("media_pipeline_validation_report")
+}
+
+
+
+
 
 

@@ -29,3 +29,4 @@ packages/database/prisma/migrations/
 packages/database/prisma/migration-manifest.json
 
 .DS_Store
+.pnpm-store/

@@ -64,7 +64,7 @@ Fuente: [contrato ARCH-015](../../context/media-and-jobs-architecture.md#pipelin
 
 - **Componentes:**
   - `packages/media-inspection/src/media-status.ts`: Servicio `GetMediaStatusAndCapabilities`, repositorio `PostgresMediaStatusRepository`, tipos de dominio `ActorContext`, `MediaStatusResult`, `MediaCapabilities`, `MediaObservableProgress`, y errores `MediaStatusError`.
-  - Migración Prisma `202610110014_media_status_query`: Tabla de auditoría `media_status_query_audit` para registrar consultas sin secretos, claves, DSN ni paths de archivo.
+  - Migración Prisma `202610110016_media_status_query`: Tabla de auditoría `media_status_query_audit` para registrar consultas sin secretos, claves, DSN ni paths de archivo.
   - Exportación en `packages/media-inspection/src/index.ts`.
 - **Invariantes contractuales verificados (DEC-075 / DEC-076):**
   - `canRetry`: solo `true` para `ORGANIZER` cuando `status === 'PROCESSING_FAILED'`, no en cuarentena y `safety.outcome !== 'DENIED'`. Invitados nunca pueden reintentar procesamiento.

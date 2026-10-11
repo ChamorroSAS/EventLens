@@ -6,7 +6,7 @@ EL-EP-006
 
 ## Status
 
-READY
+DONE
 
 ## User story
 
@@ -80,3 +80,26 @@ REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: NO. [Dictamen final](../sessi
 **CONFIRMED:** REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: NO. NO para ejecución completa: API/worker/pipeline/adapters productivos y fase REQUIRED_FOR_INTEGRATION todavía no disponibles;059 sólo acredita REQUIRED_FOR_SPIKES,038/057 y pipeline transitivo no implementados. No bloquea por gates sin PASS: producir evidencia es responsabilidad del ticket. Manifest/harness/métricas/fixtures/tests contractuales preparables sin regenerar corpus ni asumir porcentajes Beta.
 
 Fuente: [contrato ARCH-015](../../context/media-and-jobs-architecture.md#pipeline-multimedia-adoptado--arch-015) y [impacto](../sessions/2026-10-09-arch-015-backlog-impact.md). TB-01/TB-02 resueltos experimentalmente; no bloqueadores activos. Cuando YES, describe construcción del alcance propio por contratos cerrados, no integración usable ni upstream implementado. Los dictámenes/scopes anteriores conservan historia donde difieren. MEDIA-001/CAP-001/DR-001/EXPORT-001 siguen VALIDATION_REQUIRED; sin proveedor adoptado.
+ 
+## Cierre de validación integrada — 2026-10-11
+
+**CONFIRMED — EL-TK-058 DONE:** implementación y validación integrada completadas y aprobadas por reviewer y tester independiente en `@eventlens/media-inspection` (`PipelineValidationService`, `PostgresPipelineValidationRepository`, `PHOTO_SLO_TARGETS`, `VIDEO_SLO_TARGETS`) con migración `202610110020_pipeline_validation` (16/16 pruebas superadas: 13 unitarias y 3 de integración con PostgreSQL 16 real; typecheck y build limpios con 0 errores).
+
+1. **Integridad del Original:**
+   - Verificación de que el archivo original en `media_catalog.original` permanece idéntico en bytes y checksum antes y después del procesamiento (`isByteIdentical: true`), detectando y rechazando mutaciones o corrupciones con `ORIGINAL_BYTE_MUTATION_DETECTED`.
+2. **Instrumentación de Métricas y SLOs (Aceptación → Preview Utilizable):**
+   - Medición de tiempos de pipeline que cubre espera en cola (`queueWaitMs`), inspección (`inspectionMs`) y transformación (`transformationMs`) para un tiempo total (`totalMs`).
+   - Cálculo determinista de tamaño muestral, éxitos, fallos, tasa de éxito (`successRate`), mediana (`medianMs`) y percentil 95 (`p95Ms`).
+   - Verificación de objetivos SLO:
+     - Fotos: mediana ≤ 15s (15.000 ms), p95 ≤ 60s (60.000 ms), tasa de éxito ≥ 98% (0.98).
+     - Videos: mediana ≤ 2 min (120.000 ms), p95 ≤ 5 min (300.000 ms), tasa de éxito ≥ 95% (0.95).
+   - Honestidad estadística: ante muestras insuficientes o vacías, el servicio reporta `status: 'INSUFFICIENT_OBSERVATIONS'` sin afirmar falsamente cumplimiento ni inventar números de casos.
+3. **Aislamiento de Amenazas y Cuarentena:**
+   - Archivos sospechosos o maliciosos (e.g. firmas ClamAV) son estrictamente aislados mediante `PostgresQuarantineRepository` en `media_quarantine_audit` y estado `QUARANTINED`, garantizando cero promoción de derivados a galería pública o preview.
+4. **Resiliencia ante Fallos y Limpieza:**
+   - La expiración de leases de workers rechaza completions tardías (`LEASE_LOST`), impidiendo publicaciones obsoletas.
+   - Limpieza determinista de outputs de intentos fallidos u obsoletos mediante `AttemptCleanupService`, preservando inviolablemente el original y los derivados activos en `media_active_derivative`.
+5. **Auditoría e Idempotencia:**
+   - Persistencia de reportes en `media_pipeline_validation_report` identificados por `operationId`, con reintento idempotente (`wasExisting: true`) y rechazo de cargas conflictivas (`IDEMPOTENCY_CONFLICT`).
+   - Auditoría sanitizada sin fuga de tokens, credenciales ni bytes en crudo.
+
