@@ -1,0 +1,27 @@
+{
+  "name": "@eventlens/event-management",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": "./dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --no-file-parallelism",
+    "test:unit": "vitest run test/*.unit.test.ts",
+    "test:integration": "vitest run test/*.integration.test.ts --no-file-parallelism"
+  },
+  "dependencies": {
+    "@eventlens/database": "workspace:*",
+    "@eventlens/identity": "workspace:*"
+  },
+  "devDependencies": {
+    "@prisma/adapter-pg": "7.10.0",
+    "@types/node": "24.10.1",
+    "@types/pg": "^8.11.11",
+    "pg": "^8.13.3",
+    "prisma": "7.10.0",
+    "typescript": "5.9.3",
+    "vitest": "4.0.18"
+  }
+}

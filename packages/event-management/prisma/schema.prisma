@@ -1,0 +1,22 @@
+datasource db {
+  provider = "postgresql"
+}
+
+model Event {
+  id                     String   @id @db.Uuid
+  organizerId            String   @map("organizer_id") @db.Uuid
+  name                   String
+  status                 String   @default("DRAFT")
+  timezone               String   @default("America/Bogota")
+  uploadsEnabled         Boolean  @default(false) @map("uploads_enabled")
+  guestGalleryEnabled    Boolean  @default(false) @map("guest_gallery_enabled")
+  moderationMode         String   @default("AUTO_PUBLISH") @map("moderation_mode")
+  pinEnabled             Boolean  @default(false) @map("pin_enabled")
+  idempotencyKey         String?  @unique @map("idempotency_key")
+  idempotencyPayloadHash String?  @map("idempotency_payload_hash")
+  createdAt              DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt              DateTime @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@index([organizerId, status])
+  @@map("event")
+}
