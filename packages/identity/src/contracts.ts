@@ -31,6 +31,47 @@ export class AuthenticationError extends Error {
   }
 }
 
+export type InvitationErrorCode =
+  | 'UNAUTHORIZED'
+  | 'INVALID_EMAIL'
+  | 'INVALID_ARGUMENT'
+  | 'INVITATION_NOT_FOUND'
+  | 'INVITATION_ALREADY_USED'
+  | 'INVITATION_REVOKED'
+  | 'INVITATION_EXPIRED';
+
+export class InvitationError extends Error {
+  constructor(public readonly code: InvitationErrorCode, message?: string) {
+    super(message ?? code);
+    this.name = 'InvitationError';
+  }
+}
+
+export interface BetaInvitationRecord {
+  readonly id: string;
+  readonly email: string;
+  readonly emailNormalized: string;
+  readonly token: string;
+  readonly status: 'PENDING' | 'CONSUMED' | 'REVOKED' | 'EXPIRED';
+  readonly issuedBy: string;
+  readonly createdAt: Date;
+  readonly expiresAt: Date;
+  readonly consumedAt?: Date | null;
+  readonly revokedAt?: Date | null;
+  readonly revision: bigint;
+}
+
+export interface IssueBetaInvitationCommand {
+  readonly actorContext: AdminActorContext;
+  readonly email: string;
+}
+
+export interface IssueBetaInvitationResult {
+  readonly invitation: BetaInvitationRecord;
+  readonly outcome: 'ISSUED' | 'ALREADY_PENDING' | 'ALREADY_CONSUMED' | 'RENEWED_EXPIRED';
+  readonly message?: string;
+}
+
 export interface AdminPrincipal {
   readonly id: string;
   readonly identifier: string;

@@ -3,6 +3,11 @@ export {
   ProvisioningError,
   type AuthenticationErrorCode,
   AuthenticationError,
+  type InvitationErrorCode,
+  InvitationError,
+  type BetaInvitationRecord,
+  type IssueBetaInvitationCommand,
+  type IssueBetaInvitationResult,
   type AdminPrincipal,
   type ProvisionInitialBootstrapCommand,
   type AuthorizingActor,
@@ -45,3 +50,9 @@ export {
   Mod001RecoveryCoordinator,
   type Mod001RecoveryCoordinatorOptions
 } from './recovery.js';
+
+export {
+  BetaInvitationService,
+  type BetaInvitationServiceOptions
+} from './invitation.js';
+

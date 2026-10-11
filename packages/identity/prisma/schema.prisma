@@ -68,3 +68,21 @@ model AdminSession {
   @@index([principalId, revokedAt])
   @@map("admin_session")
 }
+
+model BetaInvitation {
+  id              String    @id @db.Uuid
+  email           String
+  emailNormalized String    @map("email_normalized")
+  tokenDigest     String    @unique @map("token_digest")
+  status          String    @default("PENDING")
+  issuedBy        String    @map("issued_by") @db.Uuid
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  expiresAt       DateTime  @map("expires_at") @db.Timestamptz
+  consumedAt      DateTime? @map("consumed_at") @db.Timestamptz
+  revokedAt       DateTime? @map("revoked_at") @db.Timestamptz
+  revision        BigInt    @default(1)
+
+  @@index([emailNormalized, status])
+  @@map("beta_invitation")
+}
+
