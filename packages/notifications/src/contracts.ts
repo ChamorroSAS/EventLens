@@ -153,3 +153,39 @@ export interface ProcessEmailJobResult {
   errorCode?: string | null;
 }
 
+/**
+ * In-app notice severity semantics (EL-TK-158, ui-mvp-epic-review.md).
+ * Used for contextual presentation without intrusive banners or redundant notification centers.
+ */
+export type InAppNoticeSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
+
+export interface InAppNoticeAction {
+  label: string;
+  destination: string;
+  isExternal?: boolean;
+}
+
+export interface InAppNotice {
+  id: string;
+  intentId: string;
+  notificationType: string;
+  title: string;
+  fact: string;
+  date: Date;
+  validUntil: Date | null;
+  consequence: string;
+  action: InAppNoticeAction;
+  severity: InAppNoticeSeverity;
+  resourceRef: string;
+  recipientRef: string;
+}
+
+export interface InAppNoticeProjection {
+  recipientRef: string;
+  resourceRef?: string;
+  notices: InAppNotice[];
+  totalCount: number;
+  hasActiveNotices: boolean;
+  projectedAt: Date;
+}
+
