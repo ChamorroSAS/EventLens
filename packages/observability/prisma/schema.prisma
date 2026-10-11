@@ -1,0 +1,25 @@
+datasource db {
+  provider = "postgresql"
+}
+
+model AuditEvent {
+  id             String   @id @db.Uuid
+  occurredAt     DateTime @default(now()) @map("occurred_at") @db.Timestamptz
+  actorType      String   @map("actor_type")
+  actorId        String   @map("actor_id")
+  actorDetail    Json?    @map("actor_detail")
+  action         String
+  resourceType   String   @map("resource_type")
+  resourceId     String   @map("resource_id")
+  result         String
+  reason         String?
+  metadata       Json     @default("{}")
+  idempotencyKey String?  @unique @map("idempotency_key")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([resourceType, resourceId, occurredAt])
+  @@index([actorType, actorId, occurredAt])
+  @@index([action, occurredAt])
+  @@index([occurredAt])
+  @@map("audit_event")
+}

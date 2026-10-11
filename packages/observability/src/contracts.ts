@@ -1,0 +1,86 @@
+/**
+ * Audit and Observability contracts for EventLens (MOD-009, EL-EP-014, EL-TK-166).
+ * Retains strictly minimal data; never stores secrets, tokens, or multimedia byte streams.
+ */
+
+export type AuditActorType = 'SYSTEM' | 'ADMIN' | 'ORGANIZER' | 'ANONYMOUS_GUEST';
+
+export interface SystemAuditActor {
+  type: 'SYSTEM';
+  systemId: string;
+  detail?: Record<string, unknown>;
+}
+
+export interface HumanAuditActor {
+  type: 'ADMIN' | 'ORGANIZER' | 'ANONYMOUS_GUEST';
+  actorId: string;
+  detail?: {
+    sessionRef?: string;
+    ipAddress?: string;
+    userAgent?: string;
+    [key: string]: unknown;
+  };
+}
+
+export type AuditActor = SystemAuditActor | HumanAuditActor;
+
+export type AuditResult = 'SUCCESS' | 'FAILURE' | 'DENIED';
+
+export interface AuditEventRecord {
+  id: string;
+  occurredAt: Date;
+  actorType: AuditActorType;
+  actorId: string;
+  actorDetail: Record<string, unknown> | null;
+  action: string;
+  resourceType: string;
+  resourceId: string;
+  result: AuditResult;
+  reason: string | null;
+  metadata: Record<string, unknown>;
+  idempotencyKey?: string | null;
+  createdAt: Date;
+}
+
+export interface RegisterAuditEventCommand {
+  id?: string;
+  occurredAt?: Date;
+  actor: AuditActor;
+  action: string;
+  resourceType: string;
+  resourceId: string;
+  result: AuditResult;
+  reason?: string | Error | null;
+  metadata?: Record<string, unknown> | null;
+  idempotencyKey?: string | null;
+}
+
+export class AuditError extends Error {
+  constructor(
+    public readonly code:
+      | 'INVALID_ACTOR'
+      | 'INVALID_RESOURCE'
+      | 'INVALID_ACTION'
+      | 'INVALID_RESULT'
+      | 'METADATA_TOO_LARGE'
+      | 'FORBIDDEN_METADATA'
+      | 'PERSISTENCE_FAILED'
+      | 'RECURSION_DETECTED'
+      | 'UNAUTHORIZED_ACCESS',
+    message: string
+  ) {
+    super(message);
+    this.name = 'AuditError';
+  }
+}
+
+export interface AuditMetricEvent {
+  metricName: string;
+  dimensions: Record<string, string>;
+  value: number;
+  timestamp: Date;
+}
+
+export interface AuditTelemetrySink {
+  recordMetric(event: AuditMetricEvent): void;
+}
