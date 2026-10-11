@@ -4,7 +4,9 @@
 EL-EP-014
 
 ## Status
-DRAFT
+READY
+
+**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Señales de health y métricas sanitizadas neutrales de proveedor (DEC-034, DEC-061..064, DEC-106). REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES (UI_REQUIRED: NO).
 
 ## User story
 **Como** sistema, **quiero** emitir métricas y health signals de componentes críticos, **para** detectar degradación sin registrar datos privados.

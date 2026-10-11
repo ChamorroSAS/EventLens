@@ -4,7 +4,9 @@
 EL-EP-014
 
 ## Status
-DRAFT
+READY
+
+**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Detección de colas degradadas, jobs DEAD/abandonados y deduplicación de alertas operativas (DEC-034, DEC-064). REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES (UI_REQUIRED: NO).
 
 ## User story
 **Como** equipo operativo, **quiero** recibir señales sobre colas y procesamiento anómalos, **para** intervenir antes de que trabajos queden abandonados o acumulados.

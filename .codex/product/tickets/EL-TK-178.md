@@ -4,7 +4,9 @@
 EL-EP-016
 
 ## Status
-DRAFT
+READY
+
+**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Métricas de confiabilidad de cargas y proceso multimedia con exclusión de cancelaciones voluntarias (DEC-050, DEC-051, DEC-052). UI_REQUIRED: NO. REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES.
 
 ## User story
 **Como** equipo de producto, **quiero** calcular éxito y latencias de carga/procesamiento, **para** comparar la Beta contra objetivos de confiabilidad.

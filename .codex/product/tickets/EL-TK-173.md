@@ -4,7 +4,9 @@
 EL-EP-014
 
 ## Status
-DRAFT
+READY
+
+**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Correlación de incidentes operativos con señales de colas/infra y referencias AuditEvent sanitizadas (Q-014; DEC-034, DEC-059). REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES (UI_REQUIRED: NO).
 
 ## User story
 **Como** equipo operativo, **quiero** correlacionar alertas y auditoría en un incidente, **para** reconstruir causas y acciones sin conservar recuerdos.

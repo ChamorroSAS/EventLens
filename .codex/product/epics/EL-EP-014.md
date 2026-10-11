@@ -111,6 +111,8 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
+- 2026-10-10: requirements_reviewer y ui_designer aprueban EL-TK-166..176 como READY para auditoría mínima, consulta, telemetría/health, alertas, backups/PITR, recovery, incidentes, UI de auditoría (AuditLogViewer/Detail en consola) y validación integrada. REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES.
+
 - 2026-10-10: ticket_writer crea EL-TK-166..176 como DRAFT para auditoría mínima, consulta, telemetría/health, alertas, backups/PITR, recovery, incidentes, UI de auditoría y validación integrada. Pendientes de requirements_reviewer; sin implementación.
 
 - 2026-10-07: CR-002 resuelve TC aplicables y sustituye restricciones CR-001; estado/bloqueantes de producto conservados.

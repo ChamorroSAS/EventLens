@@ -4,7 +4,9 @@
 EL-EP-014
 
 ## Status
-DRAFT
+READY
+
+**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Verificación de restore periódico en entorno aislado, objetivos RPO ≤ 1h / RTO ≤ 4h y preservación de eliminaciones/tombstones sin resucitar contenido (DEC-045, DEC-062, DEC-092). REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES (UI_REQUIRED: NO).
 
 ## User story
 **Como** equipo operativo, **quiero** ejecutar restauraciones periódicas controladas, **para** demostrar que backup y PITR realmente recuperan el sistema dentro de objetivos.

@@ -4,7 +4,9 @@
 EL-EP-016
 
 ## Status
-DRAFT
+READY
+
+**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Clasificación PASS, PASS_WITH_ACTIONS, EXTEND_BETA y FAIL_CRITICAL con prevalencia absoluta de incidentes críticos de seguridad y pérdida de datos (DEC-050..057). UI_REQUIRED: NO. REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES.
 
 ## User story
 **Como** responsable de producto, **quiero** clasificar la evaluación con evidencia completa, **para** decidir continuar, corregir, extender o detener sin ocultar riesgos críticos.

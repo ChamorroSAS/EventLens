@@ -4,7 +4,9 @@
 EL-EP-016
 
 ## Status
-DRAFT
+READY
+
+**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Medición de soporte funcional y recuperación de recuerdos (DEC-053, DEC-054). Soporte comercial excluido de falla; eventos sin contenido excluidos del denominador de descarga. UI_REQUIRED: NO. REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES.
 
 ## User story
 **Como** equipo de producto, **quiero** calcular eventos sin soporte funcional y organizadores que descargan contenido, **para** evaluar autonomía y recuperación de valor.

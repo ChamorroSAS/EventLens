@@ -4,7 +4,9 @@
 EL-EP-014
 
 ## Status
-DRAFT
+READY
+
+**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Alertas de infraestructura (DB, storage, scheduler) y disponibilidad agregada sin comprometer SLA comercial (DEC-034, DEC-061..064, DEC-106). REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES (UI_REQUIRED: NO).
 
 ## User story
 **Como** equipo operativo, **quiero** detectar fallos de infraestructura crítica, **para** identificar pérdida de disponibilidad o riesgo de recuperación.

@@ -108,6 +108,8 @@ P1 — Evaluación de la beta; necesaria para decidir avance.
 
 ## Change history
 
+- 2026-10-10: requirements_reviewer aprueba EL-TK-177..183 como READY para métricas agregadas Beta, confiabilidad, soporte/descarga, participación, ventana/muestra, clasificación e informe reproducible. UI_REQUIRED: NO (ui-mvp-epic-review.md#el-ep-016). REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES.
+
 - 2026-10-10: ticket_writer crea EL-TK-177..183 como DRAFT para métricas agregadas Beta, confiabilidad, soporte/descarga, participación, ventana/muestra, clasificación e informe reproducible. Pendientes de requirements_reviewer; sin implementación.
 
 - 2026-10-07: creación por product_planner con trazabilidad Q-028; DEC-050 a DEC-057; estado inicial READY; sin tickets.

@@ -4,7 +4,9 @@
 EL-EP-014
 
 ## Status
-DRAFT
+READY
+
+**CONFIRMED — 2026-10-10:** requirements_reviewer y ui_designer aprueban el paso de DRAFT a READY. Contrato transversal de auditoría mínima y sanitizada (Q-014, Q-021; DEC-019, DEC-034, DEC-059). Sin exposición de multimedia ni secretos. REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES (alcance backend/datos).
 
 ## User story
 **Como** sistema, **quiero** registrar acciones relevantes con metadatos mínimos, **para** reconstruir intervenciones sin almacenar recuerdos ni secretos.
@@ -42,7 +44,7 @@ Contrato transversal consumido por acciones de cuenta, lifecycle, acceso, modera
 
 ## Dependencias de tickets
 - **depends_on:** ninguna predecesora funcional dura
-- **blocks:** EL-TK-167, EL-TK-168, EL-TK-173, EL-TK-175, EL-TK-176
+- **blocks:** EL-TK-167, EL-TK-173, EL-TK-175, EL-TK-176
 
 ## Pruebas requeridas
 Persistencia PostgreSQL, sanitización, actor sistema/humano, fallos y límites de payload.

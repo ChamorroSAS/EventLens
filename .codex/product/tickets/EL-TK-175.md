@@ -4,7 +4,9 @@
 EL-EP-014
 
 ## Status
-DRAFT
+READY
+
+**CONFIRMED — 2026-10-10:** requirements_reviewer y ui_designer aprueban el paso de DRAFT a READY. Integración de AuditLogViewer y AuditLogDetail contextual en consola administrativa conforme a ui-mvp-epic-review.md#el-ep-014 (DEC-019, DEC-034). Visor de solo lectura sin edición, exportación ni dashboard nuevo. WCAG 2.2 AA. REQUIREMENTS_READY: YES. READY_FOR_FRONTEND_PLANNING: YES. READY_FOR_IMPLEMENTATION: YES.
 
 ## User story
 **Como** administración autorizada, **quiero** consultar auditoría desde el contexto operativo, **para** reconstruir acciones sin un dashboard operacional nuevo.

@@ -4,7 +4,9 @@
 EL-EP-014
 
 ## Status
-DRAFT
+READY
+
+**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Backups diarios ≥ 7d, WAL/PITR con RPO ≤ 1h y almacenamiento protegido externo (Q-021; DEC-034, DEC-062; baseline EL-TD-008). REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES (UI_REQUIRED: NO).
 
 ## User story
 **Como** sistema, **quiero** producir backups completos diarios y soporte PITR, **para** cumplir la base de recuperación de la Beta sin depender del host activo.

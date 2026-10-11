@@ -4,7 +4,9 @@
 EL-EP-016
 
 ## Status
-DRAFT
+READY
+
+**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Contrato transversal de métricas agregadas y minimizadas para la Beta (Q-028; DEC-050..057). UI_REQUIRED: NO (ui-mvp-epic-review.md#el-ep-016). REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES.
 
 ## User story
 **Como** responsable de producto y operación, **quiero** contar eventos, sesiones, cargas, procesamiento, descargas y soporte con denominadores explícitos, **para** evaluar la Beta con métricas reproducibles y minimizadas.

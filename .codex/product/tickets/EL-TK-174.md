@@ -4,7 +4,9 @@
 EL-EP-014
 
 ## Status
-DRAFT
+READY
+
+**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Validación integrada de backup/restore, fault injection y alertamiento para gate DR-001 (DEC-034, DEC-062). REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES (UI_REQUIRED: NO).
 
 ## User story
 **Como** equipo operativo, **quiero** validar recuperación y señales críticas en conjunto, **para** evitar falsa confianza antes de la Beta.

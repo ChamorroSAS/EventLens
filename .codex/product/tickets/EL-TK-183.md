@@ -4,7 +4,9 @@
 EL-EP-016
 
 ## Status
-DRAFT
+READY
+
+**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Generación reproducible del informe final de evaluación Beta a partir de snapshots inmutables de evidencia (DEC-057). UI_REQUIRED: NO. REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES.
 
 ## User story
 **Como** responsable de producto, **quiero** generar un informe con muestra, métricas, incidentes y clasificación, **para** tomar una decisión sustentada y repetir el análisis si cambian datos autorizados.

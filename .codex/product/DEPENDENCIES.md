@@ -290,7 +290,7 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 10 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de persistencia de NotificationIntent idempotente a partir de hechos de dominio confirmados, procesamiento asíncrono de correos con puerto desacoplado mediante JobQueue durable (DEC-021, DEC-061..064), proyección de avisos contextuales vigentes para el panel del organizador sin duplicados ni avisos obsoletos, generación de avisos de lifecycle/gracia/eliminación próxima, capacidad al 80% y 100%, exportación disponible/expirada, cuenta/seguridad/cambios, denuncias e intervenciones según severidad, e integración UI de avisos y plantillas de correo accesibles. Superficies UI reutilizadas del catálogo canónico (ui-mvp-epic-review.md §EL-EP-013), sin NotificationCenter obligatorio ni nuevos componentes. Proveedor de correo desacoplado por puerto.
 
-## Tickets propuestos — EL-EP-014 (DRAFT; pendiente requirements_reviewer)
+## Tickets vigentes — EL-EP-014 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
@@ -306,13 +306,13 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-175 | 167; contrato EL-EP-012 | 176 |
 | EL-TK-176 | 166..175 | EL-EP-016; validación EL-EP-014 |
 
-11 DRAFT. EL-EP-014 conserva auditoría mínima, observabilidad, alertamiento y recovery; no selecciona proveedor de observabilidad/storage ni convierte 99.5% en SLA.
+11 activos READY de requisitos tras dictamen de requirements_reviewer y ui_designer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de auditoría mínima y sanitizada, consulta paginada con filtros, telemetría y health neutrales de proveedor, detección de colas/jobs degradados, alertas de infraestructura y disponibilidad agregada, backups PostgreSQL diarios con PITR (RPO≤1h/RTO≤4h), verificación de restore periódico con preservación de tombstones, incidentes operacionales, visor contextual de auditoría en consola administrativa (AuditLogViewer/Detail, UI_REQUIRED: YES, READY_FOR_FRONTEND_PLANNING: YES) y validación integrada E2E. Superficies UI reutilizadas del catálogo canónico (ui-mvp-epic-review.md#el-ep-014), sin dashboard operacional nuevo ni nuevos componentes. Proveedores de observabilidad y storage definitivo permanecen DEFERRED.
 
 ## EL-EP-015 — no ticketizado en este PR
 
 READY de requisitos, pero READY_FOR_TICKET_WRITING: PARTIAL y READY_FOR_IMPLEMENTATION: PARTIAL. No se generan tickets hasta cerrar el gate técnico de reautenticación/UI sensible. La eliminación ordinaria backend puede planificarse después sin habilitar LEGAL_OR_SECURITY_HOLD pendiente jurídico.
 
-## Tickets propuestos — EL-EP-016 (DRAFT; pendiente requirements_reviewer)
+## Tickets vigentes — EL-EP-016 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
@@ -324,7 +324,7 @@ READY de requisitos, pero READY_FOR_TICKET_WRITING: PARTIAL y READY_FOR_IMPLEMEN
 | EL-TK-182 | 178..181; contrato EL-EP-014 | 183 |
 | EL-TK-183 | 177..182 | decisión operativa posterior a Beta |
 
-7 DRAFT. EL-EP-016 no requiere UI producto; mide evidencia agregada, muestra y clasificación reproducible. Inicio Beta y responsable formal siguen datos operativos, no blockers funcionales.
+7 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES (UI_REQUIRED: NO, UX_READINESS: NOT_REQUIRED conforme a ui-mvp-epic-review.md#el-ep-016) para el contrato de métricas agregadas y minimizadas de la Beta, confiabilidad de cargas y procesamiento multimedia (cargas válidas ≥95%, fotos ≥98%, video ≥95%, latencias p95), soporte funcional y descargas de recuerdos, participación indicativa, ventana 8..12 semanas / volumen mínimo, clasificación (PASS, PASS_WITH_ACTIONS, EXTEND_BETA, FAIL_CRITICAL) con prevalencia absoluta de incidentes críticos, e informe final reproducible basado en snapshots inmutables de evidencia. Inicio Beta y responsable formal permanecen datos operativos de ejecución, no blockers funcionales.
 
 ## EL-EP-017 — no ticketizado
 

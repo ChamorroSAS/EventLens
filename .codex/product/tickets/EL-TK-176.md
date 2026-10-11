@@ -4,7 +4,9 @@
 EL-EP-014
 
 ## Status
-DRAFT
+READY
+
+**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Validación integrada E2E de auditoría, telemetría, alertas, incidentes y evidencia de backup/restore para EL-EP-014. REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES.
 
 ## User story
 **Como** equipo de producto y operación, **quiero** validar trazabilidad, alertas y recuperación del sistema, **para** comprobar que incidentes y pérdidas pueden detectarse y reconstruirse antes de Beta.

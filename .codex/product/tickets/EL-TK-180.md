@@ -4,7 +4,9 @@
 EL-EP-016
 
 ## Status
-DRAFT
+READY
+
+**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Medición de participación indicativa por evento (DEC-055). Conteo de eventos con ≥ 3 sesiones guest válidas, no prevalece sobre incidentes críticos. UI_REQUIRED: NO. REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES.
 
 ## User story
 **Como** equipo de producto, **quiero** calcular cuántos eventos alcanzan participación mínima, **para** tener una señal secundaria de uso real sin perfilar invitados.

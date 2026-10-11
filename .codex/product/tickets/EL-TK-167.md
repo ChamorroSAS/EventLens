@@ -4,7 +4,9 @@
 EL-EP-014
 
 ## Status
-DRAFT
+READY
+
+**CONFIRMED — 2026-10-10:** requirements_reviewer y ui_designer aprueban el paso de DRAFT a READY. Consulta paginada y filtrada solo lectura (DEC-019, DEC-034). Base del visor UI de EL-TK-175 y consola EL-EP-012. REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES.
 
 ## User story
 **Como** operador o administración autorizada, **quiero** consultar eventos de auditoría de un recurso, **para** reconstruir qué ocurrió sin abrir multimedia.

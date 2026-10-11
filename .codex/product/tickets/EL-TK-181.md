@@ -4,7 +4,9 @@
 EL-EP-016
 
 ## Status
-DRAFT
+READY
+
+**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Ventana Beta de 8 semanas, extensión hasta 12 semanas por volumen y muestra mínima de 20 eventos / 1000 archivos (DEC-056). Pruebas internas excluidas. UI_REQUIRED: NO. REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES.
 
 ## User story
 **Como** responsable de producto, **quiero** evaluar una cohorte de 8 semanas y extenderla cuando falte volumen, **para** evitar conclusiones con una muestra insuficiente.
