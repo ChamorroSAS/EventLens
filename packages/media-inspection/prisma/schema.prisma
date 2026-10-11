@@ -248,6 +248,64 @@ model QuarantineNotificationIntent {
   @@map("media_quarantine_notification_intent")
 }
 
+model QuarantineDeleteReceipt {
+  operationId      String   @id @map("operation_id")
+  mediaRef         String   @map("media_ref")
+  generation       BigInt
+  previousRevision BigInt   @map("previous_revision")
+  newRevision      BigInt   @map("new_revision")
+  status           String
+  actorType        String   @map("actor_type")
+  actorId          String   @map("actor_id")
+  grantId          String?  @map("grant_id")
+  justification    String
+  purgeIntentId    String   @map("purge_intent_id") @db.Uuid
+  committedAt      DateTime @map("committed_at") @db.Timestamptz
+
+  @@map("media_quarantine_delete_receipt")
+}
+
+model QuarantineDeleteAudit {
+  id             String   @id @db.Uuid
+  operationId    String   @map("operation_id")
+  mediaRef       String   @map("media_ref")
+  generation     BigInt
+  actorType      String   @map("actor_type")
+  actorId        String   @map("actor_id")
+  grantId        String?  @map("grant_id")
+  justification  String
+  previousStatus String   @map("previous_status")
+  transition     String
+  committedAt    DateTime @map("committed_at") @db.Timestamptz
+
+  @@map("media_quarantine_delete_audit")
+}
+
+model QuarantineDeleteDenialAudit {
+  id          String   @id @db.Uuid
+  operationId String   @map("operation_id")
+  mediaRef    String   @map("media_ref")
+  actorType   String   @map("actor_type")
+  actorId     String   @map("actor_id")
+  reason      String
+  attemptedAt DateTime @map("attempted_at") @db.Timestamptz
+
+  @@map("media_quarantine_delete_denial_audit")
+}
+
+model QuarantinePurgeIntent {
+  id          String   @id @db.Uuid
+  operationId String   @map("operation_id")
+  mediaRef    String   @map("media_ref")
+  eventRef    String   @map("event_ref")
+  generation  BigInt
+  status      String
+  dedupKey    String   @unique @map("dedup_key")
+  createdAt   DateTime @map("created_at") @db.Timestamptz
+
+  @@map("media_quarantine_purge_intent")
+}
+
 
 
 
