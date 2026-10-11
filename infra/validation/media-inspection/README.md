@@ -170,3 +170,25 @@ Coverage includes:
 4. Media remains in `PROCESSING_FAILED` upon cycle creation; the processing worker applies the transition to `PROCESSING` at reservation time. Original media bytes and historical facts are strictly preserved.
 5. Idempotent replay and concurrent coordination: an active cycle (`ACTIVE` status with a non-terminal job) returns the existing cycle without duplicating jobs or resetting budget.
 6. Fail-closed security denials: `QUARANTINED`, other states (`UPLOADED`, `PUBLISHED`, `TRASHED`, `DELETED`), barred events, or unauthorized organizers are rejected with durable audit logs and zero job enqueuing.
+
+### Running focused media status and capabilities tests (EL-TK-053)
+
+```powershell
+$statusEvidence = ".\infra\validation\media-inspection\evidence\status-$([DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss'))"
+.\infra\validation\media-inspection\Run.ps1 -StatusOnly -Build -EvidenceDirectory $statusEvidence
+```
+
+Omit `-StatusOnly` to run the entire media-inspection suite (all 18 test files).
+
+### EL-TK-053 media status and capabilities query final validation
+
+The focused media status suite passed **15/15 tests** (7 PostgreSQL 16 integration tests and 8 unit tests). The combined media-inspection regression passed **331/331 tests** across 18 test files. Typecheck, build, and migration `202610110014_media_status_query` application passed.
+
+Coverage includes:
+1. Retrieval of media lifecycle status and observable sanitized progress (`phase`, `attempt`) without exposing admin error messages, stack traces, storage paths, credentials or execution tokens.
+2. Independent evaluation of `canRetry` vs `canDownloadOriginal` (DEC-075):
+   - `canRetry`: strictly `true` only for verified organizers when `status === 'PROCESSING_FAILED'`, not quarantined, and safety not denied. Guests never receive retry capability.
+   - `canDownloadOriginal`: strictly `true` if and only if `safety.outcome === 'APPROVED'`. Inconclusive, denied, or pending safety states deny original download eligibility even if retry is allowed.
+3. Strict guest isolation and non-enumeration: requests for nonexistent media, media in other events, or other guests' contributions in "Mis aportes" yield `MEDIA_NOT_FOUND` uniformly without leaking metadata.
+4. Barrier enforcement: barred events reject queries (`BARRED_EVENT`), and unauthorized organizers are denied (`ACCESS_DENIED`).
+5. Durable, sanitized query audit logging in PostgreSQL (`media_status_query_audit`).

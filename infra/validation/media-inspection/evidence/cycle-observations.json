@@ -1,0 +1,19 @@
+[
+  {
+    "test": "retry_cycle_inconclusive_reinspect",
+    "receipt": {
+      "cycleId": "cycle:29a85420-1828-4b2e-818a-f10b6ead7ee0",
+      "cycleNumber": 1,
+      "mediaRef": "media:bc1d7b45-e35a-4015-9c09-3e59a6971405",
+      "eventRef": "event:b7e7fcf0-6647-45d2-bdf0-5a7cab0546cd",
+      "organizerRef": "organizer:01e08a62-b195-4c8d-929f-5bbfd67da618",
+      "jobId": "bbf44997-a890-4104-b953-2f89bf77ac2c",
+      "jobType": "MEDIA_INSPECTION",
+      "safetyOutcome": "INCONCLUSIVE",
+      "status": "ACTIVE",
+      "operationId": "c64dbb01-1b5f-4883-bb4d-fd673bc5373f",
+      "wasExistingCycle": false,
+      "createdAt": "2026-10-11T05:38:31.572Z"
+    }
+  }
+]

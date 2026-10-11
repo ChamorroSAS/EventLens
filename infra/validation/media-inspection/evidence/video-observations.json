@@ -1,0 +1,1172 @@
+{
+  "runId": "media_inspection_52bedb15e9ae4de68d69d53dc5bb5417",
+  "observations": [
+    {
+      "case": "GEN-WEBM-c86a93607e60",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "3127f76e-2dff-4a28-bb94-5e881e22a714",
+        "jobId": "c7c57e2c-3729-4ffd-bdf2-ad12face805f",
+        "executionToken": "f01abbe7-65c6-4484-90bb-95422a9eb214",
+        "fence": "1",
+        "epoch": "videos-epoch",
+        "mediaRef": "media:61d2dbc4-87ce-4008-adb7-615a5dc47095",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "c86a93607e601bc9475d16b4c8fdd42203a3f3b24eda28ffe7f621d5b8ec94ff",
+        "originalVersion": "df1f57fa-d823-4ada-86b8-13919aaefc77",
+        "safetyFingerprint": "03c86afdf5c16fd136607be06e07ff644036fe578704712326a165538ba74a12",
+        "attemptId": "a1d5eaf6-2ff0-447e-bfc0-c3c8a1a9ebad",
+        "durationMs": 1793,
+        "inputFormat": "WEBM",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/c0b0071c2edb52aaf82cffb5bf03a7272c85c8cb3aee5f862221ac066a6461ab/1/a1d5eaf6-2ff0-447e-bfc0-c3c8a1a9ebad/thumbnail.jpg",
+            "immutableVersion": "08f8ae5d-879d-4215-8cfa-ede8e7bb78d8",
+            "sha256": "37f89156a9090d985c8ad9f441bebce6dfc51aad7c47943b20fcc63db3665e90",
+            "sizeBytes": 9378,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 320,
+            "height": 240
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/c0b0071c2edb52aaf82cffb5bf03a7272c85c8cb3aee5f862221ac066a6461ab/1/a1d5eaf6-2ff0-447e-bfc0-c3c8a1a9ebad/preview.jpg",
+            "immutableVersion": "15e65795-2148-40ef-9ff7-23a70d632c96",
+            "sha256": "37f89156a9090d985c8ad9f441bebce6dfc51aad7c47943b20fcc63db3665e90",
+            "sizeBytes": 9378,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 320,
+            "height": 240
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/c0b0071c2edb52aaf82cffb5bf03a7272c85c8cb3aee5f862221ac066a6461ab/1/a1d5eaf6-2ff0-447e-bfc0-c3c8a1a9ebad/playback.mp4",
+            "immutableVersion": "347c30ce-0fbc-4e11-854c-fa519016e4f5",
+            "sha256": "06f621e255f7f370272b78539ba42a87fbee39b63e27b47576e861078cd5c34e",
+            "sizeBytes": 61719,
+            "file": "playback.mp4",
+            "role": "PLAYBACK",
+            "mime": "video/mp4",
+            "width": 320,
+            "height": 240,
+            "audio": true,
+            "durationSeconds": 2.007
+          }
+        ]
+      }
+    },
+    {
+      "case": "IOS-MOV-1e5522ddc8d1",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "ed9b3c61-9620-4c52-b5a8-f2d1b1dbb63e",
+        "jobId": "86e87df4-1875-4c32-925f-b14f58cb9aee",
+        "executionToken": "ec349640-5792-4207-b146-6772b0525b57",
+        "fence": "1",
+        "epoch": "videos-epoch",
+        "mediaRef": "media:5f95c90d-ac94-4203-b85a-678982aa23f5",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "1e5522ddc8d1b3ae5a4226cb48264d0cf4ccb8f9e2e45a9b25e4c3a21afedfc5",
+        "originalVersion": "a7e34de9-fcdd-408f-b2ca-2af6cfc556fb",
+        "safetyFingerprint": "64f9b2d6527c253c5ac834abfc00c22524f5d639e976bca943b1c9b6a210b4ff",
+        "attemptId": "c635d3cf-325f-4ef0-bc4c-d769323415df",
+        "durationMs": 17800,
+        "inputFormat": "MOV",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/b9df3b8d29d6075a5262d164f84c517e34256f8ec05766ca753a59fae9965931/1/c635d3cf-325f-4ef0-bc4c-d769323415df/thumbnail.jpg",
+            "immutableVersion": "59bbf8bf-52ad-4a88-b5cf-b09d1d96bf33",
+            "sha256": "9ba15c8b20462041530d28c5d0146c474eaf5d7f23f796976694206a080e46b9",
+            "sizeBytes": 11918,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 320,
+            "height": 569
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/b9df3b8d29d6075a5262d164f84c517e34256f8ec05766ca753a59fae9965931/1/c635d3cf-325f-4ef0-bc4c-d769323415df/preview.jpg",
+            "immutableVersion": "56ba0d23-9bd9-45f8-a2b2-bdd6ddbf2ec7",
+            "sha256": "168d3a9435809f55bd4a004f7dfe506915023b5188d5163733d231b7991bfad4",
+            "sizeBytes": 55333,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 960,
+            "height": 1707
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/b9df3b8d29d6075a5262d164f84c517e34256f8ec05766ca753a59fae9965931/1/c635d3cf-325f-4ef0-bc4c-d769323415df/playback.mp4",
+            "immutableVersion": "f636932e-daed-42b6-9eb4-b7f284903028",
+            "sha256": "efec8b4b8589d070441d57e8a978185bdf4a06eba32dd1083bab6669cdadd5ae",
+            "sizeBytes": 1595812,
+            "file": "playback.mp4",
+            "role": "PLAYBACK",
+            "mime": "video/mp4",
+            "width": 960,
+            "height": 1706,
+            "audio": true,
+            "durationSeconds": 7.038
+          }
+        ]
+      }
+    },
+    {
+      "case": "IOS-MOV-70098a8e6331",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "7f16710c-c4e7-46e2-a180-c6065bb10633",
+        "jobId": "2789e2c5-621b-498d-9f7b-a0b2ada4df07",
+        "executionToken": "e9863253-4759-436e-8409-6a93b0bc8af0",
+        "fence": "1",
+        "epoch": "videos-epoch",
+        "mediaRef": "media:94c0cd01-cfa2-4168-a062-1c4e3128c129",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "70098a8e6331824c8f8544dcfeea8f5858b5dc9e58ba17b98368a63c314ed3b0",
+        "originalVersion": "c29bbd89-77b5-414b-8083-c98feca86c2a",
+        "safetyFingerprint": "2aa9c05a432c5aa2b156b4ea2efb3ddc8a55cff0994f1373be76ae59aaeea997",
+        "attemptId": "8f536f1c-5fd0-4be8-8adc-9650b46db316",
+        "durationMs": 9720,
+        "inputFormat": "MOV",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/117320e4926bf0766848052b521ebe7782d336df0e98148bcaabcf8e724f1b00/1/8f536f1c-5fd0-4be8-8adc-9650b46db316/thumbnail.jpg",
+            "immutableVersion": "9af3b74e-30c7-4e21-bb3b-410db77edf1d",
+            "sha256": "149d687efba178c7fff02fe282643249617b232a1c195fc025bb37382834ad99",
+            "sizeBytes": 5684,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 320,
+            "height": 180
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/117320e4926bf0766848052b521ebe7782d336df0e98148bcaabcf8e724f1b00/1/8f536f1c-5fd0-4be8-8adc-9650b46db316/preview.jpg",
+            "immutableVersion": "0e0b936e-9b7c-4523-bac5-90a1fb9dd8f7",
+            "sha256": "175f7935cd267fb43796ac39ee2aaede38202f41e4ff3ee3267f2a72e8070279",
+            "sizeBytes": 25069,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 960,
+            "height": 540
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/117320e4926bf0766848052b521ebe7782d336df0e98148bcaabcf8e724f1b00/1/8f536f1c-5fd0-4be8-8adc-9650b46db316/playback.mp4",
+            "immutableVersion": "f50511b7-8f25-4597-886b-342cff838f00",
+            "sha256": "2d10ebe8196010dccc3cb187a4a247495be6f92a737ba6d7bd74477f48f54a76",
+            "sizeBytes": 668086,
+            "file": "playback.mp4",
+            "role": "PLAYBACK",
+            "mime": "video/mp4",
+            "width": 960,
+            "height": 540,
+            "audio": true,
+            "durationSeconds": 7.55
+          }
+        ]
+      }
+    },
+    {
+      "case": "ANDROID-MP4-574790f5df52",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "2b999d47-8c77-4473-a6ed-54d5cece2cd5",
+        "jobId": "23b641e5-7316-42d5-a32e-51321ad521f5",
+        "executionToken": "2b8c4c39-b4e5-4e0c-ab64-9eeca95f2a5f",
+        "fence": "1",
+        "epoch": "videos-epoch",
+        "mediaRef": "media:ce784ac2-fc10-4055-a920-7fb45a14a8d8",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "574790f5df5264f8ea11c44718ea20b9dd5a99118d96b6713f9f039f0fa9816b",
+        "originalVersion": "dc253442-a9ba-4ec1-be2a-6a59c3101f22",
+        "safetyFingerprint": "74fabbee3eefea2ec7aaa98bf3464578e2ef29beb8a7ffa9be2e4adac70c4ef8",
+        "attemptId": "038dc04f-87a5-4d84-8514-60ff4c65e35c",
+        "durationMs": 18925,
+        "inputFormat": "MP4",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/de4336c2898e4d62110fdbc63486a26b9fe269ff2e350d73dcc691177e693bb3/1/038dc04f-87a5-4d84-8514-60ff4c65e35c/thumbnail.jpg",
+            "immutableVersion": "316ed7ab-156f-42b4-81f2-c39d448e01ae",
+            "sha256": "bd1e3dadb66e05648e6e49ad5617b79920d5b53a19f29e208645cb7910373874",
+            "sizeBytes": 9679,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 320,
+            "height": 569
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/de4336c2898e4d62110fdbc63486a26b9fe269ff2e350d73dcc691177e693bb3/1/038dc04f-87a5-4d84-8514-60ff4c65e35c/preview.jpg",
+            "immutableVersion": "7d610775-daa9-4e37-b4fa-23ffbe537cfd",
+            "sha256": "67e10c2fc2c7f312b321722e357cf2db0f3e23ea3676ac7c7cf5fb1413091da3",
+            "sizeBytes": 37637,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 960,
+            "height": 1707
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/de4336c2898e4d62110fdbc63486a26b9fe269ff2e350d73dcc691177e693bb3/1/038dc04f-87a5-4d84-8514-60ff4c65e35c/playback.mp4",
+            "immutableVersion": "3bf38ecb-6acf-422b-9507-515f832b7b06",
+            "sha256": "47ce1f3f76bde2f21dd056e0258499b437638197413672bdf4ade56e2af45755",
+            "sizeBytes": 3685563,
+            "file": "playback.mp4",
+            "role": "PLAYBACK",
+            "mime": "video/mp4",
+            "width": 960,
+            "height": 1706,
+            "audio": true,
+            "durationSeconds": 7.860998
+          }
+        ]
+      }
+    },
+    {
+      "case": "ANDROID-MP4-0a23dabadb68",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "f5842718-2601-437a-8d0f-90d266cc7a22",
+        "jobId": "8978dd31-17f0-45a5-8d7d-4bb868640623",
+        "executionToken": "441746d9-49cf-4c30-9f72-9cf78cac0b05",
+        "fence": "1",
+        "epoch": "videos-epoch",
+        "mediaRef": "media:efcc6593-d085-42ff-9ca8-e1c3e5178d31",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "0a23dabadb68d1e26ab73738e9eabb11903b0a783e08c5ee3594a0837432a12b",
+        "originalVersion": "04cde2d3-f75f-4c7b-9503-657314b858a1",
+        "safetyFingerprint": "f8a6e032d0819cbeb483669327ea8840b1a6effb1c2eeedabba45e1f624b6543",
+        "attemptId": "c8887b69-bb3f-4620-9327-8e9c8ba1ecc8",
+        "durationMs": 6172,
+        "inputFormat": "MP4",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/f177e9897443d69273f30d801101d7c1975bfbc63058ee3edf2bec20b5aa13d6/1/c8887b69-bb3f-4620-9327-8e9c8ba1ecc8/thumbnail.jpg",
+            "immutableVersion": "0c46bb93-a160-4a55-a107-b30d34c51f82",
+            "sha256": "2c4a1a3cdfeb85316f1052274c47af9c59fbae372adfd7d9cb931dde95378615",
+            "sizeBytes": 7811,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 320,
+            "height": 180
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/f177e9897443d69273f30d801101d7c1975bfbc63058ee3edf2bec20b5aa13d6/1/c8887b69-bb3f-4620-9327-8e9c8ba1ecc8/preview.jpg",
+            "immutableVersion": "51b97be6-2531-4a60-b89f-537ebc188cdb",
+            "sha256": "3d1fd474e827320bd6c2213d1342bfb1e439f4f413eefacde344f5923a2fae52",
+            "sizeBytes": 22249,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 960,
+            "height": 540
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/f177e9897443d69273f30d801101d7c1975bfbc63058ee3edf2bec20b5aa13d6/1/c8887b69-bb3f-4620-9327-8e9c8ba1ecc8/playback.mp4",
+            "immutableVersion": "f47a7a63-cbd9-4aeb-a686-ae14e14fa626",
+            "sha256": "538cf455888606e4b22df943e3ae4acda6053d653b68300f221abd74967b4b80",
+            "sizeBytes": 932009,
+            "file": "playback.mp4",
+            "role": "PLAYBACK",
+            "mime": "video/mp4",
+            "width": 960,
+            "height": 540,
+            "audio": true,
+            "durationSeconds": 5.433991
+          }
+        ]
+      }
+    },
+    {
+      "case": "MP4-H264-NO-AUDIO.mp4",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "8260794e-9046-499a-b0d2-7149d748125c",
+        "jobId": "83a07bf7-6b2c-41fa-9f38-a961245e4983",
+        "executionToken": "d023ca5d-8e0a-4284-a25b-0f00f168fed0",
+        "fence": "1",
+        "epoch": "videos-epoch",
+        "mediaRef": "media:bf8234cd-9af4-46ee-b290-4f1e95640cad",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "cca45e06d7cfb176096a00abece7a61f011c494caedb77faec2f0df9c36a1ae8",
+        "originalVersion": "942541cb-e652-4ef4-b114-7fba1fe8b10a",
+        "safetyFingerprint": "b3f6831356e32d892bef2c3d87cda97e7d6eaaa1f911ed2032c2e38b37d41245",
+        "attemptId": "2e341f85-8c7e-4ece-9584-ee4b43b2fa0f",
+        "durationMs": 1721,
+        "inputFormat": "MP4",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/7c55cc0fdfbf30db59cc5130babb8f53cfa4c02ea98e04561204977a0c744789/1/2e341f85-8c7e-4ece-9584-ee4b43b2fa0f/thumbnail.jpg",
+            "immutableVersion": "9b5a5e99-77ff-439b-ae5a-2a00b6269ca3",
+            "sha256": "f649d00b1b5a136c55247135dd0503a8571fc8e64b7620aa1b1118771568b624",
+            "sizeBytes": 5257,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 160,
+            "height": 120
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/7c55cc0fdfbf30db59cc5130babb8f53cfa4c02ea98e04561204977a0c744789/1/2e341f85-8c7e-4ece-9584-ee4b43b2fa0f/preview.jpg",
+            "immutableVersion": "f71270ad-4b3e-4e97-8a0b-f574c9f528f0",
+            "sha256": "f649d00b1b5a136c55247135dd0503a8571fc8e64b7620aa1b1118771568b624",
+            "sizeBytes": 5257,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 160,
+            "height": 120
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/7c55cc0fdfbf30db59cc5130babb8f53cfa4c02ea98e04561204977a0c744789/1/2e341f85-8c7e-4ece-9584-ee4b43b2fa0f/playback.mp4",
+            "immutableVersion": "86247fa0-97c0-41bd-a321-fc23c7173b85",
+            "sha256": "42de0e856a8449e358c11ab3a39c3b885d74651984e3bc47d4c94edcfe283a39",
+            "sizeBytes": 9541,
+            "file": "playback.mp4",
+            "role": "PLAYBACK",
+            "mime": "video/mp4",
+            "width": 160,
+            "height": 120,
+            "audio": false,
+            "durationSeconds": 1
+          }
+        ]
+      }
+    },
+    {
+      "case": "MOV-H264-NO-AUDIO.mov",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "da4ea498-66e3-4121-aa54-6530cd5660f2",
+        "jobId": "3dcec9ae-fdd0-43cc-8e92-7d787e24e7ee",
+        "executionToken": "73f4fae5-a066-4fa7-a59b-eaf907f7bcb1",
+        "fence": "1",
+        "epoch": "videos-epoch",
+        "mediaRef": "media:54d68181-5a1d-4c19-9bc9-1e14134c8226",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "6d22e3527abf0c646db96dfd551772ac84421ce34978b86de1f43a4f097c97a9",
+        "originalVersion": "078420e8-80af-4ce3-8638-00f4639b7454",
+        "safetyFingerprint": "6f502058d0a7dcd1ac82f6046bc17dbbc48a2295c37dfbfa308ccb771a5a17b6",
+        "attemptId": "65926c42-a3bb-4871-9599-efcf35153416",
+        "durationMs": 1729,
+        "inputFormat": "MOV",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/b5954bf11c9eb8930221eb8d1bfb6a09f447b46b6ca90ac8b5b34428b965469d/1/65926c42-a3bb-4871-9599-efcf35153416/thumbnail.jpg",
+            "immutableVersion": "46f204f1-cff7-443f-b539-498a37ba2a26",
+            "sha256": "f649d00b1b5a136c55247135dd0503a8571fc8e64b7620aa1b1118771568b624",
+            "sizeBytes": 5257,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 160,
+            "height": 120
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/b5954bf11c9eb8930221eb8d1bfb6a09f447b46b6ca90ac8b5b34428b965469d/1/65926c42-a3bb-4871-9599-efcf35153416/preview.jpg",
+            "immutableVersion": "7aa6d3e6-b537-4a2d-ba1a-4fee3cd5934f",
+            "sha256": "f649d00b1b5a136c55247135dd0503a8571fc8e64b7620aa1b1118771568b624",
+            "sizeBytes": 5257,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 160,
+            "height": 120
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/b5954bf11c9eb8930221eb8d1bfb6a09f447b46b6ca90ac8b5b34428b965469d/1/65926c42-a3bb-4871-9599-efcf35153416/playback.mp4",
+            "immutableVersion": "e3f6c416-5a6c-4020-9af9-be2615e19943",
+            "sha256": "42de0e856a8449e358c11ab3a39c3b885d74651984e3bc47d4c94edcfe283a39",
+            "sizeBytes": 9541,
+            "file": "playback.mp4",
+            "role": "PLAYBACK",
+            "mime": "video/mp4",
+            "width": 160,
+            "height": 120,
+            "audio": false,
+            "durationSeconds": 1
+          }
+        ]
+      }
+    },
+    {
+      "case": "MP4-HEVC-NO-AUDIO.mp4",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "538666b1-94fe-4b2f-98cd-dee6814ac97b",
+        "jobId": "70b6ae05-f0d1-406b-86b1-b53bf5a66952",
+        "executionToken": "bb2e7349-fc7c-42b8-81f0-33359b32d416",
+        "fence": "1",
+        "epoch": "videos-epoch",
+        "mediaRef": "media:dbd1f428-d7af-4cae-887a-188661300432",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "4c79f772d5a13c8c49c30a540aef9c43c99296df62a8bce3c5dbaefaf4fb1461",
+        "originalVersion": "89533d05-772f-4cb2-9dac-e0338092f2c0",
+        "safetyFingerprint": "cce22bd9000d104fb9d60b476c8e646f78e7111d6782769b9ad0672eea55a7b9",
+        "attemptId": "0cbdc79c-7e35-4d3c-8f1d-426f2070fc7e",
+        "durationMs": 1706,
+        "inputFormat": "MP4",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/61e3b242904e9160793294a761262018bd146b2b55fa921b29d66ecabe853b72/1/0cbdc79c-7e35-4d3c-8f1d-426f2070fc7e/thumbnail.jpg",
+            "immutableVersion": "63b39991-cbb4-4ab8-88f0-898a8711eda2",
+            "sha256": "496613498fab9614de231c5ec797a98e741636bbf13a9c3f5f748224a5d6d8d9",
+            "sizeBytes": 5164,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 160,
+            "height": 120
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/61e3b242904e9160793294a761262018bd146b2b55fa921b29d66ecabe853b72/1/0cbdc79c-7e35-4d3c-8f1d-426f2070fc7e/preview.jpg",
+            "immutableVersion": "6572da4c-9131-4c7f-be48-f6c595859f33",
+            "sha256": "496613498fab9614de231c5ec797a98e741636bbf13a9c3f5f748224a5d6d8d9",
+            "sizeBytes": 5164,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 160,
+            "height": 120
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/61e3b242904e9160793294a761262018bd146b2b55fa921b29d66ecabe853b72/1/0cbdc79c-7e35-4d3c-8f1d-426f2070fc7e/playback.mp4",
+            "immutableVersion": "d9e85b73-4e1d-41ed-92ab-c4075e466896",
+            "sha256": "2eca37f182975a186ae3de011be2deacb40d7d54add2b1228e9d03c9c6c8ea19",
+            "sizeBytes": 9903,
+            "file": "playback.mp4",
+            "role": "PLAYBACK",
+            "mime": "video/mp4",
+            "width": 160,
+            "height": 120,
+            "audio": false,
+            "durationSeconds": 1
+          }
+        ]
+      }
+    },
+    {
+      "case": "WEBM-VP8-NO-AUDIO.webm",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "3ede28c9-93c9-46d8-8741-c5448621f4d5",
+        "jobId": "c8cdfbb6-245a-4b3c-adff-550469b3851c",
+        "executionToken": "d49a1271-e048-49e3-8781-d6057d2bb649",
+        "fence": "1",
+        "epoch": "videos-epoch",
+        "mediaRef": "media:9511e65f-c919-43be-a0d9-8738d316aef1",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "00876d69150a7b07792ae0a487c2eb4f655029935ad7ffe9ac6e8c8b61eba509",
+        "originalVersion": "42796a9d-ceef-4a5e-b179-4dd002c82c1a",
+        "safetyFingerprint": "af88a5e41aa5ad6fd6f5b2ed6999615f029f84e7bbd6faa5ae358e711604e171",
+        "attemptId": "ee65c72d-fe35-4adb-b2c9-381c84b67431",
+        "durationMs": 1753,
+        "inputFormat": "WEBM",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/7bb9cbdcc6fd6bfbebf6db94f4f2bed41505c45061d145c3f4dc9f5d4e98ab17/1/ee65c72d-fe35-4adb-b2c9-381c84b67431/thumbnail.jpg",
+            "immutableVersion": "dc224b20-aaa8-4801-97a8-ee14ee3e7c57",
+            "sha256": "83f474409c8ab2d75c0afd3f352e27c71958cc229d8d06ec5ee28486d67645f0",
+            "sizeBytes": 5248,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 160,
+            "height": 120
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/7bb9cbdcc6fd6bfbebf6db94f4f2bed41505c45061d145c3f4dc9f5d4e98ab17/1/ee65c72d-fe35-4adb-b2c9-381c84b67431/preview.jpg",
+            "immutableVersion": "2dcdd7c1-8303-4067-bbed-71e69539ad4e",
+            "sha256": "83f474409c8ab2d75c0afd3f352e27c71958cc229d8d06ec5ee28486d67645f0",
+            "sizeBytes": 5248,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 160,
+            "height": 120
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/7bb9cbdcc6fd6bfbebf6db94f4f2bed41505c45061d145c3f4dc9f5d4e98ab17/1/ee65c72d-fe35-4adb-b2c9-381c84b67431/playback.mp4",
+            "immutableVersion": "9a9548e0-d68b-49cc-8a7c-4da39cd1f606",
+            "sha256": "b8730dbe558cfd280f7b3a4f8e6ae67e262bf7bd6b3141989172b99c32981842",
+            "sizeBytes": 9380,
+            "file": "playback.mp4",
+            "role": "PLAYBACK",
+            "mime": "video/mp4",
+            "width": 160,
+            "height": 120,
+            "audio": false,
+            "durationSeconds": 1
+          }
+        ]
+      }
+    },
+    {
+      "case": "WEBM-VP9-NO-AUDIO.webm",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "7afca7d0-c25b-4e6a-8d2f-62813e4f9d13",
+        "jobId": "f863313d-d7c9-4d93-8608-a058a178f265",
+        "executionToken": "8d583b23-087d-47ef-ae9c-c272756f02ad",
+        "fence": "1",
+        "epoch": "videos-epoch",
+        "mediaRef": "media:657ac934-acd0-4843-8578-a387f5b14b8a",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "17c3adc168763698834608b489491bb36c8840173f60fc6094d9e0eea4814fa5",
+        "originalVersion": "eade2352-0836-4cde-a3c6-b5e22b604052",
+        "safetyFingerprint": "b6b4650957b4dda8e251f084c3eb1b3d4e96ca4e7e508dc679105aa8914628b2",
+        "attemptId": "0be8fb64-c5b1-4537-9e27-b51e648e3772",
+        "durationMs": 1708,
+        "inputFormat": "WEBM",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/ce9b1cf33b61a6fabf53cf0ef2c7bdd2fa5558a0f98bdd685b519e6d8fbb48b0/1/0be8fb64-c5b1-4537-9e27-b51e648e3772/thumbnail.jpg",
+            "immutableVersion": "120c6687-42f0-4220-8688-3a0f70f5181f",
+            "sha256": "a68b9b783df1092efe5867296435fa47f6d78cbe10d30b8b85c1db49f856e402",
+            "sizeBytes": 5259,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 160,
+            "height": 120
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/ce9b1cf33b61a6fabf53cf0ef2c7bdd2fa5558a0f98bdd685b519e6d8fbb48b0/1/0be8fb64-c5b1-4537-9e27-b51e648e3772/preview.jpg",
+            "immutableVersion": "61d1aa67-3544-4724-a5e4-eb8392bc3d88",
+            "sha256": "a68b9b783df1092efe5867296435fa47f6d78cbe10d30b8b85c1db49f856e402",
+            "sizeBytes": 5259,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 160,
+            "height": 120
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/ce9b1cf33b61a6fabf53cf0ef2c7bdd2fa5558a0f98bdd685b519e6d8fbb48b0/1/0be8fb64-c5b1-4537-9e27-b51e648e3772/playback.mp4",
+            "immutableVersion": "7d742e62-4881-4a74-9cc8-ca9eb3699ed3",
+            "sha256": "452360db813c252f110dfe4a6e33f65f692e9ddc531dd86ca961cf92ce56d401",
+            "sizeBytes": 9468,
+            "file": "playback.mp4",
+            "role": "PLAYBACK",
+            "mime": "video/mp4",
+            "width": 160,
+            "height": 120,
+            "audio": false,
+            "durationSeconds": 1
+          }
+        ]
+      }
+    },
+    {
+      "case": "CONTROLLED-34x18-1:1-false",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "fab63ba4-8eb5-4dcb-b442-deb512fa7543",
+        "jobId": "42164401-be6f-4499-8ea3-c1cc5819225b",
+        "executionToken": "2205c8ce-d420-43c7-b39b-1371f0638c88",
+        "fence": "1",
+        "epoch": "videos-epoch",
+        "mediaRef": "media:f1883ec6-e313-4020-87f3-9660085c3993",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "dcef848667e25e695f69ca73ab13bba4e7ca45f21052b160ea06d351d0a80c7e",
+        "originalVersion": "4683723a-d4b5-4835-9bb2-2798cc653632",
+        "safetyFingerprint": "2fe9ed5c856110fdf17f72c26d89479889d3567477cf87a1a54c0a6490fb04ec",
+        "attemptId": "3489d98b-52e9-4eaa-9276-f9f06837345a",
+        "durationMs": 1704,
+        "inputFormat": "MP4",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/e98bd12b31d0c4c2a2230a99b472b317b983a68b0666257bcdee158a82fa4680/1/3489d98b-52e9-4eaa-9276-f9f06837345a/thumbnail.jpg",
+            "immutableVersion": "37f6f98e-f729-4afd-80f0-75bae6998c9a",
+            "sha256": "25394b369ecd2d63a9ad2facd54ada95011bbce4018cfc0fba665d422e4b5fda",
+            "sizeBytes": 1329,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 34,
+            "height": 18
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/e98bd12b31d0c4c2a2230a99b472b317b983a68b0666257bcdee158a82fa4680/1/3489d98b-52e9-4eaa-9276-f9f06837345a/preview.jpg",
+            "immutableVersion": "8a42017f-6cfa-4b8e-af74-ce2f19eb2148",
+            "sha256": "25394b369ecd2d63a9ad2facd54ada95011bbce4018cfc0fba665d422e4b5fda",
+            "sizeBytes": 1329,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 34,
+            "height": 18
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/e98bd12b31d0c4c2a2230a99b472b317b983a68b0666257bcdee158a82fa4680/1/3489d98b-52e9-4eaa-9276-f9f06837345a/playback.mp4",
+            "immutableVersion": "5292d46e-d12f-4865-9526-1ea0655eb184",
+            "sha256": "eefb8901a849e084e59ff39d77be921ab5ae1c40eae5d5e62cea7b17168beb4e",
+            "sizeBytes": 2585,
+            "file": "playback.mp4",
+            "role": "PLAYBACK",
+            "mime": "video/mp4",
+            "width": 34,
+            "height": 18,
+            "audio": false,
+            "durationSeconds": 1
+          }
+        ]
+      }
+    },
+    {
+      "case": "CONTROLLED-321x19-1:1-false",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "0ec625b2-08f1-4ebd-af75-615a26c62615",
+        "jobId": "ec93b834-2798-4811-8e0b-c048dfeb4544",
+        "executionToken": "c1813c9a-71d2-44d8-bfd8-baaf1ed70931",
+        "fence": "1",
+        "epoch": "videos-epoch",
+        "mediaRef": "media:c5816340-cc8a-4427-9e78-7d557bb833ba",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "a6b42e40e08bf3563ea7f1a3807ec7ae18762c0835e41e26d6151a11632bfe20",
+        "originalVersion": "94862e6f-9da6-4e0b-bd37-8dba43526ce1",
+        "safetyFingerprint": "e86e8189439b2117903b772fcb29c17b7ff47f3d1e9c8ba41709c48b4cdb455c",
+        "attemptId": "58f1b9a6-9491-4478-8986-6f0bb3031b02",
+        "durationMs": 1787,
+        "inputFormat": "MP4",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/32d6ecc3d78e64a5845c212825830a1e8930d08f0096042e4b2381f2bdabfb7c/1/58f1b9a6-9491-4478-8986-6f0bb3031b02/thumbnail.jpg",
+            "immutableVersion": "75d58bcd-c50a-454f-8aee-7a5b073c8109",
+            "sha256": "3a09d55f7cceecd7e0bc91708b2389e55b387cc9780b43f13b45fa4068857a35",
+            "sizeBytes": 4388,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 320,
+            "height": 19
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/32d6ecc3d78e64a5845c212825830a1e8930d08f0096042e4b2381f2bdabfb7c/1/58f1b9a6-9491-4478-8986-6f0bb3031b02/preview.jpg",
+            "immutableVersion": "c496a963-72bc-42ac-b077-ff602713523b",
+            "sha256": "5535a1018d9cc16d482dcbf0a7a576cf4f9145bbc999175845dc34fd70a237bc",
+            "sizeBytes": 4615,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 321,
+            "height": 19
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/32d6ecc3d78e64a5845c212825830a1e8930d08f0096042e4b2381f2bdabfb7c/1/58f1b9a6-9491-4478-8986-6f0bb3031b02/playback.mp4",
+            "immutableVersion": "6c402800-6bc5-4fcc-984d-5c29003f30c2",
+            "sha256": "0ba6238d54068879387781d36894112349c588dbaad59a0eeeeb05509fb7d142",
+            "sizeBytes": 4262,
+            "file": "playback.mp4",
+            "role": "PLAYBACK",
+            "mime": "video/mp4",
+            "width": 320,
+            "height": 18,
+            "audio": false,
+            "durationSeconds": 1
+          }
+        ]
+      }
+    },
+    {
+      "case": "CONTROLLED-34x18-2:1-false",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "d18071e2-80ad-4ad8-9c4d-aa9619eb9746",
+        "jobId": "c613a6c9-e795-466f-9211-f3133c560b3f",
+        "executionToken": "a1099c5e-8e11-4b0c-ab5f-dcc1e19469b6",
+        "fence": "1",
+        "epoch": "videos-epoch",
+        "mediaRef": "media:297a6308-b313-4efb-abdd-cc86b23a4816",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "83f247550f1de66486945731c8d10edb2f5254d38df1567946d44a0e0d05c386",
+        "originalVersion": "a9d091a9-1372-4fdf-83ad-60a5bcfca1b4",
+        "safetyFingerprint": "5924b19e7e6ab07513749fe71f850a5906becfb0a71e5bd53a706fd7bce35d93",
+        "attemptId": "42e30f81-d2b3-4183-993d-4d10cc59107e",
+        "durationMs": 1729,
+        "inputFormat": "MP4",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/92b794456ccda6cc13db82abdfac4c7ea39c0fdd9996af57ac0820f732a77a87/1/42e30f81-d2b3-4183-993d-4d10cc59107e/thumbnail.jpg",
+            "immutableVersion": "e7289f42-9efd-4e32-b375-65035f13a04e",
+            "sha256": "52411822a413532526bbd86688f5fb941c98eea1765222fe5fcecd50dcf7b8bc",
+            "sizeBytes": 859,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 34,
+            "height": 9
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/92b794456ccda6cc13db82abdfac4c7ea39c0fdd9996af57ac0820f732a77a87/1/42e30f81-d2b3-4183-993d-4d10cc59107e/preview.jpg",
+            "immutableVersion": "cde7172b-b3b9-41c0-8bc8-6b9998356419",
+            "sha256": "52411822a413532526bbd86688f5fb941c98eea1765222fe5fcecd50dcf7b8bc",
+            "sizeBytes": 859,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 34,
+            "height": 9
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/92b794456ccda6cc13db82abdfac4c7ea39c0fdd9996af57ac0820f732a77a87/1/42e30f81-d2b3-4183-993d-4d10cc59107e/playback.mp4",
+            "immutableVersion": "1401e715-fc18-4093-8fc4-021cd8f0dd6e",
+            "sha256": "50005911f415078b498c6ec1a81934add356c625fde8a599a0124a90a9bc6041",
+            "sizeBytes": 2366,
+            "file": "playback.mp4",
+            "role": "PLAYBACK",
+            "mime": "video/mp4",
+            "width": 34,
+            "height": 8,
+            "audio": false,
+            "durationSeconds": 1
+          }
+        ]
+      }
+    },
+    {
+      "case": "CONTROLLED-34x18-1:2-false",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "20d89a15-543d-435d-9bdc-388107fa3d4d",
+        "jobId": "443d090a-1c12-44b6-8cf9-c7bbe2ee22b2",
+        "executionToken": "af3dbad7-cbd1-4111-8407-b3d1c8aa72b6",
+        "fence": "1",
+        "epoch": "videos-epoch",
+        "mediaRef": "media:304b94a3-ceae-40de-94d3-52ffcc61c29a",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "bdb12bd109842b5bb5178d6b499d19e93636616015eac0bea99da371b490bba1",
+        "originalVersion": "c0aa4ce6-00f3-433f-bfb8-c17cd2c38b65",
+        "safetyFingerprint": "bfda409c2b65378b343f16f3b3d27b8c3eecb43a54078ad0f0e73cc5a69a0881",
+        "attemptId": "bcc8a22b-3932-4aea-a1c5-58919414ac12",
+        "durationMs": 1706,
+        "inputFormat": "MP4",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/0fed9fab6b02ff875eeadaefa48b77117eb3ea4fcd41021e14e330b9436aa319/1/bcc8a22b-3932-4aea-a1c5-58919414ac12/thumbnail.jpg",
+            "immutableVersion": "0662c1ec-9cff-4f9f-915c-14dac1df5d3e",
+            "sha256": "3a779a1b2068157eb56e7bfe9e52b45365cde1cace5a5ada67f81f85bfe7b2c8",
+            "sizeBytes": 862,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 17,
+            "height": 18
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/0fed9fab6b02ff875eeadaefa48b77117eb3ea4fcd41021e14e330b9436aa319/1/bcc8a22b-3932-4aea-a1c5-58919414ac12/preview.jpg",
+            "immutableVersion": "6484a174-abe5-4bf6-af65-6422ac18a576",
+            "sha256": "3a779a1b2068157eb56e7bfe9e52b45365cde1cace5a5ada67f81f85bfe7b2c8",
+            "sizeBytes": 862,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 17,
+            "height": 18
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/0fed9fab6b02ff875eeadaefa48b77117eb3ea4fcd41021e14e330b9436aa319/1/bcc8a22b-3932-4aea-a1c5-58919414ac12/playback.mp4",
+            "immutableVersion": "d159acd9-e831-49a1-8c80-eb01e27857da",
+            "sha256": "891294b6ec538a694f07d56f8f813949d04a4d790f6fcd367cd0149badca50d7",
+            "sizeBytes": 2100,
+            "file": "playback.mp4",
+            "role": "PLAYBACK",
+            "mime": "video/mp4",
+            "width": 16,
+            "height": 18,
+            "audio": false,
+            "durationSeconds": 1
+          }
+        ]
+      }
+    },
+    {
+      "case": "CONTROLLED-34x18-1:1-true",
+      "candidate": {
+        "schemaVersion": 1,
+        "operationId": "28049c74-a4d7-4105-bc7a-1c0c7e182c48",
+        "jobId": "7fb2bdcb-c7db-495e-854e-e69094e03ea4",
+        "executionToken": "3d52e433-c7b4-45ac-b0aa-ce41e220c20e",
+        "fence": "1",
+        "epoch": "videos-epoch",
+        "mediaRef": "media:fc9415db-a509-4bc6-ab9a-5879e37dc9f4",
+        "generation": "1",
+        "revision": "1",
+        "originalSha256": "19bde4867468f8c4a2d516d3e5da0a55034b45f9c672ae4bd5fc4b099a931d1c",
+        "originalVersion": "e9a19ef5-75f0-4b6a-a313-0509ee55e64b",
+        "safetyFingerprint": "9e766744f4c49760fce6c0e09243aecee9ecd6bedb9845fc0643bed21d5e25d0",
+        "attemptId": "f889e76b-fe1a-42c4-864f-0d603a8745c7",
+        "durationMs": 1689,
+        "inputFormat": "MP4",
+        "renditions": [
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/1bec00ec3da97b7d9c6f120cf8086b95251f3ef7a600980468c11c584866ba9e/1/f889e76b-fe1a-42c4-864f-0d603a8745c7/thumbnail.jpg",
+            "immutableVersion": "c7ae7f61-d155-4866-8b67-f9dde6619556",
+            "sha256": "0dd0b0c8713cc6e890a0b5cdef8a135cb91bbfbc40ef866abb65194b8c6e0156",
+            "sizeBytes": 1266,
+            "file": "thumbnail.jpg",
+            "role": "THUMBNAIL",
+            "mime": "image/jpeg",
+            "width": 18,
+            "height": 34
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/1bec00ec3da97b7d9c6f120cf8086b95251f3ef7a600980468c11c584866ba9e/1/f889e76b-fe1a-42c4-864f-0d603a8745c7/preview.jpg",
+            "immutableVersion": "e5191004-8406-4808-b76e-73e2a68954f7",
+            "sha256": "0dd0b0c8713cc6e890a0b5cdef8a135cb91bbfbc40ef866abb65194b8c6e0156",
+            "sizeBytes": 1266,
+            "file": "preview.jpg",
+            "role": "PREVIEW",
+            "mime": "image/jpeg",
+            "width": 18,
+            "height": 34
+          },
+          {
+            "namespace": "eventlens-lab",
+            "key": "attempts/1bec00ec3da97b7d9c6f120cf8086b95251f3ef7a600980468c11c584866ba9e/1/f889e76b-fe1a-42c4-864f-0d603a8745c7/playback.mp4",
+            "immutableVersion": "e1716592-41b5-4158-b7b1-60adbdc1acc3",
+            "sha256": "4e1153b163b185e2eb36ffc00a6ed6341d0da66aa092a5bda6b22ff46e41f675",
+            "sizeBytes": 2609,
+            "file": "playback.mp4",
+            "role": "PLAYBACK",
+            "mime": "video/mp4",
+            "width": 18,
+            "height": 34,
+            "audio": false,
+            "durationSeconds": 1
+          }
+        ]
+      }
+    }
+  ],
+  "measurements": [
+    {
+      "durationMs": 1807,
+      "inputFormat": "WEBM",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 7,
+      "inputFormat": "WEBM",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 4,
+      "inputFormat": "WEBM",
+      "result": "REJECTED"
+    },
+    {
+      "durationMs": 17813,
+      "inputFormat": "MOV",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 15,
+      "inputFormat": "MOV",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 4,
+      "inputFormat": "MOV",
+      "result": "REJECTED"
+    },
+    {
+      "durationMs": 9730,
+      "inputFormat": "MOV",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 8,
+      "inputFormat": "MOV",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 3,
+      "inputFormat": "MOV",
+      "result": "REJECTED"
+    },
+    {
+      "durationMs": 18938,
+      "inputFormat": "MP4",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 8,
+      "inputFormat": "MP4",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 4,
+      "inputFormat": "MP4",
+      "result": "REJECTED"
+    },
+    {
+      "durationMs": 6182,
+      "inputFormat": "MP4",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 8,
+      "inputFormat": "MP4",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 3,
+      "inputFormat": "MP4",
+      "result": "REJECTED"
+    },
+    {
+      "durationMs": 1733,
+      "inputFormat": "MP4",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 10,
+      "inputFormat": "MP4",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 2,
+      "inputFormat": "MP4",
+      "result": "REJECTED"
+    },
+    {
+      "durationMs": 1739,
+      "inputFormat": "MOV",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 8,
+      "inputFormat": "MOV",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 3,
+      "inputFormat": "MOV",
+      "result": "REJECTED"
+    },
+    {
+      "durationMs": 1720,
+      "inputFormat": "MP4",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 10,
+      "inputFormat": "MP4",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 4,
+      "inputFormat": "MP4",
+      "result": "REJECTED"
+    },
+    {
+      "durationMs": 1762,
+      "inputFormat": "WEBM",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 8,
+      "inputFormat": "WEBM",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 3,
+      "inputFormat": "WEBM",
+      "result": "REJECTED"
+    },
+    {
+      "durationMs": 1717,
+      "inputFormat": "WEBM",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 10,
+      "inputFormat": "WEBM",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 2,
+      "inputFormat": "WEBM",
+      "result": "REJECTED"
+    },
+    {
+      "durationMs": 1714,
+      "inputFormat": "MP4",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 1796,
+      "inputFormat": "MP4",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 1738,
+      "inputFormat": "MP4",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 1718,
+      "inputFormat": "MP4",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 1699,
+      "inputFormat": "MP4",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 1310,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1438,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1466,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1725,
+      "inputFormat": "MP4",
+      "result": "UNKNOWN"
+    },
+    {
+      "durationMs": 2025,
+      "inputFormat": "MP4",
+      "result": "REJECTED"
+    },
+    {
+      "durationMs": 1833,
+      "inputFormat": "MP4",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 1899,
+      "inputFormat": "MP4",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 1,
+      "inputFormat": "UNKNOWN",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1906,
+      "inputFormat": "MP4",
+      "result": "REJECTED"
+    },
+    {
+      "durationMs": 10,
+      "inputFormat": "MP4",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 18,
+      "inputFormat": "MP4",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 35,
+      "inputFormat": "MP4",
+      "result": "SUCCEEDED"
+    },
+    {
+      "durationMs": 1262,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1385,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1486,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1386,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1394,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    },
+    {
+      "durationMs": 1442,
+      "inputFormat": "MP4",
+      "result": "FAILED"
+    }
+  ]
+}

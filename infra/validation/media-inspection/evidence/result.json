@@ -1,7 +1,7 @@
 {
-  "ticket": "EL-TK-033",
-  "runId": "media_inspection_83f55dcd931f4ee984bde4bd52eefafd",
-  "testedAt": "2026-10-09T20:44:16.879Z",
+  "ticket": "EL-TK-053",
+  "runId": "media_inspection_f87f7c75dfab4355a9fcf4f78488360a",
+  "testedAt": "2026-10-11T05:38:50.036Z",
   "result": "PASS",
   "gates": {
     "MEDIA-001": "NOT_EVALUATED",
@@ -9,6 +9,6 @@
     "DR-001": "NOT_EVALUATED",
     "EXPORT-001": "NOT_EVALUATED"
   },
-  "tests": 28,
-  "passed": 28
+  "tests": 15,
+  "passed": 15
 }
