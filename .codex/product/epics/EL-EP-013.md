@@ -4,6 +4,11 @@
 
 READY
 
+REQUIREMENTS_READY: YES
+READY_FOR_IMPLEMENTATION: YES
+UI_REQUIRED: YES - alcance en handoff UI/UX.
+READY_FOR_FRONTEND_PLANNING: YES - dictamen UI/UX actual; no certifica implementacion.
+
 **RECOMMENDED:** frontera, descomposición y prioridad propuestas por product_planner. **CONFIRMED:** reglas atribuidas al discovery en Q-018; DEC-021. READY expresa DoR del resultado, no finalización de predecesoras; NOT_READY requiere cerrar preguntas locales antes de tickets.
 
 ## Module

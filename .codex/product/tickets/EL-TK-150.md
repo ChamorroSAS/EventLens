@@ -38,10 +38,10 @@ Media no disponible, permiso, motivo inválido, URL expirada y conflicto.
 AdministrativeSupportMediaGrant, reason, media/event ref, expiresAt.
 
 ## Dependencias técnicas y funcionales
-ObjectStorage privado/MediaViewGrant y auditoría EL-EP-014.
+ObjectStorage privado, contrato compartido MediaViewGrant (EL-TK-097) y auditoría EL-EP-014.
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-147, EL-TK-044, EL-TK-097; contrato EL-EP-014
+- **depends_on:** EL-TK-147, EL-TK-044, contrato compartido MediaViewGrant (EL-TK-097); contrato EL-EP-014
 - **blocks:** EL-TK-154, EL-TK-155
 
 ## Pruebas requeridas

@@ -42,7 +42,7 @@ Plan EL-TK-134, cuota EL-TK-136/137 y lifecycle EL-EP-003.
 
 ## Dependencias de tickets
 - **depends_on:** EL-TK-134, EL-TK-141; contratos EL-EP-003
-- **blocks:** EL-TK-135, EL-TK-143, EL-TK-144, EL-TK-145
+- **blocks:** EL-TK-144, EL-TK-145
 
 ## Pruebas requeridas
 Aumento/reducción/retorno, ACTIVE pasado, consumo superior, concurrencia y auditoría.

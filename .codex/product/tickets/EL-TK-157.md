@@ -38,10 +38,10 @@ Timeout proveedor, credencial/configuración ausente, intención obsoleta, repla
 EmailSender port, EmailNotificationSpec, NotificationDeliveryAttempt, JobQueue.
 
 ## Dependencias técnicas y funcionales
-EL-TK-156 y JobQueue EL-TK-055/038.
+EL-TK-156 y JobQueue durable EL-TK-055 (DEC-064).
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-156, EL-TK-055, EL-TK-038
+- **depends_on:** EL-TK-156, EL-TK-055; contrato JobQueue (DEC-064)
 - **blocks:** EL-TK-164, EL-TK-165
 
 ## Pruebas requeridas

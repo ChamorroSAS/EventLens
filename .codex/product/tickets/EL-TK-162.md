@@ -38,10 +38,10 @@ Destinatario no vigente, supresión requerida, replay y fallo delivery.
 Account/EventNotificationFacts, suppression reason/ref.
 
 ## Dependencias técnicas y funcionales
-EL-EP-001 y EL-EP-003/012.
+Hechos de cuenta/seguridad de EL-EP-001 y lifecycle/suspensión de EL-EP-003.
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-156; contratos EL-EP-001, EL-EP-003, EL-EP-012
+- **depends_on:** EL-TK-156; hechos de dominio EL-EP-001 y EL-EP-003
 - **blocks:** EL-TK-164, EL-TK-165
 
 ## Pruebas requeridas

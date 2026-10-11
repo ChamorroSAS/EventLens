@@ -10,7 +10,7 @@ READY
 **Como** sistema, **quiero** comunicar hechos de casos cuando corresponda, **para** informar a actores autorizados sin filtrar reportantes ni contenido sensible.
 
 ## Alcance funcional
-Consumir hechos de EL-EP-009/012 para alertas administrativas prioritarias y comunicaciones al organizador cuando proceda, respetando supresión legal/seguridad.
+Consumir hechos de casos de EL-EP-009 para alertas administrativas prioritarias y comunicaciones al organizador cuando proceda, respetando supresión legal/seguridad.
 
 ## Fuera de alcance
 Clasificar severidad, resolver denuncias o incluir multimedia/reportante en avisos.
@@ -38,10 +38,10 @@ Caso ya cerrado/obsoleto, destinatario no válido, supresión y retry.
 CaseNotificationFact, severity, recipient role, suppressionRef.
 
 ## Dependencias técnicas y funcionales
-EL-EP-009/012 y auditoría EL-EP-014.
+Hechos de reportes y resoluciones de EL-EP-009 y auditoría EL-EP-014.
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-156; contratos EL-EP-009, EL-EP-012, EL-EP-014
+- **depends_on:** EL-TK-156; hechos de dominio EL-EP-009; contrato auditoría EL-EP-014
 - **blocks:** EL-TK-164, EL-TK-165
 
 ## Pruebas requeridas

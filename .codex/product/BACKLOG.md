@@ -165,7 +165,7 @@
 | EL-TK-132 | Integrar descarga individual y exportación en la biblioteca del organizador | EL-EP-010 | READY | P0 | 100,124..131 | [EL-TK-132](tickets/EL-TK-132.md) |
 | EL-TK-133 | Validar recuperación individual y exportación de extremo a extremo | EL-EP-010 | READY | P0 | 124..132 | [EL-TK-133](tickets/EL-TK-133.md) |
 | EL-TK-134 | Asignar y resolver el plan BETA efectivo de un evento | EL-EP-011 | READY | P0 | contrato EL-EP-001 | [EL-TK-134](tickets/EL-TK-134.md) |
-| EL-TK-135 | Consultar consumo comercial y capacidad disponible del evento | EL-EP-011 | READY | P0 | 134 | [EL-TK-135](tickets/EL-TK-135.md) |
+| EL-TK-135 | Consultar consumo comercial y capacidad disponible del evento | EL-EP-011 | READY | P0 | 134, 136, 137 | [EL-TK-135](tickets/EL-TK-135.md) |
 | EL-TK-136 | Reservar y liberar capacidad comercial de forma atómica | EL-EP-011 | READY | P0 | 134 | [EL-TK-136](tickets/EL-TK-136.md) |
 | EL-TK-137 | Consolidar consumo al aceptar o purgar originales | EL-EP-011 | READY | P0 | 136; contratos EL-EP-005/015 | [EL-TK-137](tickets/EL-TK-137.md) |
 | EL-TK-138 | Emitir señales deduplicadas de uso al 80 y 100 por ciento | EL-EP-011 | READY | P0 | 135,137 | [EL-TK-138](tickets/EL-TK-138.md) |
@@ -180,20 +180,20 @@
 | EL-TK-147 | Consultar un detalle administrativo agregado sin preview de media | EL-EP-012 | READY | P0 | 146; contratos propietarios vigentes | [EL-TK-147](tickets/EL-TK-147.md) |
 | EL-TK-148 | Consultar jobs y errores técnicos sanitizados desde soporte | EL-EP-012 | READY | P0 | 147; contrato JobQueue | [EL-TK-148](tickets/EL-TK-148.md) |
 | EL-TK-149 | Ejecutar acciones administrativas autorizadas sobre jobs | EL-EP-012 | READY | P0 | 148,044; contrato JobQueue | [EL-TK-149](tickets/EL-TK-149.md) |
-| EL-TK-150 | Autorizar acceso multimedia administrativo por soporte o incidente | EL-EP-012 | READY | P0 | 147,044,097; contrato EL-EP-014 | [EL-TK-150](tickets/EL-TK-150.md) |
+| EL-TK-150 | Autorizar acceso multimedia administrativo por soporte o incidente | EL-EP-012 | READY | P0 | 147, 044, contrato MediaViewGrant (097); contrato EL-EP-014 | [EL-TK-150](tickets/EL-TK-150.md) |
 | EL-TK-151 | Orquestar intervenciones administrativas mediante contratos propietarios | EL-EP-012 | READY | P0 | 147; contratos propietarios | [EL-TK-151](tickets/EL-TK-151.md) |
 | EL-TK-152 | Reutilizar solicitudes, reportes e invitaciones en el detalle administrativo | EL-EP-012 | READY | P0 | 147; contratos EL-EP-001/009/011 | [EL-TK-152](tickets/EL-TK-152.md) |
 | EL-TK-153 | Integrar diagnóstico y operaciones de jobs en la consola administrativa | EL-EP-012 | READY | P0 | 148,149 | [EL-TK-153](tickets/EL-TK-153.md) |
 | EL-TK-154 | Integrar búsqueda, detalle e intervenciones en la consola administrativa | EL-EP-012 | READY | P0 | 146,147,150..153 | [EL-TK-154](tickets/EL-TK-154.md) |
 | EL-TK-155 | Validar soporte e intervención administrativa de extremo a extremo | EL-EP-012 | READY | P0 | 146..154 | [EL-TK-155](tickets/EL-TK-155.md) |
 | EL-TK-156 | Registrar intenciones de notificación idempotentes desde hechos de dominio | EL-EP-013 | READY | P0 | contratos de hechos propietarios | [EL-TK-156](tickets/EL-TK-156.md) |
-| EL-TK-157 | Encolar y procesar correos de notificación con proveedor desacoplado | EL-EP-013 | READY | P0 | 156,055,038 | [EL-TK-157](tickets/EL-TK-157.md) |
+| EL-TK-157 | Encolar y procesar correos de notificación con proveedor desacoplado | EL-EP-013 | READY | P0 | 156, 055; contrato JobQueue | [EL-TK-157](tickets/EL-TK-157.md) |
 | EL-TK-158 | Proyectar avisos contextuales vigentes para el panel del organizador | EL-EP-013 | READY | P0 | 156 | [EL-TK-158](tickets/EL-TK-158.md) |
 | EL-TK-159 | Generar avisos de lifecycle, gracia y eliminación próxima | EL-EP-013 | READY | P0 | 156; contratos EL-EP-003/015 | [EL-TK-159](tickets/EL-TK-159.md) |
 | EL-TK-160 | Generar avisos de capacidad al 80 y 100 por ciento | EL-EP-013 | READY | P0 | 156; contrato 138 | [EL-TK-160](tickets/EL-TK-160.md) |
 | EL-TK-161 | Generar avisos de exportación disponible y expiración | EL-EP-013 | READY | P0 | 156; contrato EL-EP-010 | [EL-TK-161](tickets/EL-TK-161.md) |
-| EL-TK-162 | Generar avisos de cuenta, seguridad y cambios del evento | EL-EP-013 | READY | P0 | 156; contratos EL-EP-001/003/012 | [EL-TK-162](tickets/EL-TK-162.md) |
-| EL-TK-163 | Generar avisos de denuncias e intervenciones según severidad autorizada | EL-EP-013 | READY | P0 | 156; contratos EL-EP-009/012/014 | [EL-TK-163](tickets/EL-TK-163.md) |
+| EL-TK-162 | Generar avisos de cuenta, seguridad y cambios del evento | EL-EP-013 | READY | P0 | 156; contratos EL-EP-001/003 | [EL-TK-162](tickets/EL-TK-162.md) |
+| EL-TK-163 | Generar avisos de denuncias e intervenciones según severidad autorizada | EL-EP-013 | READY | P0 | 156; contratos EL-EP-009/014 | [EL-TK-163](tickets/EL-TK-163.md) |
 | EL-TK-164 | Integrar avisos contextuales y plantillas de correo accesibles | EL-EP-013 | READY | P0 | 157..163 | [EL-TK-164](tickets/EL-TK-164.md) |
 | EL-TK-165 | Validar notificaciones, deduplicación y obsolescencia de extremo a extremo | EL-EP-013 | READY | P0 | 156..164 | [EL-TK-165](tickets/EL-TK-165.md) |
 

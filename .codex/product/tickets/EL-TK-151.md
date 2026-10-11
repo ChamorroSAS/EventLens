@@ -42,7 +42,7 @@ EL-EP-003, EL-EP-004, EL-EP-011, EL-EP-015.
 
 ## Dependencias de tickets
 - **depends_on:** EL-TK-147; contratos propietarios correspondientes
-- **blocks:** EL-TK-152, EL-TK-154, EL-TK-155
+- **blocks:** EL-TK-154, EL-TK-155
 
 ## Pruebas requeridas
 Delegación, denegación, concurrencia, auditoría y no bypass.

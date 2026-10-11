@@ -41,7 +41,7 @@ CapacitySnapshot, StorageUsage, FileUsageSummary, effectiveLimits/reservations.
 Plan efectivo EL-TK-134 y ledger de cuota EL-TK-136/137.
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-134
+- **depends_on:** EL-TK-134, EL-TK-136, EL-TK-137
 - **blocks:** EL-TK-138, EL-TK-139, EL-TK-143, EL-TK-144, EL-TK-145
 
 ## Pruebas requeridas
