@@ -4,7 +4,16 @@
 EL-EP-003
 
 ## Status
-READY
+DONE
+
+**IMPLEMENTED — 2026-10-11:** Implementación completada en `packages/event-management`.
+- Cálculo canónico y determinista del timeline de lifecycle (`timeline.ts`): `calculateEventLifecycleTimeline`, `recalculateEventLifecycleTimeline`, `resolveTimelineWithEarlyActivation`.
+- Reglas DEC-077 y DEC-082 estrictamente garantizadas:
+  - Vigencia física de exactamente $N \times 24\text{h}$ (inmune a desviaciones por saltos DST).
+  - Período de gracia físico de $7 \times 24\text{h}$.
+  - Timestamps UTC exactos y presentaciones en formato ISO local en la zona horaria del evento (`startsAtLocal`, `expiresAtLocal`, `graceEndsAtLocal`).
+  - Activación anticipada (`resolveTimelineWithEarlyActivation`) preserva estrictamente el ancla programada sin desplazar `expiresAt` ni `graceEndsAt`.
+- Suite unitaria exhaustiva con 11 pruebas (`test/event-timeline.unit.test.ts`) cubriendo saltos de primavera (Spring-forward), saltos de otoño (Fall-back), recálculo pre-ACTIVE, activación anticipada y validaciones de dominio. Total de 29 pruebas en verde en `event-management`.
 
 ## User story
 **Como** sistema, **quiero** calcular de forma determinística inicio, vencimiento y gracia de un evento, **para** que todas las transiciones usen la misma referencia temporal.
