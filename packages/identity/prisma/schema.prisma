@@ -86,3 +86,46 @@ model BetaInvitation {
   @@map("beta_invitation")
 }
 
+model OrganizerAccount {
+  id              String    @id @db.Uuid
+  email           String
+  emailNormalized String    @unique @map("email_normalized")
+  status          String    @default("PENDING_VERIFICATION")
+  declaredAdult   Boolean   @default(false) @map("declared_adult")
+  declaredAdultAt DateTime? @map("declared_adult_at") @db.Timestamptz
+  invitationId    String    @map("invitation_id") @db.Uuid
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@map("organizer_account")
+}
+
+model OrganizerCredential {
+  id           String   @id @db.Uuid
+  accountId    String   @map("account_id") @db.Uuid
+  purpose      String   @default("ORGANIZER_AUTHENTICATION")
+  secretDigest String   @map("secret_digest")
+  revision     BigInt   @default(1)
+  status       String   @default("ACTIVE")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@index([accountId, purpose, status])
+  @@map("organizer_credential")
+}
+
+model EmailVerificationIntent {
+  id              String    @id @db.Uuid
+  accountId       String    @map("account_id") @db.Uuid
+  emailNormalized String    @map("email_normalized")
+  tokenDigest     String    @unique @map("token_digest")
+  status          String    @default("PENDING")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  expiresAt       DateTime  @map("expires_at") @db.Timestamptz
+  consumedAt      DateTime? @map("consumed_at") @db.Timestamptz
+
+  @@index([accountId, status])
+  @@map("email_verification_intent")
+}
+
+

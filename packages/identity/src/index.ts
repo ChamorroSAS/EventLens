@@ -36,7 +36,13 @@ export {
   computeCredentialDigest,
   computeDummyCredentialDigest,
   serializeSessionCookie,
-  assertPublicRegistrationSafe
+  assertPublicRegistrationSafe,
+  type RegistrationErrorCode,
+  RegistrationError,
+  type OrganizerAccountRecord,
+  type EmailVerificationNotificationPort,
+  type RegisterOrganizerCommand,
+  type RegisterOrganizerResult
 } from './contracts.js';
 
 export { AdminProvisioningService } from './provisioning.js';
@@ -55,4 +61,7 @@ export {
   BetaInvitationService,
   type BetaInvitationServiceOptions
 } from './invitation.js';
+
+export { OrganizerRegistrationService } from './registration.js';
+
 

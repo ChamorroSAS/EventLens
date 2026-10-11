@@ -286,10 +286,14 @@ export interface AuditEventRecord {
     | 'ADMIN_LOGIN'
     | 'ADMIN_REAUTH'
     | 'ADMIN_LOGOUT'
-    | 'ADMIN_SESSION_VALIDATE';
+    | 'ADMIN_SESSION_VALIDATE'
+    | 'BETA_INVITE_ISSUE'
+    | 'BETA_INVITE_DUPLICATE_ATTEMPT'
+    | 'BETA_INVITE_RENEW'
+    | 'ORGANIZER_REGISTRATION';
   readonly actorId: string;
   readonly targetIdentifier: string;
-  readonly targetPrincipalId?: string;
+  readonly targetPrincipalId?: string | null;
   readonly result:
     | 'SUCCESS'
     | 'REJECTED_BOOTSTRAP_CONSUMED'
@@ -301,7 +305,10 @@ export interface AuditEventRecord {
     | 'REJECTED_REVOKED'
     | 'REJECTED_FRESH_AUTH_REQUIRED'
     | 'REJECTED_INVALID_ORIGIN'
-    | 'REJECTED_CSRF';
+    | 'REJECTED_CSRF'
+    | 'ALREADY_CONSUMED'
+    | 'ALREADY_PENDING'
+    | 'ALREADY_REGISTERED_PENDING';
   readonly details?: string;
   readonly timestamp: Date;
 }
@@ -379,3 +386,57 @@ export function assertPublicRegistrationSafe(payload: Record<string, unknown>): 
     }
   }
 }
+
+export type RegistrationErrorCode =
+  | 'ADULT_DECLARATION_REQUIRED'
+  | 'INVALID_EMAIL'
+  | 'INVALID_OR_UNUSABLE_INVITATION'
+  | 'EMAIL_MISMATCH'
+  | 'WEAK_PASSWORD'
+  | 'PUBLIC_ELEVATION_DENIED'
+  | 'ALREADY_ACTIVE'
+  | 'TEMPORARY_FAILURE'
+  | 'INVALID_ARGUMENT';
+
+export class RegistrationError extends Error {
+  constructor(public readonly code: RegistrationErrorCode, message?: string) {
+    super(message ?? code);
+    this.name = 'RegistrationError';
+  }
+}
+
+export interface OrganizerAccountRecord {
+  readonly id: string;
+  readonly email: string;
+  readonly emailNormalized: string;
+  readonly status: 'PENDING_VERIFICATION' | 'ACTIVE' | 'SUSPENDED' | 'REVOKED';
+  readonly declaredAdult: boolean;
+  readonly declaredAdultAt?: Date | null;
+  readonly invitationId: string;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
+export interface EmailVerificationNotificationPort {
+  sendVerificationEmail(recipient: {
+    email: string;
+    token: string;
+    expiresAt: Date;
+  }): Promise<void>;
+}
+
+export interface RegisterOrganizerCommand {
+  readonly invitationToken: string;
+  readonly email: string;
+  readonly password: string;
+  readonly declaredAdult: boolean;
+  readonly metadata?: Record<string, unknown>;
+}
+
+export interface RegisterOrganizerResult {
+  readonly account: OrganizerAccountRecord;
+  readonly outcome: 'REGISTERED_PENDING' | 'ALREADY_REGISTERED_PENDING';
+  readonly verificationIssued: boolean;
+  readonly invitationId: string;
+}
+
