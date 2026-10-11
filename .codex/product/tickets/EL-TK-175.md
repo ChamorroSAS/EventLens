@@ -1,0 +1,64 @@
+# EL-TK-175 — Integrar visor de auditoría contextual en la consola administrativa
+
+## Parent epic
+EL-EP-014
+
+## Status
+DRAFT
+
+## User story
+**Como** administración autorizada, **quiero** consultar auditoría desde el contexto operativo, **para** reconstruir acciones sin un dashboard operacional nuevo.
+
+## Alcance funcional
+Integrar AuditLogViewer/AuditLogDetail con filtros, paginación, estados vacíos/parciales y navegación desde el detalle administrativo.
+
+## Fuera de alcance
+Dashboard de observabilidad, editar/exportar logs o iniciar restore desde UI.
+
+## Criterios de aceptación
+### Escenario 1
+**Dado** admin abre auditoría de un recurso, **cuando** consulta, **entonces** ve eventos sanitizados con filtros.
+
+### Escenario 2
+**Dado** filtro no tiene resultados, **cuando** aplica, **entonces** muestra estado sin coincidencias.
+
+### Escenario 3
+**Dado** registro tiene resultado fallido, **cuando** abre detalle, **entonces** se presenta como dato, no como acción ejecutable.
+
+## Reglas de negocio
+Solo lectura; reutiliza consola EL-EP-012 y componentes existentes.
+
+## Validaciones y permisos
+Admin autorizado.
+
+## Casos de error y estados vacíos
+Permiso/session expired, parcial, consulta fallida y página vacía.
+
+## Datos / contratos afectados
+Cliente EL-TK-167 y componentes UI canónicos.
+
+## Dependencias técnicas y funcionales
+Handoff EL-EP-014 y consola EL-EP-012.
+
+## Dependencias de tickets
+- **depends_on:** EL-TK-167; contrato EL-EP-012
+- **blocks:** EL-TK-176
+
+## Pruebas requeridas
+Component/unit, filtros, foco, responsive, permisos y WCAG 2.2 AA.
+
+## Observabilidad / auditoría
+UI no duplica eventos ni expone metadata oculta.
+
+## Prioridad / estimación
+P0 / M
+
+## Traceability
+DEC-019, DEC-034; EL-EP-014; ui-mvp-epic-review.md#el-ep-014.
+
+## Definition of Ready
+- [x] Comportamiento inequívoco
+- [x] Criterios comprobables
+- [x] Dependencias identificadas
+- [x] Permisos/errores definidos cuando aplican
+- [x] Sin preguntas BLOCKER

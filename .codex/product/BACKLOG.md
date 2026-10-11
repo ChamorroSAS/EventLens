@@ -196,6 +196,26 @@
 | EL-TK-163 | Generar avisos de denuncias e intervenciones según severidad autorizada | EL-EP-013 | READY | P0 | 156; contratos EL-EP-009/014 | [EL-TK-163](tickets/EL-TK-163.md) |
 | EL-TK-164 | Integrar avisos contextuales y plantillas de correo accesibles | EL-EP-013 | READY | P0 | 157..163 | [EL-TK-164](tickets/EL-TK-164.md) |
 | EL-TK-165 | Validar notificaciones, deduplicación y obsolescencia de extremo a extremo | EL-EP-013 | READY | P0 | 156..164 | [EL-TK-165](tickets/EL-TK-165.md) |
+| EL-TK-166 | Registrar eventos de auditoría mínimos y sanitizados | EL-EP-014 | DRAFT | P0 | ninguna predecesora funcional dura | [EL-TK-166](tickets/EL-TK-166.md) |
+| EL-TK-167 | Consultar auditoría contextual con filtros y paginación | EL-EP-014 | DRAFT | P0 | 166 | [EL-TK-167](tickets/EL-TK-167.md) |
+| EL-TK-168 | Instrumentar señales operativas sanitizadas de aplicación y dependencias | EL-EP-014 | DRAFT | P0 | ninguna predecesora funcional dura | [EL-TK-168](tickets/EL-TK-168.md) |
+| EL-TK-169 | Detectar degradación de JobQueue, workers y procesamiento | EL-EP-014 | DRAFT | P0 | 168; contrato JobQueue | [EL-TK-169](tickets/EL-TK-169.md) |
+| EL-TK-170 | Detectar fallos de storage, base de datos, scheduler y disponibilidad | EL-EP-014 | DRAFT | P0 | 168 | [EL-TK-170](tickets/EL-TK-170.md) |
+| EL-TK-171 | Ejecutar backups PostgreSQL y retención operativa mínima | EL-EP-014 | DRAFT | P0 | baseline EL-TD-008; DEC-062 | [EL-TK-171](tickets/EL-TK-171.md) |
+| EL-TK-172 | Verificar restauración PostgreSQL y objetivos RPO RTO | EL-EP-014 | DRAFT | P0 | 171; contrato EL-EP-015 | [EL-TK-172](tickets/EL-TK-172.md) |
+| EL-TK-173 | Registrar y correlacionar incidentes operativos con evidencia mínima | EL-EP-014 | DRAFT | P0 | 166,169,170 | [EL-TK-173](tickets/EL-TK-173.md) |
+| EL-TK-174 | Validar backup, recuperación y alertamiento operativo integrado | EL-EP-014 | DRAFT | P0 | 170,171,172 | [EL-TK-174](tickets/EL-TK-174.md) |
+| EL-TK-175 | Integrar visor de auditoría contextual en la consola administrativa | EL-EP-014 | DRAFT | P0 | 167; contrato EL-EP-012 | [EL-TK-175](tickets/EL-TK-175.md) |
+| EL-TK-176 | Validar auditoría, observabilidad y recuperación de extremo a extremo | EL-EP-014 | DRAFT | P0 | 166..175 | [EL-TK-176](tickets/EL-TK-176.md) |
+| EL-TK-177 | Definir el contrato de métricas agregadas de la Beta | EL-EP-016 | DRAFT | P1 | contratos de dominios propietarios; EL-EP-014 | [EL-TK-177](tickets/EL-TK-177.md) |
+| EL-TK-178 | Medir confiabilidad de cargas y procesamiento multimedia | EL-EP-016 | DRAFT | P1 | 177; contratos EL-EP-005/006 | [EL-TK-178](tickets/EL-TK-178.md) |
+| EL-TK-179 | Medir soporte funcional y recuperación de recuerdos | EL-EP-016 | DRAFT | P1 | 177; contratos EL-EP-010/012 | [EL-TK-179](tickets/EL-TK-179.md) |
+| EL-TK-180 | Medir participación indicativa por evento | EL-EP-016 | DRAFT | P1 | 177; contrato EL-EP-004 | [EL-TK-180](tickets/EL-TK-180.md) |
+| EL-TK-181 | Gestionar ventana, volumen mínimo y extensión de la evaluación Beta | EL-EP-016 | DRAFT | P1 | 177 | [EL-TK-181](tickets/EL-TK-181.md) |
+| EL-TK-182 | Clasificar el resultado de la Beta con prevalencia de incidentes críticos | EL-EP-016 | DRAFT | P1 | 178..181; contrato EL-EP-014 | [EL-TK-182](tickets/EL-TK-182.md) |
+| EL-TK-183 | Generar el informe final reproducible de evaluación Beta | EL-EP-016 | DRAFT | P1 | 177..182 | [EL-TK-183](tickets/EL-TK-183.md) |
+
+**DRAFT — 2026-10-10, EL-EP-014/016:** ticket_writer crea EL-TK-166..183 para auditoría/observabilidad/recuperación y evaluación Beta. EL-EP-015 no se descompone todavía porque READY_FOR_TICKET_WRITING sigue PARTIAL por el gate técnico de reautenticación/UI sensible; EL-EP-017 permanece NOT_READY por revisión jurídica Q-029. Ninguno de estos tickets habilita implementación hasta requirements_reviewer.
 
 **CONFIRMED — 2026-10-10, EL-EP-005:** EL-TK-086..095 aprobados por requirements_reviewer como READY; cubren autorización/reserva atómica vinculada a consentimiento (076) e identidad (077), carga directa a storage privado, confirmación real, validación de restricciones (089 conserva gate técnico PARTIAL para inspección segura de archivos no confiables), aceptación/handoff al contrato downstream transaccional de EL-TK-032 (DONE), retry por archivo, cancelación por policy (DEC-085), consulta de lote, interfaz guest accesible e integración E2E. Implementación conforme a dependencias técnicas y ObjectStorage privado (DEC-063).
 

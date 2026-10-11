@@ -111,6 +111,8 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
+- 2026-10-10: ticket_writer crea EL-TK-166..176 como DRAFT para auditoría mínima, consulta, telemetría/health, alertas, backups/PITR, recovery, incidentes, UI de auditoría y validación integrada. Pendientes de requirements_reviewer; sin implementación.
+
 - 2026-10-07: CR-002 resuelve TC aplicables y sustituye restricciones CR-001; estado/bloqueantes de producto conservados.
 
 - 2026-10-07: CR-001/DEC-060 reconcilia redundancia previa y añade riesgos/validación de host único; conserva READY y objetivos de backup/disponibilidad.
