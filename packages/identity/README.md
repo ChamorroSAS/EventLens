@@ -64,11 +64,32 @@
 - **Observabilidad sin secretos**:
   - Emite auditoría append-only para creación, duplicado y renovación registrando actor y destinatario sin exponer el token de invitación en logs ni eventos.
 
+### 5. Registro de organizador invitado (EL-TK-010)
+- **Validación de invitación utilizable**:
+  - Verifica token seguro contra su digest en `beta_invitation`.
+  - Exige que el correo coincida con el invitado, y que la invitación no esté expirada, revocada ni previamente consumida.
+- **Declaración obligatoria de adultez**:
+  - Exige explícitamente `declaredAdult: true` (`ADULT_DECLARATION_REQUIRED`), rechazando el registro sin crear registros en la base de datos si falta la declaración.
+- **Protección contra auto-elevación pública**:
+  - Rechaza cualquier intento de suministrar roles, privilegios o campos administrativos en el registro público (`assertPublicRegistrationSafe`).
+- **Creación de cuenta pendiente**:
+  - Crea `organizer_account` en estado `PENDING_VERIFICATION`; no concede permisos de acceso como organizador ni capacidades para operar eventos antes de su verificación.
+- **Protección de credencial**:
+  - Deriva el hash de contraseña con aislamiento de dominio de propósito (`computeCredentialDigest('ORGANIZER_AUTHENTICATION', accountId, password)`).
+- **Intención durable de verificación de correo**:
+  - Genera token criptográfico de 256 bits, persistiendo su digest en `email_verification_intent` con vigencia temporal.
+  - Emite la notificación de verificación inicial al puerto de EL-EP-013 (`EmailVerificationNotificationPort`).
+- **Idempotencia y conservación**:
+  - Ante registros repetidos con el mismo correo e invitación pendiente, devuelve la existente (`ALREADY_REGISTERED_PENDING`), conservando la cuenta y credencial original intactas y sin reenviar automáticamente la verificación.
+- **Observabilidad sin secretos**:
+  - Registra eventos de auditoría append-only sin incluir contraseñas ni tokens en texto plano.
+
 ## Validation
 
-La implementación cuenta con una suite completa de 59 pruebas automatizadas (42 unitarias + 17 de integración contra PostgreSQL 16 real):
-- Pruebas unitarias: `test/provisioning.unit.test.ts`, `test/authentication.unit.test.ts`, `test/recovery.unit.test.ts`, `test/invitation.unit.test.ts`
-- Pruebas de integración PostgreSQL 16: `test/provisioning.integration.test.ts`, `test/authentication.integration.test.ts`, `test/recovery.integration.test.ts`, `test/invitation.integration.test.ts`
+La implementación cuenta con una suite completa de 69 pruebas automatizadas (49 unitarias + 20 de integración contra PostgreSQL 16 real):
+- Pruebas unitarias: `test/provisioning.unit.test.ts` (12), `test/authentication.unit.test.ts` (13), `test/recovery.unit.test.ts` (11), `test/invitation.unit.test.ts` (6), `test/registration.unit.test.ts` (7)
+- Pruebas de integración PostgreSQL 16: `test/provisioning.integration.test.ts` (6), `test/authentication.integration.test.ts` (4), `test/recovery.integration.test.ts` (3), `test/invitation.integration.test.ts` (4), `test/registration.integration.test.ts` (3)
 
 Evidencia de validación reproducible registrada en [infra/validation/identity](../../infra/validation/identity/README.md).
+
 

@@ -6,7 +6,7 @@ EL-EP-001
 
 ## Status
 
-READY
+DONE
 
 **HISTÓRICO — revisión de remediación:** el snapshot de 2026-10-08 permaneció DRAFT hasta el dictamen final; la aprobación de 2026-10-07 se conserva.
 
@@ -111,4 +111,24 @@ Q-021, Q-024, Q-032, Q-033; DEC-030, DEC-040, DEC-067, DEC-068; CR-003; EL-TK-00
 
 ## Gate vigente — 2026-10-08
 
-**REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: NO.** Política de contraseña y token de verificación PENDING. [Dictamen final](../sessions/2026-10-08-el-ep-001-ticket-remediation-review.md). READY es preparación de requisitos; se conservan predecesoras y gates aplicables.
+**REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES.** Implementación completada y verificada de registro de organizador con cuenta pendiente, credencial protegida e intención durable de verificación.
+
+## Resultado de implementación — 2026-10-11
+
+**CONFIRMED:** implementación completada y validada cumpliendo todos los criterios de aceptación de EL-TK-010, reglas de negocio y restricciones modulares de MOD-001.
+
+- **Modelo de persistencia Prisma**: Implementados modelos `OrganizerAccount`, `OrganizerCredential` y `EmailVerificationIntent` en `packages/identity/prisma/schema.prisma` con migración `202610110018_organizer_registration`.
+- **Servicio `OrganizerRegistrationService`**:
+  - Declaración obligatoria de adultez: exige explícitamente `declaredAdult: true`; rechaza con `ADULT_DECLARATION_REQUIRED` sin tocar la base de datos si falta la declaración.
+  - Validación de seguridad pública: previene cualquier inyección de campos administrativos o roles mediante `assertPublicRegistrationSafe`.
+  - Validación de invitación utilizable: comprueba el token contra `beta_invitation` bajo `SELECT ... FOR UPDATE`, verificando coincidencia de correo, no expirada (7 días), no revocada y no consumida.
+  - Escenario 1: Crea la cuenta con estado `PENDING_VERIFICATION`, genera la credencial protegida con separación de dominio (`computeCredentialDigest('ORGANIZER_AUTHENTICATION', accountId, password)`), persiste la intención durable de verificación en `email_verification_intent` y emite la notificación al puerto de EL-EP-013 (`EmailVerificationNotificationPort`), sin conceder permisos de acceso ni operación de eventos antes de la verificación.
+  - Escenario 2: Rechazo neutral de intentos no autorizados, contraseñas débiles, correos mal formateados o invitaciones caducadas sin filtrar existencia de cuentas.
+  - Escenario 3: Idempotencia y conservación: ante registro repetido con cuenta pendiente, devuelve la existente (`ALREADY_REGISTERED_PENDING`), conservando la cuenta y credencial original intactas y sin reenviar automáticamente la verificación.
+  - Concurrencia y rollback: transacciones atómicas bajo PostgreSQL 16 con bloqueos de fila (`SELECT ... FOR UPDATE`) impidiendo condiciones de carrera y duplicados.
+  - Auditoría append-only: registra eventos de auditoría sin exponer contraseñas ni tokens en texto plano.
+- **Validación ejecutada**:
+  - 10 pruebas automatizadas nuevas (7 unitarias + 3 de integración real contra PostgreSQL 16).
+  - Suite de `@eventlens/identity` pasando al 100% (69/69 tests).
+  - Workspace global: `typecheck`, `build` y suite de pruebas (`database`, `api`, `web`) pasando en verde.
+
