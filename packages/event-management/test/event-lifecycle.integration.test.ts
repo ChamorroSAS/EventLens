@@ -420,4 +420,96 @@ describeIntegration('EventLifecycleService (Real PostgreSQL Integration Tests â€
     );
     expect(rows[0].status).toBe('CLOSED');
   });
+
+  it('EL-TK-066: Reabre un evento CLOSED en PostgreSQL, limpia closed_at y vuelve a ACTIVE', async () => {
+    const eventId = randomUUID();
+    const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+    const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+    const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+    const reopenTime = new Date('2026-11-15T09:00:00.000Z');
+
+    await sql(
+      `INSERT INTO event (id, organizer_id, name, status, scheduled_at, expires_at, grace_ends_at, activated_at, closed_at)
+       VALUES ($1, $2, $3, 'CLOSED', $4, $5, $6, $4, $4)`,
+      eventId,
+      ownerActor.accountId,
+      'Evento Para Reapertura',
+      scheduledAt,
+      expiresAt,
+      graceEndsAt
+    );
+
+    const result = await service.reopenEvent({
+      actorContext: ownerActor,
+      eventId,
+      now: reopenTime
+    });
+
+    expect(result.event.status).toBe('ACTIVE');
+    expect(result.outcome).toBe('REOPENED');
+    expect(result.event.closedAt).toBeNull();
+    expect(result.event.expiresAt).toEqual(expiresAt);
+    expect(result.event.graceEndsAt).toEqual(graceEndsAt);
+
+    const rows = await query<{ status: string; closed_at: Date | null }>(
+      `SELECT status, closed_at FROM event WHERE id = $1`,
+      eventId
+    );
+    expect(rows[0].status).toBe('ACTIVE');
+    expect(rows[0].closed_at).toBeNull();
+
+    const audits = await query<{ procedure: string; result: string }>(
+      `SELECT procedure, result FROM admin_audit_event WHERE target_identifier = $1`,
+      eventId
+    );
+    expect(audits).toHaveLength(1);
+    expect(audits[0].procedure).toBe('EVENT_REOPENED');
+    expect(audits[0].result).toBe('SUCCESS');
+  });
+
+  it('EL-TK-066: Idempotencia y concurrencia de reapertura bajo FOR UPDATE', async () => {
+    const eventId = randomUUID();
+    const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+    const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+    const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+    const reopenTime = new Date('2026-11-15T09:00:00.000Z');
+
+    await sql(
+      `INSERT INTO event (id, organizer_id, name, status, scheduled_at, expires_at, grace_ends_at, activated_at, closed_at)
+       VALUES ($1, $2, $3, 'CLOSED', $4, $5, $6, $4, $4)`,
+      eventId,
+      ownerActor.accountId,
+      'Evento Concurrencia Reapertura',
+      scheduledAt,
+      expiresAt,
+      graceEndsAt
+    );
+
+    const idempotencyKey = 'idem-reopen-concurrent';
+
+    const [res1, res2] = await Promise.all([
+      service.reopenEvent({
+        actorContext: ownerActor,
+        eventId,
+        now: reopenTime,
+        idempotencyKey
+      }),
+      service.reopenEvent({
+        actorContext: ownerActor,
+        eventId,
+        now: reopenTime,
+        idempotencyKey
+      })
+    ]);
+
+    const outcomes = [res1.outcome, res2.outcome].sort();
+    expect(outcomes).toEqual(['IDEMPOTENT_REPLAY', 'REOPENED']);
+
+    const rows = await query<{ status: string; closed_at: Date | null }>(
+      `SELECT status, closed_at FROM event WHERE id = $1`,
+      eventId
+    );
+    expect(rows[0].status).toBe('ACTIVE');
+    expect(rows[0].closed_at).toBeNull();
+  });
 });

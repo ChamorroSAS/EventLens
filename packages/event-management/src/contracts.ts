@@ -43,6 +43,7 @@ export type EventManagementErrorCode =
   | 'EVENT_NOT_IN_DRAFT'
   | 'EVENT_NOT_IN_SCHEDULED'
   | 'EVENT_NOT_ACTIVE'
+  | 'EVENT_NOT_CLOSED'
   | 'EVENT_ALREADY_EXPIRED';
 
 export class EventManagementError extends Error {
@@ -119,9 +120,27 @@ export interface CloseEventResult {
   readonly outcome: 'CLOSED' | 'IDEMPOTENT_REPLAY';
 }
 
+export interface ReopenEventCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly eventId: string;
+  readonly idempotencyKey?: string;
+  readonly now?: Date;
+}
+
+export interface ReopenEventResult {
+  readonly event: EventRecord;
+  readonly outcome: 'REOPENED' | 'IDEMPOTENT_REPLAY';
+}
+
 export interface EventAuditRecord {
   readonly id: string;
-  readonly procedure: 'EVENT_DRAFT_CREATED' | 'EVENT_SCHEDULE_SET' | 'EVENT_SCHEDULED' | 'EVENT_ACTIVATED' | 'EVENT_CLOSED';
+  readonly procedure:
+    | 'EVENT_DRAFT_CREATED'
+    | 'EVENT_SCHEDULE_SET'
+    | 'EVENT_SCHEDULED'
+    | 'EVENT_ACTIVATED'
+    | 'EVENT_CLOSED'
+    | 'EVENT_REOPENED';
   readonly actorId: string;
   readonly targetIdentifier: string;
   readonly result:
@@ -136,6 +155,7 @@ export interface EventAuditRecord {
     | 'REJECTED_INCOMPLETE_CONFIG'
     | 'REJECTED_EVENT_NOT_IN_SCHEDULED'
     | 'REJECTED_EVENT_NOT_ACTIVE'
+    | 'REJECTED_EVENT_NOT_CLOSED'
     | 'REJECTED_EVENT_EXPIRED'
     | 'IDEMPOTENT_REPLAY';
   readonly details?: string;

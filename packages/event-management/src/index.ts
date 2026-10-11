@@ -15,6 +15,8 @@ export {
   type ActivateEventResult,
   type CloseEventCommand,
   type CloseEventResult,
+  type ReopenEventCommand,
+  type ReopenEventResult,
   type EventAuditRecord,
   type EventAuditSink
 } from './contracts.js';

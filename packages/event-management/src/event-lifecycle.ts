@@ -8,6 +8,8 @@ import {
   type ActivateEventResult,
   type CloseEventCommand,
   type CloseEventResult,
+  type ReopenEventCommand,
+  type ReopenEventResult,
   type EventAuditSink,
   type EventRecord,
   type EventStatus,
@@ -502,15 +504,13 @@ export class EventLifecycleService {
         throw new EventManagementError('UNAUTHORIZED', 'Actor is not the owner of this event');
       }
 
-      // 3. Idempotent replay check: if already CLOSED
-      if (current.status === 'CLOSED') {
-        if (idempotencyKey && current.idempotency_key === idempotencyKey) {
-          if (current.idempotency_payload_hash !== payloadHash) {
-            throw new EventManagementError(
-              'IDEMPOTENCY_CONFLICT',
-              'Idempotency key has already been used with different parameters'
-            );
-          }
+      // 3. Idempotent replay check: only if idempotencyKey was provided and matches
+      if (idempotencyKey && current.idempotency_key === idempotencyKey && current.status === 'CLOSED') {
+        if (current.idempotency_payload_hash !== payloadHash) {
+          throw new EventManagementError(
+            'IDEMPOTENCY_CONFLICT',
+            'Idempotency key has already been used with different parameters'
+          );
         }
 
         await this.auditSink?.record({
@@ -604,6 +604,175 @@ export class EventLifecycleService {
       return {
         event: updatedRecord,
         outcome: 'CLOSED'
+      };
+    });
+  }
+
+  /**
+   * Reopens a CLOSED event prior to its expiration (EL-TK-066).
+   * - Only authorized organizer owner can execute this action.
+   * - Must be in CLOSED status; other statuses are rejected with EVENT_NOT_CLOSED.
+   * - Escenario 2: If the event has already reached or passed expiresAt,
+   *   reopening is rejected (EVENT_ALREADY_EXPIRED) and no resurrection into ACTIVE is permitted.
+   * - DEC-077, DEC-082: Reopening NEVER alters the validity anchor or grace period.
+   *   expiresAt and graceEndsAt remain intact.
+   * - Transition sets status = 'ACTIVE' and closed_at = NULL.
+   * - Idempotency replay: if already ACTIVE, returns existing record cleanly if idempotencyKey matches.
+   */
+  async reopenEvent(command: ReopenEventCommand): Promise<ReopenEventResult> {
+    const { actorContext, eventId, idempotencyKey } = command;
+
+    if (!actorContext || !actorContext.accountId) {
+      throw new EventManagementError('UNAUTHORIZED', 'Authenticated organizer actor context is required');
+    }
+
+    if (!eventId || typeof eventId !== 'string') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Event ID is required');
+    }
+
+    const payloadHash = idempotencyKey
+      ? createHash('sha256')
+          .update(JSON.stringify({
+            eventId,
+            organizerId: actorContext.accountId,
+            action: 'REOPEN_EVENT'
+          }))
+          .digest('hex')
+      : null;
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      // 1. Lock and retrieve current event record
+      const rows = await tx.query<EventRow>(
+        `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at,
+                utc_offset_minutes, expires_at, grace_ends_at, activated_at, closed_at,
+                validity_duration_days, grace_days, uploads_enabled, guest_gallery_enabled,
+                moderation_mode, pin_enabled, idempotency_key, idempotency_payload_hash,
+                created_at, updated_at
+         FROM event
+         WHERE id = $1
+         FOR UPDATE`,
+        eventId
+      );
+
+      if (rows.length === 0) {
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event '${eventId}' was not found`);
+      }
+
+      const current = rows[0];
+
+      // 2. Authorization check (Owner isolation)
+      if (current.organizer_id !== actorContext.accountId) {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_REOPENED',
+          actorId: actorContext.accountId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_UNAUTHORIZED',
+          details: `Actor '${actorContext.accountId}' is not authorized to reopen event '${eventId}'`,
+          timestamp: new Date()
+        });
+        throw new EventManagementError('UNAUTHORIZED', 'Actor is not the owner of this event');
+      }
+
+      // 3. Idempotent replay check: only if idempotencyKey was provided and matches
+      if (idempotencyKey && current.idempotency_key === idempotencyKey && current.status === 'ACTIVE') {
+        if (current.idempotency_payload_hash !== payloadHash) {
+          throw new EventManagementError(
+            'IDEMPOTENCY_CONFLICT',
+            'Idempotency key has already been used with different parameters'
+          );
+        }
+
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_REOPENED',
+          actorId: actorContext.accountId,
+          targetIdentifier: eventId,
+          result: 'IDEMPOTENT_REPLAY',
+          details: `Idempotent replay: event '${eventId}' is already ACTIVE`,
+          timestamp: new Date()
+        });
+
+        return {
+          event: mapRowToRecord(current),
+          outcome: 'IDEMPOTENT_REPLAY'
+        };
+      }
+
+      // 4. Escenario 2: Check if event is already expired
+      const now = command.now ?? new Date();
+      if (current.expires_at) {
+        const expiresAtDate = new Date(current.expires_at);
+        if (now >= expiresAtDate) {
+          await this.auditSink?.record({
+            id: randomUUID(),
+            procedure: 'EVENT_REOPENED',
+            actorId: actorContext.accountId,
+            targetIdentifier: eventId,
+            result: 'REJECTED_EVENT_EXPIRED',
+            details: `Event '${eventId}' expired at ${expiresAtDate.toISOString()}; cannot reopen an expired event`,
+            timestamp: now
+          });
+          throw new EventManagementError(
+            'EVENT_ALREADY_EXPIRED',
+            'Cannot reopen an event that is already expired'
+          );
+        }
+      }
+
+      // 5. State validation: Only CLOSED events can be reopened to ACTIVE
+      if (current.status !== 'CLOSED') {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_REOPENED',
+          actorId: actorContext.accountId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_EVENT_NOT_CLOSED',
+          details: `Event '${eventId}' cannot be reopened from status '${current.status}'`,
+          timestamp: now
+        });
+        throw new EventManagementError(
+          'EVENT_NOT_CLOSED',
+          `Only CLOSED events can be reopened (current status: '${current.status}')`
+        );
+      }
+
+      // 6. Atomic transition to ACTIVE, clearing closed_at, preserving expires_at/grace_ends_at
+      await tx.execute(
+        `UPDATE event
+         SET status = 'ACTIVE',
+             closed_at = NULL,
+             idempotency_key = COALESCE($1, idempotency_key),
+             idempotency_payload_hash = COALESCE($2, idempotency_payload_hash),
+             updated_at = $3
+         WHERE id = $4`,
+        idempotencyKey ?? null,
+        payloadHash,
+        now,
+        eventId
+      );
+
+      const updatedRecord: EventRecord = {
+        ...mapRowToRecord(current),
+        status: 'ACTIVE',
+        closedAt: null,
+        updatedAt: now
+      };
+
+      // 7. Audit successful reopen
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_REOPENED',
+        actorId: actorContext.accountId,
+        targetIdentifier: eventId,
+        result: 'SUCCESS',
+        details: `Event '${eventId}' reopened from CLOSED to ACTIVE by organizer; validity continues until ${current.expires_at ? new Date(current.expires_at).toISOString() : 'unconfigured'}`,
+        timestamp: now
+      });
+
+      return {
+        event: updatedRecord,
+        outcome: 'REOPENED'
       };
     });
   }

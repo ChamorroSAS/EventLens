@@ -106,6 +106,22 @@ class InMemoryRunner implements TransactionRunner {
             return 1;
           }
         }
+        if (sql.includes('UPDATE event') && sql.includes('SET status = \'ACTIVE\'') && sql.includes('closed_at = NULL')) {
+          const idempotencyKey = params[0] as string | null;
+          const payloadHash = params[1] as string | null;
+          const updatedAt = params[2] as Date;
+          const eventId = params[3] as string;
+
+          const existing = this.events.get(eventId);
+          if (existing) {
+            existing.status = 'ACTIVE';
+            existing.closed_at = null;
+            if (idempotencyKey) existing.idempotency_key = idempotencyKey;
+            if (payloadHash) existing.idempotency_payload_hash = payloadHash;
+            existing.updated_at = updatedAt;
+            return 1;
+          }
+        }
         return 0;
       }
     };
@@ -854,6 +870,266 @@ describe('EL-TK-063: EventLifecycleService (Unit Tests)', () => {
 
       await expect(
         service.closeEvent({
+          actorContext: otherActor,
+          eventId
+        })
+      ).rejects.toMatchObject({
+        code: 'UNAUTHORIZED'
+      });
+    });
+  });
+
+  describe('EL-TK-066: EventLifecycleService.reopenEvent (Unit Tests)', () => {
+    const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+    const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+    const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+
+    it('Reabre un evento CLOSED aún vigente, pasando a ACTIVE y preservando el vencimiento canónico (DEC-077, DEC-082)', async () => {
+      const eventId = '77777777-1111-2222-3333-444444444444';
+      const activatedAt = new Date('2026-11-01T15:00:00.000Z');
+      const closedAt = new Date('2026-11-10T12:00:00.000Z');
+      const reopenTime = new Date('2026-11-12T09:00:00.000Z');
+
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Boda Campestre',
+        status: 'CLOSED',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: activatedAt,
+        closed_at: closedAt,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      const result = await service.reopenEvent({
+        actorContext: ownerActor,
+        eventId,
+        now: reopenTime
+      });
+
+      expect(result.event.status).toBe('ACTIVE');
+      expect(result.outcome).toBe('REOPENED');
+      expect(result.event.closedAt).toBeNull();
+      expect(result.event.expiresAt).toEqual(expiresAt);
+      expect(result.event.graceEndsAt).toEqual(graceEndsAt);
+
+      const inDb = eventsMap.get(eventId)!;
+      expect(inDb.status).toBe('ACTIVE');
+      expect(inDb.closed_at).toBeNull();
+      expect(inDb.expires_at).toEqual(expiresAt);
+      expect(inDb.grace_ends_at).toEqual(graceEndsAt);
+
+      expect(auditLogs).toHaveLength(1);
+      expect(auditLogs[0].procedure).toBe('EVENT_REOPENED');
+      expect(auditLogs[0].result).toBe('SUCCESS');
+    });
+
+    it('Rechaza la reapertura si el evento ya venció según el reloj canónico (EVENT_ALREADY_EXPIRED)', async () => {
+      const eventId = '88888888-2222-3333-4444-555555555555';
+      const expiredNow = new Date('2026-12-01T15:00:00.000Z'); // Exactamente expiresAt
+
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Vencido',
+        status: 'CLOSED',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: new Date('2026-11-15T00:00:00.000Z'),
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      await expect(
+        service.reopenEvent({
+          actorContext: ownerActor,
+          eventId,
+          now: expiredNow
+        })
+      ).rejects.toMatchObject({
+        code: 'EVENT_ALREADY_EXPIRED'
+      });
+    });
+
+    it('Rechaza la reapertura si el evento no está en estado CLOSED (EVENT_NOT_CLOSED)', async () => {
+      const eventId = '99999999-3333-4444-5555-666666666666';
+
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Activo',
+        status: 'ACTIVE',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      await expect(
+        service.reopenEvent({
+          actorContext: ownerActor,
+          eventId
+        })
+      ).rejects.toMatchObject({
+        code: 'EVENT_NOT_CLOSED'
+      });
+    });
+
+    it('Permite replay limpio con la misma clave si ya quedó ACTIVE y rechaza payload inconsistente', async () => {
+      const eventId = 'aaaaaaaa-4444-5555-6666-777777777777';
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Para Reabrir Idempotente',
+        status: 'CLOSED',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: new Date('2026-11-05T00:00:00.000Z'),
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      const first = await service.reopenEvent({
+        actorContext: ownerActor,
+        eventId,
+        idempotencyKey: 'idem-reopen-1'
+      });
+      expect(first.event.status).toBe('ACTIVE');
+      expect(first.outcome).toBe('REOPENED');
+      expect(auditLogs).toHaveLength(1);
+
+      // Replay
+      const second = await service.reopenEvent({
+        actorContext: ownerActor,
+        eventId,
+        idempotencyKey: 'idem-reopen-1'
+      });
+      expect(second.event.status).toBe('ACTIVE');
+      expect(second.outcome).toBe('IDEMPOTENT_REPLAY');
+      expect(auditLogs).toHaveLength(2);
+      expect(auditLogs[1].result).toBe('IDEMPOTENT_REPLAY');
+
+      // Conflicto con misma clave y payload distinto en evento ya ACTIVE
+      const otherEventId = 'bbbbbbbb-5555-6666-7777-888888888888';
+      eventsMap.set(otherEventId, {
+        id: otherEventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Otro Evento',
+        status: 'ACTIVE',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: 'idem-reopen-1',
+        idempotency_payload_hash: 'different-hash',
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      await expect(
+        service.reopenEvent({
+          actorContext: ownerActor,
+          eventId: otherEventId,
+          idempotencyKey: 'idem-reopen-1'
+        })
+      ).rejects.toMatchObject({
+        code: 'IDEMPOTENCY_CONFLICT'
+      });
+    });
+
+    it('Rechaza la reapertura si el actor no es el organizador propietario (UNAUTHORIZED)', async () => {
+      const eventId = 'cccccccc-6666-7777-8888-999999999999';
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Ajeno',
+        status: 'CLOSED',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: new Date('2026-11-05T00:00:00.000Z'),
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      await expect(
+        service.reopenEvent({
           actorContext: otherActor,
           eventId
         })
