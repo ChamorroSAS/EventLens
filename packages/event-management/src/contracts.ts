@@ -274,6 +274,39 @@ export interface GetLifecycleSnapshotCommand {
   readonly now?: Date;
 }
 
+export type EventAction =
+  | 'GUEST_VIEW_LANDING'
+  | 'GUEST_VIEW_GALLERY'
+  | 'GUEST_UPLOAD'
+  | 'GUEST_VIEW_OWN_CONTRIBUTIONS'
+  | 'GUEST_REQUEST_OWN_REMOVAL'
+  | 'ORGANIZER_MANAGE'
+  | 'ADMIN_INTERVENE';
+
+export interface EvaluateAccessParams {
+  readonly event: EventRecord | LifecycleSnapshot | null | undefined;
+  readonly action: EventAction;
+  readonly actorContext?: EventLifecycleActorContext | null;
+}
+
+export interface AccessDecision {
+  readonly allowed: boolean;
+  readonly code:
+    | 'ALLOWED'
+    | 'EVENT_NOT_FOUND'
+    | 'EVENT_NOT_ACCESSIBLE'
+    | 'EVENT_SUSPENDED'
+    | 'EVENT_TERMINAL'
+    | 'UPLOADS_DISABLED'
+    | 'GALLERY_DISABLED'
+    | 'SESSION_REQUIRED'
+    | 'UNAUTHORIZED_ORGANIZER'
+    | 'UNAUTHORIZED_ADMIN'
+    | 'FAIL_CLOSED';
+  readonly reason: string;
+}
+
+
 export interface EventAuditRecord {
   readonly id: string;
   readonly procedure:

@@ -31,6 +31,9 @@ export {
   type LifecycleCapabilities,
   type LifecycleSnapshot,
   type GetLifecycleSnapshotCommand,
+  type EventAction,
+  type EvaluateAccessParams,
+  type AccessDecision,
   type EventAuditRecord,
   type EventAuditSink
 } from './contracts.js';
