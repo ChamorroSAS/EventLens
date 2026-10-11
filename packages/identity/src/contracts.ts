@@ -290,7 +290,8 @@ export interface AuditEventRecord {
     | 'BETA_INVITE_ISSUE'
     | 'BETA_INVITE_DUPLICATE_ATTEMPT'
     | 'BETA_INVITE_RENEW'
-    | 'ORGANIZER_REGISTRATION';
+    | 'ORGANIZER_REGISTRATION'
+    | 'ORGANIZER_EMAIL_VERIFIED_AND_ACTIVATED';
   readonly actorId: string;
   readonly targetIdentifier: string;
   readonly targetPrincipalId?: string | null;
@@ -308,7 +309,8 @@ export interface AuditEventRecord {
     | 'REJECTED_CSRF'
     | 'ALREADY_CONSUMED'
     | 'ALREADY_PENDING'
-    | 'ALREADY_REGISTERED_PENDING';
+    | 'ALREADY_REGISTERED_PENDING'
+    | 'ACTIVATED';
   readonly details?: string;
   readonly timestamp: Date;
 }
@@ -413,6 +415,7 @@ export interface OrganizerAccountRecord {
   readonly declaredAdult: boolean;
   readonly declaredAdultAt?: Date | null;
   readonly invitationId: string;
+  readonly verifiedAt?: Date | null;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -439,4 +442,33 @@ export interface RegisterOrganizerResult {
   readonly verificationIssued: boolean;
   readonly invitationId: string;
 }
+
+export type VerificationErrorCode =
+  | 'INVALID_OR_UNUSABLE_TOKEN'
+  | 'INVITATION_NOT_USABLE'
+  | 'ACCOUNT_NOT_FOUND'
+  | 'ACCOUNT_PENDING_VERIFICATION'
+  | 'ALREADY_ACTIVE'
+  | 'TEMPORARY_FAILURE'
+  | 'INVALID_ARGUMENT';
+
+export class VerificationError extends Error {
+  constructor(public readonly code: VerificationErrorCode, message?: string) {
+    super(message ?? code);
+    this.name = 'VerificationError';
+  }
+}
+
+export interface VerifyEmailAndActivateCommand {
+  readonly verificationToken: string;
+}
+
+export interface VerifyEmailAndActivateResult {
+  readonly accountId: string;
+  readonly emailNormalized: string;
+  readonly status: 'ACTIVE';
+  readonly outcome: 'ACTIVATED' | 'ALREADY_ACTIVE';
+  readonly verifiedAt: Date;
+}
+
 

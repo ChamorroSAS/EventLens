@@ -42,7 +42,11 @@ export {
   type OrganizerAccountRecord,
   type EmailVerificationNotificationPort,
   type RegisterOrganizerCommand,
-  type RegisterOrganizerResult
+  type RegisterOrganizerResult,
+  type VerificationErrorCode,
+  VerificationError,
+  type VerifyEmailAndActivateCommand,
+  type VerifyEmailAndActivateResult
 } from './contracts.js';
 
 export { AdminProvisioningService } from './provisioning.js';
@@ -63,5 +67,8 @@ export {
 } from './invitation.js';
 
 export { OrganizerRegistrationService } from './registration.js';
+
+export { EmailVerificationService } from './verification.js';
+
 
 

@@ -94,6 +94,7 @@ model OrganizerAccount {
   declaredAdult   Boolean   @default(false) @map("declared_adult")
   declaredAdultAt DateTime? @map("declared_adult_at") @db.Timestamptz
   invitationId    String    @map("invitation_id") @db.Uuid
+  verifiedAt      DateTime? @map("verified_at") @db.Timestamptz
   createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt       DateTime  @default(now()) @map("updated_at") @db.Timestamptz
 
