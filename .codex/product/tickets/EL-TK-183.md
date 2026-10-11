@@ -4,8 +4,13 @@
 EL-EP-016
 
 ## Status
-READY
+DONE
 
+**CONFIRMED — 2026-10-11:** Generación reproducible del informe final de evaluación Beta implementada al 100% mediante `BetaReportGeneratorService` (`packages/observability/src/beta-report-generator-service.ts`), contratos correspondientes en `packages/observability/src/contracts.ts` y tests unitarios en `packages/observability/test/beta-report-generator-service.unit.test.ts`.
+- **Escenario 1 (Consolidación sin discordancias):** Consolidación fiel de todas las métricas de confiabilidad (cargas, fotos, video, latencias, soporte funcional, descargas y participación indicativa), cobertura de cohorte, estado de puertas de seguridad (DR-001 y AUDIT-001) y clasificación oficial a partir de `BetaEvidenceSnapshot` inmutable y su hash SHA-256.
+- **Escenario 2 (Declaración explícita de limitaciones y gaps):** El informe reporta transparentemente cualquier déficit de volumen muestral (`SAMPLE_VOLUME_DEFICIT`), gaps de participación indicativa (`INDICATIVE_PARTICIPATION_GAP`), incidentes operacionales registrados y extensiones de ventana, impidiendo el ocultamiento tras promedios numéricos.
+- **Escenario 3 (Reproducibilidad determinística byte-a-byte):** Generación puramente determinística que produce informes byte-a-byte idénticos en sucesivas ejecuciones sobre el mismo snapshot congelado, vinculados al mismo contentHash de evidencia inmutable.
+- **Minimización, privacidad y descargo legal:** Informe sanitizado sin PII ni identidades/claves multimedia, con descargo explícito de separación de acuerdos comerciales o SLAs contractuales (DEC-057, Q-028). Suite completa PASS (135/135 tests en 27 archivos en `@eventlens/observability`).
 **CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Generación reproducible del informe final de evaluación Beta a partir de snapshots inmutables de evidencia (DEC-057). UI_REQUIRED: NO. REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES.
 
 ## User story

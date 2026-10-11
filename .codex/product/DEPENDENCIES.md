@@ -323,7 +323,7 @@ READY de requisitos, pero READY_FOR_TICKET_WRITING: PARTIAL y READY_FOR_IMPLEMEN
 | EL-TK-180 (DONE) | 177; contrato EL-EP-004 | 182,183 |
 | EL-TK-181 (DONE) | 177 | 182,183 |
 | EL-TK-182 (DONE) | 178..181; evidencia operacional EL-EP-014 (EL-TK-174, EL-TK-176) | 183 |
-| EL-TK-183 | 177..182 | decisión operativa posterior a Beta |
+| EL-TK-183 (DONE) | 177..182 | decisión operativa posterior a Beta |
 
 7 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES (UI_REQUIRED: NO, UX_READINESS: NOT_REQUIRED conforme a ui-mvp-epic-review.md#el-ep-016) para el contrato de métricas agregadas y minimizadas de la Beta desacoplado a telemetría EL-TK-168, confiabilidad de cargas y procesamiento multimedia (cargas válidas ≥95%, fotos ≥98%, video ≥95%, latencias p95), soporte funcional clasificado (`category: FUNCTIONAL`) y descargas de recuerdos, participación indicativa, ventana 8..12 semanas / volumen mínimo con discriminador determinista de cohorte (`cohort_inclusion`), congelación de snapshot inmutable y clasificación con prevalencia absoluta de incidentes críticos en EL-TK-182, e informe final reproducible en EL-TK-183 basado en dicho snapshot inmutable. Inicio Beta y responsable formal permanecen datos operativos de ejecución, no blockers funcionales.
 
