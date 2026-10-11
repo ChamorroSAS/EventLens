@@ -4,7 +4,7 @@
 EL-EP-011
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** sistema, **quiero** asignar y resolver el plan BETA y sus límites efectivos, **para** aplicar una base consistente sin alterar el plan original por overrides.
@@ -62,3 +62,9 @@ Q-011, Q-020; DEC-010, DEC-011, DEC-020, DEC-026, DEC-027, DEC-039, DEC-100; EL-
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación y UI/UX — 2026-10-10
+- **REQUIREMENTS_READY:** YES (requisitos, alcances, criterios Gherkin y reglas canónicas DEC-079/080/093..095/100..102 validados sin blockers).
+- **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-capacity-lifecycle.md y ui-mvp-epic-review.md §EL-EP-011; sin componentes nuevos).
+- **READY_FOR_FRONTEND_PLANNING:** YES
+- **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).

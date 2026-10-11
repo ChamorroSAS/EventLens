@@ -4,7 +4,7 @@
 EL-EP-011
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** sistema, **quiero** reservar bytes y cupos de archivo contra los límites efectivos, **para** evitar sobreasignación cuando varias cargas compiten cerca de la cuota.
@@ -62,3 +62,9 @@ DEC-079, DEC-080, DEC-085; EL-EP-011, EL-EP-005.
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación y UI/UX — 2026-10-10
+- **REQUIREMENTS_READY:** YES (requisitos, alcances, criterios Gherkin y reglas canónicas DEC-079/080/093..095/100..102 validados sin blockers).
+- **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-capacity-lifecycle.md y ui-mvp-epic-review.md §EL-EP-011; sin componentes nuevos).
+- **READY_FOR_FRONTEND_PLANNING:** YES
+- **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).

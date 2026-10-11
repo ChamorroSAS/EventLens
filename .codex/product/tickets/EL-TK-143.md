@@ -4,7 +4,7 @@
 EL-EP-011
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** organizador, **quiero** ver consumo y gestionar solicitudes desde mi evento, **para** comprender límites y pedir ampliaciones con una experiencia accesible.
@@ -62,3 +62,9 @@ DEC-079, DEC-093, DEC-094, DEC-100, DEC-101; EL-EP-011; ui-capacity-lifecycle.md
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación y UI/UX — 2026-10-10
+- **REQUIREMENTS_READY:** YES (requisitos, alcances, criterios Gherkin y reglas canónicas DEC-079/080/093..095/100..102 validados sin blockers).
+- **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-capacity-lifecycle.md y ui-mvp-epic-review.md §EL-EP-011; sin componentes nuevos).
+- **READY_FOR_FRONTEND_PLANNING:** YES
+- **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).

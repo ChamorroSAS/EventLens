@@ -237,7 +237,7 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 10 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de descarga individual de original seguro para organizador (DEC-009/013/075), exportación asíncrona multipartes con snapshot fijo (DEC-046..049/079/090), disponibilidad 48h, invalidación inmediata ante retiros de privacidad o revocación de acceso (DEC-090), grants temporales de partes, regeneración/retry autorizado y consulta de estado/partes/progreso real en OrganizerMediaLibrary. Superficies UI reutilizadas del catálogo canónico (§9.1..8), sin centros de exportación paralelos ni componentes nuevos. Descargas guest siguen fuera de alcance.
 
-## Tickets propuestos — EL-EP-011 (DRAFT; pendiente requirements_reviewer)
+## Tickets vigentes — EL-EP-011 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
@@ -254,9 +254,9 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-144 | 141,142; contrato EL-EP-012 | 145 |
 | EL-TK-145 | 134..144 | validación EL-EP-011 |
 
-12 DRAFT. Capacidad comercial y reservas permanecen en EL-EP-011; autorización/carga en EL-EP-005, lifecycle en EL-EP-003 y comunicación de umbrales en EL-EP-013.
+12 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de plan BETA base y límites efectivos, consulta de consumo comercial y reservas separadas de storage operacional (DEC-079), reserva y liberación atómica de cuota (DEC-080), consolidación de consumo en aceptación/purga física, emisión de señales deduplicadas al 80% y 100%, solicitud de ampliación (DEC-093..095/100..102), respuesta en misma solicitud, revisión administrativa con motivo, aplicación de overrides/retorno al plan base con denegación de vencimiento pasado y superficies UI de organizador y consola administrativa. Superficies UI reutilizadas del catálogo canónico (ui-capacity-lifecycle.md y ui-mvp-epic-review.md §EL-EP-011), sin componentes nuevos. Carga en EL-EP-005, lifecycle en EL-EP-003 y notificaciones en EL-EP-013.
 
-## Tickets propuestos — EL-EP-012 (DRAFT; pendiente requirements_reviewer)
+## Tickets vigentes — EL-EP-012 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
@@ -271,9 +271,9 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-154 | 146,147,150..153 | 155 |
 | EL-TK-155 | 146..154 | validación EL-EP-012 |
 
-10 DRAFT. La consola compone capacidades, no redefine políticas; reportes, capacidad, lifecycle, acceso y auditoría conservan ownership en sus módulos.
+10 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de búsqueda administrativa sanitizada sin preview multimedia, detalle agregado con estado parcial explícito, consulta y diagnóstico de jobs con errores técnicos sanitizados (DEC-061..064), comandos autorizados sobre jobs (retry/cancel/marcar no repetir), acceso multimedia administrativo condicionado a razón operativa registrada (DEC-019/020), orquestación de intervenciones mediante delegación a contratos propietarios sin bypass de reglas de dominio, y superficies UI unificadas en consola administrativa. Superficies UI reutilizadas del catálogo canónico (ui-mvp-epic-review.md §EL-EP-012), sin consola paralela ni componentes nuevos. Políticas conservan ownership en sus módulos propietarios.
 
-## Tickets propuestos — EL-EP-013 (DRAFT; pendiente requirements_reviewer)
+## Tickets vigentes — EL-EP-013 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
@@ -288,7 +288,7 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-164 | 157..163 | 165 |
 | EL-TK-165 | 156..164 | validación EL-EP-013 |
 
-10 DRAFT. EL-EP-013 consume hechos confirmados y usa JobQueue durable; proveedor de correo sigue DEFERRED y no se introduce NotificationCenter, preferencias ni canales nuevos.
+10 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de persistencia de NotificationIntent idempotente a partir de hechos de dominio confirmados, procesamiento asíncrono de correos con puerto desacoplado mediante JobQueue durable (DEC-021, DEC-061..064), proyección de avisos contextuales vigentes para el panel del organizador sin duplicados ni avisos obsoletos, generación de avisos de lifecycle/gracia/eliminación próxima, capacidad al 80% y 100%, exportación disponible/expirada, cuenta/seguridad/cambios, denuncias e intervenciones según severidad, e integración UI de avisos y plantillas de correo accesibles. Superficies UI reutilizadas del catálogo canónico (ui-mvp-epic-review.md §EL-EP-013), sin NotificationCenter obligatorio ni nuevos componentes. Proveedor de correo desacoplado por puerto.
 
 ## Tickets vigentes — EL-EP-006 (quality gate APPROVED)
 

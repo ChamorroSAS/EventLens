@@ -4,7 +4,7 @@
 EL-EP-012
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** administración autorizada, **quiero** buscar eventos u organizadores por referencias permitidas, **para** localizar rápidamente el contexto de soporte sin abrir multimedia.
@@ -62,3 +62,9 @@ Q-017; DEC-019, DEC-020; EL-EP-012.
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación y UI/UX — 2026-10-10
+- **REQUIREMENTS_READY:** YES (requisitos, alcances, criterios Gherkin y reglas canónicas DEC-019/020/027/038/061..064 validados sin blockers).
+- **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §EL-EP-012; sin componentes nuevos ni bypass de justificación).
+- **READY_FOR_FRONTEND_PLANNING:** YES
+- **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).

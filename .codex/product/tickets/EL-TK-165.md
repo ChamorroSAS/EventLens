@@ -4,7 +4,7 @@
 EL-EP-013
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** equipo de producto, **quiero** validar comunicaciones panel/email, **para** comprobar que son útiles, privadas y no duplicadas bajo reintentos/cambios.
@@ -62,3 +62,9 @@ Q-018; DEC-021, DEC-064; EL-EP-013.
 - [x] Dependencias identificadas
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
+
+## Readiness de implementación y UI/UX — 2026-10-10
+- **REQUIREMENTS_READY:** YES (requisitos, alcances, criterios Gherkin y reglas canónicas DEC-021 y DEC-061..064 validados sin blockers).
+- **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §EL-EP-013; sin componentes nuevos ni NotificationCenter obligatorio).
+- **READY_FOR_FRONTEND_PLANNING:** YES
+- **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).

@@ -103,7 +103,7 @@ UX_OPEN_QUESTIONS: ninguna funcional nueva; gates tecnicos aplicables en el hand
 - [x] No BLOCKER questions
 - [x] Main scenarios verifiable
 
-Sin preguntas BLOCKER de producto en este límite; las decisiones técnicas pendientes no se presentan como decisiones confirmadas.
+DoR de requisitos y UI aprobada; tickets EL-TK-156..165 validados como READY. READY_FOR_FRONTEND_PLANNING: YES; READY_FOR_IMPLEMENTATION: YES conforme a dependencias técnicas y baseline EL-TD-001..007.
 
 ## Priority
 
@@ -111,6 +111,7 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
+- 2026-10-10: requirements_reviewer y revisión UI/UX aprueban el paso de EL-TK-156..165 de DRAFT a READY (REQUIREMENTS_READY: YES, READY_FOR_FRONTEND_PLANNING: YES, READY_FOR_IMPLEMENTATION: YES propio). Reutilización estricta del catálogo UI/UX (ui-mvp-epic-review.md §EL-EP-013) sin nuevos componentes ni NotificationCenter obligatorio.
 - 2026-10-10: ticket_writer crea EL-TK-156..165 como DRAFT para intents de notificación, email async, avisos contextuales de lifecycle/capacidad/export/seguridad/casos, UI y validación integrada. Pendientes de requirements_reviewer; sin implementación.
 
 - 2026-10-07: CR-002 resuelve TC aplicables y sustituye restricciones CR-001; estado/bloqueantes de producto conservados.
