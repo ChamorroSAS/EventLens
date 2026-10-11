@@ -700,4 +700,103 @@ describeIntegration('EventLifecycleService (Real PostgreSQL Integration Tests 鈥
       })
     ).rejects.toThrow(EventManagementError);
   });
+
+  it('EL-TK-069: Reactiva evento SUSPENDED en PostgreSQL recalculando su estado vigente (DEC-081)', async () => {
+    const eventId = randomUUID();
+    const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+    const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+    const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+    const reactivateNow = new Date('2026-11-15T12:00:00.000Z');
+
+    await sql(
+      `INSERT INTO event (id, organizer_id, name, status, scheduled_at, expires_at, grace_ends_at, activated_at, suspended_at, suspension_reason, previous_status)
+       VALUES ($1, $2, $3, 'SUSPENDED', $4, $5, $6, $4, NOW(), 'Investigaci贸n preventiva', 'ACTIVE')`,
+      eventId,
+      ownerActor.accountId,
+      'Evento Reactivaci贸n SQL',
+      scheduledAt,
+      expiresAt,
+      graceEndsAt
+    );
+
+    const result = await service.reactivateEvent({
+      eventId,
+      actorContext: adminActor,
+      now: reactivateNow,
+      idempotencyKey: 'reactivate-sql-key'
+    });
+
+    expect(result.outcome).toBe('REACTIVATED');
+    expect(result.targetStatus).toBe('ACTIVE');
+    expect(result.event.status).toBe('ACTIVE');
+    expect(result.event.suspendedAt).toBeNull();
+    expect(result.event.suspensionReason).toBeNull();
+    expect(result.event.previousStatus).toBeNull();
+
+    // Comprobar en base de datos
+    const rows = await query<{ status: string; suspended_at: Date | null; previous_status: string | null }>(
+      `SELECT status, suspended_at, previous_status FROM event WHERE id = $1`,
+      eventId
+    );
+    expect(rows[0].status).toBe('ACTIVE');
+    expect(rows[0].suspended_at).toBeNull();
+    expect(rows[0].previous_status).toBeNull();
+
+    // Idempotencia
+    const replay = await service.reactivateEvent({
+      eventId,
+      actorContext: adminActor,
+      now: reactivateNow,
+      idempotencyKey: 'reactivate-sql-key'
+    });
+    expect(replay.outcome).toBe('IDEMPOTENT_REPLAY');
+    expect(replay.targetStatus).toBe('ACTIVE');
+
+    // Auditor铆a
+    const audits = await query<{ procedure: string; result: string }>(
+      `SELECT procedure, result FROM admin_audit_event WHERE target_identifier = $1 ORDER BY timestamp ASC`,
+      eventId
+    );
+    expect(audits).toHaveLength(2);
+    expect(audits[0].procedure).toBe('EVENT_REACTIVATED');
+    expect(audits[0].result).toBe('SUCCESS');
+    expect(audits[1].procedure).toBe('EVENT_REACTIVATED');
+    expect(audits[1].result).toBe('IDEMPOTENT_REPLAY');
+  });
+
+  it('EL-TK-069: En PostgreSQL, prevalece fin de gracia (PENDING_DELETION) al reactivar si el plazo ya transcurri贸', async () => {
+    const eventId = randomUUID();
+    const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+    const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+    const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+    const purgeNow = new Date('2026-12-10T12:00:00.000Z'); // Posterior a graceEndsAt
+
+    await sql(
+      `INSERT INTO event (id, organizer_id, name, status, scheduled_at, expires_at, grace_ends_at, activated_at, suspended_at, suspension_reason, previous_status)
+       VALUES ($1, $2, $3, 'SUSPENDED', $4, $5, $6, $4, NOW(), 'Investigaci贸n prolongada', 'ACTIVE')`,
+      eventId,
+      ownerActor.accountId,
+      'Evento Gracia Expirada SQL',
+      scheduledAt,
+      expiresAt,
+      graceEndsAt
+    );
+
+    const result = await service.reactivateEvent({
+      eventId,
+      actorContext: adminActor,
+      now: purgeNow
+    });
+
+    expect(result.targetStatus).toBe('PENDING_DELETION');
+    expect(result.event.status).toBe('PENDING_DELETION');
+    expect(result.event.purgeStartedAt).toEqual(purgeNow);
+
+    const rows = await query<{ status: string; purge_started_at: Date }>(
+      `SELECT status, purge_started_at FROM event WHERE id = $1`,
+      eventId
+    );
+    expect(rows[0].status).toBe('PENDING_DELETION');
+    expect(new Date(rows[0].purge_started_at).toISOString()).toBe(purgeNow.toISOString());
+  });
 });

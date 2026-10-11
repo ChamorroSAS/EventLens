@@ -15,6 +15,8 @@ import {
   type TemporalAdvanceOutcome,
   type SuspendEventCommand,
   type SuspendEventResult,
+  type ReactivateEventCommand,
+  type ReactivateEventResult,
   type EventAuditSink,
   type EventRecord,
   type EventStatus,
@@ -1133,6 +1135,220 @@ export class EventLifecycleService {
         event: updatedRecord,
         previousStatus,
         outcome: 'SUSPENDED'
+      };
+    });
+  }
+
+  /**
+   * Reactiva un evento SUSPENDED recalculando su estado vigente a tiempo real conforme a DEC-081 y DEC-078 (EL-TK-069).
+   */
+  async reactivateEvent(command: ReactivateEventCommand): Promise<ReactivateEventResult> {
+    const { actorContext, eventId, idempotencyKey, now: providedNow } = command;
+
+    if (!actorContext || actorContext.actorType !== 'ADMIN_HUMAN') {
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_REACTIVATED',
+        actorId: actorContext?.principalId ?? 'UNKNOWN',
+        targetIdentifier: eventId,
+        result: 'REJECTED_UNAUTHORIZED',
+        details: 'Only authorized administrative actors (ADMIN_HUMAN) may reactivate suspended events',
+        timestamp: new Date()
+      });
+      throw new EventManagementError(
+        'UNAUTHORIZED',
+        'Only authorized administrative actors may reactivate suspended events'
+      );
+    }
+
+    const payloadHash = idempotencyKey
+      ? createHash('sha256')
+          .update(JSON.stringify({ eventId, principalId: actorContext.principalId }))
+          .digest('hex')
+      : null;
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      const now = providedNow ?? new Date();
+
+      // 1. Pessimistic lock
+      const rows = await tx.query<EventRow>(
+        `SELECT id, organizer_id, name, status, timezone, starts_at_local,
+                scheduled_at, utc_offset_minutes, expires_at, grace_ends_at,
+                activated_at, closed_at, purge_started_at, suspended_at,
+                suspension_reason, previous_status, validity_duration_days,
+                grace_days, uploads_enabled, guest_gallery_enabled,
+                moderation_mode, pin_enabled, idempotency_key,
+                idempotency_payload_hash, created_at, updated_at
+         FROM event
+         WHERE id = $1
+         FOR UPDATE`,
+        eventId
+      );
+
+      if (rows.length === 0) {
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event '${eventId}' not found`);
+      }
+
+      const current = rows[0];
+
+      // 2. If not SUSPENDED: check for idempotent replay
+      if (current.status !== 'SUSPENDED') {
+        if (idempotencyKey && current.idempotency_key === idempotencyKey) {
+          if (current.idempotency_payload_hash !== payloadHash) {
+            throw new EventManagementError(
+              'IDEMPOTENCY_CONFLICT',
+              'Idempotency key has already been used with different parameters'
+            );
+          }
+
+          await this.auditSink?.record({
+            id: randomUUID(),
+            procedure: 'EVENT_REACTIVATED',
+            actorId: actorContext.principalId,
+            targetIdentifier: eventId,
+            result: 'IDEMPOTENT_REPLAY',
+            details: `Idempotent replay: event '${eventId}' is already in status '${current.status}'`,
+            timestamp: now
+          });
+
+          return {
+            event: mapRowToRecord(current),
+            previousSuspendedStatus: 'SUSPENDED',
+            targetStatus: current.status as EventStatus,
+            outcome: 'IDEMPOTENT_REPLAY'
+          };
+        }
+
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_REACTIVATED',
+          actorId: actorContext.principalId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_EVENT_NOT_SUSPENDED',
+          details: `Event '${eventId}' is not in SUSPENDED status (current: '${current.status}')`,
+          timestamp: now
+        });
+        throw new EventManagementError(
+          'EVENT_NOT_SUSPENDED',
+          `Event '${eventId}' is not in SUSPENDED status (current: '${current.status}')`
+        );
+      }
+
+      // 3. Validate previous_status: cannot be terminal or missing
+      const previousStatus = current.previous_status as EventStatus | undefined;
+      if (!previousStatus || previousStatus === 'PENDING_DELETION' || previousStatus === 'ARCHIVED') {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_REACTIVATED',
+          actorId: actorContext.principalId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_INVALID_PREVIOUS_STATUS',
+          details: `Event '${eventId}' has invalid or terminal previous status: '${previousStatus}'`,
+          timestamp: now
+        });
+        throw new EventManagementError(
+          'INVALID_PREVIOUS_STATUS',
+          `Cannot reactivate event with terminal or missing previous status: '${previousStatus}'`
+        );
+      }
+
+      // 4. Calculate targetStatus per DEC-081, DEC-078 & DEC-082
+      let targetStatus: EventStatus;
+      let newPurgeStartedAt: Date | null = current.purge_started_at ? new Date(current.purge_started_at) : null;
+      let newActivatedAt: Date | null = current.activated_at ? new Date(current.activated_at) : null;
+
+      const graceEndsAt = current.grace_ends_at ? new Date(current.grace_ends_at) : null;
+      const expiresAt = current.expires_at ? new Date(current.expires_at) : null;
+      const scheduledAt = current.scheduled_at ? new Date(current.scheduled_at) : null;
+
+      if (graceEndsAt && now.getTime() >= graceEndsAt.getTime()) {
+        // Prevalencia: fin de gracia transcurrido -> PENDING_DELETION
+        targetStatus = 'PENDING_DELETION';
+        if (!newPurgeStartedAt) {
+          newPurgeStartedAt = now;
+        }
+      } else if (expiresAt && now.getTime() >= expiresAt.getTime()) {
+        // Prevalencia: vigencia transcurrida -> GRACE_PERIOD
+        targetStatus = 'GRACE_PERIOD';
+      } else {
+        // Dentro de vigencia o sin vencimiento configurado (DRAFT)
+        switch (previousStatus) {
+          case 'DRAFT':
+            targetStatus = 'DRAFT';
+            break;
+          case 'CLOSED':
+            targetStatus = 'CLOSED';
+            break;
+          case 'ACTIVE':
+            targetStatus = 'ACTIVE';
+            break;
+          case 'SCHEDULED':
+            if (scheduledAt && now.getTime() >= scheduledAt.getTime()) {
+              targetStatus = 'ACTIVE';
+              if (!newActivatedAt) {
+                newActivatedAt = now;
+              }
+            } else {
+              targetStatus = 'SCHEDULED';
+            }
+            break;
+          default:
+            throw new EventManagementError(
+              'INVALID_PREVIOUS_STATUS',
+              `Unsupported previous status for reactivation: '${previousStatus}'`
+            );
+        }
+      }
+
+      // 5. Update event in database: clear suspension fields and set recalculated status
+      await tx.execute(
+        `UPDATE event
+         SET status = $1,
+             suspended_at = NULL,
+             suspension_reason = NULL,
+             previous_status = NULL,
+             purge_started_at = COALESCE($2, purge_started_at),
+             activated_at = COALESCE($3, activated_at),
+             idempotency_key = COALESCE($4, idempotency_key),
+             idempotency_payload_hash = COALESCE($5, idempotency_payload_hash),
+             updated_at = $6
+         WHERE id = $7`,
+        targetStatus,
+        newPurgeStartedAt,
+        newActivatedAt,
+        idempotencyKey ?? null,
+        payloadHash,
+        now,
+        eventId
+      );
+
+      const updatedRecord: EventRecord = {
+        ...mapRowToRecord(current),
+        status: targetStatus,
+        suspendedAt: null,
+        suspensionReason: null,
+        previousStatus: null,
+        purgeStartedAt: newPurgeStartedAt,
+        activatedAt: newActivatedAt,
+        updatedAt: now
+      };
+
+      // 6. Audit successful reactivation
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_REACTIVATED',
+        actorId: actorContext.principalId,
+        targetIdentifier: eventId,
+        result: 'SUCCESS',
+        details: `Reactivated event '${eventId}' from SUSPENDED (previous: '${previousStatus}') to recalculated status '${targetStatus}'`,
+        timestamp: now
+      });
+
+      return {
+        event: updatedRecord,
+        previousSuspendedStatus: 'SUSPENDED',
+        targetStatus,
+        outcome: 'REACTIVATED'
       };
     });
   }

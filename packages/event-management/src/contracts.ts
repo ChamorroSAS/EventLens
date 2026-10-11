@@ -58,7 +58,9 @@ export type EventManagementErrorCode =
   | 'EVENT_NOT_CLOSED'
   | 'EVENT_ALREADY_EXPIRED'
   | 'EVENT_TERMINAL'
-  | 'SUSPENSION_REASON_REQUIRED';
+  | 'SUSPENSION_REASON_REQUIRED'
+  | 'EVENT_NOT_SUSPENDED'
+  | 'INVALID_PREVIOUS_STATUS';
 
 export class EventManagementError extends Error {
   constructor(
@@ -180,6 +182,20 @@ export interface SuspendEventResult {
   readonly outcome: 'SUSPENDED' | 'IDEMPOTENT_REPLAY';
 }
 
+export interface ReactivateEventCommand {
+  readonly actorContext: AdminActorContext;
+  readonly eventId: string;
+  readonly idempotencyKey?: string;
+  readonly now?: Date;
+}
+
+export interface ReactivateEventResult {
+  readonly event: EventRecord;
+  readonly previousSuspendedStatus: EventStatus;
+  readonly targetStatus: EventStatus;
+  readonly outcome: 'REACTIVATED' | 'IDEMPOTENT_REPLAY';
+}
+
 export interface EventAuditRecord {
   readonly id: string;
   readonly procedure:
@@ -190,15 +206,18 @@ export interface EventAuditRecord {
     | 'EVENT_CLOSED'
     | 'EVENT_REOPENED'
     | 'EVENT_TEMPORAL_ADVANCE'
-    | 'EVENT_SUSPENDED';
+    | 'EVENT_SUSPENDED'
+    | 'EVENT_REACTIVATED';
   readonly actorId: string;
   readonly targetIdentifier: string;
   readonly result:
     | 'SUCCESS'
+    | 'REACTIVATED'
     | 'TRANSITIONED_TO_GRACE_PERIOD'
     | 'TRANSITIONED_TO_PENDING_DELETION'
     | 'SUSPENDED_PRESERVED'
     | 'NO_OP'
+    | 'IDEMPOTENT_REPLAY'
     | 'REJECTED_INVALID_NAME'
     | 'REJECTED_UNAUTHORIZED'
     | 'REJECTED_DST_GAP'
@@ -206,6 +225,8 @@ export interface EventAuditRecord {
     | 'REJECTED_INVALID_OFFSET'
     | 'REJECTED_INVALID_STATE'
     | 'REJECTED_SCHEDULE_NOT_CONFIGURED'
+    | 'REJECTED_EVENT_NOT_SUSPENDED'
+    | 'REJECTED_INVALID_PREVIOUS_STATUS'
     | 'REJECTED_INCOMPLETE_CONFIG'
     | 'REJECTED_EVENT_NOT_IN_SCHEDULED'
     | 'REJECTED_EVENT_NOT_ACTIVE'

@@ -171,6 +171,33 @@ class InMemoryRunner implements TransactionRunner {
             return 1;
           }
         }
+        if (sql.includes('UPDATE event') && sql.includes('suspended_at = NULL')) {
+          const targetStatus = params[0] as string;
+          const purgeStartedAt = params[1] as Date | null;
+          const activatedAt = params[2] as Date | null;
+          const idempotencyKey = params[3] as string | null;
+          const payloadHash = params[4] as string | null;
+          const updatedAt = params[5] as Date;
+          const eventId = params[6] as string;
+
+          const existing = this.events.get(eventId);
+          if (existing) {
+            existing.status = targetStatus;
+            existing.suspended_at = null;
+            existing.suspension_reason = null;
+            existing.previous_status = null;
+            if (purgeStartedAt && !existing.purge_started_at) {
+              existing.purge_started_at = purgeStartedAt;
+            }
+            if (activatedAt && !existing.activated_at) {
+              existing.activated_at = activatedAt;
+            }
+            if (idempotencyKey) existing.idempotency_key = idempotencyKey;
+            if (payloadHash) existing.idempotency_payload_hash = payloadHash;
+            existing.updated_at = updatedAt;
+            return 1;
+          }
+        }
         return 0;
       }
     };
@@ -1707,6 +1734,361 @@ describe('EL-TK-063: EventLifecycleService (Unit Tests)', () => {
       ).rejects.toMatchObject({
         code: 'IDEMPOTENCY_CONFLICT'
       });
+    });
+  });
+
+  describe('EL-TK-069: EventLifecycleService.reactivateEvent (Unit Tests)', () => {
+    it('Escenario 1: Reactiva evento dentro de vigencia restaurando ACTIVE, CLOSED o DRAFT (DEC-081)', async () => {
+      const eventId = '11110000-0000-0000-0000-000000000001';
+      const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+      const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+      const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+      const reactivateNow = new Date('2026-11-15T12:00:00.000Z');
+
+      // Caso ACTIVE
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Suspendido Activo',
+        status: 'SUSPENDED',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: null,
+        purge_started_at: null,
+        suspended_at: new Date('2026-11-10T00:00:00.000Z'),
+        suspension_reason: 'Revisión preventiva',
+        previous_status: 'ACTIVE',
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      const res = await service.reactivateEvent({
+        actorContext: adminActor,
+        eventId,
+        now: reactivateNow
+      });
+
+      expect(res.outcome).toBe('REACTIVATED');
+      expect(res.previousSuspendedStatus).toBe('SUSPENDED');
+      expect(res.targetStatus).toBe('ACTIVE');
+      expect(res.event.status).toBe('ACTIVE');
+      expect(res.event.suspendedAt).toBeNull();
+      expect(res.event.suspensionReason).toBeNull();
+      expect(res.event.previousStatus).toBeNull();
+
+      // Caso CLOSED (conserva cierre voluntario per DEC-081)
+      const eventIdClosed = '11110000-0000-0000-0000-000000000002';
+      eventsMap.set(eventIdClosed, {
+        ...eventsMap.get(eventId)!,
+        id: eventIdClosed,
+        status: 'SUSPENDED',
+        previous_status: 'CLOSED',
+        closed_at: new Date('2026-11-05T00:00:00.000Z')
+      });
+
+      const resClosed = await service.reactivateEvent({
+        actorContext: adminActor,
+        eventId: eventIdClosed,
+        now: reactivateNow
+      });
+
+      expect(resClosed.targetStatus).toBe('CLOSED');
+      expect(resClosed.event.status).toBe('CLOSED');
+      expect(resClosed.event.closedAt).toBeTruthy();
+
+      // Caso DRAFT
+      const eventIdDraft = '11110000-0000-0000-0000-000000000003';
+      eventsMap.set(eventIdDraft, {
+        ...eventsMap.get(eventId)!,
+        id: eventIdDraft,
+        status: 'SUSPENDED',
+        previous_status: 'DRAFT',
+        expires_at: null,
+        grace_ends_at: null
+      });
+
+      const resDraft = await service.reactivateEvent({
+        actorContext: adminActor,
+        eventId: eventIdDraft,
+        now: reactivateNow
+      });
+
+      expect(resDraft.targetStatus).toBe('DRAFT');
+      expect(resDraft.event.status).toBe('DRAFT');
+    });
+
+    it('Escenario 2: Prevalecen GRACE_PERIOD y PENDING_DELETION si el vencimiento ocurrió durante la suspensión', async () => {
+      const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+      const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+      const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+
+      // Vencimiento transcurrido, dentro de gracia -> GRACE_PERIOD
+      const eventIdGrace = '22220000-0000-0000-0000-000000000001';
+      eventsMap.set(eventIdGrace, {
+        id: eventIdGrace,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Vencido en Suspensión',
+        status: 'SUSPENDED',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: null,
+        purge_started_at: null,
+        suspended_at: new Date('2026-11-10T00:00:00.000Z'),
+        suspension_reason: 'Bloqueo temporal',
+        previous_status: 'ACTIVE',
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      const resGrace = await service.reactivateEvent({
+        actorContext: adminActor,
+        eventId: eventIdGrace,
+        now: new Date('2026-12-05T00:00:00.000Z') // Posterior a expiresAt, anterior a graceEndsAt
+      });
+
+      expect(resGrace.targetStatus).toBe('GRACE_PERIOD');
+      expect(resGrace.event.status).toBe('GRACE_PERIOD');
+
+      // Fin de gracia transcurrido -> PENDING_DELETION (fija purgeStartedAt)
+      const eventIdPurge = '22220000-0000-0000-0000-000000000002';
+      const purgeNow = new Date('2026-12-10T00:00:00.000Z'); // Posterior a graceEndsAt
+      eventsMap.set(eventIdPurge, {
+        ...eventsMap.get(eventIdGrace)!,
+        id: eventIdPurge,
+        status: 'SUSPENDED',
+        previous_status: 'ACTIVE'
+      });
+
+      const resPurge = await service.reactivateEvent({
+        actorContext: adminActor,
+        eventId: eventIdPurge,
+        now: purgeNow
+      });
+
+      expect(resPurge.targetStatus).toBe('PENDING_DELETION');
+      expect(resPurge.event.status).toBe('PENDING_DELETION');
+      expect(resPurge.event.purgeStartedAt).toEqual(purgeNow);
+    });
+
+    it('Escenario 3: SCHEDULED pasa a ACTIVE si la fecha de inicio llegó, o sigue SCHEDULED si aún es futuro', async () => {
+      const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+      const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+      const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+
+      const eventIdSched = '33330000-0000-0000-0000-000000000001';
+      eventsMap.set(eventIdSched, {
+        id: eventIdSched,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Programado Suspendido',
+        status: 'SUSPENDED',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: null,
+        closed_at: null,
+        purge_started_at: null,
+        suspended_at: new Date('2026-10-15T00:00:00.000Z'),
+        suspension_reason: 'Revisión antes de comenzar',
+        previous_status: 'SCHEDULED',
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      // Reactivación antes de la fecha de inicio -> sigue SCHEDULED
+      const resFuture = await service.reactivateEvent({
+        actorContext: adminActor,
+        eventId: eventIdSched,
+        now: new Date('2026-10-25T00:00:00.000Z')
+      });
+      expect(resFuture.targetStatus).toBe('SCHEDULED');
+      expect(resFuture.event.status).toBe('SCHEDULED');
+      expect(resFuture.event.activatedAt).toBeNull();
+
+      // Volver a suspender para probar caso en que llegó la fecha de inicio
+      eventsMap.set(eventIdSched, {
+        ...eventsMap.get(eventIdSched)!,
+        status: 'SUSPENDED',
+        previous_status: 'SCHEDULED'
+      });
+
+      const activateNow = new Date('2026-11-02T10:00:00.000Z'); // Posterior a scheduledAt
+      const resPast = await service.reactivateEvent({
+        actorContext: adminActor,
+        eventId: eventIdSched,
+        now: activateNow
+      });
+      expect(resPast.targetStatus).toBe('ACTIVE');
+      expect(resPast.event.status).toBe('ACTIVE');
+      expect(resPast.event.activatedAt).toEqual(activateNow);
+    });
+
+    it('Rechaza reactivación si el actor no es un administrador autorizado (UNAUTHORIZED)', async () => {
+      const eventId = '44440000-0000-0000-0000-000000000001';
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Para Reactivar',
+        status: 'SUSPENDED',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: new Date(),
+        utc_offset_minutes: -300,
+        expires_at: null,
+        grace_ends_at: null,
+        activated_at: null,
+        closed_at: null,
+        purge_started_at: null,
+        suspended_at: new Date(),
+        suspension_reason: 'Motivo',
+        previous_status: 'DRAFT',
+        validity_duration_days: null,
+        grace_days: null,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      await expect(
+        service.reactivateEvent({
+          actorContext: ownerActor as unknown as AdminActorContext,
+          eventId
+        })
+      ).rejects.toMatchObject({
+        code: 'UNAUTHORIZED'
+      });
+    });
+
+    it('Rechaza reactivación si el evento no está en estado SUSPENDED (EVENT_NOT_SUSPENDED)', async () => {
+      const eventId = '55550000-0000-0000-0000-000000000001';
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento No Suspendido',
+        status: 'ACTIVE',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: new Date(),
+        utc_offset_minutes: -300,
+        expires_at: null,
+        grace_ends_at: null,
+        activated_at: null,
+        closed_at: null,
+        purge_started_at: null,
+        suspended_at: null,
+        suspension_reason: null,
+        previous_status: null,
+        validity_duration_days: null,
+        grace_days: null,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      await expect(
+        service.reactivateEvent({
+          actorContext: adminActor,
+          eventId
+        })
+      ).rejects.toMatchObject({
+        code: 'EVENT_NOT_SUSPENDED'
+      });
+    });
+
+    it('Idempotencia determinista: replay idéntico devuelve IDEMPOTENT_REPLAY; cambio de parámetros da conflicto', async () => {
+      const eventId = '66660000-0000-0000-0000-000000000001';
+      const idempotencyKey = 'reactivate-idemp-1';
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Para Replay Reactivación',
+        status: 'SUSPENDED',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: null,
+        utc_offset_minutes: -300,
+        expires_at: null,
+        grace_ends_at: null,
+        activated_at: null,
+        closed_at: null,
+        purge_started_at: null,
+        suspended_at: new Date(),
+        suspension_reason: 'Motivo',
+        previous_status: 'DRAFT',
+        validity_duration_days: null,
+        grace_days: null,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      const first = await service.reactivateEvent({
+        actorContext: adminActor,
+        eventId,
+        idempotencyKey
+      });
+      expect(first.outcome).toBe('REACTIVATED');
+      expect(first.targetStatus).toBe('DRAFT');
+
+      // Replay
+      const second = await service.reactivateEvent({
+        actorContext: adminActor,
+        eventId,
+        idempotencyKey
+      });
+      expect(second.outcome).toBe('IDEMPOTENT_REPLAY');
+      expect(second.targetStatus).toBe('DRAFT');
     });
   });
 });

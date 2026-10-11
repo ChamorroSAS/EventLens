@@ -22,6 +22,8 @@ export {
   type TemporalAdvanceOutcome,
   type SuspendEventCommand,
   type SuspendEventResult,
+  type ReactivateEventCommand,
+  type ReactivateEventResult,
   type EventAuditRecord,
   type EventAuditSink
 } from './contracts.js';
