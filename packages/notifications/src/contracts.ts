@@ -92,3 +92,64 @@ export class NotificationError extends Error {
     this.name = 'NotificationError';
   }
 }
+
+export interface SendEmailRequest {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface SendEmailResponse {
+  providerMessageId: string;
+  acceptedAt: Date;
+}
+
+/**
+ * Decoupled port for sending email notifications (EL-TK-157, DEC-021).
+ * Implementations may use SMTP, SES, SendGrid, or test lab mocks.
+ */
+export interface EmailSender {
+  send(request: SendEmailRequest): Promise<SendEmailResponse>;
+}
+
+export interface EmailNotificationSpec {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+}
+
+export type DeliveryAttemptStatus = 'SENT' | 'FAILED' | 'SUPERSEDED' | 'DEAD';
+
+export interface NotificationDeliveryAttemptRecord {
+  id: string;
+  intentId: string;
+  jobId?: string | null;
+  attemptNumber: number;
+  channel: string;
+  status: DeliveryAttemptStatus;
+  providerMessageId?: string | null;
+  errorCode?: string | null;
+  errorMessage?: string | null;
+  latencyMs?: number | null;
+  attemptedAt: Date;
+}
+
+export interface NotificationDeliveryStatus {
+  intentId: string;
+  intentStatus: NotificationIntentStatus;
+  attemptsCount: number;
+  lastAttemptStatus?: DeliveryAttemptStatus | null;
+  isDeliveryAcredited: boolean;
+}
+
+export interface ProcessEmailJobResult {
+  outcome: 'SENT' | 'RETRY_SCHEDULED' | 'DEAD' | 'SKIPPED_OBSOLETE' | 'ALREADY_COMMITTED';
+  attemptNumber: number;
+  providerMessageId?: string | null;
+  retryAt?: Date | null;
+  errorCode?: string | null;
+}
+
