@@ -13,3 +13,4 @@ export * from './postgres-backup-service.js';
 export * from './postgres-recovery-service.js';
 export * from './dr-validation-service.js';
 export * from './e2e-validator.js';
+export * from './beta-reliability-service.js';

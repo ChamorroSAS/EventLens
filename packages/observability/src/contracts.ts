@@ -625,5 +625,55 @@ export interface E2EObservabilityValidationReport {
   evidenceSanitized: Record<string, unknown>;
 }
 
+export interface UploadReliabilityResult {
+  totalAttempts: number;
+  successfulUploads: number;
+  failedUploads: number;
+  voluntaryCancellations: number;
+  excludedInternalTests: number;
+  ratio: number | null;
+  targetRatio: number; // 0.95 (>= 95%)
+  isTargetMet: boolean;
+  hasSufficientData: boolean;
+}
 
+export interface ProcessingLatencyStats {
+  medianSeconds: number | null;
+  p95Seconds: number | null;
+  sampleSize: number;
+  targetMedianSeconds: number; // 15s for PHOTO, 120s for VIDEO
+  targetP95Seconds: number; // 60s for PHOTO, 300s for VIDEO
+  isMedianTargetMet: boolean;
+  isP95TargetMet: boolean;
+  isLatencyTargetMet: boolean;
+  outliersExcluded: number;
+}
 
+export interface ProcessingReliabilityResult {
+  mediaType: 'PHOTO' | 'VIDEO';
+  totalEvaluated: number;
+  successfulWithoutIntervention: number;
+  interventionsRequired: number;
+  failedAttempts: number;
+  excludedInternalTests: number;
+  ratio: number | null;
+  targetRatio: number; // 0.98 for PHOTO, 0.95 for VIDEO
+  isTargetMet: boolean;
+  latency: ProcessingLatencyStats;
+  hasSufficientData: boolean;
+}
+
+export interface MediaReliabilityReport {
+  evaluatedAt: Date;
+  period: {
+    windowStart: Date;
+    windowEnd: Date;
+  };
+  cohortInclusion: string;
+  validUploads: UploadReliabilityResult;
+  photoProcessing: ProcessingReliabilityResult;
+  videoProcessing: ProcessingReliabilityResult;
+  overallStatus: 'PASS' | 'FAIL' | 'INSUFFICIENT_DATA';
+  deduplicatedFactsCount: number;
+  sanitizedMetadata: Record<string, unknown>;
+}
