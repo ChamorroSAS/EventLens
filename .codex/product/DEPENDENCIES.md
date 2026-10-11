@@ -319,7 +319,7 @@ READY de requisitos, pero READY_FOR_TICKET_WRITING: PARTIAL y READY_FOR_IMPLEMEN
 |---|---|---|
 | EL-TK-177 (DONE) | contratos de dominios propietarios; telemetría EL-TK-168 | 178..183 |
 | EL-TK-178 (DONE) | 177; contratos EL-EP-005/006 | 182,183 |
-| EL-TK-179 | 177; contratos EL-EP-010/012, EL-TK-173 | 182,183 |
+| EL-TK-179 (DONE) | 177; contratos EL-EP-010/012, EL-TK-173 | 182,183 |
 | EL-TK-180 | 177; contrato EL-EP-004 | 182,183 |
 | EL-TK-181 (DONE) | 177 | 182,183 |
 | EL-TK-182 | 178..181; evidencia operacional EL-EP-014 (EL-TK-174, EL-TK-176) | 183 |
