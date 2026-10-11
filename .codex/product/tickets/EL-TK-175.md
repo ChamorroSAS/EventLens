@@ -4,8 +4,9 @@
 EL-EP-014
 
 ## Status
-READY
+DONE
 
+**CONFIRMED — 2026-10-11:** implementado y verificado en `apps/web/src/app/audit/` con `AuditLogViewerComponent`, `AuditLogDetailComponent` y `AuditApiService`. Visor contextual de solo lectura sin edición, sin exportación ni botones de reintento/ejecución desde auditoría (Escenario 3). Soporta filtros, paginación, estados de carga, sin coincidencias (Escenario 2), sin registros, error y sesión expirada/no autorizado. Compatible con tokens de `ui-design-system.md` y directrices de accesibilidad WCAG 2.2 AA. Pruebas de componentes y typecheck pasan al 100% (17/17 pruebas PASS en `@eventlens/web`).
 **CONFIRMED — 2026-10-10:** requirements_reviewer y ui_designer aprueban el paso de DRAFT a READY. Integración de AuditLogViewer y AuditLogDetail contextual en consola administrativa conforme a ui-mvp-epic-review.md#el-ep-014 (DEC-019, DEC-034). Visor de solo lectura sin edición, exportación ni dashboard nuevo. WCAG 2.2 AA. REQUIREMENTS_READY: YES. READY_FOR_FRONTEND_PLANNING: YES. READY_FOR_IMPLEMENTATION: YES.
 
 ## User story
