@@ -212,7 +212,7 @@
 | EL-TK-178 | Medir confiabilidad de cargas y procesamiento multimedia | EL-EP-016 | READY | P1 | 177; contratos EL-EP-005/006 | [EL-TK-178](tickets/EL-TK-178.md) |
 | EL-TK-179 | Medir soporte funcional y recuperación de recuerdos | EL-EP-016 | READY | P1 | 177; contratos EL-EP-010/012, 173 | [EL-TK-179](tickets/EL-TK-179.md) |
 | EL-TK-180 | Medir participación indicativa por evento | EL-EP-016 | READY | P1 | 177; contrato EL-EP-004 | [EL-TK-180](tickets/EL-TK-180.md) |
-| EL-TK-181 | Gestionar ventana, volumen mínimo y extensión de la evaluación Beta | EL-EP-016 | READY | P1 | 177 | [EL-TK-181](tickets/EL-TK-181.md) |
+| EL-TK-181 | Gestionar ventana, volumen mínimo y extensión de la evaluación Beta | EL-EP-016 | DONE | P1 | 177 | [EL-TK-181](tickets/EL-TK-181.md) |
 | EL-TK-182 | Clasificar el resultado de la Beta con prevalencia de incidentes críticos | EL-EP-016 | READY | P1 | 178..181; evidencia operacional EL-EP-014 | [EL-TK-182](tickets/EL-TK-182.md) |
 | EL-TK-183 | Generar el informe final reproducible de evaluación Beta | EL-EP-016 | READY | P1 | 177..182 | [EL-TK-183](tickets/EL-TK-183.md) |
 

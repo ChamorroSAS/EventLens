@@ -4,9 +4,14 @@
 EL-EP-016
 
 ## Status
-READY
+DONE
 
-**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Ventana Beta de 8 semanas, extensión hasta 12 semanas por volumen y muestra mínima de 20 eventos / 1000 archivos (DEC-056). Pruebas internas excluidas. UI_REQUIRED: NO. REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES.
+**IMPLEMENTED — 2026-10-11:** Implementado `BetaCohortWindowService` en `@eventlens/observability` conforme a los criterios de aceptación y DEC-050, DEC-051, DEC-056:
+- Gestión de la ventana de evaluación Beta de 8 semanas base extensible formalmente hasta un límite estricto de 12 semanas por insuficiencia de volumen (`extendWindow`), registrando motivo y aprobador.
+- Verificación determinista de la muestra mínima (≥20 eventos y ≥1000 archivos reales con `cohort_inclusion = ELIGIBLE_REAL`), marcando `READY_FOR_SNAPSHOT` cuando se cumple la muestra.
+- Exclusión automática e inmutable de eventos de prueba interna (`EXCLUDED_INTERNAL_TEST`) y fuera de ventana (`EXCLUDED_OUT_OF_WINDOW`) en el conteo de volumen real sin interpretación manual retrospectiva.
+- Registro formal de limitación estadística (`INSUFFICIENT_VOLUME_TERMINAL` con `limitationNotice`) si se alcanzan las 12 semanas sin volumen suficiente, evitando inventar certeza.
+- Suite de pruebas unitarias verificada: `beta-cohort-window-service.unit.test.ts` (4/4). Suite de observability en 70/70 pruebas verdes.
 
 ## User story
 **Como** responsable de producto, **quiero** evaluar una cohorte de 8 semanas y extenderla cuando falte volumen, **para** evitar conclusiones con una muestra insuficiente.
