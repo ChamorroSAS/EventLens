@@ -351,6 +351,25 @@ model AttemptCleanupAudit {
   @@map("media_attempt_cleanup_audit")
 }
 
+model PipelineValidationReport {
+  id           String   @id @db.Uuid
+  operationId  String   @unique @map("operation_id")
+  target       String
+  sampleSize   Int      @map("sample_size")
+  successCount Int      @map("success_count")
+  failureCount Int      @map("failure_count")
+  medianMs     Float?   @map("median_ms")
+  p95Ms        Float?   @map("p95_ms")
+  meetsSlo     Boolean  @map("meets_slo")
+  status       String
+  metrics      Json
+  observations Json
+  recordedAt   DateTime @map("recorded_at") @db.Timestamptz
+
+  @@map("media_pipeline_validation_report")
+}
+
+
 
 
 
