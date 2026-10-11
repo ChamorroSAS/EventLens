@@ -4,7 +4,16 @@
 EL-EP-003
 
 ## Status
-READY
+DONE
+
+**IMPLEMENTED — 2026-10-11:** Implementación completada en `packages/event-management`.
+- Migración `202610110032_event_lifecycle_schedule`: columnas `expires_at`, `grace_ends_at`, `validity_duration_days`, `grace_days` en tabla `event`.
+- Servicio `EventLifecycleService` (`event-lifecycle.ts`): método `scheduleDraft` bajo transacción SQL y bloqueo pesimista `SELECT ... FOR UPDATE`.
+- Validación de configuración mínima: rechaza sin cambios si falta `scheduledAt` (`SCHEDULE_NOT_CONFIGURED`) o si el nombre está vacío (`INCOMPLETE_CONFIGURATION`).
+- Aislamiento de propietario (403 `UNAUTHORIZED`) y restricción de estado (solo `DRAFT` puede programarse).
+- Cálculo y persistencia determinista de timeline canónico según DEC-077 y DEC-082.
+- Manejo determinista de idempotencia (`IDEMPOTENT_REPLAY` / `IDEMPOTENCY_CONFLICT`) y auditoría en `admin_audit_event`.
+- 9 pruebas añadidas (6 unitarias + 3 de integración en PostgreSQL 16 real con concurrencia y serialización). Total: 38/38 pruebas en verde.
 
 ## User story
 **Como** organizador, **quiero** pasar un evento DRAFT a SCHEDULED, **para** que quede preparado para abrir en su instante programado.
