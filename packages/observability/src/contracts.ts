@@ -743,3 +743,41 @@ export interface SupportAndRetrievalReport {
   deduplicatedRecordsCount: number;
   sanitizedMetadata: Record<string, unknown>;
 }
+
+export interface GuestSessionRecord {
+  id: string;
+  eventId: string;
+  sessionId: string;
+  cohortInclusion: string;
+  timestamp: Date;
+  isValid: boolean;
+  isRevoked?: boolean;
+  isExpired?: boolean;
+}
+
+export interface ParticipationReliabilityResult {
+  totalEvaluatedEvents: number;
+  eventsMeetingParticipationThreshold: number; // events with >= 3 distinct valid guest sessions
+  eventsBelowThreshold: number;
+  excludedInternalEvents: number;
+  sessionsExcludedRevokedOrDuplicate: number;
+  ratio: number | null;
+  targetRatio: number; // 0.60 (>= 60%)
+  isTargetMet: boolean;
+  hasSufficientData: boolean;
+  isIndicativeOnly: true; // secondary signal; never overrides critical operational incidents
+}
+
+export interface ParticipationReport {
+  evaluatedAt: Date;
+  period: {
+    windowStart: Date;
+    windowEnd: Date;
+  };
+  cohortInclusion: string;
+  participation: ParticipationReliabilityResult;
+  overallStatus: 'PASS' | 'FAIL' | 'INSUFFICIENT_DATA';
+  deduplicatedSessionsCount: number;
+  sanitizedMetadata: Record<string, unknown>;
+}
+
