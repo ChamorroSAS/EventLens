@@ -243,3 +243,35 @@ Coverage includes:
 6. Idempotent replay:
    - Compatible operations replay previous receipt and purge intent without duplicating destructive actions. Conflicting replays reject with `IDEMPOTENCY_CONFLICT`.
 7. Durable organizer notification intent recorded in `media_quarantine_notification_intent` per EL-EP-013 (`ADMINISTRATIVE_INTERVENTION_QUARANTINE_DELETE`).
+
+### Running focused attempt output cleanup tests (EL-TK-057)
+
+```powershell
+$cleanupEvidence = ".\infra\validation\media-inspection\evidence\cleanup-$([DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss'))"
+.\infra\validation\media-inspection\Run.ps1 -CleanupOnly -Build -EvidenceDirectory $cleanupEvidence
+```
+
+### EL-TK-057 attempt output cleanup final validation
+
+The focused attempt cleanup suite passed **19/19 tests** (6 PostgreSQL 16 integration tests and 13 unit tests). Typecheck, build, and migration `202610110019_attempt_cleanup` application passed.
+
+Coverage includes:
+1. Safe and deterministic cleanup of outputs/partials/scratch from failed or obsolete media processing attempts to free physical storage without touching active content.
+2. Inviolable preservation invariant:
+   - Media original in `media_catalog.original` is strictly protected and NEVER deleted under any circumstances (`reason: 'ORIGINAL'`).
+   - Active derivatives in `media_active_derivative` are strictly protected and NEVER deleted (`reason: 'ACTIVE_DERIVATIVE'`).
+3. Writer quiescence and drain verification:
+   - Attempts in `ACTIVE` state are rejected (`NON_QUIESCENT_WRITER`).
+   - Attempts with active job leases in `job_queue` (`status = 'PROCESSING'` and `lease_until > NOW()`) are rejected (`ACTIVE_LEASE_HELD`).
+4. Two-phase execution with atomic ledger advancement:
+   - Physical storage deletion occurs outside the SQL transaction.
+   - Confirmed deletions (`DELETED` or `MISSING`) are recorded in `media_physical_cleanup_ledger` with `UNIQUE(namespace, key)` to prevent double release.
+   - Audit trail recorded in `media_attempt_cleanup_audit` and receipt in `media_attempt_cleanup_receipt`.
+5. Promote-vs-cleanup race detection:
+   - CAS guard re-reads `media_active_derivative` at commit time; if an output was concurrently promoted while storage deletion was in flight, cleanup aborts (`PROMOTION_CLEANUP_RACE`).
+6. Partial failure and retry:
+   - Storage results returning `UNKNOWN` or `FAILED` transition attempt cleanup to `'PARTIAL'`, recording confirmed deletions and retaining unconfirmed items in `details.pending` for subsequent retries.
+7. Idempotent replay:
+   - Compatible replays by `operationId` return the existing receipt (`wasExisting: true`).
+   - Incompatible replays with different attempt parameters reject with `IDEMPOTENCY_CONFLICT`.
+
