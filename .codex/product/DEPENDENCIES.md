@@ -301,7 +301,7 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-170 (DONE) | 168, 184 | 173,174,176 |
 | EL-TK-171 | baseline EL-TD-008; DEC-062 | 172,174,176 |
 | EL-TK-172 | 171; contrato EL-EP-015 | 174,176 |
-| EL-TK-173 | 166,169,170 | 176 |
+| EL-TK-173 (DONE) | 166,169,170 | 176 |
 | EL-TK-174 | 170,171,172 | 176; evidencia Beta |
 | EL-TK-175 | 167; contrato EL-EP-012 | 176 |
 | EL-TK-176 | 166..175, 184 | EL-EP-016; validación EL-EP-014 |

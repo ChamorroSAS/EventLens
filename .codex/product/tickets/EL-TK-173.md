@@ -4,9 +4,16 @@
 EL-EP-014
 
 ## Status
-READY
+DONE
 
-**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Correlación de incidentes operativos con señales de colas/infra y referencias AuditEvent sanitizadas (Q-014; DEC-034, DEC-059). REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES (UI_REQUIRED: NO).
+**IMPLEMENTED — 2026-10-11:** Implementado `IncidentService` y tabla `operational_incident` en `@eventlens/observability` conforme a los criterios de aceptación y DEC-034, DEC-059, Q-014:
+- Registro mínimo de incidentes operativos (`createIncident`) relacionando señales de alerta (`alertRefs`), eventos de auditoría (`auditRefs`) y recursos (`resourceRefs`), deduplicando referencias y emitiendo métricas operativas.
+- Sanitización estricta de credenciales, tokens, contraseñas, DSNs y claves de almacenamiento en títulos, descripciones, notas y recursos.
+- Correlación de evidencia operativa (`correlateEvidence`) y consulta enriquecida con eventos de auditoría vinculados (`getIncidentWithAuditEvents`) en orden temporal sin duplicar datos privados ni multimedia.
+- Resolución de incidentes (`resolveIncident`), preservando responsable, marca de tiempo y notas sanitizadas, bloqueando mutaciones posteriores en incidentes resueltos.
+- Guardias de autorización que restringen la gestión de incidentes a roles autorizados (`ADMIN`, `SYSTEM`).
+- Migración PostgreSQL `202610110032_operational_incident` y modelo en schema Prisma.
+- Pruebas unitarias e integración en PostgreSQL 16 verificadas: `incident-service.unit.test.ts` (4/4) y `incident-service.integration.test.ts` (1/1). Suite de observability en 60/60 pruebas verdes.
 
 ## User story
 **Como** equipo operativo, **quiero** correlacionar alertas y auditoría en un incidente, **para** reconstruir causas y acciones sin conservar recuerdos.
