@@ -4,8 +4,13 @@
 EL-EP-016
 
 ## Status
-READY
+DONE
 
+**CONFIRMED — 2026-10-11:** Medición de participación indicativa por evento para Beta implementada al 100% mediante `BetaParticipationService` (`packages/observability/src/beta-participation-service.ts`), contratos correspondientes en `packages/observability/src/contracts.ts` y tests unitarios en `packages/observability/test/beta-participation-service.unit.test.ts`.
+- **Escenario 1 (Eventos con participación indicativa alcanzada):** Conteo determinístico de eventos que alcanzan al menos tres sesiones guest válidas ($\ge 3$ sesiones) dentro de la cohorte Beta elegible. Evaluación contra el umbral indicativo de objetivo $\ge 60\%$ (DEC-055).
+- **Escenario 2 (Exclusión de sesiones revocadas, expiradas y duplicadas):** Exclusión estricta de registros con `isValid: false`, `isRevoked: true` o `isExpired: true`, así como deduplicación determinística de múltiples registros del mismo `sessionId` para un mismo evento.
+- **Escenario 3 (Señal indicativa y no prevalencia sobre incidentes críticos):** Señal tipificada explícitamente como `isIndicativeOnly: true`, con prevalencia subordinada a la seguridad y estabilidad (`prevalenceSubordinateToSafety: true`). No oculta ni atenúa incidentes críticos operacionales.
+- **Deduplicación, bordes y privacidad:** Deduplicación determinística por ID de registro, exclusión de pruebas internas (`EXCLUDED_INTERNAL_TEST`) y registros fuera de ventana. Reporte sanitizado sin almacenamiento ni exposición de session IDs, IPs, user agents o nombres de invitados. Suite completa PASS (123/123 tests en 25 archivos en `@eventlens/observability`).
 **CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Medición de participación indicativa por evento (DEC-055). Conteo de eventos con ≥ 3 sesiones guest válidas, no prevalece sobre incidentes críticos. UI_REQUIRED: NO. REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES.
 
 ## User story
