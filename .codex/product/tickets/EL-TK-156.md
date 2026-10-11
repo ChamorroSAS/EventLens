@@ -4,7 +4,7 @@
 EL-EP-013
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** sistema, **quiero** convertir hechos confirmados en intenciones de comunicación, **para** deduplicar avisos y separar dominio de canales concretos.
@@ -68,3 +68,22 @@ Q-018; DEC-021, DEC-064; EL-EP-013.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §EL-EP-013; sin componentes nuevos ni NotificationCenter obligatorio).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Cierre de implementación — 2026-10-11
+
+**CONFIRMED — EL-TK-156 DONE:** Implementación del servicio de intenciones de notificación completada en `@eventlens/notifications` (`NotificationIntentService`) con migración `202610110022_notification_intent`.
+
+1. **Persistencia de NotificationIntent (Escenario 1):**
+   - Convierte hechos confirmados de dominios propietarios en intenciones durables en PostgreSQL (`notification_intent`) con `id`, `dedup_key`, `recipient_ref`, `notification_type`, `resource_ref`, `status: 'PENDING'`, `payload` JSONB sanitizado y ventanas temporales (`effective_at`, `expires_at`).
+2. **Deduplicación e Idempotencia (Escenario 2):**
+   - Clave única `dedup_key` previene duplicados. Llamadas repetidas con idénticos parámetros responden con `IDEMPOTENT_REPLAY` y devuelven el registro existente. Llamadas conflictivas bajo la misma clave disparan `IDEMPOTENCY_CONFLICT`.
+3. **Obsolescencia y Superseded (Escenario 3):**
+   - Hechos que invalidan condiciones previas (e.g. reactivación tras suspensión) marcan atómicamente intenciones anteriores como `SUPERSEDED` mediante `supersedesDedupKeys` o `supersedeIntent`/`revalidateIntent`, evitando que riesgos caducados se presenten al organizador o se envíen por canales externos.
+4. **Aislamiento, Rollback y Auditoría:**
+   - Soporte para ejecución en transacciones atómicas PostgreSQL (`SqlTransaction`), garantizando rollback limpio sin registros parciales ante fallos.
+   - Auditoría sanitizada en `notification_audit_event` registrando acciones, destinatarios y resultados sin exponer credenciales ni secretos.
+5. **Quality Gates:**
+   - Pruebas unitarias: 11/11 PASS (`test/notification-intent.unit.test.ts`).
+   - Pruebas de integración: 5/5 PASS (`test/notification-intent.integration.test.ts`) contra PostgreSQL 16 real.
+   - Total suite: 16/16 PASS; typecheck y build limpios con 0 errores.
+
