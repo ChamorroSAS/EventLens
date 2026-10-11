@@ -4,9 +4,15 @@
 EL-EP-014
 
 ## Status
-READY
+DONE
 
-**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Alertas de infraestructura (DB, storage, scheduler) y disponibilidad agregada sin comprometer SLA comercial (DEC-034, DEC-061..064, DEC-106). REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES (UI_REQUIRED: NO).
+**IMPLEMENTED — 2026-10-11:** Implementado `InfrastructureAlertService` en `@eventlens/observability` conforme a los criterios de aceptación y DEC-034, DEC-061..064, DEC-106:
+- Detección y generación de alertas operativas neutrales de infraestructura (`InfrastructureAlert`) para DB, ObjectStorage, Scheduler, Workers, API y Backend.
+- Sanitización estricta de credenciales, cadenas de conexión (DSN), firmas prefirmadas y rutas/claves de almacenamiento en mensajes y dimensiones mediante `TelemetrySanitizer`.
+- Detección de estancamiento del Scheduler (`evaluateSchedulerStall`) comparando la antigüedad del último checkpoint contra el umbral operativo configurable.
+- Medición agregada de disponibilidad (`evaluateAvailability`), calculando el ratio de disponibilidad observada contra el objetivo operativo mensual del 99.5% y registrando explícitamente `isSlaContractual: false` (DEC-034).
+- Consumo de señales de fallo y éxito de purga/retención (`PurgeExecutionSignal` de EL-TK-184), alertando en caso de fallo y resolviendo automáticamente en éxito.
+- Pruebas unitarias e integración en PostgreSQL 16 verificadas: `infrastructure-alert-service.unit.test.ts` (4/4) y `infrastructure-alert-service.integration.test.ts` (2/2). Suite de observability en 55/55 pruebas verdes.
 
 ## User story
 **Como** equipo operativo, **quiero** detectar fallos de infraestructura crítica, **para** identificar pérdida de disponibilidad o riesgo de recuperación.
