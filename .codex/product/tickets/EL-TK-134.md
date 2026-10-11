@@ -4,7 +4,7 @@
 EL-EP-011
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** sistema, **quiero** asignar y resolver el plan BETA y sus límites efectivos, **para** aplicar una base consistente sin alterar el plan original por overrides.
@@ -68,3 +68,10 @@ Q-011, Q-020; DEC-010, DEC-011, DEC-020, DEC-026, DEC-027, DEC-039, DEC-100; EL-
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-capacity-lifecycle.md y ui-mvp-epic-review.md §EL-EP-011; sin componentes nuevos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Resolución e implementación — 2026-10-11
+- **Paquete:** `@eventlens/capacity-management` en `packages/capacity-management`.
+- **Modelos:** `Plan`, `PlanAssignment`, `PlanOverride` en PostgreSQL con Prisma (migración `202610110027_plan_assignment`).
+- **Límites base MVP (BETA_DEFAULT):** 10 GB decimales (`10_000_000_000n`, DEC-079), 1500 archivos (DEC-011), 25 MB foto, 500 MB / 300 s video, vigencia 30 días default (DEC-082).
+- **Servicio:** `CapacityPlanService` implementa `assignPlan`, `resolveEffectiveLimits`, `applyOverride` y `removeOverride` (con validación de vigencia DEC-102 y `actorRole === 'ADMIN_HUMAN'`).
+- **Verificación:** 9/9 pruebas pasando (6 unitarias + 3 de integración sobre PostgreSQL 16 real en Docker).
