@@ -1,0 +1,21 @@
+[
+  {
+    "test": "attempt_1_retry",
+    "opId": "ec0a29be-14ba-4357-b001-afd7c5d63b41",
+    "disposition": "RETRYING"
+  },
+  {
+    "test": "attempt_2_retry",
+    "opId2": "6bedb14b-bf2c-47e9-bbc1-31cda0b25b5d",
+    "disposition": "RETRYING"
+  },
+  {
+    "test": "attempt_3_dead_exhausted",
+    "opId3": "16831159-6929-4a1a-a5c2-026df3f7f960",
+    "disposition": "DEAD"
+  },
+  {
+    "test": "abandoned_lease_recovery",
+    "recoveredCount": 1
+  }
+]

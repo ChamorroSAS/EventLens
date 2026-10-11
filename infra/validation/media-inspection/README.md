@@ -102,3 +102,48 @@ The focused successful processing run passed **63/63 tests** (55 PostgreSQL inte
 Evidence: [focused run](evidence/success-focused-final/), [combined independent regression](evidence/success-combined-regression/), and [EL-TK-056 runtime regression](../media-execution/evidence/success-independent-regression/).
 
 Coverage includes atomic CAS promotion to `PUBLISHED` (`AUTO`) or `PENDING_REVIEW` (`PRE_REVIEW`), governance revision reload without terminal failure (DEC-087), fail-closed protection against later restrictive states (`HIDDEN`, `TRASHED`, `DELETED`, `QUARANTINED`, `REJECTED`, `PROCESSING_FAILED`), idempotent ACK replay, strict coordinated parent admission locks, and zero partial owner effects on lease loss or failure. MEDIA-001, CAP-001, DR-001, and EXPORT-001 remain `NOT_EVALUATED`.
+
+### Running focused transient retry tests (EL-TK-038)
+
+```powershell
+$retryEvidence = ".\infra\validation\media-inspection\evidence\retry-$([DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss'))"
+.\infra\validation\media-inspection\Run.ps1 -RetryOnly -Build -EvidenceDirectory $retryEvidence
+```
+
+Omit `-RetryOnly` to run the entire media-inspection suite (inspection, quarantine, photo, video, successful processing, and transient retry).
+
+### EL-TK-038 transient retry and lease recovery final validation
+
+The focused retry suite passed **20/20 tests** (13 PostgreSQL integration tests and 7 unit tests). The combined media-inspection regression passed **282/282 tests** across 12 test files, and the independent EL-TK-056 runtime regression passed **21/21 tests**. Typecheck, build, and migration application passed.
+
+Evidence: [focused run](evidence/retry-focused-final/), [combined independent regression](evidence/retry-combined-regression/), and [EL-TK-056 runtime regression](../media-execution/evidence/retry-independent-regression/).
+
+Coverage includes:
+1. Exact retry budget of 3 total attempts (including initial).
+2. Transient error classification with exponential backoff delay clamping and credential/path sanitization in audit logs.
+3. Transition to `DEAD` upon exhaustion of attempt 3 without scheduling a 4th attempt.
+4. Retention of original media bytes and no mutation of non-processing states (`QUARANTINED`, `PUBLISHED`, `TRASHED`, `DELETED`, `REJECTED`).
+5. `recoverExpiredLeases` with atomic CAS advancing abandoned leases to `RETRYING` or `DEAD` and incrementing fence, enforcing `LEASE_LOST` on stale workers attempting late completion.
+6. Idempotent replay returning `ALREADY_COMMITTED` for identical operationIds and `IDEMPOTENCY_CONFLICT` for conflicting payloads.
+
+### Running focused terminal failure tests (EL-TK-039)
+
+```powershell
+$termEvidence = ".\infra\validation\media-inspection\evidence\terminal-failure-$([DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss'))"
+.\infra\validation\media-inspection\Run.ps1 -TerminalFailureOnly -Build -EvidenceDirectory $termEvidence
+```
+
+Omit `-TerminalFailureOnly` to run the entire media-inspection suite (all 14 test files).
+
+### EL-TK-039 terminal failure and download eligibility final validation
+
+The focused terminal failure suite passed **18/18 tests** (14 PostgreSQL integration tests and 4 unit tests). The combined media-inspection regression passed **300/300 tests** across 14 test files, and the independent EL-TK-056 runtime regression passed **21/21 tests**. Typecheck, build, and migration application passed.
+
+Evidence: [focused run](evidence/terminal-failure-focused-final/), [combined independent regression](evidence/terminal-failure-combined-regression/), and [EL-TK-056 runtime regression](../media-execution/evidence/terminal-failure-independent-regression/).
+
+Coverage includes:
+1. Transition of media to `PROCESSING_FAILED` and job to `DEAD` upon budget exhaustion (`BUDGET_EXHAUSTED`) or non-transient error (`TERMINAL_TECHNICAL_ERROR`), with revision increment and original bytes intact.
+2. DEC-075 download eligibility evaluation: strictly `true` if and only if the safety fact is completely `APPROVED`. Inconclusive, denied/quarantined, or pending safety inspections yield `downloadEligible: false`.
+3. Non-destructive terminal state preservation: fail-closed CAS never overwrites restrictive or completed media states (`QUARANTINED`, `PUBLISHED`, `PENDING_REVIEW`, `HIDDEN`, `TRASHED`, `DELETED`, `REJECTED`).
+4. Idempotent replay returning `ALREADY_COMMITTED` for identical operationIds and `IDEMPOTENCY_CONFLICT` for conflicting payloads.
+5. Complete transaction rollback on repository persistence failure, preserving original and job state without partial mutations.

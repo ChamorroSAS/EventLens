@@ -1,0 +1,14 @@
+{
+  "ticket": "EL-TK-038",
+  "runId": "media_inspection_1db825c7c5444a7e8c3509d467ced876",
+  "testedAt": "2026-10-11T00:42:25.923Z",
+  "result": "PASS",
+  "gates": {
+    "MEDIA-001": "NOT_EVALUATED",
+    "CAP-001": "NOT_EVALUATED",
+    "DR-001": "NOT_EVALUATED",
+    "EXPORT-001": "NOT_EVALUATED"
+  },
+  "tests": 20,
+  "passed": 20
+}

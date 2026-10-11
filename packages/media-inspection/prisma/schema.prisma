@@ -68,3 +68,68 @@ model PromotionAudit {
  committedAt DateTime @map("committed_at") @db.Timestamptz
  @@map("media_promotion_audit")
 }
+model RetryReceipt {
+ operationId String @id @map("operation_id")
+ mediaRef String @map("media_ref")
+ generation BigInt
+ jobId String @map("job_id") @db.Uuid
+ token String @db.Uuid
+ epoch String
+ attempt Int
+ disposition String
+ retryFingerprint String @map("retry_fingerprint")
+ committedAt DateTime @map("committed_at") @db.Timestamptz
+ @@map("media_retry_receipt")
+}
+model RetryAudit {
+ id String @id @db.Uuid
+ operationId String @unique @map("operation_id")
+ mediaRef String @map("media_ref")
+ generation BigInt
+ jobId String @map("job_id") @db.Uuid
+ token String @db.Uuid
+ epoch String
+ attempt Int
+ disposition String
+ category String
+ sanitizedReason String @map("sanitized_reason")
+ retryAt DateTime? @map("retry_at") @db.Timestamptz
+ committedAt DateTime @map("committed_at") @db.Timestamptz
+ @@map("media_retry_audit")
+}
+model TerminalFailureReceipt {
+ operationId String @id @map("operation_id")
+ mediaRef String @map("media_ref")
+ generation BigInt
+ previousRevision BigInt @map("previous_revision")
+ revision BigInt
+ jobId String @map("job_id") @db.Uuid
+ token String @db.Uuid
+ epoch String
+ cause String
+ sanitizedReason String @map("sanitized_reason")
+ downloadEligible Boolean @map("download_eligible")
+ failureFingerprint String @map("failure_fingerprint")
+ committedAt DateTime @map("committed_at") @db.Timestamptz
+ @@map("media_terminal_failure_receipt")
+}
+model TerminalFailureAudit {
+ id String @id @db.Uuid
+ operationId String @unique @map("operation_id")
+ mediaRef String @map("media_ref")
+ generation BigInt
+ previousRevision BigInt @map("previous_revision")
+ revision BigInt
+ jobId String @map("job_id") @db.Uuid
+ token String @db.Uuid
+ epoch String
+ cause String
+ sanitizedReason String @map("sanitized_reason")
+ downloadEligible Boolean @map("download_eligible")
+ safetyOutcome String @map("safety_outcome")
+ actor String
+ transition String
+ committedAt DateTime @map("committed_at") @db.Timestamptz
+ @@map("media_terminal_failure_audit")
+}
+

@@ -25,6 +25,8 @@ export class LocalSlots {
   get inUse():number{return this.occupied;}
 }
 export interface Reservation { readonly jobs:readonly Execution[]; /** Caller must first stop/drain physical work. */ releaseAfterQuiescence():void; }
+export interface RecoverExpiredOptions { queues?: readonly string[]; maxAttempts?: number; backoffMs?: number | ((attempt: number) => number); limit?: number; }
+export interface RecoveredLease { jobId: string; resourceRef: string; generation: bigint; queue: string; previousAttempt: number; disposition: 'RETRYING' | 'DEAD'; retryAt: Date | null; }
 interface ScanCursor {priority:number;available_at:Date;id:string;}
 export class JobQueuePostgres {
   // Fairness hint only, never authority. Denied windows advance, then wrap; bounded by configured scan budget.
@@ -135,12 +137,37 @@ export class JobQueuePostgres {
     });
   }
   async complete(job:Execution,operationId:string,outcome:Json,effect:(tx:SqlTransaction)=>Promise<void>,lockOwner?:(tx:SqlTransaction)=>Promise<void>):Promise<'COMPLETED'|'ALREADY_COMMITTED'>{return this.finish(job,operationId,outcome,'COMPLETED',null,effect,lockOwner);}
-  /** Retry scheduling/disposition is supplied by owner038; budget and recovery are not implemented here. */
-  async retry(job:Execution,operationId:string,outcome:Json,retryAt:Date|null,disposition:'RETRYING'|'FAILED'|'DEAD',effect:(tx:SqlTransaction)=>Promise<void>):Promise<'COMPLETED'|'ALREADY_COMMITTED'>{
-    if(disposition==='RETRYING'&&(!retryAt||!Number.isFinite(retryAt.getTime())))throw new QueueError('INVALID_ARGUMENT');return this.finish(job,operationId,outcome,disposition,retryAt,effect);
+  /** Retry scheduling/disposition is supplied by owner038; budget and recovery are implemented here and coordinated with owner policy. */
+  async retry(job:Execution,operationId:string,outcome:Json,retryAt:Date|null,disposition:'RETRYING'|'FAILED'|'DEAD',effect:(tx:SqlTransaction)=>Promise<void>,lockOwner?:(tx:SqlTransaction)=>Promise<void>):Promise<'COMPLETED'|'ALREADY_COMMITTED'>{
+    if(disposition==='RETRYING'&&(!retryAt||!Number.isFinite(retryAt.getTime())))throw new QueueError('INVALID_ARGUMENT');return this.finish(job,operationId,outcome,disposition,retryAt,effect,lockOwner);
+  }
+  async recoverExpiredLeases(options?:RecoverExpiredOptions):Promise<RecoveredLease[]>{
+    const maxAttempts=options?.maxAttempts??3;positive(maxAttempts);
+    const limit=options?.limit??32;positive(limit);
+    const queues=options?.queues&&options.queues.length?[...new Set(options.queues)].sort():null;
+    return this.transactions.run(async tx=>{
+      const candidates=await tx.query<Row>(`SELECT id,resource_ref,generation,queue,type,handler_version,payload,attempt,fence,owner,token,epoch,lease_until FROM job_queue WHERE status='PROCESSING' AND lease_until<=clock_timestamp() AND NOT cancelled AND ($1::text[] IS NULL OR queue=ANY($1::text[])) ORDER BY priority DESC,available_at,id LIMIT $2 FOR UPDATE SKIP LOCKED`,queues,limit);
+      const recovered:RecoveredLease[]=[];
+      for(const row of candidates){
+        const isExhausted=row.attempt>=maxAttempts;
+        const disposition=isExhausted?'DEAD':'RETRYING';
+        let retryAt:Date|null=null;
+        if(!isExhausted){
+          const delayMs=typeof options?.backoffMs==='function'?options.backoffMs(row.attempt):(options?.backoffMs??5000);
+          positive(typeof delayMs==='number'?Math.max(1,delayMs):1);
+          const delay=typeof delayMs==='number'?delayMs:5000;
+          const [{next_time}]=await tx.query<{next_time:Date}>(`SELECT clock_timestamp()+$1::double precision*interval '1 millisecond' AS next_time`,delay);
+          retryAt=next_time;
+        }
+        await tx.execute(`UPDATE job_queue SET status=$2,fence=fence+1,owner=NULL,token=NULL,lease_until=NULL,available_at=COALESCE($3::timestamptz,available_at) WHERE id=$1::uuid AND status='PROCESSING' AND lease_until<=clock_timestamp()`,row.id,disposition,retryAt);
+        await tx.execute(`UPDATE job_attempt SET ended_at=clock_timestamp(),result=$2 WHERE token=$1::uuid AND ended_at IS NULL`,row.token,disposition==='DEAD'?'DEAD':'ABANDONED_LEASE');
+        recovered.push({jobId:row.id,resourceRef:row.resource_ref,generation:row.generation,queue:row.queue,previousAttempt:row.attempt,disposition,retryAt});
+      }
+      return recovered;
+    });
   }
   private async finish(job:Execution,operationId:string,outcome:Json,disposition:string,retryAt:Date|null,effect:(tx:SqlTransaction)=>Promise<void>,lockOwner?:(tx:SqlTransaction)=>Promise<void>):Promise<'COMPLETED'|'ALREADY_COMMITTED'>{
-    if(!operationId)throw new QueueError('INVALID_ARGUMENT');const hash=fingerprint({jobId:job.jobId,resourceRef:job.resourceRef,attempt:job.attempt,token:job.token,owner:job.owner,fence:job.fence,epoch:job.epoch,generation:job.generation,outcome,disposition,retryAt});
+    if(!operationId)throw new QueueError('INVALID_ARGUMENT');const hash=fingerprint({jobId:job.jobId,resourceRef:job.resourceRef,attempt:job.attempt,token:job.token,owner:job.owner,fence:job.fence,epoch:job.epoch,generation:job.generation,outcome,disposition});
     return this.authorized(job,disposition==='COMPLETED'?'COMPLETE':'RETRY',async tx=>{
       // Owner locks precede job locks, including ACK replay. The ResourcePolicy
       // must already hold common ancestor locks before any owner resource lock.

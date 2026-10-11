@@ -6,7 +6,7 @@ EL-EP-006
 
 ## Status
 
-READY
+DONE
 
 **HISTÓRICO CONFIRMED — 2026-10-07:** requirements_reviewer aprobó este conjunto sin hallazgos pendientes. Véase [dictamen](../sessions/2026-10-07-el-ep-006-ticket-review.md). READY expresa preparación de requisitos; se conservan las dependencias de ejecución.
 
@@ -76,3 +76,21 @@ Trazabilidad de remediación: GAP-EL-EP-006-03/08/10.
 **CONFIRMED:** REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES. Retry/ciclos/lease recovery implementables por JobSpec y055 contratado. Integración requiere032/055 y executor real; no confundir fallo operacional con contenido inválido ni cambiar tres intentos.
 
 Fuente: [contrato ARCH-015](../../context/media-and-jobs-architecture.md#pipeline-multimedia-adoptado--arch-015) y [impacto](../sessions/2026-10-09-arch-015-backlog-impact.md). TB-01/TB-02 resueltos experimentalmente; no bloqueadores activos. Cuando YES, describe construcción del alcance propio por contratos cerrados, no integración usable ni upstream implementado. Los dictámenes/scopes anteriores conservan historia donde difieren. MEDIA-001/CAP-001/DR-001/EXPORT-001 siguen VALIDATION_REQUIRED; sin proveedor adoptado.
+ 
+## Cierre de implementación — 2026-10-10
+
+**CONFIRMED — DONE:** el reviewer y tester independiente aprobaron la implementación de reintento automático transitorio y recuperación de leases.
+- **Suite enfocada (EL-TK-038):** PASS 20/20 (13 pruebas de integración con PostgreSQL 16 real y 7 pruebas unitarias).
+- **Regresión combinada (media-inspection):** PASS 282/282 en 12 archivos de test (inspection, quarantine, photo-derivatives, video-derivatives, successful-processing y transient-retry).
+- **Regresión de runtime (EL-TK-056):** PASS 21/21 en `media-execution` en contenedor Docker.
+- **Typecheck, build y migraciones repetidas:** PASS.
+
+Aspectos técnicos verificados:
+1. **Presupuesto estricto de reintentos:** exactamente 3 intentos totales (incluido el inicial). Al 1er y 2do fallo transitorio se reprograma en estado `RETRYING` con backoff exponencial configurable (`available_at`). Al 3er fallo el presupuesto se agota y transiciona atómicamente a `DEAD` sin programar un 4to intento.
+2. **Preservación de original e invariantes de catálogo:** `DEAD` del trabajo no borra el archivo original ni marca la media como `DELETED` en `media_catalog`. Nunca se sobrescriben estados terminales o restrictivos (`QUARANTINED`, `PUBLISHED`, `TRASHED`, `DELETED`, `REJECTED`).
+3. **Recuperación de leases abandonados:** `recoverExpiredLeases` en `@eventlens/job-queue` reclama trabajos con `status = 'PROCESSING'` y `lease_until <= clock_timestamp()`, incrementa `fence`, desvincula el worker anterior y avanza a `RETRYING` (o `DEAD` si alcanzó 3 intentos). El worker previo con token/lease vencido queda imposibilitado de confirmar o reintentar (falla con `LEASE_LOST`).
+4. **Idempotencia y seguridad:** replay compatible devuelve `ALREADY_COMMITTED` con su recibo determinista (`media_retry_receipt`). Payloads/errores incompatibles generan `IDEMPOTENCY_CONFLICT`. La auditoría sanitiza URLs de base de datos, credenciales, tokens y rutas internas del sistema de archivos. Se asegura rollback completo si falla la persistencia.
+
+Evidencia: [corrida enfocada](../../../infra/validation/media-inspection/evidence/retry-focused-final/), [regresión combinada](../../../infra/validation/media-inspection/evidence/retry-combined-regression/), [regresión runtime EL-TK-056](../../../infra/validation/media-execution/evidence/retry-independent-regression/) y [documentación](../../../infra/validation/media-inspection/README.md#el-tk-038-transient-retry-and-lease-recovery-final-validation).
+
+MEDIA-001, CAP-001, DR-001 y EXPORT-001 permanecen `NOT_EVALUATED`; storage definitivo continúa `DEFERRED`. Se desbloquea downstream EL-TK-039, EL-TK-041 y EL-TK-058.
