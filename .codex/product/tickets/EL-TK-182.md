@@ -4,8 +4,13 @@
 EL-EP-016
 
 ## Status
-READY
+DONE
 
+**CONFIRMED — 2026-10-11:** Clasificación del resultado de la Beta con prevalencia absoluta de incidentes críticos implementada al 100% mediante `BetaClassificationService` (`packages/observability/src/beta-classification-service.ts`), contratos correspondientes en `packages/observability/src/contracts.ts` y tests unitarios en `packages/observability/test/beta-classification-service.unit.test.ts`.
+- **Escenario 1 (Congelación inmutable del BetaEvidenceSnapshot):** Generación y congelación estricta de `BetaEvidenceSnapshot` referenciable por `snapshotId`, sellado con timestamp `frozenAt` y hash criptográfico determinístico SHA-256 (`contentHash`), verificando inmutabilidad ante alteraciones post-congelación.
+- **Escenario 2 (Clasificación PASS reproducible):** Evaluación determinística de PASS cuando métricas consolidadas (cargas $\ge 95\%$, fotos $\ge 98\%$, video $\ge 95\%$, soporte funcional $\ge 80\%$, recuperación $\ge 70\%$, participación $\ge 60\%$), volumen mínimo ($\ge 20$ eventos y $\ge 1000$ archivos) y gates DR-001/auditoría cumplen al 100% sin incidentes operacionales.
+- **Escenario 3 (Prevalencia absoluta de incidentes críticos -> FAIL_CRITICAL):** Regla de prevalencia absoluta (DEC-056, DEC-057): cualquier incidente crítico de severidad `CRITICAL`, fuga de credenciales o fallo en el gate DR-001 de EL-EP-014 resulta obligatoriamente en `FAIL_CRITICAL` independientemente de promedios numéricos favorables.
+- **Casos EXTEND_BETA y PASS_WITH_ACTIONS:** Manejo determinístico de `EXTEND_BETA` ante volumen de muestra incompleto dentro de ventana extensible (< 12 semanas) y `PASS_WITH_ACTIONS` ante desviaciones secundarias (como participación indicativa o incidentes no críticos mitigados). Suite completa PASS (130/130 tests en 26 archivos en `@eventlens/observability`).
 **CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Clasificación PASS, PASS_WITH_ACTIONS, EXTEND_BETA y FAIL_CRITICAL con prevalencia absoluta de incidentes críticos de seguridad y pérdida de datos (DEC-050..057). UI_REQUIRED: NO. REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES.
 
 ## User story
