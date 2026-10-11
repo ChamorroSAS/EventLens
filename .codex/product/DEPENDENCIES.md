@@ -290,6 +290,46 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 10 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de persistencia de NotificationIntent idempotente a partir de hechos de dominio confirmados, procesamiento asíncrono de correos con puerto desacoplado mediante JobQueue durable (DEC-021, DEC-061..064), proyección de avisos contextuales vigentes para el panel del organizador sin duplicados ni avisos obsoletos, generación de avisos de lifecycle/gracia/eliminación próxima, capacidad al 80% y 100%, exportación disponible/expirada, cuenta/seguridad/cambios, denuncias e intervenciones según severidad, e integración UI de avisos y plantillas de correo accesibles. Superficies UI reutilizadas del catálogo canónico (ui-mvp-epic-review.md §EL-EP-013), sin NotificationCenter obligatorio ni nuevos componentes. Proveedor de correo desacoplado por puerto.
 
+## Tickets propuestos — EL-EP-014 (DRAFT; pendiente requirements_reviewer)
+
+| Ticket | Depende de | Bloquea |
+|---|---|---|
+| EL-TK-166 | ninguna predecesora funcional dura | 167,173,175,176 |
+| EL-TK-167 | 166 | 175,176; consumidor EL-EP-012 |
+| EL-TK-168 | ninguna predecesora funcional dura | 169,170,176 |
+| EL-TK-169 | 168; contrato JobQueue | 173,176 |
+| EL-TK-170 | 168 | 173,174,176 |
+| EL-TK-171 | baseline EL-TD-008; DEC-062 | 172,174,176 |
+| EL-TK-172 | 171; contrato EL-EP-015 | 174,176 |
+| EL-TK-173 | 166,169,170 | 176 |
+| EL-TK-174 | 170,171,172 | 176; evidencia Beta |
+| EL-TK-175 | 167; contrato EL-EP-012 | 176 |
+| EL-TK-176 | 166..175 | EL-EP-016; validación EL-EP-014 |
+
+11 DRAFT. EL-EP-014 conserva auditoría mínima, observabilidad, alertamiento y recovery; no selecciona proveedor de observabilidad/storage ni convierte 99.5% en SLA.
+
+## EL-EP-015 — no ticketizado en este PR
+
+READY de requisitos, pero READY_FOR_TICKET_WRITING: PARTIAL y READY_FOR_IMPLEMENTATION: PARTIAL. No se generan tickets hasta cerrar el gate técnico de reautenticación/UI sensible. La eliminación ordinaria backend puede planificarse después sin habilitar LEGAL_OR_SECURITY_HOLD pendiente jurídico.
+
+## Tickets propuestos — EL-EP-016 (DRAFT; pendiente requirements_reviewer)
+
+| Ticket | Depende de | Bloquea |
+|---|---|---|
+| EL-TK-177 | contratos de dominios propietarios; EL-EP-014 | 178..183 |
+| EL-TK-178 | 177; contratos EL-EP-005/006 | 182,183 |
+| EL-TK-179 | 177; contratos EL-EP-010/012 | 182,183 |
+| EL-TK-180 | 177; contrato EL-EP-004 | 182,183 |
+| EL-TK-181 | 177 | 182,183 |
+| EL-TK-182 | 178..181; contrato EL-EP-014 | 183 |
+| EL-TK-183 | 177..182 | decisión operativa posterior a Beta |
+
+7 DRAFT. EL-EP-016 no requiere UI producto; mide evidencia agregada, muestra y clasificación reproducible. Inicio Beta y responsable formal siguen datos operativos, no blockers funcionales.
+
+## EL-EP-017 — no ticketizado
+
+NOT_READY. Q-029 y revisión jurídica profesional siguen siendo blocker explícito; no se generan tickets de implementación ni se inventan políticas legales.
+
 ## Tickets vigentes — EL-EP-006 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
