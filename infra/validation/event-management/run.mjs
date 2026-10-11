@@ -51,8 +51,8 @@ try {
   const exitCode = run(['--filter', '@eventlens/event-management', 'exec', 'vitest', 'run', '--no-file-parallelism', '--reporter=default', '--reporter=json', '--outputFile=/evidence/tests.json'], true);
   const tests = JSON.parse(readFileSync('/evidence/tests.json', 'utf8'));
   writeFileSync('/evidence/result.json', JSON.stringify({
-    ticket: 'EL-TK-066',
-    precedingTicket: 'EL-TK-065',
+    ticket: 'EL-TK-067',
+    precedingTicket: 'EL-TK-066',
     runId: database,
     testedAt: new Date().toISOString(),
     result: tests.success && exitCode === 0 ? 'PASS' : 'FAIL',

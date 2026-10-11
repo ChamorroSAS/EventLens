@@ -17,6 +17,9 @@ export {
   type CloseEventResult,
   type ReopenEventCommand,
   type ReopenEventResult,
+  type AdvanceTemporalLifecycleCommand,
+  type AdvanceTemporalLifecycleResult,
+  type TemporalAdvanceOutcome,
   type EventAuditRecord,
   type EventAuditSink
 } from './contracts.js';

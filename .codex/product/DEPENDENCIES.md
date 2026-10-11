@@ -125,7 +125,7 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-064 (DONE) | 063,062,055 | 065,067,071,072 |
 | EL-TK-065 (DONE) | 064 | 066,067,071,072 |
 | EL-TK-066 (DONE) | 065,062 | 071,072 |
-| EL-TK-067 | 062,064,065,055; contrato EL-EP-015 | 069,071,072 |
+| EL-TK-067 (DONE) | 062,064,065,055; contrato EL-EP-015 | 069,071,072 |
 | EL-TK-068 | 044 | 069,071,072 |
 | EL-TK-069 | 062,067,068,044 | 071,072 |
 | EL-TK-070 | 062; contrato ampliaciones EL-EP-011 | 071,072 |

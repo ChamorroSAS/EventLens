@@ -39,6 +39,7 @@ describeIntegration('EventLifecycleService (Real PostgreSQL Integration Tests â€
         grace_ends_at TIMESTAMPTZ,
         activated_at TIMESTAMPTZ,
         closed_at TIMESTAMPTZ,
+        purge_started_at TIMESTAMPTZ,
         validity_duration_days INTEGER,
         grace_days INTEGER,
         uploads_enabled BOOLEAN NOT NULL DEFAULT false,
@@ -59,6 +60,7 @@ describeIntegration('EventLifecycleService (Real PostgreSQL Integration Tests â€
         ADD COLUMN IF NOT EXISTS grace_ends_at TIMESTAMPTZ,
         ADD COLUMN IF NOT EXISTS activated_at TIMESTAMPTZ,
         ADD COLUMN IF NOT EXISTS closed_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS purge_started_at TIMESTAMPTZ,
         ADD COLUMN IF NOT EXISTS validity_duration_days INTEGER,
         ADD COLUMN IF NOT EXISTS grace_days INTEGER;
 
@@ -511,5 +513,85 @@ describeIntegration('EventLifecycleService (Real PostgreSQL Integration Tests â€
     );
     expect(rows[0].status).toBe('ACTIVE');
     expect(rows[0].closed_at).toBeNull();
+  });
+
+  it('EL-TK-067: Avanza en PostgreSQL de ACTIVE a GRACE_PERIOD por expiraciÃ³n', async () => {
+    const eventId = randomUUID();
+    const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+    const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+    const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+    const now = new Date('2026-12-01T15:00:00.000Z');
+
+    await sql(
+      `INSERT INTO event (id, organizer_id, name, status, scheduled_at, expires_at, grace_ends_at, activated_at)
+       VALUES ($1, $2, $3, 'ACTIVE', $4, $5, $6, $4)`,
+      eventId,
+      ownerActor.accountId,
+      'Evento Real Expirado',
+      scheduledAt,
+      expiresAt,
+      graceEndsAt
+    );
+
+    const result = await service.advanceTemporalLifecycle({
+      eventId,
+      now,
+      jobId: 'job-sql-1'
+    });
+
+    expect(result.previousStatus).toBe('ACTIVE');
+    expect(result.outcome).toBe('TRANSITIONED_TO_GRACE_PERIOD');
+    expect(result.event.status).toBe('GRACE_PERIOD');
+
+    const rows = await query<{ status: string }>(
+      `SELECT status FROM event WHERE id = $1`,
+      eventId
+    );
+    expect(rows[0].status).toBe('GRACE_PERIOD');
+
+    const audits = await query<{ procedure: string; result: string }>(
+      `SELECT procedure, result FROM admin_audit_event WHERE target_identifier = $1`,
+      eventId
+    );
+    expect(audits).toHaveLength(1);
+    expect(audits[0].procedure).toBe('EVENT_TEMPORAL_ADVANCE');
+    expect(audits[0].result).toBe('TRANSITIONED_TO_GRACE_PERIOD');
+  });
+
+  it('EL-TK-067: Avanza en PostgreSQL de GRACE_PERIOD a PENDING_DELETION fijando purge_started_at', async () => {
+    const eventId = randomUUID();
+    const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+    const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+    const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+    const now = new Date('2026-12-08T15:00:00.000Z');
+
+    await sql(
+      `INSERT INTO event (id, organizer_id, name, status, scheduled_at, expires_at, grace_ends_at, activated_at)
+       VALUES ($1, $2, $3, 'GRACE_PERIOD', $4, $5, $6, $4)`,
+      eventId,
+      ownerActor.accountId,
+      'Evento Fin Gracia PostgreSQL',
+      scheduledAt,
+      expiresAt,
+      graceEndsAt
+    );
+
+    const result = await service.advanceTemporalLifecycle({
+      eventId,
+      now,
+      jobId: 'job-sql-2'
+    });
+
+    expect(result.previousStatus).toBe('GRACE_PERIOD');
+    expect(result.outcome).toBe('TRANSITIONED_TO_PENDING_DELETION');
+    expect(result.event.status).toBe('PENDING_DELETION');
+    expect(result.event.purgeStartedAt).toEqual(now);
+
+    const rows = await query<{ status: string; purge_started_at: Date }>(
+      `SELECT status, purge_started_at FROM event WHERE id = $1`,
+      eventId
+    );
+    expect(rows[0].status).toBe('PENDING_DELETION');
+    expect(new Date(rows[0].purge_started_at).toISOString()).toBe(now.toISOString());
   });
 });

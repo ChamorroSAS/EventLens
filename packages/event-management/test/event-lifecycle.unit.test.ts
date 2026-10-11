@@ -23,6 +23,7 @@ interface MockEvent {
   grace_ends_at: Date | null;
   activated_at?: Date | null;
   closed_at?: Date | null;
+  purge_started_at?: Date | null;
   validity_duration_days: number | null;
   grace_days: number | null;
   uploads_enabled: boolean;
@@ -118,6 +119,30 @@ class InMemoryRunner implements TransactionRunner {
             existing.closed_at = null;
             if (idempotencyKey) existing.idempotency_key = idempotencyKey;
             if (payloadHash) existing.idempotency_payload_hash = payloadHash;
+            existing.updated_at = updatedAt;
+            return 1;
+          }
+        }
+        if (sql.includes('UPDATE event') && sql.includes('SET status = \'GRACE_PERIOD\'')) {
+          const updatedAt = params[0] as Date;
+          const eventId = params[1] as string;
+
+          const existing = this.events.get(eventId);
+          if (existing) {
+            existing.status = 'GRACE_PERIOD';
+            existing.updated_at = updatedAt;
+            return 1;
+          }
+        }
+        if (sql.includes('UPDATE event') && sql.includes('SET status = \'PENDING_DELETION\'')) {
+          const purgeStartedAt = params[0] as Date;
+          const updatedAt = params[1] as Date;
+          const eventId = params[2] as string;
+
+          const existing = this.events.get(eventId);
+          if (existing) {
+            existing.status = 'PENDING_DELETION';
+            existing.purge_started_at = existing.purge_started_at ?? purgeStartedAt;
             existing.updated_at = updatedAt;
             return 1;
           }
@@ -1136,6 +1161,281 @@ describe('EL-TK-063: EventLifecycleService (Unit Tests)', () => {
       ).rejects.toMatchObject({
         code: 'UNAUTHORIZED'
       });
+    });
+  });
+
+  describe('EL-TK-067: EventLifecycleService.advanceTemporalLifecycle (Unit Tests)', () => {
+    const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+    const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+    const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+
+    it('Escenario 1: ACTIVE al vencer la vigencia avanza automáticamente a GRACE_PERIOD', async () => {
+      const eventId = '11110000-aaaa-bbbb-cccc-111111111111';
+      const now = new Date('2026-12-01T15:00:00.000Z'); // Exactamente expiresAt
+
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Activo Que Vence',
+        status: 'ACTIVE',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: null,
+        purge_started_at: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      const result = await service.advanceTemporalLifecycle({
+        eventId,
+        now,
+        jobId: 'job-exp-1'
+      });
+
+      expect(result.previousStatus).toBe('ACTIVE');
+      expect(result.outcome).toBe('TRANSITIONED_TO_GRACE_PERIOD');
+      expect(result.event.status).toBe('GRACE_PERIOD');
+
+      const inDb = eventsMap.get(eventId)!;
+      expect(inDb.status).toBe('GRACE_PERIOD');
+
+      expect(auditLogs).toHaveLength(1);
+      expect(auditLogs[0].procedure).toBe('EVENT_TEMPORAL_ADVANCE');
+      expect(auditLogs[0].result).toBe('TRANSITIONED_TO_GRACE_PERIOD');
+    });
+
+    it('Escenario 1 (CLOSED): CLOSED al vencer la vigencia avanza a GRACE_PERIOD', async () => {
+      const eventId = '22220000-aaaa-bbbb-cccc-222222222222';
+      const now = new Date('2026-12-02T10:00:00.000Z'); // Pasado expiresAt, antes de graceEndsAt
+
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Cerrado Que Vence',
+        status: 'CLOSED',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: new Date('2026-11-15T00:00:00.000Z'),
+        purge_started_at: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      const result = await service.advanceTemporalLifecycle({
+        eventId,
+        now
+      });
+
+      expect(result.previousStatus).toBe('CLOSED');
+      expect(result.outcome).toBe('TRANSITIONED_TO_GRACE_PERIOD');
+      expect(result.event.status).toBe('GRACE_PERIOD');
+
+      const inDb = eventsMap.get(eventId)!;
+      expect(inDb.status).toBe('GRACE_PERIOD');
+    });
+
+    it('Escenario 2: Al vencer graceEndsAt transiciona a PENDING_DELETION y fija purge_started_at (DEC-092)', async () => {
+      const eventId = '33330000-aaaa-bbbb-cccc-333333333333';
+      const now = new Date('2026-12-08T15:00:00.000Z'); // Exactamente graceEndsAt
+
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Fin de Gracia',
+        status: 'GRACE_PERIOD',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: null,
+        purge_started_at: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      const result = await service.advanceTemporalLifecycle({
+        eventId,
+        now,
+        jobId: 'job-grace-1'
+      });
+
+      expect(result.previousStatus).toBe('GRACE_PERIOD');
+      expect(result.outcome).toBe('TRANSITIONED_TO_PENDING_DELETION');
+      expect(result.event.status).toBe('PENDING_DELETION');
+      expect(result.event.purgeStartedAt).toEqual(now);
+
+      const inDb = eventsMap.get(eventId)!;
+      expect(inDb.status).toBe('PENDING_DELETION');
+      expect(inDb.purge_started_at).toEqual(now);
+
+      expect(auditLogs).toHaveLength(1);
+      expect(auditLogs[0].procedure).toBe('EVENT_TEMPORAL_ADVANCE');
+      expect(auditLogs[0].result).toBe('TRANSITIONED_TO_PENDING_DELETION');
+    });
+
+    it('Escenario 3: SUSPENDED atraviesa vencimiento o fin de gracia preservando barrera administrativa', async () => {
+      const eventId = '44440000-aaaa-bbbb-cccc-444444444444';
+      const now = new Date('2026-12-10T00:00:00.000Z'); // Pasado graceEndsAt
+
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Suspendido por Investigación',
+        status: 'SUSPENDED',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: null,
+        purge_started_at: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      const result = await service.advanceTemporalLifecycle({
+        eventId,
+        now
+      });
+
+      expect(result.previousStatus).toBe('SUSPENDED');
+      expect(result.outcome).toBe('SUSPENDED_PRESERVED');
+      expect(result.event.status).toBe('SUSPENDED');
+
+      const inDb = eventsMap.get(eventId)!;
+      expect(inDb.status).toBe('SUSPENDED');
+
+      expect(auditLogs).toHaveLength(1);
+      expect(auditLogs[0].procedure).toBe('EVENT_TEMPORAL_ADVANCE');
+      expect(auditLogs[0].result).toBe('SUSPENDED_PRESERVED');
+    });
+
+    it('Idempotencia determinista: ejecuciones repetidas o recuperadas retornan IDEMPOTENT_REPLAY sin retroceso', async () => {
+      const eventId = '55550000-aaaa-bbbb-cccc-555555555555';
+      const purgeDate = new Date('2026-12-08T15:00:00.000Z');
+      const now = new Date('2026-12-09T00:00:00.000Z');
+
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Ya en PENDING_DELETION',
+        status: 'PENDING_DELETION',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: null,
+        purge_started_at: purgeDate,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      const result = await service.advanceTemporalLifecycle({
+        eventId,
+        now
+      });
+
+      expect(result.previousStatus).toBe('PENDING_DELETION');
+      expect(result.outcome).toBe('IDEMPOTENT_REPLAY');
+      expect(result.event.status).toBe('PENDING_DELETION');
+      expect(result.event.purgeStartedAt).toEqual(purgeDate);
+    });
+
+    it('Evento vigente que no ha alcanzado expiresAt retorna NO_OP', async () => {
+      const eventId = '66660000-aaaa-bbbb-cccc-666666666666';
+      const now = new Date('2026-11-15T00:00:00.000Z'); // Antes de expiresAt
+
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Aún Vigente',
+        status: 'ACTIVE',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: null,
+        purge_started_at: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      const result = await service.advanceTemporalLifecycle({
+        eventId,
+        now
+      });
+
+      expect(result.outcome).toBe('NO_OP');
+      expect(result.event.status).toBe('ACTIVE');
     });
   });
 });

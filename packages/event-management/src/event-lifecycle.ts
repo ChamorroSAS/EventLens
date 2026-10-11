@@ -10,6 +10,9 @@ import {
   type CloseEventResult,
   type ReopenEventCommand,
   type ReopenEventResult,
+  type AdvanceTemporalLifecycleCommand,
+  type AdvanceTemporalLifecycleResult,
+  type TemporalAdvanceOutcome,
   type EventAuditSink,
   type EventRecord,
   type EventStatus,
@@ -34,6 +37,7 @@ interface EventRow {
   grace_ends_at?: Date | string | null;
   activated_at?: Date | string | null;
   closed_at?: Date | string | null;
+  purge_started_at?: Date | string | null;
   validity_duration_days?: number | null;
   grace_days?: number | null;
   uploads_enabled: boolean;
@@ -60,6 +64,7 @@ function mapRowToRecord(row: EventRow): EventRecord {
     graceEndsAt: row.grace_ends_at ? new Date(row.grace_ends_at) : null,
     activatedAt: row.activated_at ? new Date(row.activated_at) : null,
     closedAt: row.closed_at ? new Date(row.closed_at) : null,
+    purgeStartedAt: row.purge_started_at ? new Date(row.purge_started_at) : null,
     validityDurationDays: row.validity_duration_days !== null && row.validity_duration_days !== undefined ? Number(row.validity_duration_days) : null,
     graceDays: row.grace_days !== null && row.grace_days !== undefined ? Number(row.grace_days) : null,
     uploadsEnabled: Boolean(row.uploads_enabled),
@@ -773,6 +778,182 @@ export class EventLifecycleService {
       return {
         event: updatedRecord,
         outcome: 'REOPENED'
+      };
+    });
+  }
+
+  /**
+   * Advances the temporal lifecycle of an event based on the canonical clock (EL-TK-067).
+   * System-triggered (e.g. background worker / scheduler).
+   *
+   * - Escenario 1: If ACTIVE or CLOSED and now >= expires_at (and now < grace_ends_at),
+   *   transitions idempotently to GRACE_PERIOD.
+   * - Escenario 2: If GRACE_PERIOD (or ACTIVE/CLOSED) and now >= grace_ends_at,
+   *   transitions idempotently to PENDING_DELETION and sets purge_started_at = now
+   *   (without physically deleting content here, in accordance with DEC-092 & EL-EP-015).
+   * - Escenario 3: If SUSPENDED, time continues advancing against canonical anchors;
+   *   the administrative isolation barrier is preserved (remains SUSPENDED).
+   * - Deterministic & Recoverable: delayed, repeated, or replayed runs produce no regressions
+   *   or resurrections (idempotent NO_OP or clean replay).
+   */
+  async advanceTemporalLifecycle(command: AdvanceTemporalLifecycleCommand): Promise<AdvanceTemporalLifecycleResult> {
+    const { eventId, jobId } = command;
+
+    if (!eventId || typeof eventId !== 'string') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Event ID is required');
+    }
+
+    const now = command.now ?? new Date();
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      // 1. Lock and retrieve current event record
+      const rows = await tx.query<EventRow>(
+        `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at,
+                utc_offset_minutes, expires_at, grace_ends_at, activated_at, closed_at,
+                purge_started_at, validity_duration_days, grace_days, uploads_enabled,
+                guest_gallery_enabled, moderation_mode, pin_enabled, idempotency_key,
+                idempotency_payload_hash, created_at, updated_at
+         FROM event
+         WHERE id = $1
+         FOR UPDATE`,
+        eventId
+      );
+
+      if (rows.length === 0) {
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event '${eventId}' was not found`);
+      }
+
+      const current = rows[0];
+      const previousStatus = current.status as EventStatus;
+
+      // 2. If event has not even reached expiration yet (or has no expiration configured)
+      if (!current.expires_at) {
+        return {
+          event: mapRowToRecord(current),
+          previousStatus,
+          outcome: 'NO_OP'
+        };
+      }
+
+      const expiresAt = new Date(current.expires_at);
+      const graceEndsAt = current.grace_ends_at ? new Date(current.grace_ends_at) : null;
+
+      // Escenario 3: If SUSPENDED, deadlines continue moving physically, but administrative barrier remains
+      if (current.status === 'SUSPENDED') {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_TEMPORAL_ADVANCE',
+          actorId: 'SYSTEM_SCHEDULER',
+          targetIdentifier: eventId,
+          result: 'SUSPENDED_PRESERVED',
+          details: `Event '${eventId}' is SUSPENDED; canonical time passed expiration or grace anchor but administrative barrier is preserved`,
+          timestamp: now
+        });
+
+        return {
+          event: mapRowToRecord(current),
+          previousStatus,
+          outcome: 'SUSPENDED_PRESERVED'
+        };
+      }
+
+      // If already PENDING_DELETION or ARCHIVED: no regression or resurrections
+      if (current.status === 'PENDING_DELETION' || current.status === 'ARCHIVED') {
+        return {
+          event: mapRowToRecord(current),
+          previousStatus,
+          outcome: 'IDEMPOTENT_REPLAY'
+        };
+      }
+
+      // 3. Escenario 2: Check for GRACE_PERIOD completion -> PENDING_DELETION
+      if (graceEndsAt && now >= graceEndsAt) {
+        const purgeStartedAt = current.purge_started_at ? new Date(current.purge_started_at) : now;
+
+        await tx.execute(
+          `UPDATE event
+           SET status = 'PENDING_DELETION',
+               purge_started_at = COALESCE(purge_started_at, $1),
+               updated_at = $2
+           WHERE id = $3`,
+          purgeStartedAt,
+          now,
+          eventId
+        );
+
+        const updatedRecord: EventRecord = {
+          ...mapRowToRecord(current),
+          status: 'PENDING_DELETION',
+          purgeStartedAt,
+          updatedAt: now
+        };
+
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_TEMPORAL_ADVANCE',
+          actorId: 'SYSTEM_SCHEDULER',
+          targetIdentifier: eventId,
+          result: 'TRANSITIONED_TO_PENDING_DELETION',
+          details: `Event '${eventId}' grace period completed at ${graceEndsAt.toISOString()}; transitioned from '${current.status}' to PENDING_DELETION (jobId: ${jobId ?? 'direct'})`,
+          timestamp: now
+        });
+
+        return {
+          event: updatedRecord,
+          previousStatus,
+          outcome: 'TRANSITIONED_TO_PENDING_DELETION'
+        };
+      }
+
+      // 4. Escenario 1: Check for expiration -> GRACE_PERIOD
+      if (now >= expiresAt) {
+        if (current.status === 'ACTIVE' || current.status === 'CLOSED') {
+          await tx.execute(
+            `UPDATE event
+             SET status = 'GRACE_PERIOD',
+                 updated_at = $1
+             WHERE id = $2`,
+            now,
+            eventId
+          );
+
+          const updatedRecord: EventRecord = {
+            ...mapRowToRecord(current),
+            status: 'GRACE_PERIOD',
+            updatedAt: now
+          };
+
+          await this.auditSink?.record({
+            id: randomUUID(),
+            procedure: 'EVENT_TEMPORAL_ADVANCE',
+            actorId: 'SYSTEM_SCHEDULER',
+            targetIdentifier: eventId,
+            result: 'TRANSITIONED_TO_GRACE_PERIOD',
+            details: `Event '${eventId}' expired at ${expiresAt.toISOString()}; transitioned from '${current.status}' to GRACE_PERIOD (jobId: ${jobId ?? 'direct'})`,
+            timestamp: now
+          });
+
+          return {
+            event: updatedRecord,
+            previousStatus,
+            outcome: 'TRANSITIONED_TO_GRACE_PERIOD'
+          };
+        }
+
+        if (current.status === 'GRACE_PERIOD') {
+          return {
+            event: mapRowToRecord(current),
+            previousStatus,
+            outcome: 'IDEMPOTENT_REPLAY'
+          };
+        }
+      }
+
+      // Not expired yet
+      return {
+        event: mapRowToRecord(current),
+        previousStatus,
+        outcome: 'NO_OP'
       };
     });
   }

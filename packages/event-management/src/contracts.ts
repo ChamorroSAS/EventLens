@@ -1,6 +1,14 @@
 import type { OrganizerActorContext } from '@eventlens/identity';
 
-export type EventStatus = 'DRAFT' | 'SCHEDULED' | 'ACTIVE' | 'CLOSED' | 'ARCHIVED';
+export type EventStatus =
+  | 'DRAFT'
+  | 'SCHEDULED'
+  | 'ACTIVE'
+  | 'CLOSED'
+  | 'GRACE_PERIOD'
+  | 'PENDING_DELETION'
+  | 'SUSPENDED'
+  | 'ARCHIVED';
 export type ModerationMode = 'AUTO_PUBLISH' | 'MANUAL_REVIEW';
 
 export interface EventRecord {
@@ -16,6 +24,7 @@ export interface EventRecord {
   readonly graceEndsAt: Date | null;
   readonly activatedAt: Date | null;
   readonly closedAt: Date | null;
+  readonly purgeStartedAt: Date | null;
   readonly validityDurationDays: number | null;
   readonly graceDays: number | null;
   readonly uploadsEnabled: boolean;
@@ -132,6 +141,26 @@ export interface ReopenEventResult {
   readonly outcome: 'REOPENED' | 'IDEMPOTENT_REPLAY';
 }
 
+export interface AdvanceTemporalLifecycleCommand {
+  readonly eventId: string;
+  readonly now?: Date;
+  readonly jobId?: string;
+  readonly scheduledAt?: Date;
+}
+
+export type TemporalAdvanceOutcome =
+  | 'TRANSITIONED_TO_GRACE_PERIOD'
+  | 'TRANSITIONED_TO_PENDING_DELETION'
+  | 'SUSPENDED_PRESERVED'
+  | 'IDEMPOTENT_REPLAY'
+  | 'NO_OP';
+
+export interface AdvanceTemporalLifecycleResult {
+  readonly event: EventRecord;
+  readonly previousStatus: EventStatus;
+  readonly outcome: TemporalAdvanceOutcome;
+}
+
 export interface EventAuditRecord {
   readonly id: string;
   readonly procedure:
@@ -140,11 +169,16 @@ export interface EventAuditRecord {
     | 'EVENT_SCHEDULED'
     | 'EVENT_ACTIVATED'
     | 'EVENT_CLOSED'
-    | 'EVENT_REOPENED';
+    | 'EVENT_REOPENED'
+    | 'EVENT_TEMPORAL_ADVANCE';
   readonly actorId: string;
   readonly targetIdentifier: string;
   readonly result:
     | 'SUCCESS'
+    | 'TRANSITIONED_TO_GRACE_PERIOD'
+    | 'TRANSITIONED_TO_PENDING_DELETION'
+    | 'SUSPENDED_PRESERVED'
+    | 'NO_OP'
     | 'REJECTED_INVALID_NAME'
     | 'REJECTED_UNAUTHORIZED'
     | 'REJECTED_DST_GAP'
