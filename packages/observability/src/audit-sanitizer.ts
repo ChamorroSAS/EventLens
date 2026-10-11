@@ -99,10 +99,13 @@ export class AuditSanitizer {
       message = String(reason);
     }
 
-    // Mask sensitive connection strings or bearer tokens
+    // Mask sensitive connection strings, tokens, passwords, and secrets
     message = message.replace(CONNECTION_STRING_REGEX, '$1[REDACTED]$3');
     message = message.replace(/Bearer\s+[A-Za-z0-9\-._~+/]+=*/gi, 'Bearer [REDACTED]');
     message = message.replace(/password\s*[:=]\s*[^\s,]+/gi, 'password=[REDACTED]');
+    message = message.replace(/token\s*[:=]\s*[^\s,]+/gi, 'token=[REDACTED]');
+    message = message.replace(/secret\s*[:=]\s*[^\s,]+/gi, 'secret=[REDACTED]');
+    message = message.replace(/key\s*[:=]\s*[^\s,]+/gi, 'key=[REDACTED]');
 
     if (message.length > this.maxStringLength) {
       message = `${message.slice(0, this.maxStringLength)}...[TRUNCATED]`;

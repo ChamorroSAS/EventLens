@@ -593,4 +593,37 @@ export interface ExecuteDrValidationCommand {
   forceBackupFault?: boolean;
 }
 
+export interface E2EObservabilityValidationReport {
+  gateId: 'EL-EP-014-E2E';
+  evaluatedAt: Date;
+  status: 'PASS' | 'FAIL';
+  scenario1AuditTraceability: {
+    passed: boolean;
+    sensitiveActionsRecorded: number;
+    secretsScrubbedCount: number;
+    multimediaStreamsScrubbed: boolean;
+    queryableWithPermissions: boolean;
+  };
+  scenario2CriticalAlertAndIncidentCorrelation: {
+    passed: boolean;
+    simulatedCondition: string;
+    alertDetected: boolean;
+    incidentRecorded: boolean;
+    incidentSeverity: IncidentSeverity;
+    incidentCorrelatedWithAlert: boolean;
+    sanitizedTelemetryVerified: boolean;
+  };
+  scenario3RecoveryObjectivesAndNonResurrection: {
+    passed: boolean;
+    observedRpoMinutes: number;
+    observedRtoMinutes: number;
+    isRpoMet: boolean;
+    isRtoMet: boolean;
+    nonResurrectionEnforced: boolean;
+    resurrectedCount: number;
+  };
+  evidenceSanitized: Record<string, unknown>;
+}
+
+
 

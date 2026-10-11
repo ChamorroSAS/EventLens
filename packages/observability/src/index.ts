@@ -12,3 +12,4 @@ export * from './beta-cohort-window-service.js';
 export * from './postgres-backup-service.js';
 export * from './postgres-recovery-service.js';
 export * from './dr-validation-service.js';
+export * from './e2e-validator.js';
