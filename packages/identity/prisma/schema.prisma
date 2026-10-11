@@ -1,0 +1,70 @@
+datasource db {
+  provider = "postgresql"
+}
+
+model AdminPrincipal {
+  id                 String   @id @db.Uuid
+  identifier         String   @unique
+  status             String   @default("ACTIVE")
+  authRevision       BigInt   @default(1) @map("auth_revision")
+  provisionProcedure String   @map("provision_procedure")
+  provisionedBy      String   @map("provisioned_by")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@map("admin_principal")
+}
+
+model OperationalBootstrapState {
+  id         String    @id
+  isConsumed Boolean   @default(false) @map("is_consumed")
+  consumedAt DateTime? @map("consumed_at") @db.Timestamptz
+  consumedBy String?   @map("consumed_by")
+
+  @@map("operational_bootstrap_state")
+}
+
+model AdminAuditEvent {
+  id                String   @id @db.Uuid
+  procedure         String
+  actorId           String   @map("actor_id")
+  targetIdentifier  String   @map("target_identifier")
+  targetPrincipalId String?  @map("target_principal_id") @db.Uuid
+  result            String
+  details           String?
+  timestamp         DateTime @default(now()) @db.Timestamptz
+
+  @@map("admin_audit_event")
+}
+
+model AdminCredential {
+  id           String   @id @db.Uuid
+  principalId  String   @map("principal_id") @db.Uuid
+  purpose      String   @default("ADMIN_AUTHENTICATION")
+  secretDigest String   @map("secret_digest")
+  revision     BigInt   @default(1)
+  status       String   @default("ACTIVE")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@index([principalId, purpose, status])
+  @@map("admin_credential")
+}
+
+model AdminSession {
+  id               String    @id @db.Uuid
+  principalId      String    @map("principal_id") @db.Uuid
+  tokenDigest      String    @unique @map("token_digest")
+  csrfTokenDigest  String    @map("csrf_token_digest")
+  authTime         DateTime  @map("auth_time") @db.Timestamptz
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  expiresAt        DateTime  @map("expires_at") @db.Timestamptz
+  lastActiveAt     DateTime  @map("last_active_at") @db.Timestamptz
+  idleExpiresAt    DateTime  @map("idle_expires_at") @db.Timestamptz
+  revokedAt        DateTime? @map("revoked_at") @db.Timestamptz
+  revocationReason String?   @map("revocation_reason")
+  sessionWatermark BigInt    @default(1) @map("session_watermark")
+
+  @@index([principalId, revokedAt])
+  @@map("admin_session")
+}

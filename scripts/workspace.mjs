@@ -37,7 +37,7 @@ if (['up','down','logs'].includes(command)) {
   // Explicit dependency order; generated Prisma types stay inside infrastructure.
   node('scripts/database.mjs','generate');
   for (const name of ['job-queue','media-execution','media-inspection']) filter(name,'generate');
-  for (const name of ['database','job-queue','media-execution','media-acceptance','media-inspection','api']) filter(name,'build');
+  for (const name of ['database','job-queue','media-execution','media-acceptance','media-inspection','identity','api']) filter(name,'build');
   filter('api','openapi:export');
   node('scripts/api-client.mjs');
   filter('api-client','build');

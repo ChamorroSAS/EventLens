@@ -6,7 +6,9 @@ EL-EP-001
 
 ## Status
 
-READY
+DONE
+
+**CONFIRMED:** implementación aprobada; `REQUIREMENTS_READY: YES` y `READY_FOR_IMPLEMENTATION: YES` eran las puertas previas a ejecución. Se conservan la prioridad P0, el alcance y las dependencias históricas. Resultado y validación documentados al final del ticket.
 
 ## User story
 
@@ -94,3 +96,9 @@ GAP-EL-EP-001-02; ARCH-013; AQR-003; EL-EP-001; DEPENDENCIES.md (MOD-001 → MOD
 ## Gate vigente — 2026-10-08
 
 **REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES.** YES limitado a provisión operativa neutral. [Dictamen final](../sessions/2026-10-08-el-ep-001-ticket-remediation-review.md). READY es preparación de requisitos; se conservan predecesoras y gates aplicables.
+
+## Resultado de implementación — 2026-10-11
+
+**CONFIRMED:** implementación completada y validada de forma independiente contra PostgreSQL 16 real. Procedimiento de bootstrap inicial de un solo uso que crea exactamente un principal administrativo auditable y queda permanentemente deshabilitado; procedimiento de alta posterior autorizado y separado del bootstrap; prevención de autoelevación desde registro público; auditoría completa append-only con cero secretos en logs, repositorio y base de datos conforme a ARCH-013 y AQR-003.
+
+Paquete e interfaces: [identity](../../../packages/identity/README.md). La validación independiente ejecutó 18/18 pruebas (12 unitarias de elegibilidad y guardas + 6 de integración PostgreSQL 16 real para atomicidad, concurrencia, rollback y auditoría); resultados: [registro](../../../infra/validation/identity/evidence/result.json) y [pruebas](../../../infra/validation/identity/evidence/tests.json). No implementa autenticación ordinaria (EL-TK-044), grants de intervención (MOD-007), interfaces de usuario ni proveedores externos de identidad.

@@ -1,0 +1,18 @@
+{
+  "tickets": ["EL-TK-043", "EL-TK-044"],
+  "runId": "identity_auth_5e82109ab7d242699bbfe61b17d8481e",
+  "testedAt": "2026-10-11T05:58:24.000Z",
+  "result": "PASS",
+  "tests": 35,
+  "passed": 35,
+  "failed": 0,
+  "postgresql": "16 real isolated laboratory database",
+  "authContract": "TB-03 APPROVED ratificado",
+  "recovery": "Neutral operational authentication and session verification; PITR covered in EL-TK-046",
+  "gates": {
+    "MEDIA-001": "NOT_EVALUATED",
+    "CAP-001": "NOT_EVALUATED",
+    "DR-001": "NOT_EVALUATED",
+    "EXPORT-001": "NOT_EVALUATED"
+  }
+}
