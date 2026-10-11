@@ -30,3 +30,5 @@ packages/database/prisma/migration-manifest.json
 
 .DS_Store
 .pnpm-store/
+opencode/
+opencode.json
