@@ -1,4 +1,4 @@
-import type { OrganizerActorContext } from '@eventlens/identity';
+import type { OrganizerActorContext, AdminActorContext } from '@eventlens/identity';
 
 export type EventStatus =
   | 'DRAFT'
@@ -25,6 +25,9 @@ export interface EventRecord {
   readonly activatedAt: Date | null;
   readonly closedAt: Date | null;
   readonly purgeStartedAt: Date | null;
+  readonly suspendedAt: Date | null;
+  readonly suspensionReason: string | null;
+  readonly previousStatus: EventStatus | null;
   readonly validityDurationDays: number | null;
   readonly graceDays: number | null;
   readonly uploadsEnabled: boolean;
@@ -53,7 +56,9 @@ export type EventManagementErrorCode =
   | 'EVENT_NOT_IN_SCHEDULED'
   | 'EVENT_NOT_ACTIVE'
   | 'EVENT_NOT_CLOSED'
-  | 'EVENT_ALREADY_EXPIRED';
+  | 'EVENT_ALREADY_EXPIRED'
+  | 'EVENT_TERMINAL'
+  | 'SUSPENSION_REASON_REQUIRED';
 
 export class EventManagementError extends Error {
   constructor(
@@ -161,6 +166,20 @@ export interface AdvanceTemporalLifecycleResult {
   readonly outcome: TemporalAdvanceOutcome;
 }
 
+export interface SuspendEventCommand {
+  readonly actorContext: AdminActorContext;
+  readonly eventId: string;
+  readonly reason: string;
+  readonly idempotencyKey?: string;
+  readonly now?: Date;
+}
+
+export interface SuspendEventResult {
+  readonly event: EventRecord;
+  readonly previousStatus: EventStatus;
+  readonly outcome: 'SUSPENDED' | 'IDEMPOTENT_REPLAY';
+}
+
 export interface EventAuditRecord {
   readonly id: string;
   readonly procedure:
@@ -170,7 +189,8 @@ export interface EventAuditRecord {
     | 'EVENT_ACTIVATED'
     | 'EVENT_CLOSED'
     | 'EVENT_REOPENED'
-    | 'EVENT_TEMPORAL_ADVANCE';
+    | 'EVENT_TEMPORAL_ADVANCE'
+    | 'EVENT_SUSPENDED';
   readonly actorId: string;
   readonly targetIdentifier: string;
   readonly result:
@@ -191,6 +211,8 @@ export interface EventAuditRecord {
     | 'REJECTED_EVENT_NOT_ACTIVE'
     | 'REJECTED_EVENT_NOT_CLOSED'
     | 'REJECTED_EVENT_EXPIRED'
+    | 'REJECTED_EVENT_TERMINAL'
+    | 'REJECTED_REASON_REQUIRED'
     | 'IDEMPOTENT_REPLAY';
   readonly details?: string;
   readonly timestamp: Date;

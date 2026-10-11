@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { randomUUID } from 'node:crypto';
 import { createPrismaClient, PrismaTransactions } from '@eventlens/database';
-import type { OrganizerActorContext } from '@eventlens/identity';
+import type { OrganizerActorContext, AdminActorContext } from '@eventlens/identity';
 import {
   EventLifecycleService,
   EventManagementError,
@@ -40,6 +40,9 @@ describeIntegration('EventLifecycleService (Real PostgreSQL Integration Tests 鈥
         activated_at TIMESTAMPTZ,
         closed_at TIMESTAMPTZ,
         purge_started_at TIMESTAMPTZ,
+        suspended_at TIMESTAMPTZ,
+        suspension_reason TEXT,
+        previous_status TEXT,
         validity_duration_days INTEGER,
         grace_days INTEGER,
         uploads_enabled BOOLEAN NOT NULL DEFAULT false,
@@ -61,6 +64,9 @@ describeIntegration('EventLifecycleService (Real PostgreSQL Integration Tests 鈥
         ADD COLUMN IF NOT EXISTS activated_at TIMESTAMPTZ,
         ADD COLUMN IF NOT EXISTS closed_at TIMESTAMPTZ,
         ADD COLUMN IF NOT EXISTS purge_started_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS suspended_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS suspension_reason TEXT,
+        ADD COLUMN IF NOT EXISTS previous_status TEXT,
         ADD COLUMN IF NOT EXISTS validity_duration_days INTEGER,
         ADD COLUMN IF NOT EXISTS grace_days INTEGER;
 
@@ -112,6 +118,18 @@ describeIntegration('EventLifecycleService (Real PostgreSQL Integration Tests 鈥
     sessionId: randomUUID(),
     authTime: new Date(),
     credentialRevision: 1n,
+    sessionWatermark: 1n,
+    recoveryEpoch: 1n
+  };
+
+  const adminActor: AdminActorContext = {
+    actorType: 'ADMIN_HUMAN',
+    principalId: randomUUID(),
+    identifier: 'admin-secops@eventlens.internal',
+    sessionId: randomUUID(),
+    authTime: new Date(),
+    credentialRevision: 1n,
+    adminAuthRevision: 1n,
     sessionWatermark: 1n,
     recoveryEpoch: 1n
   };
@@ -593,5 +611,93 @@ describeIntegration('EventLifecycleService (Real PostgreSQL Integration Tests 鈥
     );
     expect(rows[0].status).toBe('PENDING_DELETION');
     expect(new Date(rows[0].purge_started_at).toISOString()).toBe(now.toISOString());
+  });
+
+  it('EL-TK-068: Suspende administrativamente un evento en PostgreSQL conservando previous_status y motivo', async () => {
+    const eventId = randomUUID();
+    const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+    const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+    const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+
+    await sql(
+      `INSERT INTO event (id, organizer_id, name, status, scheduled_at, expires_at, grace_ends_at, activated_at)
+       VALUES ($1, $2, $3, 'ACTIVE', $4, $5, $6, $4)`,
+      eventId,
+      ownerActor.accountId,
+      'Evento Para Suspender SQL',
+      scheduledAt,
+      expiresAt,
+      graceEndsAt
+    );
+
+    const result = await service.suspendEvent({
+      eventId,
+      actorContext: adminActor,
+      reason: 'Investigaci贸n por contenido prohibido',
+      idempotencyKey: 'suspend-key-1'
+    });
+
+    expect(result.previousStatus).toBe('ACTIVE');
+    expect(result.outcome).toBe('SUSPENDED');
+    expect(result.event.status).toBe('SUSPENDED');
+    expect(result.event.previousStatus).toBe('ACTIVE');
+    expect(result.event.suspensionReason).toBe('Investigaci贸n por contenido prohibido');
+    expect(result.event.suspendedAt).toBeInstanceOf(Date);
+
+    // Verificar en base de datos
+    const rows = await query<{ status: string; previous_status: string; suspension_reason: string; suspended_at: Date }>(
+      `SELECT status, previous_status, suspension_reason, suspended_at FROM event WHERE id = $1`,
+      eventId
+    );
+    expect(rows[0].status).toBe('SUSPENDED');
+    expect(rows[0].previous_status).toBe('ACTIVE');
+    expect(rows[0].suspension_reason).toBe('Investigaci贸n por contenido prohibido');
+    expect(rows[0].suspended_at).toBeTruthy();
+
+    // Idempotencia replay
+    const replay = await service.suspendEvent({
+      eventId,
+      actorContext: adminActor,
+      reason: 'Investigaci贸n por contenido prohibido',
+      idempotencyKey: 'suspend-key-1'
+    });
+    expect(replay.outcome).toBe('IDEMPOTENT_REPLAY');
+    expect(replay.event.status).toBe('SUSPENDED');
+    expect(replay.event.previousStatus).toBe('ACTIVE');
+
+    // Auditor铆a registrada (primera llamada SUCCESS, replay IDEMPOTENT_REPLAY)
+    const audits = await query<{ procedure: string; result: string; actor_id: string }>(
+      `SELECT procedure, result, actor_id FROM admin_audit_event WHERE target_identifier = $1 ORDER BY timestamp ASC`,
+      eventId
+    );
+    expect(audits).toHaveLength(2);
+    expect(audits[0].procedure).toBe('EVENT_SUSPENDED');
+    expect(audits[0].result).toBe('SUCCESS');
+    expect(audits[0].actor_id).toBe(adminActor.principalId);
+    expect(audits[1].procedure).toBe('EVENT_SUSPENDED');
+    expect(audits[1].result).toBe('IDEMPOTENT_REPLAY');
+    expect(audits[1].actor_id).toBe(adminActor.principalId);
+  });
+
+  it('EL-TK-068: Rechaza suspensi贸n en PostgreSQL si el evento es terminal (PENDING_DELETION)', async () => {
+    const eventId = randomUUID();
+    const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+
+    await sql(
+      `INSERT INTO event (id, organizer_id, name, status, scheduled_at)
+       VALUES ($1, $2, $3, 'PENDING_DELETION', $4)`,
+      eventId,
+      ownerActor.accountId,
+      'Evento Terminal SQL',
+      scheduledAt
+    );
+
+    await expect(
+      service.suspendEvent({
+        eventId,
+        actorContext: adminActor,
+        reason: 'Intento sobre terminal'
+      })
+    ).rejects.toThrow(EventManagementError);
   });
 });

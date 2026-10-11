@@ -20,6 +20,8 @@ export {
   type AdvanceTemporalLifecycleCommand,
   type AdvanceTemporalLifecycleResult,
   type TemporalAdvanceOutcome,
+  type SuspendEventCommand,
+  type SuspendEventResult,
   type EventAuditRecord,
   type EventAuditSink
 } from './contracts.js';

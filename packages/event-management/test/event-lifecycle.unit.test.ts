@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import type { SqlTransaction, TransactionRunner } from '@eventlens/database';
-import type { OrganizerActorContext } from '@eventlens/identity';
+import type { OrganizerActorContext, AdminActorContext } from '@eventlens/identity';
 import {
   EventLifecycleService
 } from '../src/event-lifecycle.js';
@@ -24,6 +24,9 @@ interface MockEvent {
   activated_at?: Date | null;
   closed_at?: Date | null;
   purge_started_at?: Date | null;
+  suspended_at?: Date | null;
+  suspension_reason?: string | null;
+  previous_status?: string | null;
   validity_duration_days: number | null;
   grace_days: number | null;
   uploads_enabled: boolean;
@@ -147,6 +150,27 @@ class InMemoryRunner implements TransactionRunner {
             return 1;
           }
         }
+        if (sql.includes('UPDATE event') && sql.includes('SET status = \'SUSPENDED\'')) {
+          const previousStatus = params[0] as string;
+          const suspensionReason = params[1] as string;
+          const suspendedAt = params[2] as Date;
+          const idempotencyKey = params[3] as string | null;
+          const payloadHash = params[4] as string | null;
+          const updatedAt = params[5] as Date;
+          const eventId = params[6] as string;
+
+          const existing = this.events.get(eventId);
+          if (existing) {
+            existing.status = 'SUSPENDED';
+            existing.previous_status = previousStatus;
+            existing.suspension_reason = suspensionReason;
+            existing.suspended_at = suspendedAt;
+            if (idempotencyKey) existing.idempotency_key = idempotencyKey;
+            if (payloadHash) existing.idempotency_payload_hash = payloadHash;
+            existing.updated_at = updatedAt;
+            return 1;
+          }
+        }
         return 0;
       }
     };
@@ -160,6 +184,18 @@ describe('EL-TK-063: EventLifecycleService (Unit Tests)', () => {
   let auditLogs: EventAuditRecord[];
   let auditSink: EventAuditSink;
   let service: EventLifecycleService;
+
+  const adminActor: AdminActorContext = {
+    actorType: 'ADMIN_HUMAN',
+    principalId: 'admin-principal-1',
+    identifier: 'admin@eventlens.local',
+    sessionId: 'admin-session-1',
+    authTime: new Date(),
+    credentialRevision: 1n,
+    adminAuthRevision: 1n,
+    sessionWatermark: 1n,
+    recoveryEpoch: 1n
+  };
 
   const ownerActor: OrganizerActorContext = {
     actorType: 'ORGANIZER_HUMAN',
@@ -1436,6 +1472,241 @@ describe('EL-TK-063: EventLifecycleService (Unit Tests)', () => {
 
       expect(result.outcome).toBe('NO_OP');
       expect(result.event.status).toBe('ACTIVE');
+    });
+  });
+
+  describe('EL-TK-068: EventLifecycleService.suspendEvent (Unit Tests)', () => {
+    const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+    const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+    const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+
+    it('Escenario 1: Administrador suspende evento ACTIVE con motivo; registra previous_status y preserva vigencia (DEC-078)', async () => {
+      const eventId = '11119999-aaaa-bbbb-cccc-111111111111';
+      const suspensionTime = new Date('2026-11-15T12:00:00.000Z');
+      const reason = 'Investigación preliminar de fraude y derechos';
+
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Para Suspender',
+        status: 'ACTIVE',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: null,
+        purge_started_at: null,
+        suspended_at: null,
+        suspension_reason: null,
+        previous_status: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      const result = await service.suspendEvent({
+        actorContext: adminActor,
+        eventId,
+        reason,
+        now: suspensionTime
+      });
+
+      expect(result.event.status).toBe('SUSPENDED');
+      expect(result.previousStatus).toBe('ACTIVE');
+      expect(result.event.previousStatus).toBe('ACTIVE');
+      expect(result.event.suspensionReason).toBe(reason);
+      expect(result.event.suspendedAt).toEqual(suspensionTime);
+      expect(result.event.expiresAt).toEqual(expiresAt);
+      expect(result.event.graceEndsAt).toEqual(graceEndsAt);
+      expect(result.outcome).toBe('SUSPENDED');
+
+      const inDb = eventsMap.get(eventId)!;
+      expect(inDb.status).toBe('SUSPENDED');
+      expect(inDb.previous_status).toBe('ACTIVE');
+      expect(inDb.suspension_reason).toBe(reason);
+      expect(inDb.suspended_at).toEqual(suspensionTime);
+      expect(inDb.expires_at).toEqual(expiresAt);
+
+      expect(auditLogs).toHaveLength(1);
+      expect(auditLogs[0].procedure).toBe('EVENT_SUSPENDED');
+      expect(auditLogs[0].result).toBe('SUCCESS');
+    });
+
+    it('Escenario 2: Rechaza suspender un evento en estado terminal PENDING_DELETION (EVENT_TERMINAL)', async () => {
+      const eventId = '22229999-aaaa-bbbb-cccc-222222222222';
+
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Terminal',
+        status: 'PENDING_DELETION',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: null,
+        purge_started_at: new Date(),
+        suspended_at: null,
+        suspension_reason: null,
+        previous_status: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: false,
+        guest_gallery_enabled: false,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      await expect(
+        service.suspendEvent({
+          actorContext: adminActor,
+          eventId,
+          reason: 'Intento de suspensión tardía'
+        })
+      ).rejects.toMatchObject({
+        code: 'EVENT_TERMINAL'
+      });
+    });
+
+    it('Rechaza la suspensión si el motivo está vacío o solo whitespace (SUSPENSION_REASON_REQUIRED)', async () => {
+      const eventId = '33339999-aaaa-bbbb-cccc-333333333333';
+
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Activo',
+        status: 'ACTIVE',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: null,
+        purge_started_at: null,
+        suspended_at: null,
+        suspension_reason: null,
+        previous_status: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      await expect(
+        service.suspendEvent({
+          actorContext: adminActor,
+          eventId,
+          reason: '   '
+        })
+      ).rejects.toMatchObject({
+        code: 'SUSPENSION_REASON_REQUIRED'
+      });
+    });
+
+    it('Rechaza la suspensión si el actor no es un administrador autorizado (UNAUTHORIZED)', async () => {
+      const eventId = '44449999-aaaa-bbbb-cccc-444444444444';
+
+      await expect(
+        service.suspendEvent({
+          actorContext: ownerActor as unknown as AdminActorContext,
+          eventId,
+          reason: 'Motivo desde organizador'
+        })
+      ).rejects.toMatchObject({
+        code: 'UNAUTHORIZED'
+      });
+    });
+
+    it('Permite replay limpio de suspensión con la misma clave y rechaza payload inconsistente', async () => {
+      const eventId = '55559999-aaaa-bbbb-cccc-555555555555';
+      const reason = 'Reporte de contenido ilícito';
+      const idempotencyKey = 'idem-suspend-1';
+
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Para Suspender Idempotente',
+        status: 'CLOSED',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: new Date('2026-11-10T00:00:00.000Z'),
+        purge_started_at: null,
+        suspended_at: null,
+        suspension_reason: null,
+        previous_status: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      const first = await service.suspendEvent({
+        actorContext: adminActor,
+        eventId,
+        reason,
+        idempotencyKey
+      });
+      expect(first.outcome).toBe('SUSPENDED');
+      expect(first.previousStatus).toBe('CLOSED');
+      expect(first.event.previousStatus).toBe('CLOSED');
+
+      // Replay
+      const second = await service.suspendEvent({
+        actorContext: adminActor,
+        eventId,
+        reason,
+        idempotencyKey
+      });
+      expect(second.outcome).toBe('IDEMPOTENT_REPLAY');
+      expect(second.previousStatus).toBe('CLOSED'); // Preserva el original
+
+      // Reutilizar clave con motivo diferente -> conflicto
+      await expect(
+        service.suspendEvent({
+          actorContext: adminActor,
+          eventId,
+          reason: 'Otro motivo diferente',
+          idempotencyKey
+        })
+      ).rejects.toMatchObject({
+        code: 'IDEMPOTENCY_CONFLICT'
+      });
     });
   });
 });

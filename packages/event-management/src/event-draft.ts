@@ -27,6 +27,9 @@ interface EventRow {
   activated_at?: Date | string | null;
   closed_at?: Date | string | null;
   purge_started_at?: Date | string | null;
+  suspended_at?: Date | string | null;
+  suspension_reason?: string | null;
+  previous_status?: string | null;
   validity_duration_days?: number | null;
   grace_days?: number | null;
   uploads_enabled: boolean;
@@ -54,6 +57,9 @@ function mapRowToRecord(row: EventRow): EventRecord {
     activatedAt: row.activated_at ? new Date(row.activated_at) : null,
     closedAt: row.closed_at ? new Date(row.closed_at) : null,
     purgeStartedAt: row.purge_started_at ? new Date(row.purge_started_at) : null,
+    suspendedAt: row.suspended_at ? new Date(row.suspended_at) : null,
+    suspensionReason: row.suspension_reason ?? null,
+    previousStatus: row.previous_status ? (row.previous_status as EventStatus) : null,
     validityDurationDays: row.validity_duration_days !== null && row.validity_duration_days !== undefined ? Number(row.validity_duration_days) : null,
     graceDays: row.grace_days !== null && row.grace_days !== undefined ? Number(row.grace_days) : null,
     uploadsEnabled: Boolean(row.uploads_enabled),
@@ -254,6 +260,9 @@ export class EventDraftService {
         activatedAt: null,
         closedAt: null,
         purgeStartedAt: null,
+        suspendedAt: null,
+        suspensionReason: null,
+        previousStatus: null,
         validityDurationDays: null,
         graceDays: null,
         uploadsEnabled,

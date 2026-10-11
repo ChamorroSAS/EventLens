@@ -16,6 +16,9 @@ model Event {
   activatedAt            DateTime? @map("activated_at") @db.Timestamptz
   closedAt               DateTime? @map("closed_at") @db.Timestamptz
   purgeStartedAt         DateTime? @map("purge_started_at") @db.Timestamptz
+  suspendedAt            DateTime? @map("suspended_at") @db.Timestamptz
+  suspensionReason       String?   @map("suspension_reason")
+  previousStatus         String?   @map("previous_status")
   validityDurationDays   Int?      @map("validity_duration_days")
   graceDays              Int?      @map("grace_days")
   uploadsEnabled         Boolean   @default(false) @map("uploads_enabled")

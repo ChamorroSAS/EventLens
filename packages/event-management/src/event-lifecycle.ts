@@ -13,6 +13,8 @@ import {
   type AdvanceTemporalLifecycleCommand,
   type AdvanceTemporalLifecycleResult,
   type TemporalAdvanceOutcome,
+  type SuspendEventCommand,
+  type SuspendEventResult,
   type EventAuditSink,
   type EventRecord,
   type EventStatus,
@@ -38,6 +40,9 @@ interface EventRow {
   activated_at?: Date | string | null;
   closed_at?: Date | string | null;
   purge_started_at?: Date | string | null;
+  suspended_at?: Date | string | null;
+  suspension_reason?: string | null;
+  previous_status?: string | null;
   validity_duration_days?: number | null;
   grace_days?: number | null;
   uploads_enabled: boolean;
@@ -65,6 +70,9 @@ function mapRowToRecord(row: EventRow): EventRecord {
     activatedAt: row.activated_at ? new Date(row.activated_at) : null,
     closedAt: row.closed_at ? new Date(row.closed_at) : null,
     purgeStartedAt: row.purge_started_at ? new Date(row.purge_started_at) : null,
+    suspendedAt: row.suspended_at ? new Date(row.suspended_at) : null,
+    suspensionReason: row.suspension_reason ?? null,
+    previousStatus: row.previous_status ? (row.previous_status as EventStatus) : null,
     validityDurationDays: row.validity_duration_days !== null && row.validity_duration_days !== undefined ? Number(row.validity_duration_days) : null,
     graceDays: row.grace_days !== null && row.grace_days !== undefined ? Number(row.grace_days) : null,
     uploadsEnabled: Boolean(row.uploads_enabled),
@@ -954,6 +962,177 @@ export class EventLifecycleService {
         event: mapRowToRecord(current),
         previousStatus,
         outcome: 'NO_OP'
+      };
+    });
+  }
+
+  /**
+   * Administratively suspends an event preserving its previous status and reason (EL-TK-068).
+   * - Authorized administrative actor only (AdminActorContext with ADMIN_HUMAN).
+   * - Reason is strictly mandatory (sanitized non-empty string).
+   * - Escenario 2: If event is in a terminal status (e.g. ARCHIVED or PENDING_DELETION),
+   *   suspension is rejected with EVENT_TERMINAL (409 Conflict).
+   * - If already SUSPENDED:
+   *   returns clean IDEMPOTENT_REPLAY if idempotencyKey matches;
+   *   does NOT overwrite the original previousStatus.
+   * - Non-terminal statuses (DRAFT, SCHEDULED, ACTIVE, CLOSED, GRACE_PERIOD):
+   *   transitions status to 'SUSPENDED',
+   *   stores previous_status = current.status,
+   *   stores suspension_reason = trimmedReason,
+   *   stores suspended_at = now.
+   * - DEC-078: Suspension does NOT pause validity or grace periods (expiresAt and graceEndsAt intact).
+   * - Audited via EVENT_SUSPENDED.
+   */
+  async suspendEvent(command: SuspendEventCommand): Promise<SuspendEventResult> {
+    const { actorContext, eventId, reason, idempotencyKey } = command;
+
+    if (!actorContext || actorContext.actorType !== 'ADMIN_HUMAN') {
+      throw new EventManagementError('UNAUTHORIZED', 'Authorized administrative actor context (ADMIN_HUMAN) is required');
+    }
+
+    if (!eventId || typeof eventId !== 'string') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Event ID is required');
+    }
+
+    const trimmedReason = typeof reason === 'string' ? reason.trim() : '';
+    if (!trimmedReason) {
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_SUSPENDED',
+        actorId: actorContext.principalId,
+        targetIdentifier: eventId,
+        result: 'REJECTED_REASON_REQUIRED',
+        details: 'Administrative suspension rejected: reason is mandatory',
+        timestamp: new Date()
+      });
+      throw new EventManagementError('SUSPENSION_REASON_REQUIRED', 'Suspension reason is mandatory');
+    }
+
+    const now = command.now ?? new Date();
+
+    const payloadHash = idempotencyKey
+      ? createHash('sha256')
+          .update(JSON.stringify({
+            eventId,
+            adminId: actorContext.principalId,
+            reason: trimmedReason,
+            action: 'SUSPEND_EVENT'
+          }))
+          .digest('hex')
+      : null;
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      // 1. Lock and retrieve current event record
+      const rows = await tx.query<EventRow>(
+        `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at,
+                utc_offset_minutes, expires_at, grace_ends_at, activated_at, closed_at,
+                purge_started_at, suspended_at, suspension_reason, previous_status,
+                validity_duration_days, grace_days, uploads_enabled, guest_gallery_enabled,
+                moderation_mode, pin_enabled, idempotency_key, idempotency_payload_hash,
+                created_at, updated_at
+         FROM event
+         WHERE id = $1
+         FOR UPDATE`,
+        eventId
+      );
+
+      if (rows.length === 0) {
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event '${eventId}' was not found`);
+      }
+
+      const current = rows[0];
+
+      // 2. Escenario 2: Reject if event is terminal (PENDING_DELETION or ARCHIVED)
+      if (current.status === 'PENDING_DELETION' || current.status === 'ARCHIVED') {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_SUSPENDED',
+          actorId: actorContext.principalId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_EVENT_TERMINAL',
+          details: `Event '${eventId}' is in terminal status '${current.status}'; cannot be suspended`,
+          timestamp: now
+        });
+        throw new EventManagementError(
+          'EVENT_TERMINAL',
+          `Cannot suspend an event in terminal status '${current.status}'`
+        );
+      }
+
+      // 3. If already SUSPENDED: handle replay or idempotency conflict
+      if (current.status === 'SUSPENDED') {
+        if (idempotencyKey && current.idempotency_key === idempotencyKey) {
+          if (current.idempotency_payload_hash !== payloadHash) {
+            throw new EventManagementError(
+              'IDEMPOTENCY_CONFLICT',
+              'Idempotency key has already been used with different parameters'
+            );
+          }
+        }
+
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_SUSPENDED',
+          actorId: actorContext.principalId,
+          targetIdentifier: eventId,
+          result: 'IDEMPOTENT_REPLAY',
+          details: `Idempotent replay: event '${eventId}' is already SUSPENDED`,
+          timestamp: now
+        });
+
+        return {
+          event: mapRowToRecord(current),
+          previousStatus: (current.previous_status as EventStatus) ?? 'ACTIVE',
+          outcome: 'IDEMPOTENT_REPLAY'
+        };
+      }
+
+      // 4. Transition to SUSPENDED, recording previous_status, suspension_reason, and suspended_at
+      const previousStatus = current.status as EventStatus;
+
+      await tx.execute(
+        `UPDATE event
+         SET status = 'SUSPENDED',
+             previous_status = $1,
+             suspension_reason = $2,
+             suspended_at = $3,
+             idempotency_key = COALESCE($4, idempotency_key),
+             idempotency_payload_hash = COALESCE($5, idempotency_payload_hash),
+             updated_at = $6
+         WHERE id = $7`,
+        previousStatus,
+        trimmedReason,
+        now,
+        idempotencyKey ?? null,
+        payloadHash,
+        now,
+        eventId
+      );
+
+      const updatedRecord: EventRecord = {
+        ...mapRowToRecord(current),
+        status: 'SUSPENDED',
+        previousStatus,
+        suspensionReason: trimmedReason,
+        suspendedAt: now,
+        updatedAt: now
+      };
+
+      // 5. Audit successful suspension
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_SUSPENDED',
+        actorId: actorContext.principalId,
+        targetIdentifier: eventId,
+        result: 'SUCCESS',
+        details: `Event '${eventId}' administratively suspended from '${previousStatus}'. Reason: ${trimmedReason}`,
+        timestamp: now
+      });
+
+      return {
+        event: updatedRecord,
+        previousStatus,
+        outcome: 'SUSPENDED'
       };
     });
   }
