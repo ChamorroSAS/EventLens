@@ -26,10 +26,27 @@
 - **Auditoría append-only**:
   - Emite eventos auditables en `admin_audit_event` para `PLAN_ASSIGNED`, `PLAN_OVERRIDE_APPLIED` y `PLAN_OVERRIDE_REMOVED` sin secretos.
 
+### 2. Reserva y liberación atómica de capacidad (EL-TK-136)
+- **Contrato de reserva consumido por uploads (`reserveCapacity`, DEC-080)**:
+  - Compromete bytes y cupos de archivo (`fileSlots`) de forma estrictamente atómica en PostgreSQL.
+  - Bloqueo y serialización a nivel de fila (`event_capacity_balance FOR UPDATE`) para evitar sobreasignación bajo alta concurrencia de cargas simultáneas.
+  - Valida límites de almacenamiento general (`storageBytes`), cupos máximos de archivos (`maxFiles`) y tamaños individuales (`maxPhotoBytes`, `maxVideoBytes`).
+  - Idempotencia por `(eventId, idempotencyKey)`: peticiones repetidas con idénticos parámetros retornan la reserva existente sin duplicar cupo ni descontar bytes extra (`isExisting: true`).
+- **Liberación idempotente de cancelaciones (`releaseReservation`)**:
+  - Reconcilia intentos cancelados o vencidos marcando la reserva como `RELEASED` con motivo auditable.
+  - Idempotencia garantizada: reintentos de liberación sobre reservas ya canceladas son inocuos y seguros (no generan doble liberación ni errores espurios).
+- **Consolidación de cuota (`commitReservation`)**:
+  - Transiciona reservas de `ACTIVE` a `COMMITTED` al confirmar archivos originales aceptados, transfiriendo atómicamente el saldo a consumo firme en `event_capacity_balance`.
+- **Preservación ante reducción de límites (DEC-080)**:
+  - Si un override posterior reduce la cuota por debajo del total en uso y reservas, las reservas preexistentes se respetan sin eliminación de archivos, bloqueando únicamente nuevas reservas hasta que vuelva a haber margen disponible.
+- **Consulta de capacidad (`getCapacitySnapshot`)**:
+  - Devuelve snapshot consistente con límites efectivos, consumo firme, reservas activas y balance disponible.
+
 ## Validation
 
 La implementación cuenta con una suite completa de pruebas:
-- Pruebas unitarias: `test/capacity-plan.unit.test.ts` (6 tests)
-- Pruebas de integración PostgreSQL 16 real: `test/capacity-plan.integration.test.ts` (3 tests)
+- Pruebas unitarias: `test/capacity-plan.unit.test.ts` (6 tests) y `test/capacity-reservation.unit.test.ts` (7 tests).
+- Pruebas de integración PostgreSQL 16 real: `test/capacity-plan.integration.test.ts` (3 tests) y `test/capacity-reservation.integration.test.ts` (3 tests).
+- Total: 19/19 tests pasando con 100% de éxito.
 
 Evidencia reproducible disponible en `infra/validation/capacity-management`.

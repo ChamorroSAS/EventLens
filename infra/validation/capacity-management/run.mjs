@@ -41,21 +41,23 @@ try {
   const capacityExports = await import('/workspace/packages/capacity-management/dist/index.js');
   if (
     typeof capacityExports.CapacityPlanService !== 'function' ||
+    typeof capacityExports.CapacityReservationService !== 'function' ||
     typeof capacityExports.CapacityError !== 'function'
   ) {
     throw Error('PUBLIC_IMPORT_FAILED');
   }
-  const exitCode = run(['--filter', '@eventlens/capacity-management', 'exec', 'vitest', 'run', '--reporter=default', '--reporter=json', '--outputFile=/evidence/tests.json'], true);
+  const exitCode = run(['--filter', '@eventlens/capacity-management', 'exec', 'vitest', 'run', '--no-file-parallelism', '--reporter=default', '--reporter=json', '--outputFile=/evidence/tests.json'], true);
   const tests = JSON.parse(readFileSync('/evidence/tests.json', 'utf8'));
   writeFileSync('/evidence/result.json', JSON.stringify({
-    ticket: 'EL-TK-134',
+    ticket: 'EL-TK-136',
+    precedingTicket: 'EL-TK-134',
     runId: database,
     testedAt: new Date().toISOString(),
     result: tests.success && exitCode === 0 ? 'PASS' : 'FAIL',
     tests: tests.numTotalTests,
     passed: tests.numPassedTests,
     postgresql: '16 real isolated laboratory database',
-    capacityPlan: 'BETA plan assignment and effective limits resolution with authorized overrides and DEC-102 guardrails',
+    capacityReservation: 'Atomic capacity reservation and idempotent release with concurrency serialization and overbooking prevention',
     gates: {
       'CAP-001': 'PASS',
       'MEDIA-001': 'NOT_EVALUATED',
