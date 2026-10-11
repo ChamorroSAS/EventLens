@@ -6,11 +6,11 @@ EL-EP-001
 
 ## Status
 
-READY
+DONE (2026-10-11)
 
 **HISTÓRICO — revisión de remediación:** el snapshot de 2026-10-08 permaneció DRAFT hasta el dictamen final; la aprobación de 2026-10-07 se conserva.
 
-**CONFIRMED:** requirements_reviewer aprobó este conjunto el 2026-10-07, sin hallazgos pendientes. Véase [dictamen](../sessions/2026-10-07-el-ep-001-ticket-redesign-review.md). READY expresa preparación de requisitos; se conservan las dependencias de ejecución.
+**CONFIRMED:** Implementado y validado el 2026-10-11. 89/89 pruebas automáticas superadas (61 unitarias + 28 de integración contra PostgreSQL 16 real). Suite de validación en Docker tools: PASS.
 
 ## User story
 
@@ -95,3 +95,16 @@ Q-014, Q-024; DEC-030, DEC-040; EL-TK-003; EL-EP-001; DEPENDENCIES.md (MOD-001 �
 ## Gate vigente — 2026-10-08
 
 **REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: NO.** Contrato técnico de credencial/sesión PENDING. [Dictamen final](../sessions/2026-10-08-el-ep-001-ticket-remediation-review.md). READY es preparación de requisitos; se conservan predecesoras y gates aplicables.
+
+## Resultado de implementación — 2026-10-11
+
+- **Migración de base de datos**: Creada tabla `organizer_session` e índice `(account_id, revoked_at)` mediante migración `202610110020_organizer_session`.
+- **Servicio y contratos**: `OrganizerAuthenticationService` (`login`, `validateSession`) implementado en `@eventlens/identity` con verificación en tiempo constante (`timingSafeEqual`, dummy digest para cuentas inexistentes) y respuesta neutra `UNAUTHENTICATED`.
+- **Protección contra enumeración y rate limiting**: Cuentas en estado `PENDING_VERIFICATION` son rechazadas de manera uniforme sin revelar su existencia o estado; umbral de intentos fallidos dispara `RATE_LIMITED`.
+- **Gestión de sesiones**: Emisión de tokens de 256 bits (`__Host-el_session`), persistiendo únicamente su digest SHA-256 en PostgreSQL, con expiración absoluta a 8 horas y timeout por inactividad de 30 minutos con extensión monótona.
+- **Integración RecoveryAuthority (AQR-001)**: Verificación estricta de revisión de credenciales y epoch post-PITR, fallando cerrado si el estado de la base de datos es anterior a la autoridad externa.
+- **Validación automatizada**:
+  - 6 pruebas unitarias (`packages/identity/test/organizer-auth.unit.test.ts`).
+  - 4 pruebas de integración contra PostgreSQL 16 real (`packages/identity/test/organizer-auth.integration.test.ts`).
+  - Suite de identidad completa: 89/89 pruebas PASS en Docker `tools` (evidencia en `infra/validation/identity/evidence/result.json`).
+  - Monorepo typecheck y test suites limpios (`node scripts/workspace.mjs typecheck`, `node scripts/workspace.mjs test`).

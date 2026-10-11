@@ -100,11 +100,28 @@
 - **Auditoría append-only sin secretos**:
   - Emite `ORGANIZER_EMAIL_VERIFIED_AND_ACTIVATED` en `admin_audit_event` registrando únicamente hashes y metadatos no sensibles.
 
+### 7. Autenticación de organizador verificado y emisión de sesión (EL-TK-013)
+- **Verificación segura en tiempo constante y no enumeración**:
+  - Verificación mediante `computeCredentialDigest('ORGANIZER_AUTHENTICATION', accountId, password)` con SHA-256 y comparación en tiempo constante con `timingSafeEqual`.
+  - Cálculo dummy en tiempo constante para cuentas no existentes para mitigar ataques de temporización.
+  - Salida uniforme neutra `AuthenticationError('UNAUTHENTICATED')` tanto para credenciales incorrectas, cuentas inexistentes o cuentas en estado `PENDING_VERIFICATION`, evitando enumeración de organizadores.
+- **Emisión de sesión y cookies seguras**:
+  - Emite tokens de sesión y CSRF de 256 bits (`randomBytes(32)`).
+  - Persistencia segura: la base de datos almacena únicamente digests SHA-256 (`token_digest`, `csrf_token_digest`) en `organizer_session`.
+  - Cookie segura: `__Host-el_session`, con directivas `HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/`.
+- **Control de expiración e inactividad**:
+  - Expiración absoluta a las 8 horas y timeout por inactividad (idle) a los 30 minutos.
+  - Validación de sesión actualiza monótonamente la inactividad sin exceder la expiración absoluta.
+- **Rate limiting neutral**:
+  - Umbral de intentos fallidos repetidos que bloquea solicitudes con `AuthenticationError('RATE_LIMITED')` de forma neutral sin filtrar la existencia de la cuenta.
+- **Integración con RecoveryAuthority (AQR-001, EL-TK-046)**:
+  - Falla cerrado si la revisión de credenciales es anterior a la reportada por RecoveryAuthority tras un PITR.
+
 ## Validation
 
-La implementación cuenta con una suite completa de 79 pruebas automatizadas (55 unitarias + 24 de integración contra PostgreSQL 16 real):
-- Pruebas unitarias: `test/provisioning.unit.test.ts` (12), `test/authentication.unit.test.ts` (13), `test/recovery.unit.test.ts` (11), `test/invitation.unit.test.ts` (6), `test/registration.unit.test.ts` (7), `test/verification.unit.test.ts` (6)
-- Pruebas de integración PostgreSQL 16: `test/provisioning.integration.test.ts` (6), `test/authentication.integration.test.ts` (4), `test/recovery.integration.test.ts` (3), `test/invitation.integration.test.ts` (4), `test/registration.integration.test.ts` (3), `test/verification.integration.test.ts` (4)
+La implementación cuenta con una suite completa de 89 pruebas automatizadas (61 unitarias + 28 de integración contra PostgreSQL 16 real):
+- Pruebas unitarias: `test/provisioning.unit.test.ts` (12), `test/authentication.unit.test.ts` (13), `test/recovery.unit.test.ts` (11), `test/invitation.unit.test.ts` (6), `test/registration.unit.test.ts` (7), `test/verification.unit.test.ts` (6), `test/organizer-auth.unit.test.ts` (6)
+- Pruebas de integración PostgreSQL 16: `test/provisioning.integration.test.ts` (6), `test/authentication.integration.test.ts` (4), `test/recovery.integration.test.ts` (3), `test/invitation.integration.test.ts` (4), `test/registration.integration.test.ts` (3), `test/verification.integration.test.ts` (4), `test/organizer-auth.integration.test.ts` (4)
 
 Evidencia de validación reproducible registrada en [infra/validation/identity](../../infra/validation/identity/README.md).
 
