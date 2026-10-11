@@ -182,7 +182,7 @@ Omit `-StatusOnly` to run the entire media-inspection suite (all 18 test files).
 
 ### EL-TK-053 media status and capabilities query final validation
 
-The focused media status suite passed **15/15 tests** (7 PostgreSQL 16 integration tests and 8 unit tests). The combined media-inspection regression passed **331/331 tests** across 18 test files. Typecheck, build, and migration `202610110014_media_status_query` application passed.
+The focused media status suite passed **15/15 tests** (7 PostgreSQL 16 integration tests and 8 unit tests). The combined media-inspection regression passed **331/331 tests** across 18 test files. Typecheck, build, and migration `202610110016_media_status_query` application passed.
 
 Coverage includes:
 1. Retrieval of media lifecycle status and observable sanitized progress (`phase`, `attempt`) without exposing admin error messages, stack traces, storage paths, credentials or execution tokens.
