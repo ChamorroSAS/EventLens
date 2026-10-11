@@ -58,7 +58,7 @@
 | EL-TK-020 | Crear un borrador de evento | EL-EP-002 | DONE | P0 | EL-TK-013 | [EL-TK-020](tickets/EL-TK-020.md) |
 | EL-TK-021 | Cambiar el nombre de un borrador | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-021](tickets/EL-TK-021.md) |
 | EL-TK-022 | Definir la bienvenida de un borrador | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-022](tickets/EL-TK-022.md) |
-| EL-TK-023 | Definir la fecha y hora local de un borrador | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-023](tickets/EL-TK-023.md) |
+| EL-TK-023 | Definir la fecha y hora local de un borrador | EL-EP-002 | DONE | P0 | EL-TK-020 | [EL-TK-023](tickets/EL-TK-023.md) |
 | EL-TK-024 | Cambiar la zona horaria de un evento preparado | EL-EP-002 | READY | P0 | EL-TK-020, EL-TK-023 | [EL-TK-024](tickets/EL-TK-024.md) |
 | EL-TK-025 | Corregir la zona horaria de un evento que alcanzó ACTIVE | EL-EP-002 | READY | P0 | EL-TK-020, EL-TK-023, EL-TK-044 | [EL-TK-025](tickets/EL-TK-025.md) |
 | EL-TK-027 | Establecer el PIN inicial de un borrador | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-027](tickets/EL-TK-027.md) |
