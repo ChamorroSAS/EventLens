@@ -44,7 +44,7 @@ Baseline Docker/PG/MinIO/JobQueue y puertos de infraestructura.
 
 ## Dependencias de tickets
 - **depends_on:** ninguna predecesora funcional dura
-- **blocks:** EL-TK-169, EL-TK-170, EL-TK-176
+- **blocks:** EL-TK-169, EL-TK-170, EL-TK-176, EL-TK-184; contrato de telemetría para EL-TK-177
 
 ## Pruebas requeridas
 Health degradado, sanitización, cardinalidad y comportamiento con collector caído.

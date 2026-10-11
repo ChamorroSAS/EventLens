@@ -12,38 +12,38 @@ READY
 **Como** responsable de producto, **quiero** clasificar la evaluación con evidencia completa, **para** decidir continuar, corregir, extender o detener sin ocultar riesgos críticos.
 
 ## Alcance funcional
-Aplicar clasificación PASS, PASS_WITH_ACTIONS, EXTEND_BETA o FAIL_CRITICAL usando métricas, muestra y evidencia de seguridad/recuperación.
+Congelar el snapshot inmutable de evidencia (`BetaEvidenceSnapshot`: identifica `snapshot_id`, `frozen_at`, métricas consolidadas de 178..181 y hechos/incidentes operacionales de EL-EP-014) y aplicar sobre él la clasificación formal PASS, PASS_WITH_ACTIONS, EXTEND_BETA o FAIL_CRITICAL con prevalencia absoluta de incidentes críticos de seguridad o pérdida sistemática de datos (DEC-056, DEC-057).
 
 ## Fuera de alcance
-Decidir precio/lanzamiento automáticamente o convertir umbrales en contrato comercial.
+Decidir precio/lanzamiento comercial automáticamente o convertir umbrales en contrato vinculante.
 
 ## Criterios de aceptación
 ### Escenario 1
-**Dado** métricas cumplen y no hay crítico, **cuando** se clasifica, **entonces** puede resultar PASS con evidencia.
+**Dado** la cohorte Beta concluye su periodo, **cuando** se inicia la clasificación, **entonces** se genera y congela un `BetaEvidenceSnapshot` inmutable referenciable por identificador y hash.
 
 ### Escenario 2
-**Dado** hay objetivos cercanos/no alcanzados pero riesgo controlado, **cuando** se evalúa, **entonces** puede quedar PASS_WITH_ACTIONS según decisión documentada.
+**Dado** métricas del snapshot cumplen objetivos y no hay incidentes críticos de seguridad/recuperación en EL-EP-014, **cuando** se clasifica, **entonces** resulta PASS con evidencia reproducible.
 
 ### Escenario 3
-**Dado** existe incidente grave de seguridad o pérdida sistemática, **cuando** se clasifica, **entonces** FAIL_CRITICAL prevalece aunque promedios sean favorables.
+**Dado** existen incidentes graves de seguridad, pérdida sistemática de datos o fallo en el gate DR-001 de EL-EP-014, **cuando** se clasifica, **entonces** resulta determinísticamente FAIL_CRITICAL aunque los promedios numéricos sean favorables.
 
 ## Reglas de negocio
-Seguridad grave/pérdida sistemática prevalece. No inventar regla automática para 'cerca'; requiere juicio documentado.
+Seguridad grave/pérdida sistemática prevalece (DEC-056). La clasificación se evalúa estrictamente sobre el `BetaEvidenceSnapshot` congelado para asegurar reproducibilidad.
 
 ## Validaciones y permisos
 Responsable autorizado.
 
 ## Casos de error y estados vacíos
-Muestra insuficiente, evidencia contradictoria, gate de recovery no evaluado y datos faltantes.
+Muestra insuficiente, evidencia contradictoria, gate de recovery no evaluado, snapshot corrupto o datos faltantes.
 
 ## Datos / contratos afectados
-BetaClassification, evidence refs, actions/gaps, rationale.
+BetaEvidenceSnapshot (snapshot_id, frozen_at, metrics, incidents, sample_counts), BetaClassification (classification, rationale, evidence_snapshot_ref).
 
 ## Dependencias técnicas y funcionales
-EL-TK-178..181 y evidencia EL-EP-014.
+EL-TK-178..181 y evidencia operacional/incidentes de EL-EP-014 (EL-TK-174, EL-TK-176).
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-178, EL-TK-179, EL-TK-180, EL-TK-181; contrato EL-EP-014
+- **depends_on:** EL-TK-178, EL-TK-179, EL-TK-180, EL-TK-181; evidencia operacional EL-EP-014 (EL-TK-174, EL-TK-176)
 - **blocks:** EL-TK-183
 
 ## Pruebas requeridas

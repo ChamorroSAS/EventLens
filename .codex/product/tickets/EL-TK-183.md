@@ -12,35 +12,35 @@ READY
 **Como** responsable de producto, **quiero** generar un informe con muestra, métricas, incidentes y clasificación, **para** tomar una decisión sustentada y repetir el análisis si cambian datos autorizados.
 
 ## Alcance funcional
-Construir informe reproducible con periodo, cobertura, numeradores/denominadores, objetivos, resultados, incidentes relevantes, clasificación, acciones y limitaciones.
+Construir el informe final reproducible `BetaEvaluationReport` consumiendo el `BetaEvidenceSnapshot` inmutable y la clasificación generada en EL-TK-182, detallando periodo, cobertura real, numeradores/denominadores, comparación contra objetivos, incidentes operacionales, clasificación oficial, acciones correctivas y limitaciones declaradas (DEC-057).
 
 ## Fuera de alcance
-Dashboard producto, datos personales detallados, marketing o go-live automático.
+Dashboard de producto, datos personales detallados, marketing o decisión automática de lanzamiento comercial.
 
 ## Criterios de aceptación
 ### Escenario 1
-**Dado** evaluación tiene evidencia suficiente, **cuando** se genera, **entonces** incluye todas las métricas/objetivos y clasificación.
+**Dado** un `BetaEvidenceSnapshot` y una clasificación de EL-TK-182, **cuando** se genera el informe, **entonces** consolida todas las métricas, cobertura y clasificación sin discordancias.
 
 ### Escenario 2
-**Dado** hay muestra insuficiente o gaps, **cuando** se genera, **entonces** los declara explícitamente.
+**Dado** existen limitaciones de muestra o gaps documentados, **cuando** se genera el informe, **entonces** los declara explícitamente sin ocultarlos tras promedios agregados.
 
 ### Escenario 3
-**Dado** se vuelve a generar con mismo snapshot, **cuando** se ejecuta, **entonces** produce resultados consistentes.
+**Dado** se vuelve a ejecutar la generación sobre el mismo `BetaEvidenceSnapshot`, **cuando** se procesa, **entonces** produce un informe byte-a-byte idéntico y reproducible con el mismo identificador de evidencia.
 
 ## Reglas de negocio
-Críticos no pueden quedar ocultos por agregados. Informe separa objetivos de garantías.
+Críticos no pueden quedar ocultos por agregados (DEC-056). El informe consume estrictamente el `BetaEvidenceSnapshot` inmutable congelado por EL-TK-182. Separa objetivos de evaluación de garantías comerciales.
 
 ## Validaciones y permisos
 Producto/operación autorizados; distribución controlada.
 
 ## Casos de error y estados vacíos
-Snapshot incompleto, métrica no reproducible, referencia de evidencia perdida y fallo de generación.
+Snapshot incompleto, referencia de evidencia inválida, discrepancia entre snapshot y clasificación, fallo de renderizado.
 
 ## Datos / contratos afectados
-BetaEvaluationReport, immutable evidence snapshot/reference.
+BetaEvaluationReport, evidence snapshot consumption contract.
 
 ## Dependencias técnicas y funcionales
-EL-TK-177..182.
+EL-TK-177..182 (especialmente el snapshot inmutable y clasificación de EL-TK-182).
 
 ## Dependencias de tickets
 - **depends_on:** EL-TK-177, EL-TK-178, EL-TK-179, EL-TK-180, EL-TK-181, EL-TK-182

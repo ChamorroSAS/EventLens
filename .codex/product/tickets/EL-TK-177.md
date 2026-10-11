@@ -37,13 +37,13 @@ Solo producto/operación autorizados acceden a evidencia detallada; reportes fin
 Denominador cero, dato incompleto, doble conteo, evento de prueba interna y reloj inválido.
 
 ## Datos / contratos afectados
-BetaMetricFact, MetricAggregate, denominator policy, cohort/period.
+BetaMetricFact, MetricAggregate, denominator policy, cohort/period; BetaEvaluationCohort con discriminador determinista cohort_inclusion (ELIGIBLE_REAL | EXCLUDED_INTERNAL_TEST | EXCLUDED_OUT_OF_WINDOW).
 
 ## Dependencias técnicas y funcionales
-Consume señales existentes de cargas/proceso/descarga/soporte y observabilidad EL-EP-014.
+Consume señales existentes de cargas/proceso/descarga/soporte y contrato de telemetría/métricas EL-TK-168 (dejando la evidencia operacional completa de EL-EP-014 para la clasificación EL-TK-182/183).
 
 ## Dependencias de tickets
-- **depends_on:** contratos de dominios propietarios; EL-EP-014
+- **depends_on:** contratos de dominios propietarios; contrato de telemetría EL-TK-168
 - **blocks:** EL-TK-178, EL-TK-179, EL-TK-180, EL-TK-181, EL-TK-182, EL-TK-183
 
 ## Pruebas requeridas

@@ -4,7 +4,7 @@
 
 READY
 
-**RECOMMENDED:** frontera, descomposición y prioridad propuestas por product_planner. **CONFIRMED:** reglas atribuidas al discovery en Q-014, Q-021; DEC-019, DEC-034, DEC-059. READY expresa DoR del resultado, no finalización de predecesoras; NOT_READY requiere cerrar preguntas locales antes de tickets.
+**CONFIRMED — 2026-10-10:** REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el alcance propio de auditoría mínima y sanitizada, consulta, telemetría/health neutrales, alertas de colas/infra, backups diarios con PITR (RPO≤1h/RTO≤4h), verificación periódica de restore con preservación de tombstones, redundancia/recuperación de ObjectStorage, incidentes, retención/rotación (EL-TK-184) y visor contextual en consola administrativa (AuditLogViewer/Detail en EL-TK-175, UI_REQUIRED: YES, READY_FOR_FRONTEND_PLANNING: YES). Proveedores de observabilidad y storage definitivo permanecen DEFERRED bajo gate operacional DR-001. [Dictamen](../sessions/2026-10-10-el-tk-166-183-ticket-review.md).
 
 ## Module
 
@@ -111,7 +111,7 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
-- 2026-10-10: requirements_reviewer y ui_designer aprueban EL-TK-166..176 como READY para auditoría mínima, consulta, telemetría/health, alertas, backups/PITR, recovery, incidentes, UI de auditoría (AuditLogViewer/Detail en consola) y validación integrada. REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES.
+- 2026-10-10: requirements_reviewer y ui_designer aprueban EL-TK-166..176 y EL-TK-184 como READY para auditoría mínima, consulta, telemetría/health, alertas, backups/PITR, recovery con redundancia de ObjectStorage, incidentes, retención de auditoría y rotación de logs (EL-TK-184), UI de auditoría en consola y validación integrada. REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES.
 
 - 2026-10-10: ticket_writer crea EL-TK-166..176 como DRAFT para auditoría mínima, consulta, telemetría/health, alertas, backups/PITR, recovery, incidentes, UI de auditoría y validación integrada. Pendientes de requirements_reviewer; sin implementación.
 

@@ -44,7 +44,7 @@ Contrato transversal consumido por acciones de cuenta, lifecycle, acceso, modera
 
 ## Dependencias de tickets
 - **depends_on:** ninguna predecesora funcional dura
-- **blocks:** EL-TK-167, EL-TK-173, EL-TK-175, EL-TK-176
+- **blocks:** EL-TK-167, EL-TK-173, EL-TK-175, EL-TK-176, EL-TK-184
 
 ## Pruebas requeridas
 Persistencia PostgreSQL, sanitización, actor sistema/humano, fallos y límites de payload.

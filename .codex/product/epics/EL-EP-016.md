@@ -4,7 +4,7 @@
 
 READY
 
-**RECOMMENDED:** frontera, descomposición y prioridad propuestas por product_planner. **CONFIRMED:** reglas atribuidas al discovery en Q-028; DEC-050 a DEC-057. READY expresa DoR del resultado, no finalización de predecesoras; NOT_READY requiere cerrar preguntas locales antes de tickets.
+**CONFIRMED — 2026-10-10:** REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES (UI_REQUIRED: NO, UX_READINESS: NOT_REQUIRED conforme a ui-mvp-epic-review.md#el-ep-016). Alcance de contratos de métricas agregadas y minimizadas de la Beta, confiabilidad de cargas y procesamiento, soporte funcional e incidentes, descargas, participación indicativa, cohorte real vs pruebas internas, snapshot inmutable y reporte final reproducible. [Dictamen](../sessions/2026-10-10-el-tk-166-183-ticket-review.md).
 
 ## Module
 

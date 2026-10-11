@@ -37,13 +37,13 @@ Datos sintéticos, operación/admin autorizados.
 Telemetry drop, logging failure, restore failure, partial UI y permiso.
 
 ## Datos / contratos afectados
-EL-TK-166..175.
+EL-TK-166..175, EL-TK-184.
 
 ## Dependencias técnicas y funcionales
 API/DB/JobQueue/storage/scheduler/UI y laboratorio de recovery.
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-166, EL-TK-167, EL-TK-168, EL-TK-169, EL-TK-170, EL-TK-171, EL-TK-172, EL-TK-173, EL-TK-174, EL-TK-175
+- **depends_on:** EL-TK-166, EL-TK-167, EL-TK-168, EL-TK-169, EL-TK-170, EL-TK-171, EL-TK-172, EL-TK-173, EL-TK-174, EL-TK-175, EL-TK-184
 - **blocks:** EL-EP-016 evaluación Beta; validación integrada EL-EP-014
 
 ## Pruebas requeridas

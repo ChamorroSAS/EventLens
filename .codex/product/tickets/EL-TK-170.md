@@ -43,7 +43,7 @@ InfrastructureAlert, availability measurement, component health.
 EL-TK-168; baseline EL-TD-008.
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-168
+- **depends_on:** EL-TK-168, EL-TK-184
 - **blocks:** EL-TK-173, EL-TK-174, EL-TK-176
 
 ## Pruebas requeridas

@@ -12,38 +12,38 @@ READY
 **Como** equipo de producto, **quiero** calcular eventos sin soporte funcional y organizadores que descargan contenido, **para** evaluar autonomía y recuperación de valor.
 
 ## Alcance funcional
-Medir proporción de eventos sin soporte funcional y proporción de organizadores con contenido que realizan al menos una descarga elegible.
+Medir proporción de eventos sin soporte funcional (identificado de forma reproducible a través de incidentes operacionales de EL-TK-173 o intervenciones administrativas de EL-EP-012 con tipificación `category: FUNCTIONAL`, excluyendo consultas comerciales o dudas no técnicas) y proporción de organizadores con contenido que realizan al menos una descarga elegible de recuerdos.
 
 ## Fuera de alcance
-Medir soporte comercial/no técnico como fallo o exigir descarga a eventos sin contenido.
+Medir soporte comercial/no técnico como fallo, crear un módulo completo de ticketing/helpdesk, o exigir descarga a eventos sin contenido.
 
 ## Criterios de aceptación
 ### Escenario 1
-**Dado** evento no requiere soporte funcional, **cuando** se agrega, **entonces** cuenta favorablemente en la métrica.
+**Dado** evento no registra incidentes con categoría `FUNCTIONAL`, **cuando** se agrega, **entonces** se computa determinísticamente como evento sin soporte funcional.
 
 ### Escenario 2
-**Dado** organizador tiene contenido y descarga, **cuando** se agrega, **entonces** cuenta como recuperación de recuerdos.
+**Dado** evento registra consultas comerciales o dudas de configuración no catalogadas como falla funcional del sistema, **cuando** se agrega, **entonces** se excluye de la penalización de soporte funcional.
 
 ### Escenario 3
-**Dado** organizador no tiene contenido, **cuando** se calcula denominador de descarga, **entonces** se excluye.
+**Dado** organizador tiene contenido y descarga, **cuando** se agrega, **entonces** cuenta como recuperación de recuerdos; si no tiene contenido, se excluye del denominador.
 
 ## Reglas de negocio
-Objetivos: ≥80% eventos sin soporte funcional; ≥70% organizadores con contenido descargan.
+Objetivos: ≥80% eventos sin soporte funcional; ≥70% organizadores con contenido descargan (DEC-054, DEC-055). Clasificación de soporte exige tipificación explícita `category: FUNCTIONAL | COMMERCIAL_OR_NON_TECHNICAL`.
 
 ## Validaciones y permisos
 Producto/operación autorizados.
 
 ## Casos de error y estados vacíos
-Clasificación soporte ambigua, evento duplicado, contenido inexistente y descarga anulada/inválida.
+Clasificación soporte ambigua (se clasifica como no funcional por defecto si no hay evidencia), evento duplicado, contenido inexistente y descarga anulada/inválida.
 
 ## Datos / contratos afectados
-SupportMetric, RetrievalMetric, eligibility/denominator rules.
+SupportMetric (required_functional_support: boolean, incident_refs), RetrievalMetric, eligibility/denominator rules.
 
 ## Dependencias técnicas y funcionales
-EL-TK-177; señales EL-EP-010/012.
+EL-TK-177; contratos EL-EP-010/012 e incidentes operacionales EL-TK-173.
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-177; contratos EL-EP-010/012
+- **depends_on:** EL-TK-177; contratos EL-EP-010/012, EL-TK-173
 - **blocks:** EL-TK-182, EL-TK-183
 
 ## Pruebas requeridas

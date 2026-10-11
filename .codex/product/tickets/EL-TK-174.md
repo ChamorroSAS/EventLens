@@ -12,10 +12,10 @@ READY
 **Como** equipo operativo, **quiero** validar recuperación y señales críticas en conjunto, **para** evitar falsa confianza antes de la Beta.
 
 ## Alcance funcional
-Ejecutar pruebas integradas de backup/restore, DB/storage/scheduler, fallo de backup y alertamiento, documentando evidencia y gaps.
+Ejecutar pruebas integradas de backup/restore de PostgreSQL y validación de redundancia/recuperación de ObjectStorage (DEC-062, DEC-063), consistencia DB/storage/scheduler, fallo de backup/purga y alertamiento, documentando evidencia y gaps.
 
 ## Fuera de alcance
-Certificar todos los proveedores o convertir objetivos en SLA.
+Certificar todos los proveedores de nube, prescribir tecnología no aprobada o convertir objetivos en SLA.
 
 ## Criterios de aceptación
 ### Escenario 1
@@ -27,8 +27,11 @@ Certificar todos los proveedores o convertir objetivos en SLA.
 ### Escenario 3
 **Dado** se pierde componente crítico, **cuando** se simula, **entonces** alertas llegan sin exponer secretos.
 
+### Escenario 4
+**Dado** se restaura la base de datos a un punto PITR, **cuando** se verifica el estado de ObjectStorage multimedia, **entonces** se valida la consistencia referencial mediante RecoveryAuthority y reconciliación sin desincronización de objetos, demostrando que la redundancia protege los originales y registrando evidencia para DR-001 sin prescribir un proveedor no adoptado.
+
 ## Reglas de negocio
-PASS requiere evidencia reproducible; un objetivo incumplido queda explícito.
+PASS requiere evidencia reproducible; un objetivo incumplido queda explícito. Media cuenta con redundancia y recuperación propia (DEC-062).
 
 ## Validaciones y permisos
 Entorno controlado y operación autorizada.
