@@ -4,9 +4,14 @@
 EL-EP-016
 
 ## Status
-READY
+DONE
 
-**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Contrato transversal de métricas agregadas y minimizadas para la Beta (Q-028; DEC-050..057). UI_REQUIRED: NO (ui-mvp-epic-review.md#el-ep-016). REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES.
+**IMPLEMENTED — 2026-10-11:** Implementado el contrato de métricas agregadas de la Beta (`BetaMetricFact`, `MetricAggregate`, `BetaEvaluationSummary`, `BetaMetricsAggregator`) en `@eventlens/observability` conforme a DEC-050..057 y Q-028:
+- Denominadores explícitos con exclusión formal de cancelaciones voluntarias en cargas válidas (`VALID_UPLOADS`), preservando la precisión del gate del 95%.
+- Aislamiento de eventos sin contenido (`hasContent: false`), previniendo la contaminación de denominadores en soporte funcional (`EVENTS_WITHOUT_FUNCTIONAL_SUPPORT`) y descargas de organizadores (`ORGANIZER_CONTENT_DOWNLOADS`).
+- Discriminador determinista de cohorte `CohortInclusion` (`ELIGIBLE_REAL`, `EXCLUDED_INTERNAL_TEST`, `EXCLUDED_OUT_OF_WINDOW`), asegurando que las pruebas internas nunca afecten la evaluación de la cohorte real.
+- Métricas con numerador, denominador, tasa/percentiles (p50/p95 para fotos/videos), periodo explícito y verificación de gates de evaluación objetivos (no SLA).
+- Suite de pruebas unitarias verificada: `beta-metrics.unit.test.ts` (6/6). Suite de observability en 66/66 pruebas verdes.
 
 ## User story
 **Como** responsable de producto y operación, **quiero** contar eventos, sesiones, cargas, procesamiento, descargas y soporte con denominadores explícitos, **para** evaluar la Beta con métricas reproducibles y minimizadas.

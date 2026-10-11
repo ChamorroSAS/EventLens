@@ -208,7 +208,7 @@
 | EL-TK-175 | Integrar visor de auditoría contextual en la consola administrativa | EL-EP-014 | READY | P0 | 167; contrato EL-EP-012 | [EL-TK-175](tickets/EL-TK-175.md) |
 | EL-TK-176 | Validar auditoría, observabilidad y recuperación de extremo a extremo | EL-EP-014 | READY | P0 | 166..175, 184 | [EL-TK-176](tickets/EL-TK-176.md) |
 | EL-TK-184 | Aplicar retención de auditoría y rotación de logs técnicos | EL-EP-014 | DONE | P0 | 166, 168 | [EL-TK-184](tickets/EL-TK-184.md) |
-| EL-TK-177 | Definir el contrato de métricas agregadas de la Beta | EL-EP-016 | READY | P1 | contratos de dominios propietarios; telemetría 168 | [EL-TK-177](tickets/EL-TK-177.md) |
+| EL-TK-177 | Definir el contrato de métricas agregadas de la Beta | EL-EP-016 | DONE | P1 | contratos de dominios propietarios; telemetría 168 | [EL-TK-177](tickets/EL-TK-177.md) |
 | EL-TK-178 | Medir confiabilidad de cargas y procesamiento multimedia | EL-EP-016 | READY | P1 | 177; contratos EL-EP-005/006 | [EL-TK-178](tickets/EL-TK-178.md) |
 | EL-TK-179 | Medir soporte funcional y recuperación de recuerdos | EL-EP-016 | READY | P1 | 177; contratos EL-EP-010/012, 173 | [EL-TK-179](tickets/EL-TK-179.md) |
 | EL-TK-180 | Medir participación indicativa por evento | EL-EP-016 | READY | P1 | 177; contrato EL-EP-004 | [EL-TK-180](tickets/EL-TK-180.md) |

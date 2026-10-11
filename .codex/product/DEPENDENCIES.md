@@ -317,7 +317,7 @@ READY de requisitos, pero READY_FOR_TICKET_WRITING: PARTIAL y READY_FOR_IMPLEMEN
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
-| EL-TK-177 | contratos de dominios propietarios; telemetría EL-TK-168 | 178..183 |
+| EL-TK-177 (DONE) | contratos de dominios propietarios; telemetría EL-TK-168 | 178..183 |
 | EL-TK-178 | 177; contratos EL-EP-005/006 | 182,183 |
 | EL-TK-179 | 177; contratos EL-EP-010/012, EL-TK-173 | 182,183 |
 | EL-TK-180 | 177; contrato EL-EP-004 | 182,183 |
