@@ -305,6 +305,9 @@ importers:
       '@eventlens/database':
         specifier: workspace:*
         version: link:../database
+      '@eventlens/job-queue':
+        specifier: workspace:*
+        version: link:../job-queue
     devDependencies:
       '@prisma/adapter-pg':
         specifier: 7.10.0

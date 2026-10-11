@@ -18,9 +18,31 @@ model NotificationIntent {
   createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt        DateTime  @default(now()) @map("updated_at") @db.Timestamptz
 
+  deliveryAttempts NotificationDeliveryAttempt[]
+
   @@index([recipientRef, status])
   @@index([resourceRef, status])
   @@map("notification_intent")
+}
+
+model NotificationDeliveryAttempt {
+  id                String   @id @db.Uuid
+  intentId          String   @map("intent_id") @db.Uuid
+  jobId             String?  @map("job_id") @db.Uuid
+  attemptNumber     Int      @map("attempt_number")
+  channel           String   @default("EMAIL")
+  status            String
+  providerMessageId String?  @map("provider_message_id")
+  errorCode         String?  @map("error_code")
+  errorMessage      String?  @map("error_message")
+  latencyMs         Int?     @map("latency_ms")
+  attemptedAt       DateTime @default(now()) @map("attempted_at") @db.Timestamptz
+
+  intent            NotificationIntent @relation(fields: [intentId], references: [id])
+
+  @@index([intentId])
+  @@index([status])
+  @@map("notification_delivery_attempt")
 }
 
 model NotificationAuditEvent {
