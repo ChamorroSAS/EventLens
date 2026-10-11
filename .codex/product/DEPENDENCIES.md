@@ -305,7 +305,7 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-174 | 170,171,172 | 176; evidencia Beta |
 | EL-TK-175 | 167; contrato EL-EP-012 | 176 |
 | EL-TK-176 | 166..175, 184 | EL-EP-016; validación EL-EP-014 |
-| EL-TK-184 | 166, 168 | 170, 176 |
+| EL-TK-184 (DONE) | 166, 168 | 170, 176 |
 
 12 activos READY de requisitos tras dictamen de requirements_reviewer y ui_designer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de auditoría mínima y sanitizada, consulta paginada con filtros, telemetría y health neutrales de proveedor, detección de colas/jobs degradados, alertas de infraestructura y disponibilidad agregada, backups PostgreSQL diarios con PITR (RPO≤1h/RTO≤4h), verificación de restore periódico con preservación de tombstones, redundancia/recuperación de ObjectStorage (DEC-062/063), incidentes operacionales, retención de auditoría (12m) y rotación de logs (30d) en EL-TK-184, visor contextual de auditoría en consola administrativa (AuditLogViewer/Detail, UI_REQUIRED: YES, READY_FOR_FRONTEND_PLANNING: YES) y validación integrada E2E. Superficies UI reutilizadas del catálogo canónico (ui-mvp-epic-review.md#el-ep-014), sin dashboard operacional nuevo ni nuevos componentes. Proveedores de observabilidad y storage definitivo permanecen DEFERRED bajo gate operacional DR-001.
 
