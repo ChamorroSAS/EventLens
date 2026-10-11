@@ -81,8 +81,8 @@
 | EL-TK-017 | EL-TK-013, EL-TK-046 | — |
 | EL-TK-018 | EL-TK-011, EL-TK-046 | EL-TK-019 |
 | EL-TK-019 | EL-TK-013, EL-TK-018, EL-TK-046 | — |
-| EL-TK-043 | — | EL-TK-044 |
-| EL-TK-044 | EL-TK-043, EL-TK-046 | EL-TK-005, EL-TK-006, EL-TK-007, EL-TK-009, EL-TK-025, EL-TK-041, EL-TK-042, EL-TK-045 |
+| EL-TK-043 (DONE) | — | EL-TK-044 |
+| EL-TK-044 (DONE) | EL-TK-043, EL-TK-046 | EL-TK-005, EL-TK-006, EL-TK-007, EL-TK-009, EL-TK-025, EL-TK-041, EL-TK-042, EL-TK-045 |
 | EL-TK-045 | EL-TK-044, EL-TK-046 | — |
 | EL-TK-046 | contrato RecoveryAuthority acordado | EL-TK-006, EL-TK-011, EL-TK-013..019, EL-TK-044, EL-TK-045 |
 
@@ -395,3 +395,8 @@ Cadena productiva:055 DONE →056 →033;032 →033;033 →035/036 →037 →057
 Portada:049 →050 →051 →052 conserva cadena funcional.050 consume contratos/adapters033/035/056/055 para integración real, no toda implementación guest ni pipeline duplicado.052 y057 comparten inventory/drain, no dependen bidireccionalmente.031 permite portada opcional; no exige procesamiento para preview sin portada. Son colaboraciones/precondiciones de integración explícitas, no nuevas predecesoras duras para construir handlers por puertos.
 
 TB-01/TB-02 dejan de bloquear.033/035/036/041/042/056 YES propio;058 NO ejecución integrada hasta pipeline/adapters y fase REQUIRED_FOR_INTEGRATION reales, con preparación habilitada.055 y056 están DONE. EL-TK-032 también está DONE; 033 tiene satisfechas sus dependencias 032/056, sujeto a verificar su readiness vigente. MEDIA-001/CAP-001/DR-001/EXPORT-001 VALIDATION_REQUIRED; no PASS ni proveedor nuevo. Las afirmaciones previas de paquete/spikes pendientes son históricas respecto a esta reevaluación. Véanse el [cierre de EL-TK-056](sessions/2026-10-09-el-tk-056-implementation.md) y la [sesión de EL-TK-032](sessions/2026-10-09-el-tk-032-implementation.md).
+
+**CONFIRMED — EL-TK-043 DONE, 2026-10-11:** provisión administrativa inicial y posterior gobernada por MOD-001 implementada en `@eventlens/identity`. Procedimiento de bootstrap único deshabilitado permanentemente tras su consumo, alta posterior autorizada, guardia de elevación pública y auditoría con cero secretos. Suite 18/18 PASS (12 unitarias y 6 de integración contra PostgreSQL 16 real). Véase el [cierre](tickets/EL-TK-043.md) y la [evidencia](../../infra/validation/identity/README.md).
+
+**CONFIRMED — EL-TK-044 DONE, 2026-10-11:** autenticación de principal administrativo y ciclo de vida de sesiones implementado en `@eventlens/identity` conforme a TB-03, ARCH-013 y AQR-003. Verificación SHA-256 de secreto de 256 bits con separación de propósito/sujeto, comparación constante y dummy para desconocidos; salida neutral uniforme; emisión de token y cookie `__Host-el_admin_session` sin fixation; expiración 8h absoluta y 30m idle con toque monótono no extensible; reautenticación con rotación de token, invalidación del previo y `auth_time <= 5 min` para operaciones sensibles; emisión de `AdminActorContext` (`ADMIN_HUMAN`) sin grants de MOD-007 prefijados; integración con RecoveryAuthority (PREPARE → SQL → ACK). Suite total de identity 35/35 PASS (17 específicas de EL-TK-044: 13 unitarias y 4 de integración contra PostgreSQL 16 real). Véase el [cierre](tickets/EL-TK-044.md) y la [evidencia](../../infra/validation/identity/README.md).
+
