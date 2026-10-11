@@ -17,3 +17,4 @@ export * from './beta-reliability-service.js';
 export * from './beta-support-and-retrieval-service.js';
 export * from './beta-participation-service.js';
 export * from './beta-classification-service.js';
+export * from './beta-report-generator-service.js';

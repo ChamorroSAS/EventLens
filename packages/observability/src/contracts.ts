@@ -848,4 +848,70 @@ export interface BetaClassificationResult {
   evaluatedAt: Date;
 }
 
+export interface BetaMetricReportEntry {
+  metricName: string;
+  numerator: number;
+  denominator: number;
+  ratio: number | null;
+  target: number;
+  isMet: boolean;
+  notes?: string;
+}
+
+export interface BetaEvaluationReport {
+  reportId: string;
+  generatedAt: Date;
+  evidenceSnapshotRef: {
+    snapshotId: string;
+    contentHash: string;
+    frozenAt: Date;
+  };
+  period: {
+    windowStart: Date;
+    windowEnd: Date;
+    durationWeeks: number;
+  };
+  sampleCoverage: {
+    eligibleRealEvents: number;
+    eligibleRealFiles: number;
+    excludedInternalEvents: number;
+    excludedInternalFiles: number;
+    hasMinimumSample: boolean;
+  };
+  metricsSummary: BetaMetricReportEntry[];
+  disasterRecoveryGate: {
+    status: 'PASS' | 'FAIL' | 'NOT_EVALUATED';
+    rpoMet: boolean;
+    rtoMet: boolean;
+    secretsExposed: boolean;
+    nonResurrectionEnforced: boolean;
+  };
+  auditGate: {
+    status: 'PASS' | 'FAIL' | 'NOT_EVALUATED';
+    sensitiveActionsRecorded: boolean;
+    secretsScrubbed: boolean;
+  };
+  operationalIncidentsSummary: {
+    totalCount: number;
+    criticalCount: number;
+    nonCriticalCount: number;
+    incidents: Array<{
+      id: string;
+      severity: string;
+      title: string;
+      status: string;
+      component: string;
+    }>;
+  };
+  officialClassification: {
+    outcome: BetaClassificationOutcome;
+    rationale: string[];
+    requiredActionItems: string[];
+  };
+  declaredLimitations: string[];
+  commercialDisclaimer: string;
+  markdownReport: string;
+}
+
+
 
