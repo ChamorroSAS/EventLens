@@ -120,3 +120,48 @@ export interface AuditMetricEvent {
 export interface AuditTelemetrySink {
   recordMetric(event: AuditMetricEvent): void;
 }
+
+export type ComponentIdentifier =
+  | 'API'
+  | 'FRONTEND'
+  | 'BACKEND'
+  | 'DATABASE'
+  | 'OBJECT_STORAGE'
+  | 'WORKER'
+  | 'SCHEDULER'
+  | 'JOB_QUEUE';
+
+export type HealthStatus = 'HEALTHY' | 'DEGRADED' | 'UNHEALTHY';
+
+export interface HealthSignal {
+  component: ComponentIdentifier;
+  status: HealthStatus;
+  latencyMs?: number;
+  message?: string;
+  dimensions?: Record<string, string | number | boolean>;
+  timestamp: Date;
+}
+
+export type MetricType = 'COUNTER' | 'GAUGE' | 'HISTOGRAM';
+
+export interface OperationalMetric {
+  name: string;
+  type: MetricType;
+  value: number;
+  unit?: string;
+  dimensions?: Record<string, string | number | boolean>;
+  timestamp: Date;
+}
+
+export interface HealthChecker {
+  readonly component: ComponentIdentifier;
+  checkHealth(): Promise<HealthSignal>;
+}
+
+export interface TelemetryCollector {
+  recordMetric(metric: OperationalMetric): void;
+  recordHealthSignal(signal: HealthSignal): void;
+  getMetrics(filter?: { name?: string }): OperationalMetric[];
+  getHealthSignals(): Record<string, HealthSignal>;
+  clear?(): void;
+}
