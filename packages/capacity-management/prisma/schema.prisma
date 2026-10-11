@@ -49,3 +49,32 @@ model PlanOverride {
   @@index([eventId, status])
   @@map("plan_override")
 }
+
+model CapacityReservation {
+  id             String    @id @db.Uuid
+  eventId        String    @map("event_id") @db.Uuid
+  idempotencyKey String    @map("idempotency_key")
+  bytes          BigInt    @map("bytes")
+  fileSlots      Int       @default(1) @map("file_slots")
+  mediaType      String?   @map("media_type")
+  status         String    @default("ACTIVE")
+  releaseReason  String?   @map("release_reason")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  releasedAt     DateTime? @map("released_at") @db.Timestamptz
+  committedAt    DateTime? @map("committed_at") @db.Timestamptz
+  updatedAt      DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@unique([eventId, idempotencyKey])
+  @@index([eventId, status])
+  @@map("capacity_reservation")
+}
+
+model EventCapacityBalance {
+  eventId       String   @id @map("event_id") @db.Uuid
+  consumedBytes BigInt   @default(0) @map("consumed_bytes")
+  consumedFiles Int      @default(0) @map("consumed_files")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@map("event_capacity_balance")
+}

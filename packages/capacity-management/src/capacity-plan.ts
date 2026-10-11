@@ -176,7 +176,7 @@ export class CapacityPlanService {
     return this.transactions.run(async (tx) => this.resolveEffectiveLimitsWithTx(tx, command));
   }
 
-  private async resolveEffectiveLimitsWithTx(
+  public async resolveEffectiveLimitsWithTx(
     tx: SqlTransaction,
     command: ResolveEffectiveLimitsCommand
   ): Promise<EffectiveLimits> {
