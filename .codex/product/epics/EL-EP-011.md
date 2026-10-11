@@ -132,6 +132,8 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
+- 2026-10-10: ticket_writer crea EL-TK-134..145 como DRAFT para plan/límites efectivos, cuota/reservas, consumo, umbrales, solicitudes de ampliación, overrides, UI owner/admin y validación integrada. Pendientes de requirements_reviewer; sin implementación.
+
 - 2026-10-08: requirements_reviewer aprueba READY de requisitos sin hallazgos; implementacion/UI conservan gates aplicables. [Dictamen](../sessions/2026-10-08-precisiones-finales-mvp.md).
 
 - 2026-10-08, gate anterior: alcance ampliado NOT_READY; capacidad/consumo/reservas mantenían REQUIREMENTS_READY YES. Precisiones en sesión de cierre MVP; sustituido por dictamen final.
