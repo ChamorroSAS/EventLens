@@ -237,6 +237,59 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 10 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de descarga individual de original seguro para organizador (DEC-009/013/075), exportación asíncrona multipartes con snapshot fijo (DEC-046..049/079/090), disponibilidad 48h, invalidación inmediata ante retiros de privacidad o revocación de acceso (DEC-090), grants temporales de partes, regeneración/retry autorizado y consulta de estado/partes/progreso real en OrganizerMediaLibrary. Superficies UI reutilizadas del catálogo canónico (§9.1..8), sin centros de exportación paralelos ni componentes nuevos. Descargas guest siguen fuera de alcance.
 
+## Tickets propuestos — EL-EP-011 (DRAFT; pendiente requirements_reviewer)
+
+| Ticket | Depende de | Bloquea |
+|---|---|---|
+| EL-TK-134 | contrato EL-EP-001 | 135,136,139,141,142,143,144,145 |
+| EL-TK-135 | 134 | 138,139,143,144,145 |
+| EL-TK-136 | 134 | contrato upload 086/092; 137,145 |
+| EL-TK-137 | 136; contratos EL-EP-005/015 | 135,138,145 |
+| EL-TK-138 | 135,137 | consumidor EL-EP-013; 145 |
+| EL-TK-139 | 134,135 | 140,141,143,144,145 |
+| EL-TK-140 | 139 | 141,143,144,145 |
+| EL-TK-141 | 139,044 | 142,144,145 |
+| EL-TK-142 | 134,141; contrato EL-EP-003 | 135,143,144,145 |
+| EL-TK-143 | 135,139,140 | 145 |
+| EL-TK-144 | 141,142; contrato EL-EP-012 | 145 |
+| EL-TK-145 | 134..144 | validación EL-EP-011 |
+
+12 DRAFT. Capacidad comercial y reservas permanecen en EL-EP-011; autorización/carga en EL-EP-005, lifecycle en EL-EP-003 y comunicación de umbrales en EL-EP-013.
+
+## Tickets propuestos — EL-EP-012 (DRAFT; pendiente requirements_reviewer)
+
+| Ticket | Depende de | Bloquea |
+|---|---|---|
+| EL-TK-146 | 044; contrato EL-EP-002 | 147,154,155 |
+| EL-TK-147 | 146; contratos propietarios | 148,150,151,152,153,154,155 |
+| EL-TK-148 | 147; contrato JobQueue | 149,153,154,155 |
+| EL-TK-149 | 148,044; contrato JobQueue | 153,154,155 |
+| EL-TK-150 | 147,044,097; contrato EL-EP-014 | 154,155 |
+| EL-TK-151 | 147; contratos propietarios | 152,154,155 |
+| EL-TK-152 | 147; contratos EL-EP-001/009/011 | 154,155 |
+| EL-TK-153 | 148,149 | 154,155 |
+| EL-TK-154 | 146,147,150..153 | 155 |
+| EL-TK-155 | 146..154 | validación EL-EP-012 |
+
+10 DRAFT. La consola compone capacidades, no redefine políticas; reportes, capacidad, lifecycle, acceso y auditoría conservan ownership en sus módulos.
+
+## Tickets propuestos — EL-EP-013 (DRAFT; pendiente requirements_reviewer)
+
+| Ticket | Depende de | Bloquea |
+|---|---|---|
+| EL-TK-156 | hechos de dominios propietarios | 157..165 |
+| EL-TK-157 | 156,055,038 | 164,165 |
+| EL-TK-158 | 156 | 164,165 |
+| EL-TK-159 | 156; contratos EL-EP-003/015 | 164,165 |
+| EL-TK-160 | 156; contrato 138 | 164,165 |
+| EL-TK-161 | 156; contrato EL-EP-010 | 164,165 |
+| EL-TK-162 | 156; contratos EL-EP-001/003/012 | 164,165 |
+| EL-TK-163 | 156; contratos EL-EP-009/012/014 | 164,165 |
+| EL-TK-164 | 157..163 | 165 |
+| EL-TK-165 | 156..164 | validación EL-EP-013 |
+
+10 DRAFT. EL-EP-013 consume hechos confirmados y usa JobQueue durable; proveedor de correo sigue DEFERRED y no se introduce NotificationCenter, preferencias ni canales nuevos.
+
 ## Tickets vigentes — EL-EP-006 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
