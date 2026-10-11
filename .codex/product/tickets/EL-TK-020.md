@@ -6,9 +6,22 @@ EL-EP-002
 
 ## Status
 
-READY
+DONE
 
 **HISTÓRICO CONFIRMED — 2026-10-07:** requirements_reviewer declaró este ticket implementable, sin hallazgos pendientes. Se conservan sus dependencias de ejecución. Véase [dictamen](../sessions/2026-10-07-el-ep-002-ticket-review.md).
+
+## Resolución e implementación — 2026-10-11
+- **Paquete creado:** `@eventlens/event-management` en `packages/event-management/`.
+- **Esquema y migración:** Modelo `Event` agregado con migración `202610110021_event_draft` ensamblada en `packages/database/`.
+- **Servicio y políticas:**
+  - `EventDraftService.createDraft` con validación estricta de nombre (1..120 caracteres tras trim), aislamiento de organizador mediante `OrganizerActorContext`, e idempotencia segura con `ON CONFLICT (idempotency_key) DO NOTHING` e indexación única `(organizer_id, idempotency_key)`.
+  - Configuración inicial restrictiva confirmada (DEC-069): `status = 'DRAFT'`, `timezone = 'America/Bogota'`, `uploads_enabled = false`, `guest_gallery_enabled = false`, `moderation_mode = 'AUTO_PUBLISH'`, `pin_enabled = false`.
+  - `EventAccessPolicy` con bloqueo estricto de acceso de invitados (`assertGuestAccessAllowed`) y carga de fotos (`assertGuestUploadAllowed`) en eventos DRAFT.
+  - Auditoría append-only sin secretos en `admin_audit_event`.
+- **Pruebas y verificación:**
+  - 6 pruebas unitarias (`test/event-draft.unit.test.ts`).
+  - 3 pruebas de integración contra PostgreSQL 16 real (`test/event-draft.integration.test.ts`).
+  - Suite de validación en `infra/validation/event-management/run.mjs` con resultado `PASS` (9/9 pruebas superadas). Typecheck y test de workspace en verde.
 
 ## User story
 
