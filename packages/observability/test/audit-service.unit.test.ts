@@ -60,6 +60,28 @@ function createFakeDb() {
             return [row] as R[];
           }
 
+          if (sql.includes('SELECT COUNT(*)::text as count FROM audit_event')) {
+            let matched = Array.from(events.values());
+            if (sql.includes('resource_type =')) {
+              const resType = params[0] as string;
+              matched = matched.filter((e) => e.resource_type === resType);
+            }
+            return [{ count: String(matched.length) }] as R[];
+          }
+
+          if (sql.includes('SELECT id, occurred_at') && sql.includes('FROM audit_event')) {
+            let matched = Array.from(events.values()).sort(
+              (a, b) => b.occurred_at.getTime() - a.occurred_at.getTime()
+            );
+            if (sql.includes('resource_type =')) {
+              const resType = params[0] as string;
+              matched = matched.filter((e) => e.resource_type === resType);
+            }
+            const limit = params[params.length - 2] as number;
+            const offset = params[params.length - 1] as number;
+            return matched.slice(offset, offset + limit) as R[];
+          }
+
           return [] as R[];
         }
       };
@@ -299,5 +321,153 @@ describe('AuditService (Unit Tests)', () => {
         result: 'INVALID_RESULT' as any
       })
     ).rejects.toThrow(/Invalid audit result/);
+  });
+
+  describe('queryEvents (EL-TK-167 Unit Tests)', () => {
+    it('Scenario 1: queries authorized events with filters and returns ordered paginated results', async () => {
+      const { runner } = createFakeDb();
+      const service = new AuditService(runner);
+
+      // Register two events
+      await service.registerEvent({
+        actor: { type: 'ADMIN', actorId: 'admin-1' },
+        action: 'event.updated',
+        resourceType: 'event',
+        resourceId: 'evt-100',
+        result: 'SUCCESS',
+        metadata: { field: 'name' }
+      });
+      await service.registerEvent({
+        actor: { type: 'ADMIN', actorId: 'admin-1' },
+        action: 'event.published',
+        resourceType: 'event',
+        resourceId: 'evt-100',
+        result: 'SUCCESS',
+        metadata: { status: 'PUBLISHED' }
+      });
+
+      const page = await service.queryEvents({
+        callerActor: { type: 'ADMIN', actorId: 'admin-1' },
+        filter: { resourceType: 'event' },
+        pagination: { page: 1, limit: 10 }
+      });
+
+      expect(page.items.length).toBe(2);
+      expect(page.totalCount).toBe(2);
+      expect(page.totalPages).toBe(1);
+      expect(page.page).toBe(1);
+      expect(page.limit).toBe(10);
+      expect(page.hasNextPage).toBe(false);
+      expect(page.hasPreviousPage).toBe(false);
+      expect(page.items[0]?.metadata).toBeDefined();
+    });
+
+    it('Scenario 2: returns empty state distinguishable from error when no records match filter', async () => {
+      const { runner } = createFakeDb();
+      const service = new AuditService(runner);
+
+      const emptyPage = await service.queryEvents({
+        callerActor: { type: 'ADMIN', actorId: 'admin-1' },
+        filter: { resourceType: 'non_existent_type' },
+        pagination: { page: 1, limit: 20 }
+      });
+
+      expect(emptyPage.items).toEqual([]);
+      expect(emptyPage.totalCount).toBe(0);
+      expect(emptyPage.totalPages).toBe(0);
+      expect(emptyPage.hasNextPage).toBe(false);
+      expect(emptyPage.hasPreviousPage).toBe(false);
+    });
+
+    it('Scenario 3: denies unauthorized actor without leaking information', async () => {
+      const { runner } = createFakeDb();
+      const service = new AuditService(runner);
+
+      // Anonymous guest denied
+      await expect(
+        service.queryEvents({
+          callerActor: { type: 'ANONYMOUS_GUEST', actorId: 'guest-anon' },
+          filter: { resourceType: 'event' }
+        })
+      ).rejects.toThrow(AuditError);
+
+      await expect(
+        service.queryEvents({
+          callerActor: { type: 'ANONYMOUS_GUEST', actorId: 'guest-anon' },
+          filter: { resourceType: 'event' }
+        })
+      ).rejects.toThrow(/not authorized to inspect audit logs/);
+
+      // System actor denied from reading administrative audit query
+      await expect(
+        service.queryEvents({
+          callerActor: { type: 'SYSTEM', systemId: 'worker:cron' }
+        })
+      ).rejects.toThrow(AuditError);
+
+      // Organizer without scoped permissions denied from global audit query
+      await expect(
+        service.queryEvents({
+          callerActor: { type: 'ORGANIZER', actorId: 'org-user-1' },
+          filter: { resourceType: 'account' }
+        })
+      ).rejects.toThrow(/not authorized to query global audit logs/);
+    });
+
+    it('allows organizer to query events within their authorized scope', async () => {
+      const { runner } = createFakeDb();
+      const service = new AuditService(runner);
+
+      await service.registerEvent({
+        actor: { type: 'ORGANIZER', actorId: 'org-user-1' },
+        action: 'event.updated',
+        resourceType: 'event',
+        resourceId: 'evt-mine',
+        result: 'SUCCESS'
+      });
+
+      const page = await service.queryEvents({
+        callerActor: { type: 'ORGANIZER', actorId: 'org-user-1' },
+        filter: { resourceType: 'event' },
+        allowedScope: {
+          resourceType: 'event',
+          resourceIds: ['evt-mine']
+        }
+      });
+
+      expect(page.items.length).toBe(1);
+    });
+
+    it('rejects invalid pagination bounds and inverted date ranges', async () => {
+      const { runner } = createFakeDb();
+      const service = new AuditService(runner);
+
+      // Invalid page < 1
+      await expect(
+        service.queryEvents({
+          callerActor: { type: 'ADMIN', actorId: 'admin-1' },
+          pagination: { page: 0 }
+        })
+      ).rejects.toThrow(/Page must be an integer >= 1/);
+
+      // Invalid limit > 100
+      await expect(
+        service.queryEvents({
+          callerActor: { type: 'ADMIN', actorId: 'admin-1' },
+          pagination: { limit: 101 }
+        })
+      ).rejects.toThrow(/Limit must be an integer between 1 and 100/);
+
+      // Inverted date range
+      await expect(
+        service.queryEvents({
+          callerActor: { type: 'ADMIN', actorId: 'admin-1' },
+          filter: {
+            fromTimestamp: new Date('2026-12-31'),
+            toTimestamp: new Date('2026-01-01')
+          }
+        })
+      ).rejects.toThrow(/fromTimestamp cannot be after toTimestamp/);
+    });
   });
 });

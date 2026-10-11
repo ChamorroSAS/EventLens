@@ -216,4 +216,109 @@ describe('AuditService (Real PostgreSQL 16 Integration Tests — EL-TK-166)', ()
     expect(telemetryEvents.length).toBe(1);
     expect(telemetryEvents[0]?.metricName).toBe('audit.event.recorded');
   });
+
+  describe('queryEvents (PostgreSQL 16 Integration Tests — EL-TK-167)', () => {
+    it('queries events with pagination, sorting, and metadata in PostgreSQL', async () => {
+      const service = new AuditService(txs);
+      const testResourceId = randomUUID();
+
+      for (let i = 1; i <= 3; i++) {
+        await service.registerEvent({
+          actor: { type: 'ADMIN', actorId: 'admin-query-pg' },
+          action: `test.batch.action_${i}`,
+          resourceType: 'test_resource',
+          resourceId: testResourceId,
+          result: 'SUCCESS',
+          metadata: { sequence: i }
+        });
+      }
+
+      // Page 1 with limit 2
+      const page1 = await service.queryEvents({
+        callerActor: { type: 'ADMIN', actorId: 'admin-query-pg' },
+        filter: { resourceType: 'test_resource', resourceId: testResourceId },
+        pagination: { page: 1, limit: 2 }
+      });
+
+      expect(page1.items.length).toBe(2);
+      expect(page1.totalCount).toBe(3);
+      expect(page1.totalPages).toBe(2);
+      expect(page1.hasNextPage).toBe(true);
+      expect(page1.hasPreviousPage).toBe(false);
+      expect(page1.items[0]?.metadata).toBeDefined();
+
+      // Page 2 with limit 2
+      const page2 = await service.queryEvents({
+        callerActor: { type: 'ADMIN', actorId: 'admin-query-pg' },
+        filter: { resourceType: 'test_resource', resourceId: testResourceId },
+        pagination: { page: 2, limit: 2 }
+      });
+
+      expect(page2.items.length).toBe(1);
+      expect(page2.hasNextPage).toBe(false);
+      expect(page2.hasPreviousPage).toBe(true);
+    });
+
+    it('filters accurately by result and date range in PostgreSQL', async () => {
+      const service = new AuditService(txs);
+      const testResId = randomUUID();
+
+      const pastDate = new Date('2026-05-01T10:00:00Z');
+      const recentDate = new Date('2026-05-02T10:00:00Z');
+
+      await service.registerEvent({
+        occurredAt: pastDate,
+        actor: { type: 'ADMIN', actorId: 'admin-filter' },
+        action: 'test.date.past',
+        resourceType: 'date_test',
+        resourceId: testResId,
+        result: 'SUCCESS'
+      });
+
+      await service.registerEvent({
+        occurredAt: recentDate,
+        actor: { type: 'ADMIN', actorId: 'admin-filter' },
+        action: 'test.date.recent',
+        resourceType: 'date_test',
+        resourceId: testResId,
+        result: 'FAILURE',
+        reason: 'Failed in test'
+      });
+
+      // Filter by result FAILURE
+      const failurePage = await service.queryEvents({
+        callerActor: { type: 'ADMIN', actorId: 'admin-filter' },
+        filter: { resourceType: 'date_test', result: 'FAILURE' }
+      });
+
+      expect(failurePage.items.length).toBe(1);
+      expect(failurePage.items[0]?.action).toBe('test.date.recent');
+
+      // Filter by date range excluding past date
+      const rangePage = await service.queryEvents({
+        callerActor: { type: 'ADMIN', actorId: 'admin-filter' },
+        filter: {
+          resourceType: 'date_test',
+          fromTimestamp: new Date('2026-05-02T00:00:00Z'),
+          toTimestamp: new Date('2026-05-03T00:00:00Z')
+        }
+      });
+
+      expect(rangePage.items.length).toBe(1);
+      expect(rangePage.items[0]?.action).toBe('test.date.recent');
+    });
+
+    it('returns distinguishable empty state when filter has zero matches in PostgreSQL', async () => {
+      const service = new AuditService(txs);
+
+      const emptyPage = await service.queryEvents({
+        callerActor: { type: 'ADMIN', actorId: 'admin-query' },
+        filter: { resourceType: 'zero_matches_expected' }
+      });
+
+      expect(emptyPage.items).toEqual([]);
+      expect(emptyPage.totalCount).toBe(0);
+      expect(emptyPage.totalPages).toBe(0);
+    });
+  });
 });
