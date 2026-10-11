@@ -1,11 +1,11 @@
 {
-  "ticket": "EL-TK-064",
-  "precedingTicket": "EL-TK-063",
-  "runId": "event_mgmt_899fb225821f443da6f8f14896bd7b76",
-  "testedAt": "2026-10-11T21:03:53.306Z",
+  "ticket": "EL-TK-065",
+  "precedingTicket": "EL-TK-064",
+  "runId": "event_mgmt_3f689835bada4743bc8f64717e888ad4",
+  "testedAt": "2026-10-11T21:19:43.825Z",
   "result": "PASS",
-  "tests": 45,
-  "passed": 45,
+  "tests": 52,
+  "passed": 52,
   "postgresql": "16 real isolated laboratory database",
   "lifecycleActivation": "SCHEDULED to ACTIVE transition via manual early and scheduler auto triggers without shifting expiration anchor (DEC-077)",
   "gates": {

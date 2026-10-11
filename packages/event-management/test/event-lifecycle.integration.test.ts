@@ -38,6 +38,7 @@ describeIntegration('EventLifecycleService (Real PostgreSQL Integration Tests â€
         expires_at TIMESTAMPTZ,
         grace_ends_at TIMESTAMPTZ,
         activated_at TIMESTAMPTZ,
+        closed_at TIMESTAMPTZ,
         validity_duration_days INTEGER,
         grace_days INTEGER,
         uploads_enabled BOOLEAN NOT NULL DEFAULT false,
@@ -57,6 +58,7 @@ describeIntegration('EventLifecycleService (Real PostgreSQL Integration Tests â€
         ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ,
         ADD COLUMN IF NOT EXISTS grace_ends_at TIMESTAMPTZ,
         ADD COLUMN IF NOT EXISTS activated_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS closed_at TIMESTAMPTZ,
         ADD COLUMN IF NOT EXISTS validity_duration_days INTEGER,
         ADD COLUMN IF NOT EXISTS grace_days INTEGER;
 
@@ -326,5 +328,96 @@ describeIntegration('EventLifecycleService (Real PostgreSQL Integration Tests â€
     );
     expect(finalRows[0].status).toBe('ACTIVE');
     expect(finalRows[0].activated_at).toBeDefined();
+  });
+
+  it('EL-TK-065: Cierra manualmente un evento ACTIVE en PostgreSQL y registra closed_at', async () => {
+    const eventId = randomUUID();
+    const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+    const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+    const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+    const closeTime = new Date('2026-11-10T12:00:00.000Z');
+
+    await sql(
+      `INSERT INTO event (id, organizer_id, name, status, scheduled_at, expires_at, grace_ends_at, activated_at)
+       VALUES ($1, $2, $3, 'ACTIVE', $4, $5, $6, $4)`,
+      eventId,
+      ownerActor.accountId,
+      'Evento Para Cierre',
+      scheduledAt,
+      expiresAt,
+      graceEndsAt
+    );
+
+    const result = await service.closeEvent({
+      actorContext: ownerActor,
+      eventId,
+      now: closeTime
+    });
+
+    expect(result.event.status).toBe('CLOSED');
+    expect(result.outcome).toBe('CLOSED');
+    expect(result.event.closedAt).toEqual(closeTime);
+    expect(result.event.expiresAt).toEqual(expiresAt);
+    expect(result.event.graceEndsAt).toEqual(graceEndsAt);
+
+    const rows = await query<{ status: string; closed_at: Date }>(
+      `SELECT status, closed_at FROM event WHERE id = $1`,
+      eventId
+    );
+    expect(rows[0].status).toBe('CLOSED');
+    expect(new Date(rows[0].closed_at).toISOString()).toBe(closeTime.toISOString());
+
+    const audits = await query<{ procedure: string; result: string }>(
+      `SELECT procedure, result FROM admin_audit_event WHERE target_identifier = $1`,
+      eventId
+    );
+    expect(audits).toHaveLength(1);
+    expect(audits[0].procedure).toBe('EVENT_CLOSED');
+    expect(audits[0].result).toBe('SUCCESS');
+  });
+
+  it('EL-TK-065: Idempotencia y concurrencia de cierre manual bajo FOR UPDATE', async () => {
+    const eventId = randomUUID();
+    const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+    const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+    const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+    const closeTime = new Date('2026-11-10T12:00:00.000Z');
+
+    await sql(
+      `INSERT INTO event (id, organizer_id, name, status, scheduled_at, expires_at, grace_ends_at, activated_at)
+       VALUES ($1, $2, $3, 'ACTIVE', $4, $5, $6, $4)`,
+      eventId,
+      ownerActor.accountId,
+      'Evento Concurrencia Cierre',
+      scheduledAt,
+      expiresAt,
+      graceEndsAt
+    );
+
+    const idempotencyKey = 'idem-close-concurrent';
+
+    const [res1, res2] = await Promise.all([
+      service.closeEvent({
+        actorContext: ownerActor,
+        eventId,
+        now: closeTime,
+        idempotencyKey
+      }),
+      service.closeEvent({
+        actorContext: ownerActor,
+        eventId,
+        now: closeTime,
+        idempotencyKey
+      })
+    ]);
+
+    const outcomes = [res1.outcome, res2.outcome].sort();
+    expect(outcomes).toEqual(['CLOSED', 'IDEMPOTENT_REPLAY']);
+
+    const rows = await query<{ status: string; closed_at: Date }>(
+      `SELECT status, closed_at FROM event WHERE id = $1`,
+      eventId
+    );
+    expect(rows[0].status).toBe('CLOSED');
   });
 });

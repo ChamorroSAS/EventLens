@@ -25,6 +25,7 @@ interface EventRow {
   expires_at?: Date | string | null;
   grace_ends_at?: Date | string | null;
   activated_at?: Date | string | null;
+  closed_at?: Date | string | null;
   validity_duration_days?: number | null;
   grace_days?: number | null;
   uploads_enabled: boolean;
@@ -50,6 +51,7 @@ function mapRowToRecord(row: EventRow): EventRecord {
     expiresAt: row.expires_at ? new Date(row.expires_at) : null,
     graceEndsAt: row.grace_ends_at ? new Date(row.grace_ends_at) : null,
     activatedAt: row.activated_at ? new Date(row.activated_at) : null,
+    closedAt: row.closed_at ? new Date(row.closed_at) : null,
     validityDurationDays: row.validity_duration_days !== null && row.validity_duration_days !== undefined ? Number(row.validity_duration_days) : null,
     graceDays: row.grace_days !== null && row.grace_days !== undefined ? Number(row.grace_days) : null,
     uploadsEnabled: Boolean(row.uploads_enabled),
@@ -248,6 +250,7 @@ export class EventDraftService {
         expiresAt: null,
         graceEndsAt: null,
         activatedAt: null,
+        closedAt: null,
         validityDurationDays: null,
         graceDays: null,
         uploadsEnabled,
