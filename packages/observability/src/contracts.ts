@@ -241,3 +241,59 @@ export interface PurgeExecutionSignal {
   errorMessage?: string;
   timestamp: Date;
 }
+
+export type InfrastructureComponent =
+  | 'DATABASE'
+  | 'OBJECT_STORAGE'
+  | 'SCHEDULER'
+  | 'WORKERS'
+  | 'API'
+  | 'BACKEND'
+  | 'AVAILABILITY';
+
+export interface InfrastructureAlert {
+  id: string;
+  name: string;
+  component: InfrastructureComponent;
+  severity: AlertSeverity;
+  status: AlertStatus;
+  message: string;
+  currentValue?: number;
+  thresholdValue?: number;
+  dimensions?: Record<string, string | number | boolean>;
+  firstTriggeredAt: Date;
+  lastTriggeredAt: Date;
+  resolvedAt?: Date;
+}
+
+export interface SchedulerHeartbeat {
+  taskName: string;
+  lastCheckpointAt: Date;
+  intervalSeconds: number;
+}
+
+export interface AvailabilityProbe {
+  component: string;
+  success: boolean;
+  timestamp: Date;
+  latencyMs?: number;
+}
+
+export interface AvailabilityMeasurement {
+  totalProbes: number;
+  successfulProbes: number;
+  failedProbes: number;
+  observedAvailabilityRatio: number;
+  targetObjectiveRatio: number;
+  isObjectiveMet: boolean;
+  isSlaContractual: false;
+  windowStart: Date;
+  windowEnd: Date;
+  componentsEvaluated: string[];
+}
+
+export interface InfrastructureThresholdConfig {
+  maxSchedulerStallSeconds?: number;
+  minAvailabilityRatio?: number;
+}
+
