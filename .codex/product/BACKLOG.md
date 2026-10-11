@@ -197,7 +197,7 @@
 | EL-TK-164 | Integrar avisos contextuales y plantillas de correo accesibles | EL-EP-013 | READY | P0 | 157..163 | [EL-TK-164](tickets/EL-TK-164.md) |
 | EL-TK-165 | Validar notificaciones, deduplicación y obsolescencia de extremo a extremo | EL-EP-013 | READY | P0 | 156..164 | [EL-TK-165](tickets/EL-TK-165.md) |
 | EL-TK-166 | Registrar eventos de auditoría mínimos y sanitizados | EL-EP-014 | DONE | P0 | ninguna predecesora funcional dura | [EL-TK-166](tickets/EL-TK-166.md) |
-| EL-TK-167 | Consultar auditoría contextual con filtros y paginación | EL-EP-014 | READY | P0 | 166 | [EL-TK-167](tickets/EL-TK-167.md) |
+| EL-TK-167 | Consultar auditoría contextual con filtros y paginación | EL-EP-014 | DONE | P0 | 166 | [EL-TK-167](tickets/EL-TK-167.md) |
 | EL-TK-168 | Instrumentar señales operativas sanitizadas de aplicación y dependencias | EL-EP-014 | READY | P0 | ninguna predecesora funcional dura | [EL-TK-168](tickets/EL-TK-168.md) |
 | EL-TK-169 | Detectar degradación de JobQueue, workers y procesamiento | EL-EP-014 | READY | P0 | 168; contrato JobQueue | [EL-TK-169](tickets/EL-TK-169.md) |
 | EL-TK-170 | Detectar fallos de storage, base de datos, scheduler y disponibilidad | EL-EP-014 | READY | P0 | 168, 184 | [EL-TK-170](tickets/EL-TK-170.md) |

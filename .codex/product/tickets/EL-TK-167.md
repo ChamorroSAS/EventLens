@@ -4,9 +4,9 @@
 EL-EP-014
 
 ## Status
-READY
+DONE
 
-**CONFIRMED — 2026-10-10:** requirements_reviewer y ui_designer aprueban el paso de DRAFT a READY. Consulta paginada y filtrada solo lectura (DEC-019, DEC-034). Base del visor UI de EL-TK-175 y consola EL-EP-012. REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES.
+**IMPLEMENTED — 2026-10-11:** Implementado método `queryEvents` en `AuditService` de `@eventlens/observability` con contratos canónicos `AuditQuery`, `AuditQueryFilter`, `AuditPagination` y `AuditEventPage`. Filtros contextuales por recurso, acción, actor/tipo, resultado y rango temporal. Paginación segura y ordenación cronológica descendente. Control de permisos de solo lectura (ADMIN con acceso contextual/global, ORGANIZER limitado a su ámbito autorizado, SYSTEM y ANONYMOUS_GUEST denegados sin fuga de información). Estado vacío limpio (`items: []`, `totalCount: 0`) diferenciado de errores. Evidencia de pruebas: 30/30 tests superados (8 de integración en PostgreSQL 16 real + 22 unitarios).
 
 ## User story
 **Como** operador o administración autorizada, **quiero** consultar eventos de auditoría de un recurso, **para** reconstruir qué ocurrió sin abrir multimedia.
