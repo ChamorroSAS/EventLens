@@ -523,4 +523,74 @@ export interface DatabaseRestoreTarget {
   applyTombstoneRestrictions(tombstones: TombstoneRecord[]): Promise<TombstoneReconciliationResult>;
 }
 
+export type DrValidationGateStatus = 'PASS' | 'FAIL';
+
+export interface ObjectStorageReconciliationSummary {
+  totalStorageObjectsEvaluated: number;
+  databaseReferencedCount: number;
+  orphanedAfterPitrCount: number;
+  missingObjectReferencesCount: number;
+  isReferentiallyConsistent: boolean;
+  recoveryAuthorityReconciliationApplied: boolean;
+  reconciledObjectKeys: string[];
+}
+
+export interface MediaObjectMetadata {
+  objectKey: string;
+  mediaAssetId: string;
+  uploadedAt: Date;
+  checksumSha256: string;
+  byteSize: number;
+}
+
+export interface MediaRecoveryAuthority {
+  reconcilePostPitr(
+    pitrCutoff: Date,
+    databaseAssets: { id: string; objectKey: string }[],
+    storageObjects: MediaObjectMetadata[]
+  ): Promise<ObjectStorageReconciliationSummary>;
+}
+
+export interface DrValidationReport {
+  gateId: 'DR-001';
+  evaluatedAt: Date;
+  status: DrValidationGateStatus;
+  scenario1BackupFaultDetection: {
+    passed: boolean;
+    failureDetected: boolean;
+    alertTriggered: boolean;
+    alertName?: string;
+  };
+  scenario2RestoreAndPitrObjectives: {
+    passed: boolean;
+    observedRpoMinutes: number;
+    observedRtoMinutes: number;
+    isRpoMet: boolean;
+    isRtoMet: boolean;
+    tablesRestoredCount: number;
+  };
+  scenario3ComponentOutageAlerting: {
+    passed: boolean;
+    componentsEvaluated: string[];
+    alertsTriggeredWithoutSecrets: boolean;
+    secretsExposed: boolean;
+  };
+  scenario4StorageReferentialConsistency: {
+    passed: boolean;
+    storageReconciliation: ObjectStorageReconciliationSummary;
+    mediaRedundancyVerified: boolean;
+  };
+  evidenceSanitized: Record<string, unknown>;
+  actionRequiredItems: string[];
+}
+
+export interface ExecuteDrValidationCommand {
+  callerActor: AuditActor;
+  targetEnvironment?: 'ISOLATED_LAB' | 'STAGING_RECOVERY';
+  simulateStorageOrphans?: boolean;
+  simulateMissingStorageObjects?: boolean;
+  simulateExcessiveRto?: boolean;
+  forceBackupFault?: boolean;
+}
+
 
