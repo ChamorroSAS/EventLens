@@ -4,7 +4,23 @@
 EL-EP-003
 
 ## Status
-READY
+DONE
+
+## Implementation & Verification Evidence
+- **Method:** `EventLifecycleService.extendEventValidity(command: ExtendEventValidityCommand)`
+- **DEC-095, DEC-100 & DEC-102 Business Rules Implemented:**
+  - Solo actor administrativo humano (`ADMIN_HUMAN`), denegando accesos no autorizados con `UNAUTHORIZED`.
+  - Motivo obligatorio justificado (`EXTENSION_REASON_REQUIRED`).
+  - Recálculo canónico de `expiresAt` y `graceEndsAt` con duración física $N \times 24\text{h}$ desde el ancla de programación `scheduledAt` (DEC-082).
+  - Regla DEC-102: Después de la activación bloquea reducciones o extensiones que dejen `expiresAt <= now` con `INVALID_VALIDITY_EXTENSION`.
+  - Reconciliación de lifecycle (Escenario 2): Eventos en `GRACE_PERIOD` devueltos a vigencia son reconciliados a `ACTIVE` (o a `CLOSED` si tenían `closed_at`, preservando cierre voluntario).
+  - Conflicto terminal (Escenario 3): Rechaza ampliaciones sobre `PENDING_DELETION` o `ARCHIVED` con `EVENT_TERMINAL`.
+  - Idempotencia determinista: repetición con la misma clave devuelve `IDEMPOTENT_REPLAY`.
+  - Auditoría administrativa en `admin_audit_event` con código `EVENT_VALIDITY_EXTENDED`.
+- **Tests & Evidence:**
+  - 7 tests unitarios en `test/event-lifecycle.unit.test.ts`.
+  - 2 tests de integración en PostgreSQL 16 real en `test/event-lifecycle.integration.test.ts`.
+  - Suite de validación en Docker: 91/91 tests PASS.
 
 ## User story
 **Como** administrador autorizado, **quiero** aplicar una ampliación válida de vigencia, **para** extender la disponibilidad sin alterar las condiciones base del plan.

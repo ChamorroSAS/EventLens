@@ -17,6 +17,8 @@ import {
   type SuspendEventResult,
   type ReactivateEventCommand,
   type ReactivateEventResult,
+  type ExtendEventValidityCommand,
+  type ExtendEventValidityResult,
   type EventAuditSink,
   type EventRecord,
   type EventStatus,
@@ -1349,6 +1351,243 @@ export class EventLifecycleService {
         previousSuspendedStatus: 'SUSPENDED',
         targetStatus,
         outcome: 'REACTIVATED'
+      };
+    });
+  }
+
+  /**
+   * Extiende la vigencia autorizada de un evento aplicando override/extensión conforme a DEC-095, DEC-100 y DEC-102 (EL-TK-070).
+   */
+  async extendEventValidity(command: ExtendEventValidityCommand): Promise<ExtendEventValidityResult> {
+    const { actorContext, eventId, totalValidityDurationDays, graceDays: customGraceDays, reason, idempotencyKey, now: providedNow } = command;
+
+    if (!actorContext || actorContext.actorType !== 'ADMIN_HUMAN') {
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_VALIDITY_EXTENDED',
+        actorId: actorContext?.principalId ?? 'UNKNOWN',
+        targetIdentifier: eventId,
+        result: 'REJECTED_UNAUTHORIZED',
+        details: 'Only authorized administrative actors (ADMIN_HUMAN) may extend event validity',
+        timestamp: new Date()
+      });
+      throw new EventManagementError(
+        'UNAUTHORIZED',
+        'Only authorized administrative actors may extend event validity'
+      );
+    }
+
+    const trimmedReason = reason?.trim();
+    if (!trimmedReason) {
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_VALIDITY_EXTENDED',
+        actorId: actorContext.principalId,
+        targetIdentifier: eventId,
+        result: 'REJECTED_EXTENSION_REASON_REQUIRED',
+        details: 'Extension reason is mandatory',
+        timestamp: new Date()
+      });
+      throw new EventManagementError(
+        'EXTENSION_REASON_REQUIRED',
+        'A justified administrative reason is required to extend event validity'
+      );
+    }
+
+    if (!Number.isInteger(totalValidityDurationDays) || totalValidityDurationDays <= 0) {
+      throw new EventManagementError(
+        'INVALID_VALIDITY_EXTENSION',
+        'Total validity duration days must be a positive integer'
+      );
+    }
+
+    const payloadHash = idempotencyKey
+      ? createHash('sha256')
+          .update(JSON.stringify({ eventId, totalValidityDurationDays, customGraceDays, principalId: actorContext.principalId }))
+          .digest('hex')
+      : null;
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      const now = providedNow ?? new Date();
+
+      // 1. Pessimistic lock
+      const rows = await tx.query<EventRow>(
+        `SELECT id, organizer_id, name, status, timezone, starts_at_local,
+                scheduled_at, utc_offset_minutes, expires_at, grace_ends_at,
+                activated_at, closed_at, purge_started_at, suspended_at,
+                suspension_reason, previous_status, validity_duration_days,
+                grace_days, uploads_enabled, guest_gallery_enabled,
+                moderation_mode, pin_enabled, idempotency_key,
+                idempotency_payload_hash, created_at, updated_at
+         FROM event
+         WHERE id = $1
+         FOR UPDATE`,
+        eventId
+      );
+
+      if (rows.length === 0) {
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event '${eventId}' not found`);
+      }
+
+      const current = rows[0];
+
+      // 2. State validation: PENDING_DELETION and ARCHIVED cannot be extended (terminal conflict per EL-EP-015 / DEC-102)
+      if (current.status === 'PENDING_DELETION' || current.status === 'ARCHIVED') {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_VALIDITY_EXTENDED',
+          actorId: actorContext.principalId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_EVENT_TERMINAL',
+          details: `Event '${eventId}' is in terminal status '${current.status}'; cannot extend validity`,
+          timestamp: now
+        });
+        throw new EventManagementError(
+          'EVENT_TERMINAL',
+          `Cannot extend validity for an event in terminal status '${current.status}'`
+        );
+      }
+
+      if (current.status === 'DRAFT') {
+        throw new EventManagementError(
+          'EVENT_NOT_EXTENDABLE',
+          `Draft events must be scheduled first before applying validity extensions`
+        );
+      }
+
+      // Check for idempotent replay
+      if (
+        idempotencyKey &&
+        current.idempotency_key === idempotencyKey &&
+        current.validity_duration_days === totalValidityDurationDays
+      ) {
+        if (current.idempotency_payload_hash !== payloadHash) {
+          throw new EventManagementError(
+            'IDEMPOTENCY_CONFLICT',
+            'Idempotency key has already been used with different parameters'
+          );
+        }
+
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_VALIDITY_EXTENDED',
+          actorId: actorContext.principalId,
+          targetIdentifier: eventId,
+          result: 'IDEMPOTENT_REPLAY',
+          details: `Idempotent replay: event '${eventId}' already has validity extended to ${totalValidityDurationDays} days`,
+          timestamp: now
+        });
+
+        return {
+          event: mapRowToRecord(current),
+          previousStatus: current.status as EventStatus,
+          previousExpiresAt: current.expires_at ? new Date(current.expires_at) : null,
+          previousGraceEndsAt: current.grace_ends_at ? new Date(current.grace_ends_at) : null,
+          outcome: 'IDEMPOTENT_REPLAY'
+        };
+      }
+
+      const scheduledAt = current.scheduled_at ? new Date(current.scheduled_at) : null;
+      if (!scheduledAt) {
+        throw new EventManagementError(
+          'SCHEDULE_NOT_CONFIGURED',
+          `Event '${eventId}' does not have a scheduled anchor timestamp`
+        );
+      }
+
+      const effectiveGraceDays = customGraceDays ?? current.grace_days ?? DEFAULT_GRACE_PERIOD_DAYS;
+
+      // 3. Recalculate canonical timeline with the new total duration from scheduled anchor (DEC-095, DEC-100, DEC-082)
+      const newTimeline = calculateEventLifecycleTimeline({
+        scheduledAt,
+        timezone: current.timezone,
+        validityDurationDays: totalValidityDurationDays,
+        graceDays: effectiveGraceDays
+      });
+
+      // 4. DEC-102 validation: Después de ACTIVE se bloquean reducciones de vigencia que dejen el vencimiento en el pasado
+      const wasEverActive = current.activated_at != null || current.status === 'ACTIVE' || current.status === 'CLOSED' || current.status === 'GRACE_PERIOD';
+      if (wasEverActive && newTimeline.expiresAt.getTime() <= now.getTime()) {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_VALIDITY_EXTENDED',
+          actorId: actorContext.principalId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_INVALID_VALIDITY_EXTENSION',
+          details: `Extension leaves expiresAt (${newTimeline.expiresAt.toISOString()}) in the past (DEC-102)`,
+          timestamp: now
+        });
+        throw new EventManagementError(
+          'INVALID_VALIDITY_EXTENSION',
+          `Validity extension cannot leave expiration in the past for an activated event (DEC-102)`
+        );
+      }
+
+      // 5. Lifecycle reconciliation (Escenario 2):
+      // Si el evento estaba en GRACE_PERIOD y la nueva vigencia lo vuelve a dejar dentro de vigencia (now < newTimeline.expiresAt):
+      let targetStatus = current.status as EventStatus;
+      if (current.status === 'GRACE_PERIOD' && now.getTime() < newTimeline.expiresAt.getTime()) {
+        if (current.closed_at) {
+          targetStatus = 'CLOSED'; // Preserva cierre voluntario
+        } else {
+          targetStatus = 'ACTIVE';
+        }
+      }
+
+      const previousExpiresAt = current.expires_at ? new Date(current.expires_at) : null;
+      const previousGraceEndsAt = current.grace_ends_at ? new Date(current.grace_ends_at) : null;
+      const previousStatus = current.status as EventStatus;
+
+      // 6. Update event in database
+      await tx.execute(
+        `UPDATE event
+         SET validity_duration_days = $1,
+             grace_days = $2,
+             expires_at = $3,
+             grace_ends_at = $4,
+             status = $5,
+             idempotency_key = COALESCE($6, idempotency_key),
+             idempotency_payload_hash = COALESCE($7, idempotency_payload_hash),
+             updated_at = $8
+         WHERE id = $9`,
+        totalValidityDurationDays,
+        effectiveGraceDays,
+        newTimeline.expiresAt,
+        newTimeline.graceEndsAt,
+        targetStatus,
+        idempotencyKey ?? null,
+        payloadHash,
+        now,
+        eventId
+      );
+
+      const updatedRecord: EventRecord = {
+        ...mapRowToRecord(current),
+        validityDurationDays: totalValidityDurationDays,
+        graceDays: effectiveGraceDays,
+        expiresAt: newTimeline.expiresAt,
+        graceEndsAt: newTimeline.graceEndsAt,
+        status: targetStatus,
+        updatedAt: now
+      };
+
+      // 7. Audit successful extension
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_VALIDITY_EXTENDED',
+        actorId: actorContext.principalId,
+        targetIdentifier: eventId,
+        result: 'SUCCESS',
+        details: `Extended event '${eventId}' validity to ${totalValidityDurationDays} days. Status reconciled from '${previousStatus}' to '${targetStatus}'. Reason: ${trimmedReason}`,
+        timestamp: now
+      });
+
+      return {
+        event: updatedRecord,
+        previousStatus,
+        previousExpiresAt,
+        previousGraceEndsAt,
+        outcome: 'EXTENDED'
       };
     });
   }

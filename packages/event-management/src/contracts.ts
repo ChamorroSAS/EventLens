@@ -60,7 +60,10 @@ export type EventManagementErrorCode =
   | 'EVENT_TERMINAL'
   | 'SUSPENSION_REASON_REQUIRED'
   | 'EVENT_NOT_SUSPENDED'
-  | 'INVALID_PREVIOUS_STATUS';
+  | 'INVALID_PREVIOUS_STATUS'
+  | 'EXTENSION_REASON_REQUIRED'
+  | 'INVALID_VALIDITY_EXTENSION'
+  | 'EVENT_NOT_EXTENDABLE';
 
 export class EventManagementError extends Error {
   constructor(
@@ -196,6 +199,24 @@ export interface ReactivateEventResult {
   readonly outcome: 'REACTIVATED' | 'IDEMPOTENT_REPLAY';
 }
 
+export interface ExtendEventValidityCommand {
+  readonly actorContext: AdminActorContext;
+  readonly eventId: string;
+  readonly totalValidityDurationDays: number;
+  readonly graceDays?: number;
+  readonly reason: string;
+  readonly idempotencyKey?: string;
+  readonly now?: Date;
+}
+
+export interface ExtendEventValidityResult {
+  readonly event: EventRecord;
+  readonly previousStatus: EventStatus;
+  readonly previousExpiresAt: Date | null;
+  readonly previousGraceEndsAt: Date | null;
+  readonly outcome: 'EXTENDED' | 'IDEMPOTENT_REPLAY';
+}
+
 export interface EventAuditRecord {
   readonly id: string;
   readonly procedure:
@@ -207,11 +228,13 @@ export interface EventAuditRecord {
     | 'EVENT_REOPENED'
     | 'EVENT_TEMPORAL_ADVANCE'
     | 'EVENT_SUSPENDED'
-    | 'EVENT_REACTIVATED';
+    | 'EVENT_REACTIVATED'
+    | 'EVENT_VALIDITY_EXTENDED';
   readonly actorId: string;
   readonly targetIdentifier: string;
   readonly result:
     | 'SUCCESS'
+    | 'EXTENDED'
     | 'REACTIVATED'
     | 'TRANSITIONED_TO_GRACE_PERIOD'
     | 'TRANSITIONED_TO_PENDING_DELETION'
@@ -234,6 +257,9 @@ export interface EventAuditRecord {
     | 'REJECTED_EVENT_EXPIRED'
     | 'REJECTED_EVENT_TERMINAL'
     | 'REJECTED_REASON_REQUIRED'
+    | 'REJECTED_EXTENSION_REASON_REQUIRED'
+    | 'REJECTED_INVALID_VALIDITY_EXTENSION'
+    | 'REJECTED_EVENT_NOT_EXTENDABLE'
     | 'IDEMPOTENT_REPLAY';
   readonly details?: string;
   readonly timestamp: Date;

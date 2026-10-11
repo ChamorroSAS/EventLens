@@ -799,4 +799,106 @@ describeIntegration('EventLifecycleService (Real PostgreSQL Integration Tests 鈥
     expect(rows[0].status).toBe('PENDING_DELETION');
     expect(new Date(rows[0].purge_started_at).toISOString()).toBe(purgeNow.toISOString());
   });
+
+  it('EL-TK-070: Extiende vigencia autorizada en PostgreSQL recalculando expires_at y grace_ends_at (DEC-095, DEC-100)', async () => {
+    const eventId = randomUUID();
+    const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+    const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+    const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+    const now = new Date('2026-11-15T00:00:00.000Z');
+
+    await sql(
+      `INSERT INTO event (id, organizer_id, name, status, scheduled_at, expires_at, grace_ends_at, activated_at, validity_duration_days, grace_days)
+       VALUES ($1, $2, $3, 'ACTIVE', $4, $5, $6, $4, 30, 7)`,
+      eventId,
+      ownerActor.accountId,
+      'Evento Extensi贸n SQL',
+      scheduledAt,
+      expiresAt,
+      graceEndsAt
+    );
+
+    const result = await service.extendEventValidity({
+      eventId,
+      actorContext: adminActor,
+      totalValidityDurationDays: 60,
+      reason: 'Extensi贸n contratada SQL',
+      now,
+      idempotencyKey: 'extend-sql-key'
+    });
+
+    expect(result.outcome).toBe('EXTENDED');
+    expect(result.event.validityDurationDays).toBe(60);
+    const expectedExpiresAt = new Date(scheduledAt.getTime() + 60 * 24 * 3600 * 1000);
+    const expectedGraceEndsAt = new Date(expectedExpiresAt.getTime() + 7 * 24 * 3600 * 1000);
+    expect(result.event.expiresAt).toEqual(expectedExpiresAt);
+    expect(result.event.graceEndsAt).toEqual(expectedGraceEndsAt);
+
+    // Verificar en BD
+    const rows = await query<{ validity_duration_days: number; expires_at: Date; grace_ends_at: Date }>(
+      `SELECT validity_duration_days, expires_at, grace_ends_at FROM event WHERE id = $1`,
+      eventId
+    );
+    expect(rows[0].validity_duration_days).toBe(60);
+    expect(new Date(rows[0].expires_at).toISOString()).toBe(expectedExpiresAt.toISOString());
+    expect(new Date(rows[0].grace_ends_at).toISOString()).toBe(expectedGraceEndsAt.toISOString());
+
+    // Idempotencia
+    const replay = await service.extendEventValidity({
+      eventId,
+      actorContext: adminActor,
+      totalValidityDurationDays: 60,
+      reason: 'Extensi贸n contratada SQL',
+      now,
+      idempotencyKey: 'extend-sql-key'
+    });
+    expect(replay.outcome).toBe('IDEMPOTENT_REPLAY');
+
+    // Auditor铆a
+    const audits = await query<{ procedure: string; result: string }>(
+      `SELECT procedure, result FROM admin_audit_event WHERE target_identifier = $1 ORDER BY timestamp ASC`,
+      eventId
+    );
+    expect(audits).toHaveLength(2);
+    expect(audits[0].procedure).toBe('EVENT_VALIDITY_EXTENDED');
+    expect(audits[0].result).toBe('SUCCESS');
+    expect(audits[1].procedure).toBe('EVENT_VALIDITY_EXTENDED');
+    expect(audits[1].result).toBe('IDEMPOTENT_REPLAY');
+  });
+
+  it('EL-TK-070: Reconcilia en PostgreSQL de GRACE_PERIOD a ACTIVE al devolverlo a vigencia', async () => {
+    const eventId = randomUUID();
+    const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+    const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+    const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+    const now = new Date('2026-12-03T12:00:00.000Z');
+
+    await sql(
+      `INSERT INTO event (id, organizer_id, name, status, scheduled_at, expires_at, grace_ends_at, activated_at, validity_duration_days, grace_days)
+       VALUES ($1, $2, $3, 'GRACE_PERIOD', $4, $5, $6, $4, 30, 7)`,
+      eventId,
+      ownerActor.accountId,
+      'Evento Gracia Reconciliaci贸n SQL',
+      scheduledAt,
+      expiresAt,
+      graceEndsAt
+    );
+
+    const result = await service.extendEventValidity({
+      eventId,
+      actorContext: adminActor,
+      totalValidityDurationDays: 45,
+      reason: 'Extensi贸n reactivadora en PostgreSQL',
+      now
+    });
+
+    expect(result.previousStatus).toBe('GRACE_PERIOD');
+    expect(result.event.status).toBe('ACTIVE');
+
+    const rows = await query<{ status: string }>(
+      `SELECT status FROM event WHERE id = $1`,
+      eventId
+    );
+    expect(rows[0].status).toBe('ACTIVE');
+  });
 });

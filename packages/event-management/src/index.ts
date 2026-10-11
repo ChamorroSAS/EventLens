@@ -24,6 +24,8 @@ export {
   type SuspendEventResult,
   type ReactivateEventCommand,
   type ReactivateEventResult,
+  type ExtendEventValidityCommand,
+  type ExtendEventValidityResult,
   type EventAuditRecord,
   type EventAuditSink
 } from './contracts.js';

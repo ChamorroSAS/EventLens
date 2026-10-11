@@ -51,15 +51,15 @@ try {
   const exitCode = run(['--filter', '@eventlens/event-management', 'exec', 'vitest', 'run', '--no-file-parallelism', '--reporter=default', '--reporter=json', '--outputFile=/evidence/tests.json'], true);
   const tests = JSON.parse(readFileSync('/evidence/tests.json', 'utf8'));
   writeFileSync('/evidence/result.json', JSON.stringify({
-    ticket: 'EL-TK-069',
-    precedingTicket: 'EL-TK-068',
+    ticket: 'EL-TK-070',
+    precedingTicket: 'EL-TK-069',
     runId: database,
     testedAt: new Date().toISOString(),
     result: tests.success && exitCode === 0 ? 'PASS' : 'FAIL',
     tests: tests.numTotalTests,
     passed: tests.numPassedTests,
     postgresql: '16 real isolated laboratory database',
-    lifecycleReactivation: 'Administrative reactivation recalculating current temporal lifecycle status without restoring stale states (DEC-081, DEC-078, DEC-082)',
+    lifecycleExtension: 'Authorized event validity extension recalculating canonical timeline and reconciling lifecycle without stale drops (DEC-095, DEC-100, DEC-102)',
     gates: {
       'MEDIA-001': 'NOT_EVALUATED',
       'CAP-001': 'NOT_EVALUATED',

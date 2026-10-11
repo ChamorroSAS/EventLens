@@ -198,6 +198,30 @@ class InMemoryRunner implements TransactionRunner {
             return 1;
           }
         }
+        if (sql.includes('UPDATE event') && sql.includes('SET validity_duration_days = $1')) {
+          const validityDurationDays = params[0] as number;
+          const graceDays = params[1] as number;
+          const expiresAt = params[2] as Date;
+          const graceEndsAt = params[3] as Date;
+          const status = params[4] as string;
+          const idempotencyKey = params[5] as string | null;
+          const payloadHash = params[6] as string | null;
+          const updatedAt = params[7] as Date;
+          const eventId = params[8] as string;
+
+          const existing = this.events.get(eventId);
+          if (existing) {
+            existing.validity_duration_days = validityDurationDays;
+            existing.grace_days = graceDays;
+            existing.expires_at = expiresAt;
+            existing.grace_ends_at = graceEndsAt;
+            existing.status = status;
+            if (idempotencyKey) existing.idempotency_key = idempotencyKey;
+            if (payloadHash) existing.idempotency_payload_hash = payloadHash;
+            existing.updated_at = updatedAt;
+            return 1;
+          }
+        }
         return 0;
       }
     };
@@ -2089,6 +2113,306 @@ describe('EL-TK-063: EventLifecycleService (Unit Tests)', () => {
       });
       expect(second.outcome).toBe('IDEMPOTENT_REPLAY');
       expect(second.targetStatus).toBe('DRAFT');
+    });
+  });
+
+  describe('EL-TK-070: EventLifecycleService.extendEventValidity (Unit Tests)', () => {
+    it('Escenario 1: Administrador aplica extensión autorizada recalculando timeline canónico desde el ancla (DEC-095, DEC-100)', async () => {
+      const eventId = '77770000-0000-0000-0000-000000000001';
+      const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+      const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+      const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+      const now = new Date('2026-11-15T00:00:00.000Z');
+
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Para Extender',
+        status: 'ACTIVE',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: null,
+        purge_started_at: null,
+        suspended_at: null,
+        suspension_reason: null,
+        previous_status: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      const res = await service.extendEventValidity({
+        actorContext: adminActor,
+        eventId,
+        totalValidityDurationDays: 60,
+        reason: 'Ampliación solicitada por patrocinador VIP',
+        now
+      });
+
+      expect(res.outcome).toBe('EXTENDED');
+      expect(res.previousStatus).toBe('ACTIVE');
+      expect(res.event.validityDurationDays).toBe(60);
+      // El nuevo expiresAt debe ser scheduledAt + 60 días físicos
+      const expectedExpiresAt = new Date(scheduledAt.getTime() + 60 * 24 * 3600 * 1000);
+      const expectedGraceEndsAt = new Date(expectedExpiresAt.getTime() + 7 * 24 * 3600 * 1000);
+      expect(res.event.expiresAt).toEqual(expectedExpiresAt);
+      expect(res.event.graceEndsAt).toEqual(expectedGraceEndsAt);
+      expect(res.event.status).toBe('ACTIVE');
+
+      expect(auditLogs).toHaveLength(1);
+      expect(auditLogs[0].procedure).toBe('EVENT_VALIDITY_EXTENDED');
+      expect(auditLogs[0].result).toBe('SUCCESS');
+    });
+
+    it('Escenario 2: Reconcilia evento en GRACE_PERIOD a ACTIVE o CLOSED si la ampliación lo devuelve a vigencia', async () => {
+      const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+      const expiresAt = new Date('2026-12-01T15:00:00.000Z');
+      const graceEndsAt = new Date('2026-12-08T15:00:00.000Z');
+      const now = new Date('2026-12-03T12:00:00.000Z'); // Está en GRACE_PERIOD
+
+      // Caso 1: Estaba en GRACE_PERIOD sin closed_at -> reconcilia a ACTIVE
+      const eventIdActive = '77770000-0000-0000-0000-000000000002';
+      eventsMap.set(eventIdActive, {
+        id: eventIdActive,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento en Gracia Para Activar',
+        status: 'GRACE_PERIOD',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: expiresAt,
+        grace_ends_at: graceEndsAt,
+        activated_at: scheduledAt,
+        closed_at: null,
+        purge_started_at: null,
+        suspended_at: null,
+        suspension_reason: null,
+        previous_status: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      const resActive = await service.extendEventValidity({
+        actorContext: adminActor,
+        eventId: eventIdActive,
+        totalValidityDurationDays: 45, // Nueva expiración: 15 de diciembre
+        reason: 'Extensión reactivadora',
+        now
+      });
+      expect(resActive.previousStatus).toBe('GRACE_PERIOD');
+      expect(resActive.event.status).toBe('ACTIVE');
+
+      // Caso 2: Estaba en GRACE_PERIOD pero tenía closed_at -> reconcilia a CLOSED (conserva cierre voluntario)
+      const eventIdClosed = '77770000-0000-0000-0000-000000000003';
+      eventsMap.set(eventIdClosed, {
+        ...eventsMap.get(eventIdActive)!,
+        id: eventIdClosed,
+        status: 'GRACE_PERIOD',
+        closed_at: new Date('2026-11-20T00:00:00.000Z')
+      });
+
+      const resClosed = await service.extendEventValidity({
+        actorContext: adminActor,
+        eventId: eventIdClosed,
+        totalValidityDurationDays: 45,
+        reason: 'Extensión evento cerrado',
+        now
+      });
+      expect(resClosed.previousStatus).toBe('GRACE_PERIOD');
+      expect(resClosed.event.status).toBe('CLOSED');
+    });
+
+    it('Escenario 3: Rechaza ampliación en PENDING_DELETION (estado terminal incompatible per EL-EP-015)', async () => {
+      const eventId = '77770000-0000-0000-0000-000000000004';
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Terminal',
+        status: 'PENDING_DELETION',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: new Date('2026-11-01T15:00:00.000Z'),
+        utc_offset_minutes: -300,
+        expires_at: new Date('2026-12-01T15:00:00.000Z'),
+        grace_ends_at: new Date('2026-12-08T15:00:00.000Z'),
+        activated_at: new Date('2026-11-01T15:00:00.000Z'),
+        closed_at: null,
+        purge_started_at: new Date('2026-12-08T15:00:00.000Z'),
+        suspended_at: null,
+        suspension_reason: null,
+        previous_status: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      await expect(
+        service.extendEventValidity({
+          actorContext: adminActor,
+          eventId,
+          totalValidityDurationDays: 60,
+          reason: 'Intento sobre terminal'
+        })
+      ).rejects.toMatchObject({
+        code: 'EVENT_TERMINAL'
+      });
+    });
+
+    it('Regla DEC-102: Después de ACTIVE bloquea reducciones o extensiones que dejen el vencimiento en el pasado', async () => {
+      const eventId = '77770000-0000-0000-0000-000000000005';
+      const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+      const now = new Date('2026-11-20T00:00:00.000Z'); // 19 días después de inicio
+
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Activo DEC-102',
+        status: 'ACTIVE',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: new Date('2026-12-01T15:00:00.000Z'),
+        grace_ends_at: new Date('2026-12-08T15:00:00.000Z'),
+        activated_at: scheduledAt,
+        closed_at: null,
+        purge_started_at: null,
+        suspended_at: null,
+        suspension_reason: null,
+        previous_status: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      // Intento de fijar 10 días de vigencia desde el ancla (10 días dejaría el vencimiento el 11 de noviembre, en el pasado respecto a now = 20 de noviembre)
+      await expect(
+        service.extendEventValidity({
+          actorContext: adminActor,
+          eventId,
+          totalValidityDurationDays: 10,
+          reason: 'Reducción que deja vencimiento en el pasado',
+          now
+        })
+      ).rejects.toMatchObject({
+        code: 'INVALID_VALIDITY_EXTENSION'
+      });
+    });
+
+    it('Rechaza si no se proporciona motivo justificado (EXTENSION_REASON_REQUIRED)', async () => {
+      const eventId = '77770000-0000-0000-0000-000000000006';
+      await expect(
+        service.extendEventValidity({
+          actorContext: adminActor,
+          eventId,
+          totalValidityDurationDays: 60,
+          reason: '   '
+        })
+      ).rejects.toMatchObject({
+        code: 'EXTENSION_REASON_REQUIRED'
+      });
+    });
+
+    it('Rechaza si el actor no es un administrador autorizado (UNAUTHORIZED)', async () => {
+      const eventId = '77770000-0000-0000-0000-000000000007';
+      await expect(
+        service.extendEventValidity({
+          actorContext: ownerActor as unknown as AdminActorContext,
+          eventId,
+          totalValidityDurationDays: 60,
+          reason: 'Intento organizador'
+        })
+      ).rejects.toMatchObject({
+        code: 'UNAUTHORIZED'
+      });
+    });
+
+    it('Idempotencia determinista: replay idéntico devuelve IDEMPOTENT_REPLAY', async () => {
+      const eventId = '77770000-0000-0000-0000-000000000008';
+      const scheduledAt = new Date('2026-11-01T15:00:00.000Z');
+      const idempotencyKey = 'extend-idemp-1';
+
+      eventsMap.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento Replay Extensión',
+        status: 'ACTIVE',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-11-01T10:00:00',
+        scheduled_at: scheduledAt,
+        utc_offset_minutes: -300,
+        expires_at: new Date('2026-12-01T15:00:00.000Z'),
+        grace_ends_at: new Date('2026-12-08T15:00:00.000Z'),
+        activated_at: scheduledAt,
+        closed_at: null,
+        purge_started_at: null,
+        suspended_at: null,
+        suspension_reason: null,
+        previous_status: null,
+        validity_duration_days: 30,
+        grace_days: 7,
+        uploads_enabled: true,
+        guest_gallery_enabled: true,
+        moderation_mode: 'AUTO_PUBLISH',
+        pin_enabled: false,
+        idempotency_key: null,
+        idempotency_payload_hash: null,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      const first = await service.extendEventValidity({
+        actorContext: adminActor,
+        eventId,
+        totalValidityDurationDays: 60,
+        reason: 'Extensión inicial',
+        idempotencyKey
+      });
+      expect(first.outcome).toBe('EXTENDED');
+
+      const replay = await service.extendEventValidity({
+        actorContext: adminActor,
+        eventId,
+        totalValidityDurationDays: 60,
+        reason: 'Extensión inicial',
+        idempotencyKey
+      });
+      expect(replay.outcome).toBe('IDEMPOTENT_REPLAY');
     });
   });
 });
