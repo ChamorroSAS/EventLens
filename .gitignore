@@ -27,3 +27,5 @@ e2e/playwright-report/
 packages/database/prisma/schema.prisma
 packages/database/prisma/migrations/
 packages/database/prisma/migration-manifest.json
+
+.DS_Store
