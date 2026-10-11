@@ -677,3 +677,69 @@ export interface MediaReliabilityReport {
   deduplicatedFactsCount: number;
   sanitizedMetadata: Record<string, unknown>;
 }
+
+export type SupportInteractionCategory =
+  | 'FUNCTIONAL'
+  | 'COMMERCIAL_OR_NON_TECHNICAL';
+
+export interface EventSupportRecord {
+  id: string;
+  eventId: string;
+  cohortInclusion: string;
+  timestamp: Date;
+  hasContent: boolean;
+  category?: SupportInteractionCategory;
+  hadFunctionalIncident?: boolean;
+  incidentRefs?: string[];
+}
+
+export interface OrganizerRetrievalRecord {
+  id: string;
+  organizerId: string;
+  eventId: string;
+  cohortInclusion: string;
+  timestamp: Date;
+  hasContent: boolean;
+  downloadCompleted: boolean;
+  downloadCancelledOrInvalid?: boolean;
+}
+
+export interface SupportReliabilityResult {
+  totalEvaluatedEvents: number;
+  eventsWithoutFunctionalSupport: number;
+  eventsWithFunctionalSupport: number;
+  eventsWithCommercialSupportOnly: number;
+  contentlessEventsExcluded: number;
+  excludedInternalEvents: number;
+  ratio: number | null;
+  targetRatio: number; // 0.80 (>= 80%)
+  isTargetMet: boolean;
+  hasSufficientData: boolean;
+}
+
+export interface RetrievalReliabilityResult {
+  totalEligibleOrganizers: number;
+  organizersWithSuccessfulDownload: number;
+  organizersWithoutDownload: number;
+  contentlessOrganizersExcluded: number;
+  invalidDownloadsExcluded: number;
+  excludedInternalOrganizers: number;
+  ratio: number | null;
+  targetRatio: number; // 0.70 (>= 70%)
+  isTargetMet: boolean;
+  hasSufficientData: boolean;
+}
+
+export interface SupportAndRetrievalReport {
+  evaluatedAt: Date;
+  period: {
+    windowStart: Date;
+    windowEnd: Date;
+  };
+  cohortInclusion: string;
+  support: SupportReliabilityResult;
+  retrieval: RetrievalReliabilityResult;
+  overallStatus: 'PASS' | 'FAIL' | 'INSUFFICIENT_DATA';
+  deduplicatedRecordsCount: number;
+  sanitizedMetadata: Record<string, unknown>;
+}

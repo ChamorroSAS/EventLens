@@ -78,6 +78,8 @@ export interface SupportMetricFact extends BaseMetricFact {
   type: 'SUPPORT';
   hasContent: boolean;
   hadFunctionalIncident: boolean;
+  category?: 'FUNCTIONAL' | 'COMMERCIAL_OR_NON_TECHNICAL';
+  incidentRefs?: string[];
 }
 
 export interface DownloadMetricFact extends BaseMetricFact {
@@ -85,6 +87,7 @@ export interface DownloadMetricFact extends BaseMetricFact {
   organizerId: string;
   hasContent: boolean;
   downloaded: boolean;
+  downloadCancelledOrInvalid?: boolean;
 }
 
 export interface ParticipationMetricFact extends BaseMetricFact {
@@ -497,7 +500,12 @@ export class BetaMetricsAggregator {
       }
 
       denominator++;
-      if (!fact.hadFunctionalIncident) {
+      // Escenario 1 & 2: Categoría explícita FUNCTIONAL penaliza; COMMERCIAL_OR_NON_TECHNICAL se excluye de la penalización
+      const isFunctionalPenalty =
+        fact.category === 'FUNCTIONAL' ||
+        (fact.hadFunctionalIncident && fact.category !== 'COMMERCIAL_OR_NON_TECHNICAL');
+
+      if (!isFunctionalPenalty) {
         numerator++;
       }
     }
@@ -565,7 +573,7 @@ export class BetaMetricsAggregator {
       }
 
       denominator++;
-      if (fact.downloaded) {
+      if (fact.downloaded && !fact.downloadCancelledOrInvalid) {
         numerator++;
       }
     }
