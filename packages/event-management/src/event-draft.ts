@@ -22,6 +22,10 @@ interface EventRow {
   starts_at_local?: string | null;
   scheduled_at?: Date | string | null;
   utc_offset_minutes?: number | null;
+  expires_at?: Date | string | null;
+  grace_ends_at?: Date | string | null;
+  validity_duration_days?: number | null;
+  grace_days?: number | null;
   uploads_enabled: boolean;
   guest_gallery_enabled: boolean;
   moderation_mode: string;
@@ -42,6 +46,10 @@ function mapRowToRecord(row: EventRow): EventRecord {
     startsAtLocal: row.starts_at_local ?? null,
     scheduledAt: row.scheduled_at ? new Date(row.scheduled_at) : null,
     utcOffsetMinutes: row.utc_offset_minutes !== null && row.utc_offset_minutes !== undefined ? Number(row.utc_offset_minutes) : null,
+    expiresAt: row.expires_at ? new Date(row.expires_at) : null,
+    graceEndsAt: row.grace_ends_at ? new Date(row.grace_ends_at) : null,
+    validityDurationDays: row.validity_duration_days !== null && row.validity_duration_days !== undefined ? Number(row.validity_duration_days) : null,
+    graceDays: row.grace_days !== null && row.grace_days !== undefined ? Number(row.grace_days) : null,
     uploadsEnabled: Boolean(row.uploads_enabled),
     guestGalleryEnabled: Boolean(row.guest_gallery_enabled),
     moderationMode: row.moderation_mode as ModerationMode,
@@ -235,6 +243,10 @@ export class EventDraftService {
         startsAtLocal: null,
         scheduledAt: null,
         utcOffsetMinutes: null,
+        expiresAt: null,
+        graceEndsAt: null,
+        validityDurationDays: null,
+        graceDays: null,
         uploadsEnabled,
         guestGalleryEnabled,
         moderationMode,

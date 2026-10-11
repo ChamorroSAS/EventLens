@@ -12,6 +12,10 @@ export interface EventRecord {
   readonly startsAtLocal: string | null;
   readonly scheduledAt: Date | null;
   readonly utcOffsetMinutes: number | null;
+  readonly expiresAt: Date | null;
+  readonly graceEndsAt: Date | null;
+  readonly validityDurationDays: number | null;
+  readonly graceDays: number | null;
   readonly uploadsEnabled: boolean;
   readonly guestGalleryEnabled: boolean;
   readonly moderationMode: ModerationMode;
@@ -32,6 +36,8 @@ export type EventManagementErrorCode =
   | 'INVALID_OFFSET'
   | 'INVALID_DATE_TIME'
   | 'INVALID_TIMELINE_PARAMETERS'
+  | 'SCHEDULE_NOT_CONFIGURED'
+  | 'INCOMPLETE_CONFIGURATION'
   | 'EVENT_NOT_IN_DRAFT';
 
 export class EventManagementError extends Error {
@@ -69,9 +75,22 @@ export interface SetEventScheduleResult {
   readonly outcome: 'UPDATED' | 'IDEMPOTENT_REPLAY';
 }
 
+export interface ScheduleDraftEventCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly eventId: string;
+  readonly validityDurationDays?: number;
+  readonly graceDays?: number;
+  readonly idempotencyKey?: string;
+}
+
+export interface ScheduleDraftEventResult {
+  readonly event: EventRecord;
+  readonly outcome: 'SCHEDULED' | 'IDEMPOTENT_REPLAY';
+}
+
 export interface EventAuditRecord {
   readonly id: string;
-  readonly procedure: 'EVENT_DRAFT_CREATED' | 'EVENT_SCHEDULE_SET';
+  readonly procedure: 'EVENT_DRAFT_CREATED' | 'EVENT_SCHEDULE_SET' | 'EVENT_SCHEDULED';
   readonly actorId: string;
   readonly targetIdentifier: string;
   readonly result:
@@ -82,6 +101,8 @@ export interface EventAuditRecord {
     | 'REJECTED_AMBIGUOUS_TIME'
     | 'REJECTED_INVALID_OFFSET'
     | 'REJECTED_INVALID_STATE'
+    | 'REJECTED_SCHEDULE_NOT_CONFIGURED'
+    | 'REJECTED_INCOMPLETE_CONFIG'
     | 'IDEMPOTENT_REPLAY';
   readonly details?: string;
   readonly timestamp: Date;

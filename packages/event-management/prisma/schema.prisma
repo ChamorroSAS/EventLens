@@ -11,6 +11,10 @@ model Event {
   startsAtLocal          String?   @map("starts_at_local")
   scheduledAt            DateTime? @map("scheduled_at") @db.Timestamptz
   utcOffsetMinutes       Int?      @map("utc_offset_minutes")
+  expiresAt              DateTime? @map("expires_at") @db.Timestamptz
+  graceEndsAt            DateTime? @map("grace_ends_at") @db.Timestamptz
+  validityDurationDays   Int?      @map("validity_duration_days")
+  graceDays              Int?      @map("grace_days")
   uploadsEnabled         Boolean   @default(false) @map("uploads_enabled")
   guestGalleryEnabled    Boolean  @default(false) @map("guest_gallery_enabled")
   moderationMode         String   @default("AUTO_PUBLISH") @map("moderation_mode")
