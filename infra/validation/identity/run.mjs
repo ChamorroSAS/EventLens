@@ -38,20 +38,25 @@ try {
   mkdirSync('/evidence', { recursive: true });
   run(['--filter', '@eventlens/identity', 'typecheck']);
   run(['--filter', '@eventlens/identity', 'build']);
-  if (typeof (await import('/workspace/packages/identity/dist/index.js')).AdminProvisioningService !== 'function') {
+  const identityExports = await import('/workspace/packages/identity/dist/index.js');
+  if (
+    typeof identityExports.AdminProvisioningService !== 'function' ||
+    typeof identityExports.AdminAuthenticationService !== 'function' ||
+    typeof identityExports.Mod001RecoveryCoordinator !== 'function'
+  ) {
     throw Error('PUBLIC_IMPORT_FAILED');
   }
   const exitCode = run(['--filter', '@eventlens/identity', 'exec', 'vitest', 'run', '--reporter=default', '--reporter=json', '--outputFile=/evidence/tests.json'], true);
   const tests = JSON.parse(readFileSync('/evidence/tests.json', 'utf8'));
   writeFileSync('/evidence/result.json', JSON.stringify({
-    ticket: 'EL-TK-043',
+    ticket: 'EL-TK-046',
     runId: database,
     testedAt: new Date().toISOString(),
     result: tests.success && exitCode === 0 ? 'PASS' : 'FAIL',
     tests: tests.numTotalTests,
     passed: tests.numPassedTests,
     postgresql: '16 real isolated laboratory database',
-    recovery: 'Neutral operational provisioning verification; PITR covered in EL-TK-046',
+    recovery: 'MOD-001 RecoveryAuthority protocol PREPARE->SQL->ACK and post-PITR reconciliation',
     gates: {
       'MEDIA-001': 'NOT_EVALUATED',
       'CAP-001': 'NOT_EVALUATED',
