@@ -2,8 +2,10 @@ import { randomUUID } from 'node:crypto';
 import type { SqlTransaction, TransactionRunner } from '@eventlens/database';
 import {
   AuditActor,
+  AuditEventPage,
   AuditEventRecord,
   AuditError,
+  AuditQuery,
   AuditResult,
   AuditTelemetrySink,
   RegisterAuditEventCommand
@@ -117,6 +119,166 @@ export class AuditService {
     } finally {
       this.inFlightOperations.delete(operationKey);
     }
+  }
+
+  public async queryEvents(query: AuditQuery): Promise<AuditEventPage> {
+    if (!query || !query.callerActor) {
+      throw new AuditError('UNAUTHORIZED_ACCESS', 'Caller actor is required to query audit events');
+    }
+
+    this.authorizeQuery(query);
+
+    const page = query.pagination?.page ?? 1;
+    const limit = query.pagination?.limit ?? 20;
+
+    if (!Number.isSafeInteger(page) || page < 1) {
+      throw new AuditError('INVALID_RESOURCE', 'Page must be an integer >= 1');
+    }
+
+    if (!Number.isSafeInteger(limit) || limit < 1 || limit > 100) {
+      throw new AuditError('INVALID_RESOURCE', 'Limit must be an integer between 1 and 100');
+    }
+
+    const filter = query.filter ?? {};
+    if (filter.fromTimestamp && filter.toTimestamp && filter.fromTimestamp > filter.toTimestamp) {
+      throw new AuditError('INVALID_RESOURCE', 'fromTimestamp cannot be after toTimestamp');
+    }
+
+    return this.transactions.run(async (tx) => {
+      const conditions: string[] = [];
+      const params: unknown[] = [];
+
+      if (filter.resourceType) {
+        params.push(filter.resourceType);
+        conditions.push(`resource_type = $${params.length}`);
+      }
+
+      if (filter.resourceId) {
+        params.push(filter.resourceId);
+        conditions.push(`resource_id = $${params.length}`);
+      }
+
+      if (filter.action) {
+        params.push(filter.action);
+        conditions.push(`action = $${params.length}`);
+      }
+
+      if (filter.actorType) {
+        params.push(filter.actorType);
+        conditions.push(`actor_type = $${params.length}`);
+      }
+
+      if (filter.actorId) {
+        params.push(filter.actorId);
+        conditions.push(`actor_id = $${params.length}`);
+      }
+
+      if (filter.result) {
+        params.push(filter.result);
+        conditions.push(`result = $${params.length}`);
+      }
+
+      if (filter.fromTimestamp) {
+        params.push(filter.fromTimestamp);
+        conditions.push(`occurred_at >= $${params.length}`);
+      }
+
+      if (filter.toTimestamp) {
+        params.push(filter.toTimestamp);
+        conditions.push(`occurred_at <= $${params.length}`);
+      }
+
+      if (query.allowedScope?.resourceType) {
+        params.push(query.allowedScope.resourceType);
+        conditions.push(`resource_type = $${params.length}`);
+      }
+      if (query.allowedScope?.resourceIds && query.allowedScope.resourceIds.length > 0) {
+        const idPlaceholders = query.allowedScope.resourceIds.map((id) => {
+          params.push(id);
+          return `$${params.length}`;
+        });
+        conditions.push(`resource_id IN (${idPlaceholders.join(', ')})`);
+      }
+
+      const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+      const countResult = await tx.query<{ count: string }>(
+        `SELECT COUNT(*)::text as count FROM audit_event ${whereClause}`,
+        ...params
+      );
+
+      const totalCount = parseInt(countResult[0]?.count ?? '0', 10);
+      const totalPages = totalCount > 0 ? Math.ceil(totalCount / limit) : 0;
+
+      if (totalCount === 0 || page > (totalPages || 1)) {
+        return {
+          items: [],
+          page,
+          limit,
+          totalCount,
+          totalPages,
+          hasNextPage: false,
+          hasPreviousPage: page > 1
+        };
+      }
+
+      const offset = (page - 1) * limit;
+      const queryParams = [...params];
+      queryParams.push(limit);
+      const limitParamIdx = queryParams.length;
+      queryParams.push(offset);
+      const offsetParamIdx = queryParams.length;
+
+      const rows = await tx.query<RawAuditEventRow>(
+        `SELECT id, occurred_at, actor_type, actor_id, actor_detail, action,
+                resource_type, resource_id, result, reason, metadata, idempotency_key, created_at
+         FROM audit_event
+         ${whereClause}
+         ORDER BY occurred_at DESC, id DESC
+         LIMIT $${limitParamIdx} OFFSET $${offsetParamIdx}`,
+        ...queryParams
+      );
+
+      const items = rows.map((r) => this.mapRowToRecord(r));
+
+      return {
+        items,
+        page,
+        limit,
+        totalCount,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1
+      };
+    });
+  }
+
+  private authorizeQuery(query: AuditQuery): void {
+    const caller = query.callerActor;
+
+    if (caller.type === 'ADMIN') {
+      return;
+    }
+
+    if (caller.type === 'ORGANIZER') {
+      const filter = query.filter;
+      const isScopedToSelf = filter?.actorId === caller.actorId;
+      const hasAllowedScope =
+        query.allowedScope?.resourceIds && query.allowedScope.resourceIds.length > 0;
+
+      if (!isScopedToSelf && !hasAllowedScope) {
+        throw new AuditError(
+          'UNAUTHORIZED_ACCESS',
+          'Organizer not authorized to query global audit logs without scoped resource permissions'
+        );
+      }
+      return;
+    }
+
+    throw new AuditError(
+      'UNAUTHORIZED_ACCESS',
+      `Actor type '${caller.type}' is not authorized to inspect audit logs`
+    );
   }
 
   private validateCommand(command: RegisterAuditEventCommand): void {

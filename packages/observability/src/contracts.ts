@@ -55,6 +55,42 @@ export interface RegisterAuditEventCommand {
   idempotencyKey?: string | null;
 }
 
+export interface AuditQueryFilter {
+  resourceType?: string;
+  resourceId?: string;
+  action?: string;
+  actorType?: AuditActorType;
+  actorId?: string;
+  result?: AuditResult;
+  fromTimestamp?: Date;
+  toTimestamp?: Date;
+}
+
+export interface AuditPagination {
+  page?: number;
+  limit?: number;
+}
+
+export interface AuditQuery {
+  callerActor: AuditActor;
+  filter?: AuditQueryFilter;
+  pagination?: AuditPagination;
+  allowedScope?: {
+    resourceType?: string;
+    resourceIds?: string[];
+  };
+}
+
+export interface AuditEventPage {
+  items: AuditEventRecord[];
+  page: number;
+  limit: number;
+  totalCount: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
 export class AuditError extends Error {
   constructor(
     public readonly code:
