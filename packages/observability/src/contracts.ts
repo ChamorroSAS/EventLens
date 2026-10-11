@@ -456,4 +456,71 @@ export interface DatabaseBackupSource {
   checkWalContinuity(startLsn: string, endLsn: string): Promise<{ hasGaps: boolean; walFilesCount: number }>;
 }
 
+export type RecoveryExerciseType = 'RESTORE_DRILL' | 'PITR_EXERCISE' | 'DISASTER_RECOVERY_SIMULATION';
+export type RecoveryGateStatus = 'PASS' | 'FAIL';
+export type RecoveryExerciseStatus = 'SUCCESS' | 'FAIL_OBJECTIVE_MISSED' | 'FAILED_EXECUTION';
+
+export interface TombstoneRecord {
+  resourceType: string;
+  resourceId: string;
+  purgeStartedAt: Date;
+  deletedAt: Date;
+  hasLegalHold?: boolean; // DEC-092
+  reason?: string;
+}
+
+export interface TombstoneReconciliationResult {
+  tombstonesEvaluatedCount: number;
+  preventedResurrectionsCount: number;
+  heldByLegalHoldCount: number;
+  reconciledResourceIds: string[];
+}
+
+export interface RecoveryExercise {
+  exerciseId: string;
+  exerciseType: RecoveryExerciseType;
+  status: RecoveryExerciseStatus;
+  overallGateStatus: RecoveryGateStatus;
+  startedAt: Date;
+  completedAt: Date;
+  backupArtifactId: string;
+  targetDatabaseName: string;
+  targetEnvironment: 'ISOLATED_LAB' | 'STAGING_RECOVERY' | 'DISASTER_RECOVERY';
+  targetPointInTime?: Date;
+  observedRpoMinutes: number;
+  targetRpoMinutes: number; // 60 min (DEC-062)
+  isRpoMet: boolean;
+  observedRtoMinutes: number;
+  targetRtoMinutes: number; // 240 min (DEC-062)
+  isRtoMet: boolean;
+  tablesRestoredCount: number;
+  recordsRestoredCount: number;
+  tombstoneReconciliation: TombstoneReconciliationResult;
+  evidenceSanitized: Record<string, unknown>;
+  errorMessage?: string | null;
+}
+
+export interface ExecuteRecoveryExerciseCommand {
+  callerActor: AuditActor;
+  backupArtifactId: string;
+  exerciseType?: RecoveryExerciseType;
+  targetEnvironment?: 'ISOLATED_LAB' | 'STAGING_RECOVERY' | 'DISASTER_RECOVERY';
+  targetPointInTime?: Date;
+  targetDatabaseName?: string;
+  tombstoneCatalog?: TombstoneRecord[];
+  simulatedRtoDurationMinutes?: number;
+  dryRun?: boolean;
+}
+
+export interface DatabaseRestoreTarget {
+  readonly targetEnvironment: 'ISOLATED_LAB' | 'STAGING_RECOVERY' | 'DISASTER_RECOVERY';
+  readonly targetDatabaseName: string;
+  restoreSnapshot(dumpContent: Buffer): Promise<{
+    tablesRestoredCount: number;
+    recordsRestoredCount: number;
+    tables: Record<string, unknown[]>;
+  }>;
+  applyTombstoneRestrictions(tombstones: TombstoneRecord[]): Promise<TombstoneReconciliationResult>;
+}
+
 
