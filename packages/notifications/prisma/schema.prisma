@@ -1,0 +1,40 @@
+datasource db {
+  provider = "postgresql"
+}
+
+model NotificationIntent {
+  id               String    @id @db.Uuid
+  dedupKey         String    @unique @map("dedup_key")
+  recipientRef     String    @map("recipient_ref")
+  recipientEmail   String?   @map("recipient_email")
+  notificationType String    @map("notification_type")
+  resourceRef      String    @map("resource_ref")
+  status           String    @default("PENDING")
+  payload          Json
+  effectiveAt      DateTime  @default(now()) @map("effective_at") @db.Timestamptz
+  expiresAt        DateTime? @map("expires_at") @db.Timestamptz
+  supersededAt     DateTime? @map("superseded_at") @db.Timestamptz
+  supersededBy     String?   @map("superseded_by")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@index([recipientRef, status])
+  @@index([resourceRef, status])
+  @@map("notification_intent")
+}
+
+model NotificationAuditEvent {
+  id               String   @id @db.Uuid
+  intentId         String?  @map("intent_id") @db.Uuid
+  dedupKey         String   @map("dedup_key")
+  action           String
+  recipientRef     String   @map("recipient_ref")
+  notificationType String   @map("notification_type")
+  result           String
+  details          String?
+  timestamp        DateTime @default(now()) @db.Timestamptz
+
+  @@index([intentId])
+  @@index([dedupKey])
+  @@map("notification_audit_event")
+}
