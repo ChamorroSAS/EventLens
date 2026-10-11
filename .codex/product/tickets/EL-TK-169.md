@@ -4,9 +4,9 @@
 EL-EP-014
 
 ## Status
-READY
+DONE
 
-**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Detección de colas degradadas, jobs DEAD/abandonados y deduplicación de alertas operativas (DEC-034, DEC-064). REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES (UI_REQUIRED: NO).
+**IMPLEMENTED — 2026-10-11:** Implementado `QueueDegradationDetector` en `@eventlens/observability` con contratos canónicos `OperationalAlert`, `AlertSeverity`, `AlertStatus`, `QueueThresholdConfig` y `QueueSnapshot`. Detección de profundidad, edad de cola, reintentos altos, jobs DEAD y jobs PROCESSING abandonados con leases expirados. Deduplicación estricta de alertas operativas activas, resolución y rearme sin spam al volver a la normalidad. Emisión de métricas y señal de salud de `JOB_QUEUE`. Evidencia de pruebas: 42/42 tests superados (12 de integración en PostgreSQL 16 real + 30 unitarios).
 
 ## User story
 **Como** equipo operativo, **quiero** recibir señales sobre colas y procesamiento anómalos, **para** intervenir antes de que trabajos queden abandonados o acumulados.

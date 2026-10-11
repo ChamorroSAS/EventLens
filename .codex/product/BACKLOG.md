@@ -199,7 +199,7 @@
 | EL-TK-166 | Registrar eventos de auditoría mínimos y sanitizados | EL-EP-014 | DONE | P0 | ninguna predecesora funcional dura | [EL-TK-166](tickets/EL-TK-166.md) |
 | EL-TK-167 | Consultar auditoría contextual con filtros y paginación | EL-EP-014 | DONE | P0 | 166 | [EL-TK-167](tickets/EL-TK-167.md) |
 | EL-TK-168 | Instrumentar señales operativas sanitizadas de aplicación y dependencias | EL-EP-014 | DONE | P0 | ninguna predecesora funcional dura | [EL-TK-168](tickets/EL-TK-168.md) |
-| EL-TK-169 | Detectar degradación de JobQueue, workers y procesamiento | EL-EP-014 | READY | P0 | 168; contrato JobQueue | [EL-TK-169](tickets/EL-TK-169.md) |
+| EL-TK-169 | Detectar degradación de JobQueue, workers y procesamiento | EL-EP-014 | DONE | P0 | 168; contrato JobQueue | [EL-TK-169](tickets/EL-TK-169.md) |
 | EL-TK-170 | Detectar fallos de storage, base de datos, scheduler y disponibilidad | EL-EP-014 | READY | P0 | 168, 184 | [EL-TK-170](tickets/EL-TK-170.md) |
 | EL-TK-171 | Ejecutar backups PostgreSQL y retención operativa mínima | EL-EP-014 | READY | P0 | baseline EL-TD-008; DEC-062 | [EL-TK-171](tickets/EL-TK-171.md) |
 | EL-TK-172 | Verificar restauración PostgreSQL y objetivos RPO RTO | EL-EP-014 | READY | P0 | 171; contrato EL-EP-015 | [EL-TK-172](tickets/EL-TK-172.md) |
