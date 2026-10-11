@@ -147,3 +147,26 @@ Coverage includes:
 3. Non-destructive terminal state preservation: fail-closed CAS never overwrites restrictive or completed media states (`QUARANTINED`, `PUBLISHED`, `PENDING_REVIEW`, `HIDDEN`, `TRASHED`, `DELETED`, `REJECTED`).
 4. Idempotent replay returning `ALREADY_COMMITTED` for identical operationIds and `IDEMPOTENCY_CONFLICT` for conflicting payloads.
 5. Complete transaction rollback on repository persistence failure, preserving original and job state without partial mutations.
+
+### Running focused retry cycle tests (EL-TK-040)
+
+```powershell
+$cycleEvidence = ".\infra\validation\media-inspection\evidence\cycle-$([DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss'))"
+.\infra\validation\media-inspection\Run.ps1 -CycleOnly -Build -EvidenceDirectory $cycleEvidence
+```
+
+Omit `-CycleOnly` to run the entire media-inspection suite (all 16 test files).
+
+### EL-TK-040 retry cycle requesting and routing final validation
+
+The focused retry cycle suite passed **16/16 tests** (13 PostgreSQL integration tests and 3 unit tests). The combined media-inspection regression passed **316/316 tests** across 16 test files, and the independent EL-TK-056 runtime regression passed **21/21 tests**. Typecheck, build, and migration application passed.
+
+Evidence: [focused run](evidence/cycle-focused-final/), [combined independent regression](evidence/cycle-combined-regression/), and [EL-TK-056 runtime regression](../media-execution/evidence/cycle-independent-regression/).
+
+Coverage includes:
+1. Authorized organizer request for a new processing cycle for media in technical `PROCESSING_FAILED` state.
+2. DEC-076 dynamic job routing: enqueues `MEDIA_INSPECTION` if safety inspection was inconclusive/not `APPROVED`; enqueues derivative generation (`PHOTO_DERIVATIVES` or `VIDEO_DERIVATIVES`) if safety inspection was already `APPROVED`.
+3. New cycle opens up to 3 total automatic attempts with `priority: 1`, `attempt: 0`.
+4. Media remains in `PROCESSING_FAILED` upon cycle creation; the processing worker applies the transition to `PROCESSING` at reservation time. Original media bytes and historical facts are strictly preserved.
+5. Idempotent replay and concurrent coordination: an active cycle (`ACTIVE` status with a non-terminal job) returns the existing cycle without duplicating jobs or resetting budget.
+6. Fail-closed security denials: `QUARANTINED`, other states (`UPLOADED`, `PUBLISHED`, `TRASHED`, `DELETED`), barred events, or unauthorized organizers are rejected with durable audit logs and zero job enqueuing.

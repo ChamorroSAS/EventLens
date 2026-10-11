@@ -249,7 +249,7 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-037 (DONE) | EL-TK-035, EL-TK-036 | EL-TK-057; consumidores EL-EP-007 |
 | EL-TK-038 (DONE) | EL-TK-032, EL-TK-055 | EL-TK-039, EL-TK-041, EL-TK-058 |
 | EL-TK-039 (DONE) | EL-TK-033, EL-TK-038 | EL-TK-040; elegibilidad EL-EP-010 |
-| EL-TK-040 | EL-TK-033, EL-TK-039 | EL-TK-054 |
+| EL-TK-040 (DONE) | EL-TK-033, EL-TK-039 | EL-TK-054 |
 | EL-TK-041 | EL-TK-032, EL-TK-034, EL-TK-038, EL-TK-044 | — |
 | EL-TK-042 | EL-TK-034, EL-TK-044 | — |
 | EL-TK-053 | ninguna | EL-TK-054 |

@@ -132,4 +132,47 @@ model TerminalFailureAudit {
  committedAt DateTime @map("committed_at") @db.Timestamptz
  @@map("media_terminal_failure_audit")
 }
+model ProcessingCycle {
+ cycleId String @id @map("cycle_id")
+ mediaRef String @map("media_ref")
+ cycleNumber Int @map("cycle_number")
+ eventRef String @map("event_ref")
+ organizerRef String @map("organizer_ref")
+ jobId String @unique @map("job_id") @db.Uuid
+ jobType String @map("job_type")
+ safetyOutcome String @map("safety_outcome")
+ status String
+ operationId String @unique @map("operation_id")
+ createdAt DateTime @map("created_at") @db.Timestamptz
+ @@unique([mediaRef, cycleNumber])
+ @@map("media_processing_cycle")
+}
+model CycleAudit {
+ id String @id @db.Uuid
+ operationId String @map("operation_id")
+ cycleId String @map("cycle_id")
+ mediaRef String @map("media_ref")
+ cycleNumber Int @map("cycle_number")
+ eventRef String @map("event_ref")
+ organizerRef String @map("organizer_ref")
+ jobId String @map("job_id") @db.Uuid
+ jobType String @map("job_type")
+ safetyOutcome String @map("safety_outcome")
+ action String
+ actor String
+ committedAt DateTime @map("committed_at") @db.Timestamptz
+ @@map("media_cycle_audit")
+}
+model CycleDenialAudit {
+ id String @id @db.Uuid
+ operationId String @map("operation_id")
+ mediaRef String @map("media_ref")
+ eventRef String @map("event_ref")
+ organizerRef String @map("organizer_ref")
+ reason String
+ actor String
+ attemptedAt DateTime @map("attempted_at") @db.Timestamptz
+ @@map("media_cycle_denial_audit")
+}
+
 

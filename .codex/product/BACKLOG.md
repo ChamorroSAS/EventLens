@@ -74,7 +74,7 @@
 | EL-TK-037 | Aplicar el resultado exitoso del procesamiento | EL-EP-006 | DONE | P0 | EL-TK-035, EL-TK-036 | [EL-TK-037](tickets/EL-TK-037.md) |
 | EL-TK-038 | Reintentar automáticamente un procesamiento técnico transitorio | EL-EP-006 | DONE | P0 | EL-TK-032, EL-TK-055 | [EL-TK-038](tickets/EL-TK-038.md) |
 | EL-TK-039 | Cerrar un fallo técnico terminal de procesamiento | EL-EP-006 | DONE | P0 | EL-TK-033, EL-TK-038 | [EL-TK-039](tickets/EL-TK-039.md) |
-| EL-TK-040 | Solicitar un nuevo ciclo para un fallo técnico elegible | EL-EP-006 | READY | P0 | EL-TK-033, EL-TK-039 | [EL-TK-040](tickets/EL-TK-040.md) |
+| EL-TK-040 | Solicitar un nuevo ciclo para un fallo técnico elegible | EL-EP-006 | DONE | P0 | EL-TK-033, EL-TK-039 | [EL-TK-040](tickets/EL-TK-040.md) |
 | EL-TK-041 | Liberar una cuarentena mediante actor autorizado | EL-EP-006 | READY | P0 | EL-TK-032, EL-TK-034, EL-TK-038, EL-TK-044 | [EL-TK-041](tickets/EL-TK-041.md) |
 | EL-TK-042 | Eliminar una media en cuarentena mediante actor autorizado | EL-EP-006 | READY | P0 | EL-TK-034, EL-TK-044 | [EL-TK-042](tickets/EL-TK-042.md) |
 | EL-TK-047 | Consultar mis eventos y su configuración autorizada | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-047](tickets/EL-TK-047.md) |

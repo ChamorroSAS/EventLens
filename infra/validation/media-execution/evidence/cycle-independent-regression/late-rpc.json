@@ -1,0 +1,10 @@
+{
+  "attemptId": "e7e95ad6-f407-4531-8d4f-b94ec9cf631a",
+  "cancelledCreateDrained": true,
+  "lateStartDenied": true,
+  "proof": {
+    "terminal": true,
+    "container": "eventlens-media-execution-e7e95ad6-f407-4531-8d4f-b94ec9cf631a",
+    "evidenceId": "docker-identity-removed:88f004dd7585bc2e92d879df2f575393a826b8ac4987264e96de18f48046c5de:0001-01-01T00:00:00Z"
+  }
+}

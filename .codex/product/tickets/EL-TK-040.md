@@ -6,9 +6,9 @@ EL-EP-006
 
 ## Status
 
-READY
+DONE
 
-**HISTÓRICO CONFIRMED — 2026-10-07:** requirements_reviewer aprobó este conjunto sin hallazgos pendientes. Véase [dictamen](../sessions/2026-10-07-el-ep-006-ticket-review.md). READY expresa preparación de requisitos; se conservan las dependencias de ejecución.
+**CONFIRMED — 2026-10-10:** Implementado y validado en el laboratorio Docker con PostgreSQL 16 real. Tester y Reviewer aprobaron sin hallazgos pendientes. Véase [minuta de implementación](../sessions/2026-10-10-el-tk-040-implementation.md).
 
 ## User story
 
@@ -76,3 +76,21 @@ Trazabilidad de remediación: GAP-EL-EP-006-02/08/10.
 **CONFIRMED:** REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES. Nuevo ciclo/policy/idempotencia implementables por contratos033/039; integración requiere esas capacidades y autorización vigente. No libera cuarentena ni concede descarga.
 
 Fuente: [contrato ARCH-015](../../context/media-and-jobs-architecture.md#pipeline-multimedia-adoptado--arch-015) y [impacto](../sessions/2026-10-09-arch-015-backlog-impact.md). TB-01/TB-02 resueltos experimentalmente; no bloqueadores activos. Cuando YES, describe construcción del alcance propio por contratos cerrados, no integración usable ni upstream implementado. Los dictámenes/scopes anteriores conservan historia donde difieren. MEDIA-001/CAP-001/DR-001/EXPORT-001 siguen VALIDATION_REQUIRED; sin proveedor adoptado.
+
+## Implementación y validación final — 2026-10-10
+
+**CONFIRMED — 2026-10-10:**
+- **Estado final:** DONE.
+- **Implementación:** `RequestRetryCycle`, `PostgresRetryCycleRepository`, `EventOrganizerAuthorization` en `@eventlens/media-inspection`.
+- **Comportamiento verificado:**
+  1. Organización autorizada solicita ciclo para original en `PROCESSING_FAILED` técnico.
+  2. Enrutamiento dinámico DEC-076: encola `MEDIA_INSPECTION` si la inspección no estaba `APPROVED`; encola generación de derivados si ya estaba aprobada.
+  3. Presupuesto nuevo de 3 intentos automáticos totales (`priority: 1`, `attempt: 0`).
+  4. Media no muta prematuramente a `PROCESSING`: el worker aplica la transición al reservar. Se conservan originales y hechos previos intactos.
+  5. Coordinación idempotente: si ya existe un ciclo `ACTIVE` con job no terminal, devuelve el ciclo vigente sin duplicar trabajo ni reiniciar presupuesto. Replay compatible devuelve el ciclo existente; payload divergente rechaza con `IDEMPOTENCY_CONFLICT`.
+  6. Denegaciones duraderas: `QUARANTINED`, otros estados, eventos bloqueados u organizadores ajenos son denegados sin encolar trabajo y registran auditoría en `media_cycle_denial_audit`.
+- **Evidencia Docker real:**
+  - Suite enfocada EL-TK-040: 16/16 tests pasados (13 PostgreSQL + 3 unitarios).
+  - Regresión completa `media-inspection`: 316/316 tests pasados (16 suites).
+  - Regresión independiente `media-execution` (EL-TK-056): 21/21 tests pasados.
+- **Veredicto:** Tester PASS, Reviewer APPROVED. Desbloquea downstream [EL-TK-054](EL-TK-054.md).
