@@ -4,9 +4,9 @@
 EL-EP-014
 
 ## Status
-READY
+DONE
 
-**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Señales de health y métricas sanitizadas neutrales de proveedor (DEC-034, DEC-061..064, DEC-106). REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES (UI_REQUIRED: NO).
+**IMPLEMENTED — 2026-10-11:** Implementados contratos neutrales de telemetría y salud (`ComponentIdentifier`, `HealthStatus`, `HealthSignal`, `OperationalMetric`, `TelemetryCollector`, `HealthChecker`), `TelemetrySanitizer` y `TelemetryService` en `@eventlens/observability`. Sanitización estricta de dimensiones (redacción de tokens, JWTs, identificadores de usuario/sesión, emails, credenciales de conexión), control de cardinalidad y enmascaramiento de errores. Verificador de salud para PostgreSQL 16 con medición de latencias. Resiliencia total ante fallos de colector. Evidencia de pruebas: 37/37 tests superados (10 de integración en PostgreSQL 16 real + 27 unitarios).
 
 ## User story
 **Como** sistema, **quiero** emitir métricas y health signals de componentes críticos, **para** detectar degradación sin registrar datos privados.

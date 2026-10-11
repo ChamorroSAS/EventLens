@@ -296,7 +296,7 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 |---|---|---|
 | EL-TK-166 (DONE) | ninguna predecesora funcional dura | 167,173,175,176,184 |
 | EL-TK-167 (DONE) | 166 | 175,176; consumidor EL-EP-012 |
-| EL-TK-168 | ninguna predecesora funcional dura | 169,170,176,184; telemetría 177 |
+| EL-TK-168 (DONE) | ninguna predecesora funcional dura | 169,170,176,184; telemetría 177 |
 | EL-TK-169 | 168; contrato JobQueue | 173,176 |
 | EL-TK-170 | 168, 184 | 173,174,176 |
 | EL-TK-171 | baseline EL-TD-008; DEC-062 | 172,174,176 |
