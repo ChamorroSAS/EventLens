@@ -105,7 +105,7 @@
 | EL-TK-072 | Aplicar restricciones de acceso según el lifecycle vigente | EL-EP-003 | DONE | P0 | EL-TK-064,065,067,068,069,071 | [EL-TK-072](tickets/EL-TK-072.md) |
 | EL-TK-073 | Integrar el lifecycle en la interfaz de organizador e invitado | EL-EP-003 | READY | P0 | EL-TK-071, EL-TK-072 | [EL-TK-073](tickets/EL-TK-073.md) |
 | EL-TK-074 | Resolver acceso público a un evento mediante credencial no adivinable | EL-EP-004 | DONE | P0 | EL-TK-020, EL-TK-072, EL-TK-084 | [EL-TK-074](tickets/EL-TK-074.md) |
-| EL-TK-075 | Validar PIN opcional y establecer una sesión anónima guest | EL-EP-004 | READY | P0 | EL-TK-027, EL-TK-074 | [EL-TK-075](tickets/EL-TK-075.md) |
+| EL-TK-075 | Validar PIN opcional y establecer una sesión anónima guest | EL-EP-004 | DONE | P0 | EL-TK-027, EL-TK-074 | [EL-TK-075](tickets/EL-TK-075.md) |
 | EL-TK-076 | Registrar consentimiento versionado antes de la primera carga | EL-EP-004 | READY | P0 | EL-TK-075 | [EL-TK-076](tickets/EL-TK-076.md) |
 | EL-TK-077 | Registrar nombre o apodo del aportante en la sesión guest | EL-EP-004 | READY | P0 | EL-TK-075 | [EL-TK-077](tickets/EL-TK-077.md) |
 | EL-TK-078 | Consultar Mis aportes mediante la sesión guest | EL-EP-004 | READY | P0 | EL-TK-075, EL-TK-072 | [EL-TK-078](tickets/EL-TK-078.md) |

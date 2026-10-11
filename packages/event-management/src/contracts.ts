@@ -66,7 +66,13 @@ export type EventManagementErrorCode =
   | 'EVENT_NOT_EXTENDABLE'
   | 'PIN_ALREADY_CONFIGURED'
   | 'INVALID_PIN_FORMAT'
-  | 'INVALID_CREDENTIAL';
+  | 'INVALID_CREDENTIAL'
+  | 'INVALID_PIN'
+  | 'PIN_REQUIRED'
+  | 'RATE_LIMIT_EXCEEDED'
+  | 'EVENT_NOT_ACCESSIBLE'
+  | 'SESSION_EXPIRED'
+  | 'SESSION_REVOKED';
 
 export class EventManagementError extends Error {
   constructor(
@@ -372,6 +378,42 @@ export interface ResolvePublicAccessResult {
   readonly restrictionReason?: string;
 }
 
+export interface GuestSessionRecord {
+  readonly id: string;
+  readonly eventId: string;
+  readonly tokenHash: string;
+  readonly credentialGeneration: number;
+  readonly createdAt: Date;
+  readonly expiresAt: Date;
+  readonly revokedAt: Date | null;
+  readonly consentRecordedAt: Date | null;
+  readonly consentVersion: string | null;
+  readonly contributorNickname: string | null;
+}
+
+export interface CreateGuestSessionCommand {
+  readonly lookupKey: string;
+  readonly pin?: string;
+  readonly now?: Date;
+}
+
+export interface CreateGuestSessionResult {
+  readonly session: {
+    readonly id: string;
+    readonly eventId: string;
+    readonly token: string;
+    readonly credentialGeneration: number;
+    readonly createdAt: Date;
+    readonly expiresAt: Date;
+  };
+  readonly event: {
+    readonly id: string;
+    readonly name: string;
+    readonly status: EventStatus;
+    readonly timezone: string;
+  };
+}
+
 export interface EventAuditRecord {
   readonly id: string;
   readonly procedure:
@@ -387,7 +429,9 @@ export interface EventAuditRecord {
     | 'EVENT_VALIDITY_EXTENDED'
     | 'EVENT_INITIAL_PIN_SET'
     | 'EVENT_PUBLIC_CREDENTIAL_ISSUED'
-    | 'EVENT_PUBLIC_ACCESS_RESOLVED';
+    | 'EVENT_PUBLIC_ACCESS_RESOLVED'
+    | 'GUEST_SESSION_CREATED'
+    | 'GUEST_PIN_VALIDATION_FAILED';
   readonly actorId: string;
   readonly targetIdentifier: string;
   readonly result:
