@@ -31,6 +31,7 @@ export type EventManagementErrorCode =
   | 'AMBIGUOUS_LOCAL_TIME'
   | 'INVALID_OFFSET'
   | 'INVALID_DATE_TIME'
+  | 'INVALID_TIMELINE_PARAMETERS'
   | 'EVENT_NOT_IN_DRAFT';
 
 export class EventManagementError extends Error {
