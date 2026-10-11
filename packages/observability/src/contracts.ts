@@ -781,3 +781,71 @@ export interface ParticipationReport {
   sanitizedMetadata: Record<string, unknown>;
 }
 
+export type BetaClassificationOutcome =
+  | 'PASS'
+  | 'PASS_WITH_ACTIONS'
+  | 'EXTEND_BETA'
+  | 'FAIL_CRITICAL';
+
+export interface BetaDrGateEvaluation {
+  gateStatus: 'PASS' | 'FAIL';
+  rpoMet: boolean;
+  rtoMet: boolean;
+  secretsExposed: boolean;
+  nonResurrectionEnforced: boolean;
+  observedRpoMinutes?: number;
+  observedRtoMinutes?: number;
+}
+
+export interface BetaAuditGateEvaluation {
+  gateStatus: 'PASS' | 'FAIL';
+  sensitiveActionsRecorded: boolean;
+  secretsScrubbed: boolean;
+}
+
+export interface BetaEvidenceSnapshotMetrics {
+  validUploads: UploadReliabilityResult;
+  photoProcessing: ProcessingReliabilityResult;
+  videoProcessing: ProcessingReliabilityResult;
+  support: SupportReliabilityResult;
+  retrieval: RetrievalReliabilityResult;
+  participation: ParticipationReliabilityResult;
+}
+
+export interface BetaEvidenceSnapshot {
+  snapshotId: string;
+  frozenAt: Date;
+  contentHash: string; // SHA-256 deterministic hash ensuring immutability
+  period: {
+    windowStart: Date;
+    windowEnd: Date;
+    durationWeeks: number;
+  };
+  sampleCounts: {
+    eligibleRealEvents: number;
+    eligibleRealFiles: number;
+    excludedInternalEvents: number;
+    excludedInternalFiles: number;
+  };
+  hasMinimumSample: boolean;
+  metrics: BetaEvidenceSnapshotMetrics;
+  operationalIncidents: OperationalIncident[];
+  drGateEvaluation?: BetaDrGateEvaluation;
+  auditGateEvaluation?: BetaAuditGateEvaluation;
+  sanitizedMetadata: Record<string, unknown>;
+}
+
+export interface BetaClassificationResult {
+  classification: BetaClassificationOutcome;
+  rationale: string[];
+  evidenceSnapshotRef: {
+    snapshotId: string;
+    contentHash: string;
+    frozenAt: Date;
+  };
+  criticalIncidentsDetected: number;
+  requiredActionItems: string[];
+  evaluatedAt: Date;
+}
+
+
