@@ -10,4 +10,4 @@ export * from './transient-retry.js';
 export * from './terminal-failure.js';
 export * from './retry-cycle.js';
 export * from './media-status.js';
-
+export * from './quarantine-release.js';
