@@ -306,6 +306,52 @@ model QuarantinePurgeIntent {
   @@map("media_quarantine_purge_intent")
 }
 
+model AttemptCleanupReceipt {
+  operationId   String   @id @map("operation_id")
+  attemptId     String   @map("attempt_id")
+  mediaRef      String   @map("media_ref")
+  generation    BigInt
+  status        String
+  deletedCount  Int      @map("deleted_count")
+  retainedCount Int      @map("retained_count")
+  pendingCount  Int      @map("pending_count")
+  details       Json
+  committedAt   DateTime @map("committed_at") @db.Timestamptz
+
+  @@map("media_attempt_cleanup_receipt")
+}
+
+model PhysicalCleanupLedger {
+  id            String   @id @db.Uuid
+  operationId   String   @map("operation_id")
+  attemptId     String   @map("attempt_id")
+  mediaRef      String   @map("media_ref")
+  generation    BigInt
+  namespace     String
+  key           String
+  status        String
+  bytesReleased BigInt   @default(0) @map("bytes_released")
+  committedAt   DateTime @map("committed_at") @db.Timestamptz
+
+  @@unique([namespace, key])
+  @@map("media_physical_cleanup_ledger")
+}
+
+model AttemptCleanupAudit {
+  id          String   @id @db.Uuid
+  operationId String   @map("operation_id")
+  attemptId   String   @map("attempt_id")
+  mediaRef    String   @map("media_ref")
+  generation  BigInt
+  decision    String
+  reason      String
+  actor       String   @default("SYSTEM")
+  committedAt DateTime @map("committed_at") @db.Timestamptz
+
+  @@map("media_attempt_cleanup_audit")
+}
+
+
 
 
 
