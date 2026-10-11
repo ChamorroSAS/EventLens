@@ -6,7 +6,7 @@ EL-EP-006
 
 ## Status
 
-READY
+DONE
 
 ## User story
 
@@ -61,3 +61,20 @@ REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES. [Dictamen final](../sess
 **CONFIRMED:** REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES. UI mantiene gateUI006 y contratos040/053 cerrados, cliente OpenAPI/componentes existentes. Integración requiere040/053/host compartido/pipeline; no expone errores FFmpeg ni duplica retry backend.
 
 Fuente: [contrato ARCH-015](../../context/media-and-jobs-architecture.md#pipeline-multimedia-adoptado--arch-015) y [impacto](../sessions/2026-10-09-arch-015-backlog-impact.md). TB-01/TB-02 resueltos experimentalmente; no bloqueadores activos. Cuando YES, describe construcción del alcance propio por contratos cerrados, no integración usable ni upstream implementado. Los dictámenes/scopes anteriores conservan historia donde difieren. MEDIA-001/CAP-001/DR-001/EXPORT-001 siguen VALIDATION_REQUIRED; sin proveedor adoptado.
+
+## Implementación y Verificación — 2026-10-11
+
+- **Componentes (`@eventlens/web`):**
+  - `OrganizerMediaCardComponent`: Tarjeta de visualización para organizador en biblioteca o móvil, con placeholders legibles y accesibles en ausencia de preview (`UPLOADED`, `PROCESSING`, `PROCESSING_FAILED`, `QUARANTINED`), badge con texto descriptivo no dependiente de color, y progreso observable.
+  - `ProcessingFailedPanelComponent`: Panel técnico que respeta DEC-075 y DEC-076 con elegibilidades separadas (inspección `INCONCLUSIVE` permite retry pero deniega descarga original; inspección `APPROVED` permite descarga de original si el rol lo autoriza).
+  - `RetryProcessingActionComponent`: Acción de reintento con prevención de doble envío (`isSubmitting`), confirmación en `aria-live` sin falso anuncio prematuro de `PROCESSING` antes de reserva ni preview anticipado, y refresco de capacidades ante conflicto de ciclo activo.
+  - `QuarantinedMediaStateComponent`: Estado de cuarentena estrictamente read-only para el organizador, sin botones de reintento ni liberación.
+  - `DownloadOriginalActionComponent`: Superficie interactiva de descarga de original para contrato EL-EP-010 cuando elegible.
+  - `MediaProcessingService`: Servicio cliente para orquestar consultas y solicitudes de ciclo.
+- **Validación automatizada en Docker (`node scripts/workspace.mjs test`):**
+  - Pruebas unitarias y de integración de componentes: `apps/web/src/app/media/organizer-media-card.component.spec.ts` (7/7 passed).
+  - Pruebas globales de web: 9/9 passed en Vitest bajo Angular 21 TestBed.
+  - Verificación estricta de tipos: `ngc --noEmit` passed (exit code 0 en todos los paquetes).
+  - Compilación de producción: `ng build` passed en 3.3s.
+- **Veredicto de testing y revisión:** **PASS / APPROVED**.
+

@@ -347,7 +347,7 @@ NOT_READY. Q-029 y revisión jurídica profesional siguen siendo blocker explíc
 | EL-TK-041 | EL-TK-032, EL-TK-034, EL-TK-038, EL-TK-044 | — |
 | EL-TK-042 | EL-TK-034, EL-TK-044 | — |
 | EL-TK-053 (DONE) | ninguna | EL-TK-054 |
-| EL-TK-054 | EL-TK-040, EL-TK-053 | — |
+| EL-TK-054 (DONE) | EL-TK-040, EL-TK-053 | — |
 | EL-TK-055 (DONE) | ninguna | EL-TK-038, EL-TK-056 |
 | EL-TK-056 (DONE) | EL-TK-055, EL-TK-061 | EL-TK-033 |
 | EL-TK-057 | EL-TK-037 | EL-TK-058 |
@@ -395,7 +395,10 @@ Cadena productiva:055 DONE →056 →033;032 →033;033 →035/036 →037 →057
 
 **CONFIRMED — EL-TK-053 DONE, 2026-10-11:** consulta de estado y capacidades autorizadas implementada y verificada bajo Docker con PostgreSQL 16 (15/15 pruebas unitarias e integradas, 331/331 regresión total PASS). Satisface la consulta neutral y segura de estado requerida por EL-TK-054 y consumidores de galería/biblioteca sin fugar secretos, credenciales ni conceder descargas o reintentos indebidos. Véase el [cierre](tickets/EL-TK-053.md).
 
+**CONFIRMED — EL-TK-054 DONE, 2026-10-11:** integración frontend de estados de fallo técnico, reintento y cuarentena en `@eventlens/web` (`OrganizerMediaCard`, `ProcessingFailedPanel`, `RetryProcessingAction`, `QuarantinedMediaState`, `DownloadOriginalAction`) verificada bajo Docker con suite Vitest de Angular 21 (9/9 passed), typecheck estricto y bundle de producción en 3.3s. Satisface la separación DEC-075/DEC-076 y precondiciones para la biblioteca de medios de EL-EP-007 ([EL-TK-100](tickets/EL-TK-100.md)). Véase el [cierre](tickets/EL-TK-054.md).
+
 Portada:049 →050 →051 →052 conserva cadena funcional.050 consume contratos/adapters033/035/056/055 para integración real, no toda implementación guest ni pipeline duplicado.052 y057 comparten inventory/drain, no dependen bidireccionalmente.031 permite portada opcional; no exige procesamiento para preview sin portada. Son colaboraciones/precondiciones de integración explícitas, no nuevas predecesoras duras para construir handlers por puertos.
+
 
 
 TB-01/TB-02 dejan de bloquear.033/035/036/041/042/056 YES propio;058 NO ejecución integrada hasta pipeline/adapters y fase REQUIRED_FOR_INTEGRATION reales, con preparación habilitada.055 y056 están DONE. EL-TK-032 también está DONE; 033 tiene satisfechas sus dependencias 032/056, sujeto a verificar su readiness vigente. MEDIA-001/CAP-001/DR-001/EXPORT-001 VALIDATION_REQUIRED; no PASS ni proveedor nuevo. Las afirmaciones previas de paquete/spikes pendientes son históricas respecto a esta reevaluación. Véanse el [cierre de EL-TK-056](sessions/2026-10-09-el-tk-056-implementation.md) y la [sesión de EL-TK-032](sessions/2026-10-09-el-tk-032-implementation.md).

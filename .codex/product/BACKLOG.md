@@ -84,7 +84,7 @@
 | EL-TK-051 | Asignar una portada READY segura mediante revisión CAS | EL-EP-002 | READY | P0 | EL-TK-020, EL-TK-050 | [EL-TK-051](tickets/EL-TK-051.md) |
 | EL-TK-052 | Limpiar portadas anteriores o no asignadas sin borrar la vigente | EL-EP-002 | READY | P0 | EL-TK-051 | [EL-TK-052](tickets/EL-TK-052.md) |
 | EL-TK-053 | Consultar el estado y capacidades autorizadas de una media | EL-EP-006 | DONE | P0 | ninguna | [EL-TK-053](tickets/EL-TK-053.md) |
-| EL-TK-054 | Integrar estados de fallo y retry en la biblioteca compartida | EL-EP-006 | READY | P0 | EL-TK-040, EL-TK-053 | [EL-TK-054](tickets/EL-TK-054.md) |
+| EL-TK-054 | Integrar estados de fallo y retry en la biblioteca compartida | EL-EP-006 | DONE | P0 | EL-TK-040, EL-TK-053 | [EL-TK-054](tickets/EL-TK-054.md) |
 | EL-TK-055 | Reservar ejecuciones JobQueue PostgreSQL con lease y fencing | EL-EP-006 | DONE | P0 | ninguna | [EL-TK-055](tickets/EL-TK-055.md) |
 | EL-TK-056 | Ejecutar inspección y transformación multimedia en aislamiento supervisado | EL-EP-006 | DONE | P0 | EL-TK-055, EL-TK-061 | [EL-TK-056](tickets/EL-TK-056.md) |
 | EL-TK-057 | Limpiar outputs de intentos multimedia fallidos u obsoletos | EL-EP-006 | READY | P0 | EL-TK-037 | [EL-TK-057](tickets/EL-TK-057.md) |
