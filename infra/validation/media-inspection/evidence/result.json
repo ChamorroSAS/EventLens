@@ -1,7 +1,7 @@
 {
-  "ticket": "EL-TK-041",
-  "runId": "media_inspection_release",
-  "testedAt": "2026-10-11T16:38:52.000Z",
+  "ticket": "EL-TK-042",
+  "runId": "media_inspection_delete",
+  "testedAt": "2026-10-11T16:53:48.000Z",
   "result": "PASS",
   "gates": {
     "MEDIA-001": "NOT_EVALUATED",

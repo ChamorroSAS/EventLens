@@ -214,3 +214,32 @@ Coverage includes:
 4. Invariant preservation: previous generation quarantine records in `media_quarantine_audit` remain immutable.
 5. Idempotent replay: compatible operations replay previous receipt without duplicating jobs or resetting attempt budget. Conflicting replays reject with `IDEMPOTENCY_CONFLICT`.
 6. Durable organizer notification intent recorded in `media_quarantine_notification_intent` per EL-EP-013.
+
+### Running focused quarantine deletion tests (EL-TK-042)
+
+```powershell
+$deleteEvidence = ".\infra\validation\media-inspection\evidence\delete-$([DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss'))"
+.\infra\validation\media-inspection\Run.ps1 -DeleteOnly -Build -EvidenceDirectory $deleteEvidence
+```
+
+### EL-TK-042 quarantine deletion by authorized actor final validation
+
+The focused quarantine deletion suite passed **19/19 tests** (6 PostgreSQL 16 integration tests and 13 unit tests). Typecheck, build, and migration `202610110018_quarantine_delete` application passed.
+
+Coverage includes:
+1. Deleting media from `QUARANTINED` status requires explicit administrative justification and authorized credentials.
+2. Actor verification according to governance roles:
+   - Event organizers are strictly forbidden from deleting quarantined media (`ORGANIZER_DENIED`), and attempts are audited in `media_quarantine_delete_denial_audit`.
+   - Human administrators require a valid `AdminActorContext` (`EL-TK-044`) and an active `AdminDeleteInterventionGrant` (`action: 'DELETE_QUARANTINE'`, matching principal and target mediaRef).
+   - Security automation is supported via service identity and authorized scope without human session credentials.
+3. Durable restrictive barrier and disposition:
+   - Updates `media_catalog` to status `'DELETED'` and advances revision (`revision + 1n`).
+   - Terminates any active processing cycles in `media_processing_cycle` (`status = 'TERMINATED'`).
+   - Cancels any pending or retrying jobs in `job_queue` (`cancelled = true`).
+4. Physical purge delegation:
+   - Emits a durable `QuarantinePurgeIntent` in `media_quarantine_purge_intent` (`status = 'PENDING'`) with unique deduplication key, delegating physical storage purge to the owner retention/purge contract (EL-EP-008 / EL-EP-015).
+5. Invariant preservation:
+   - Previous generation quarantine records in `media_quarantine_audit` remain immutable.
+6. Idempotent replay:
+   - Compatible operations replay previous receipt and purge intent without duplicating destructive actions. Conflicting replays reject with `IDEMPOTENCY_CONFLICT`.
+7. Durable organizer notification intent recorded in `media_quarantine_notification_intent` per EL-EP-013 (`ADMINISTRATIVE_INTERVENTION_QUARANTINE_DELETE`).
