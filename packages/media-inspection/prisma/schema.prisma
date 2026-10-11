@@ -175,4 +175,19 @@ model CycleDenialAudit {
  @@map("media_cycle_denial_audit")
 }
 
+model StatusQueryAudit {
+ id String @id @db.Uuid
+ operationId String? @map("operation_id")
+ mediaRef String @map("media_ref")
+ eventRef String @map("event_ref")
+ actorRole String @map("actor_role")
+ actorRef String @map("actor_ref")
+ generation BigInt
+ status String
+ safetyOutcome String @map("safety_outcome")
+ queriedAt DateTime @map("queried_at") @db.Timestamptz
+ @@map("media_status_query_audit")
+}
+
+
 
