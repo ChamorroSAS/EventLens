@@ -297,3 +297,60 @@ export interface InfrastructureThresholdConfig {
   minAvailabilityRatio?: number;
 }
 
+export type IncidentSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+export type IncidentStatus = 'OPEN' | 'INVESTIGATING' | 'MITIGATED' | 'RESOLVED';
+
+export interface OperationalIncident {
+  id: string;
+  title: string;
+  severity: IncidentSeverity;
+  status: IncidentStatus;
+  component: string;
+  description: string;
+  alertRefs: string[];
+  auditRefs: string[];
+  resourceRefs: string[];
+  openedBy: string;
+  openedAt: Date;
+  resolvedBy?: string;
+  resolvedAt?: Date;
+  resolutionNotes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateIncidentCommand {
+  id?: string;
+  title: string;
+  severity: IncidentSeverity;
+  component: string;
+  description: string;
+  alertRefs?: string[];
+  auditRefs?: string[];
+  resourceRefs?: string[];
+  actor: AuditActor;
+}
+
+export interface CorrelateEvidenceCommand {
+  incidentId: string;
+  alertRefs?: string[];
+  auditRefs?: string[];
+  resourceRefs?: string[];
+  actor: AuditActor;
+}
+
+export interface ResolveIncidentCommand {
+  incidentId: string;
+  resolutionNotes: string;
+  actor: AuditActor;
+}
+
+export interface IncidentFilter {
+  status?: IncidentStatus;
+  severity?: IncidentSeverity;
+  component?: string;
+  limit?: number;
+  offset?: number;
+}
+
+

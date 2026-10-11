@@ -6,3 +6,4 @@ export * from './telemetry-service.js';
 export * from './queue-degradation-detector.js';
 export * from './retention-service.js';
 export * from './infrastructure-alert-service.js';
+export * from './incident-service.js';
