@@ -27,9 +27,10 @@
                     "test:integration":  "node scripts/workspace.mjs integration",
                     "test":  "node scripts/workspace.mjs test",
                     "client:check":  "node scripts/workspace.mjs client-check",
-                    "dev:up":  "node scripts/workspace.mjs up"
+                    "dev:up":  "node scripts/workspace.mjs up",
+                    "test:smtp":  "node scripts/test-smtp.mjs"
                 },
     "engines":  {
-                    "node":  "24.x"
+                    "node":  ">=22.0.0"
                 }
 }
