@@ -4,7 +4,8 @@
 DRAFT — propuesta de producto para revisión; no aprobada por requirements_reviewer, ui_designer ni architect. No genera tickets ni modifica decisiones aceptadas.
 
 REQUIREMENTS_READY: PARTIAL — doce elecciones editoriales, comportamiento de `/` y reglas A/B/C de cuenta, retorno tras login y QR están confirmadas. Pendientes copy literal, integración/contratos técnicos de rutas restantes, revisión UX y requisitos.
-READY_FOR_TICKET_WRITING: NO — completar dictamen de requisitos, contratos de rutas y handoff UI; no generar tickets por aprobación editorial.
+LEGAL_SCOPE_FOR_TICKET_WRITING: PASS_WITH_CONDITIONS — [gate jurídico acotado](../sessions/2026-10-12-el-ep-018-legal-ticket-gate.md): se pueden **redactar borradores de tickets** con criterios legales de aceptación; no autoriza formularios públicos, contenidos legales, despliegues ni sustituye EL-EP-017/Q-029.
+READY_FOR_TICKET_WRITING: NO — gate **global** pendiente de dictamen de requisitos, contratos de rutas y handoff UI. No marcar tickets READY por el pase jurídico.
 UI_REQUIRED: YES
 READY_FOR_FRONTEND_PLANNING: NO — pendiente evaluación de navegación pública y autenticada.
 READY_FOR_IMPLEMENTATION: NO — no hay autorización por crear este documento.
@@ -74,7 +75,7 @@ Las anclas candidatas de secciones son `/#como-funciona`, `/#beneficios`, `/#pri
 - Feed o buscador público de eventos/galerías, listado de contenido privado, previews de media personales.
 - Dashboard, pantalla de cuenta, login, recuperación o consola admin *nuevos*: sus módulos conservan ownership; el Home enlaza/compone las capacidades existentes y registra cualquier integración faltante.
 - Nuevo motor de tematización, dark-mode global, framework UI alternativo, SSR/SEO técnico obligatorio sin evaluación.
-- Publicación externa sin revisar EL-EP-017/Q-029 cuando corresponda; no sustituye revisión jurídica de condiciones/privacidad.
+- Publicación externa sin revisar EL-EP-017/Q-029 cuando corresponda; no sustituye revisión jurídica de condiciones/privacidad. El [gate jurídico acotado](../sessions/2026-10-12-el-ep-018-legal-ticket-gate.md) sólo libera la **redacción de tickets DRAFT**, no la captación pública de correos ni el despliegue del Home.
 
 ## Business rules
 - **CONFIRMED desde producto vigente:** BETA por invitación, cuenta de organizador con correo verificado, acceso guest sin cuenta mediante enlace/QR, contenido privado y autorización por servidor. EL-TK-008 acepta solicitud Beta sin activación ni revelación de cuenta existente.
@@ -112,7 +113,18 @@ MOD-001 (login/logout/cuenta/Beta EL-TK-008); MOD-002 (Mis eventos/dashboard); M
 ## Dependencies
 - Para **ticket writing**: aprobación de alcance del Home y menú, auditoría de rutas de frontend, revisión `requirements_reviewer`, `ui_designer` y `architect` si modifica composición/bootstrap.
 - Para implementación y E2E: auth y destinos reales integrados en runtime, request Beta, navegación owner, deep link guest; evidencia de permisos/no enumeración. Los módulos de dominio ya existentes se reutilizan, no se reabren sus tickets DONE.
-- **No dependencia dura** de concluir toda EL-EP-017 para *planificar* la página; publicación pública de contenido legal/servicio mantiene sus gates.
+- **No dependencia dura** de concluir toda EL-EP-017 para **redactar tickets DRAFT**: LEGAL_SCOPE_FOR_TICKET_WRITING PASS_WITH_CONDITIONS, según [dictamen acotado](../sessions/2026-10-12-el-ep-018-legal-ticket-gate.md). **Bloqueos de salida**: revisión de copy y veracidad, licencia/autorizaciones de fotos del Home, política/aviso y evidencia de autorización del formulario Beta (correo personal), identidad del responsable/canal de derechos, evaluación de cookies/analytics y EL-EP-017/Q-029 para apertura pública. No presuponer que EL-TK-008 ya acredita autorización legal por almacenar email y auditoría.
+
+## Criterios jurídicos transversales para tickets DRAFT
+
+**Gate acotado:** [2026-10-12 — LEGAL_SCOPE_FOR_TICKET_WRITING PASS_WITH_CONDITIONS](../sessions/2026-10-12-el-ep-018-legal-ticket-gate.md). Aplica en los tickets que diseñen o integren Home, CTAs, solicitud de Beta, cuenta, imágenes y footer.
+
+- Claims publicitarios de disponibilidad, privacidad, QR, galería y descarga deben corresponder al alcance real y estar revisados antes de publicar; no afirmar seguridad absoluta, registro libre ni aprobación Beta automática (Ley 1480 de 2011, arts. 29-30).
+- Captura de emails para Beta: implementar en owner de MOD-001 aviso/finalidad, política de datos accesible antes de recogida, responsable identificado y contacto, mecanismo válido de autorización/evidencia (cuando aplique), derechos y procedimientos. No confundir un enlace a política con prueba suficiente; no introducir checkbox premarcado ni consentimiento de marketing implícito (Ley 1581 de 2012; Decreto 1074 de 2015). Recogida pública sigue bloqueada hasta verificación profesional/operativa.
+- Imágenes para Home: procedencia/licencia/autorización aplicable; no reutilizar media privada guest para publicidad. Revisión reforzada para imágenes identificables y menores.
+- Footer minimalista conserva links jurídicos reales y versionados cuando estén aprobados; **no** recolectar datos ocultando la ausencia de política. No trackers/cookies no esenciales nuevos por defecto sin evaluación.
+- Mantener `LEGAL_RELEASE_BLOCKER` por superficie hasta que haya evidencia de aprobación/publicación; `EL-EP-017` sigue NOT_READY; la política concreta, responsable legal, plazos de retención y Q-029 no se resuelven en esta épica.
+- La redacción de tickets DRAFT puede avanzar; sus estados `READY`, implementación y release requieren gates **independientes** de requisitos, UI/arquitectura y legal según alcance.
 
 ## Relevant non-functional requirements
 WCAG 2.2 AA, mobile-first y últimas versiones de navegadores soportados; español inicial/i18n-ready; TLS, privacidad/no-index de eventos privados, CSP y navegación segura, no open redirects, tamaño de assets razonable, sin dependencia de health API para renderizar textos estáticos. Sin analítica de tokens/cuentas.
@@ -138,6 +150,7 @@ Scope creep de página marketing; cambio inadvertido de políticas de autenticac
 3. **INTEGRACIÓN GUEST:** confirmada entrada **directa**, sin Home/login owner. Identificar el formato de URL real emitido por EL-EP-004 y asegurar credencial revocable, PIN y privacidad.
 4. **NAV UX:** salida tras logout y disposición exacta del menú autenticado/móvil; manejar estados sesión pendiente/expirada/restringida.
 5. **OPS/RELEASE:** Nginx SPA fallback/base href, política de indexación de Home y revisión legal antes de lanzamiento público conforme EL-EP-017/Q-029.
+6. **LEGAL — para release, no ticket drafting:** identificar responsable legal/contacto, versión real de política/aviso, autorización/evidencia para emails Beta, retención/ejercicio de derechos, imágenes autorizadas y conformidad de claims; gate jurídico acotado de escritura PASS_WITH_CONDITIONS.
 
 ## UI/UX handoff propuesto
 UI_REQUIRED: YES.
@@ -158,12 +171,14 @@ Secciones: Header/hero, Beneficios, Cómo funciona, Privacidad, FAQ, cierre con 
 - [ ] Rutas y ownership auditados por architect/frontend.
 - [ ] Handoff `ui_designer` aprobado.
 - [ ] `requirements_reviewer` sin BLOCKER.
+- [x] Riesgos y criterios jurídicos localizados para creación de tickets DRAFT (PASS_WITH_CONDITIONS, sin dictamen profesional ni permiso de publicación).
 - [ ] Dependencias de implementación y tickets reconciliadas.
 
 ## Priority
 P0 **propuesta** para entrada/roteo funcional de la Beta (sin navegación no existe app usable desde `/`); contenido institucional/FAQ y SEO fino P1 y pueden entregarse sin desplazar seguridad, galería, exportaciones o purga. La priorización no cambia el roadmap aprobado sin evaluación.
 
 ## Change history
+- 2026-10-12: evaluación jurídica acotada permite **redactar tickets DRAFT** con requisitos de privacidad, claims, imágenes y release blockers; no cambia gate global de tickets ni EL-EP-017/Q-029. [Registro](../sessions/2026-10-12-el-ep-018-legal-ticket-gate.md).
 - 2026-10-12: confirmadas reglas A/B/C de navegación: alcance de `/mi-cuenta` (datos básicos/seguridad/sesiones/eliminación sin duplicación), `/mi-cuenta` → `/ingresar` → retorno interno autorizado, cuenta con eliminación pendiente restringida y QR guest directo sin Home/login organizador. Contratos de ruta aún requieren integración técnica; gates sin cambios.
 - 2026-10-12: confirmadas las 12 decisiones de dirección editorial, incluida navegación equilibrada, FAQ de cuatro preguntas, CTA Beta discreto y footer minimalista. Actualizados alcance, copy propuesto y auditoría de rutas de `stage`; gates y rutas definitivas siguen pendientes. [Registro](../sessions/2026-10-12-el-ep-018-editorial-and-routes.md).
 - 2026-10-12: confirmado comportamiento Home `/` accesible con y sin sesión, con atajos al organizador y sin redirección automática; copy, menú y rutas siguen pendientes de aprobación/auditoría.
