@@ -73,6 +73,7 @@ export type EventManagementErrorCode =
   | 'EVENT_NOT_ACCESSIBLE'
   | 'SESSION_EXPIRED'
   | 'SESSION_REVOKED'
+  | 'CREDENTIAL_NOT_FOUND'
   | 'CONSENT_REQUIRED'
   | 'INVALID_CONSENT_VERSION'
   | 'CONSENT_REJECTED'
@@ -710,6 +711,93 @@ export interface UploadBatchSnapshot {
   readonly rejectedCount: number;
 }
 
+export interface GetGuestContributionsCommand {
+  readonly sessionToken: string;
+  readonly now?: Date;
+}
+
+export interface GuestContributionItem {
+  readonly attemptId: string;
+  readonly mediaType: UploadMediaType;
+  readonly status: UploadAttemptStatus;
+  readonly declaredSize: bigint;
+  readonly actualSize: bigint | null;
+  readonly detectedType: string | null;
+  readonly durationSeconds: number | null;
+  readonly rejectionReason: string | null;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
+export interface GetGuestContributionsResult {
+  readonly eventId: string;
+  readonly sessionId: string;
+  readonly contributorNickname: string | null;
+  readonly items: GuestContributionItem[];
+  readonly totalCount: number;
+  readonly acceptedCount: number;
+}
+
+export interface UpdateEventPinCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly eventId: string;
+  readonly action: 'CHANGE_PIN' | 'DISABLE_PIN';
+  readonly newPin?: string;
+  readonly now?: Date;
+}
+
+export interface UpdateEventPinResult {
+  readonly eventId: string;
+  readonly pinEnabled: boolean;
+  readonly revokedSessionsCount: number;
+  readonly updatedAt: Date;
+}
+
+export interface RegeneratePublicCredentialCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly eventId: string;
+  readonly now?: Date;
+}
+
+export interface RegeneratePublicCredentialResult {
+  readonly credential: PublicAccessCredentialRecord;
+  readonly previousGeneration: number;
+  readonly revokedSessionsCount: number;
+  readonly outcome: 'REGENERATED';
+}
+
+export interface GetShareAccessSnapshotCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly eventId: string;
+  readonly baseUrl?: string;
+  readonly now?: Date;
+}
+
+export interface ShareAccessSnapshotResult {
+  readonly eventId: string;
+  readonly lookupKey: string;
+  readonly sharePath: string;
+  readonly shareUrl: string;
+  readonly generation: number;
+  readonly pinRequired: boolean;
+  readonly qrPayload: string;
+  readonly qrSvg: string;
+}
+
+export interface GetRemovalIntakeRouteCommand {
+  readonly lookupKey: string;
+  readonly baseUrl?: string;
+  readonly now?: Date;
+}
+
+export interface RemovalIntakeRouteResult {
+  readonly eventId: string;
+  readonly eventName: string;
+  readonly intakePath: string;
+  readonly disclaimer: string;
+  readonly requiresSession: false;
+}
+
 export interface EventAuditRecord {
   readonly id: string;
   readonly procedure:
@@ -724,12 +812,17 @@ export interface EventAuditRecord {
     | 'EVENT_REACTIVATED'
     | 'EVENT_VALIDITY_EXTENDED'
     | 'EVENT_INITIAL_PIN_SET'
+    | 'EVENT_PIN_UPDATED'
     | 'EVENT_PUBLIC_CREDENTIAL_ISSUED'
+    | 'EVENT_PUBLIC_CREDENTIAL_REGENERATED'
     | 'EVENT_PUBLIC_ACCESS_RESOLVED'
+    | 'EVENT_SHARE_ACCESS_QUERIED'
     | 'GUEST_SESSION_CREATED'
     | 'GUEST_PIN_VALIDATION_FAILED'
     | 'GUEST_CONSENT_RECORDED'
     | 'GUEST_NICKNAME_SET'
+    | 'GUEST_CONTRIBUTIONS_QUERIED'
+    | 'REMOVAL_INTAKE_ROUTED'
     | 'UPLOAD_ATTEMPT_AUTHORIZED'
     | 'UPLOAD_URL_ISSUED'
     | 'UPLOAD_CONFIRMED'
@@ -743,6 +836,9 @@ export interface EventAuditRecord {
     | 'SUCCESS'
     | 'EXTENDED'
     | 'REACTIVATED'
+    | 'REGENERATED'
+    | 'PIN_UPDATED'
+    | 'PIN_DISABLED'
     | 'TRANSITIONED_TO_GRACE_PERIOD'
     | 'TRANSITIONED_TO_PENDING_DELETION'
     | 'SUSPENDED_PRESERVED'
@@ -791,3 +887,4 @@ export interface EventAuditRecord {
 export interface EventAuditSink {
   record(event: EventAuditRecord): Promise<void>;
 }
+

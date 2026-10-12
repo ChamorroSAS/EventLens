@@ -1,11 +1,20 @@
-import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { createHash, randomBytes, randomUUID, scryptSync } from 'node:crypto';
 import type { SqlTransaction, TransactionRunner } from '@eventlens/database';
+import type { OrganizerActorContext } from '@eventlens/identity';
 import {
   EventManagementError,
   type IssueInitialPublicCredentialCommand,
   type IssueInitialPublicCredentialResult,
   type ResolvePublicAccessCommand,
   type ResolvePublicAccessResult,
+  type UpdateEventPinCommand,
+  type UpdateEventPinResult,
+  type RegeneratePublicCredentialCommand,
+  type RegeneratePublicCredentialResult,
+  type GetShareAccessSnapshotCommand,
+  type ShareAccessSnapshotResult,
+  type GetRemovalIntakeRouteCommand,
+  type RemovalIntakeRouteResult,
   type PublicAccessCapabilities,
   type PublicAccessState,
   type PublicAccessCredentialRecord,
@@ -15,6 +24,7 @@ import {
   type EventAuditSink
 } from './contracts.js';
 import { EventAccessPolicy } from './access-policy.js';
+import { generateQrSvg } from './qr-generator.js';
 
 interface CredentialRow {
   id: string;
@@ -358,6 +368,462 @@ export class EventPublicAccessService {
         pinRequired: Boolean(row.pin_required),
         capabilities,
         ...(restrictionReason ? { restrictionReason } : {})
+      };
+    });
+  }
+
+  /**
+   * Updates or disables the protected entry PIN for an event and revokes all active guest sessions (EL-TK-079, DEC-072, DEC-083).
+   * - Only authenticated owner organizer can change or disable PIN.
+   * - Changing PIN validates 6 digits, computes scrypt hash, sets pin_enabled = true.
+   * - Disabling PIN clears pin_hash and pin_salt, sets pin_enabled = false.
+   * - Invariant (DEC-083): All active guest sessions are revoked immediately so they cannot obtain new authorizations.
+   */
+  public async updateEventPin(
+    command: UpdateEventPinCommand
+  ): Promise<UpdateEventPinResult> {
+    if (!command || typeof command !== 'object') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Update event PIN command is required');
+    }
+
+    const { actorContext, eventId, action, newPin, now: providedNow } = command;
+
+    if (
+      !actorContext ||
+      actorContext.actorType !== 'ORGANIZER_HUMAN' ||
+      !actorContext.accountId
+    ) {
+      throw new EventManagementError('UNAUTHORIZED', 'Authenticated organizer context is required');
+    }
+
+    if (!eventId || typeof eventId !== 'string') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Event ID is required');
+    }
+
+    const now = providedNow ?? new Date();
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      // 1. Lock event row
+      const eventRows = await tx.query<EventCheckRow>(
+        `SELECT id, organizer_id, status, pin_enabled
+         FROM event
+         WHERE id = $1
+         FOR UPDATE`,
+        eventId
+      );
+
+      if (eventRows.length === 0) {
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event '${eventId}' not found`);
+      }
+
+      const event = eventRows[0];
+
+      // 2. Owner isolation
+      if (event.organizer_id !== actorContext.accountId) {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_PIN_UPDATED',
+          actorId: actorContext.accountId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_UNAUTHORIZED',
+          details: 'Actor is not the owner of this event',
+          timestamp: now
+        });
+        throw new EventManagementError('UNAUTHORIZED', 'Actor is not the owner of this event');
+      }
+
+      // 3. State restriction
+      if (event.status === 'PENDING_DELETION' || event.status === 'ARCHIVED') {
+        throw new EventManagementError('EVENT_TERMINAL', `Cannot update PIN for event in terminal state '${event.status}'`);
+      }
+
+      let pinEnabled = false;
+
+      if (action === 'CHANGE_PIN') {
+        if (!newPin || typeof newPin !== 'string') {
+          throw new EventManagementError('INVALID_PIN_FORMAT', 'PIN is required to enable PIN protection');
+        }
+        const trimmedPin = newPin.trim();
+        if (!/^\d{6}$/.test(trimmedPin)) {
+          throw new EventManagementError('INVALID_PIN_FORMAT', 'PIN must be exactly 6 numeric digits');
+        }
+
+        const salt = randomBytes(16).toString('hex');
+        const hash = scryptSync(trimmedPin, salt, 32).toString('hex');
+
+        await tx.execute(
+          `UPDATE event
+           SET pin_enabled = true, pin_hash = $2, pin_salt = $3, updated_at = $4
+           WHERE id = $1`,
+          eventId,
+          hash,
+          salt,
+          now
+        );
+
+        await tx.execute(
+          `UPDATE public_access_credential
+           SET pin_required = true
+           WHERE event_id = $1 AND revoked_at IS NULL`,
+          eventId
+        );
+
+        pinEnabled = true;
+      } else if (action === 'DISABLE_PIN') {
+        await tx.execute(
+          `UPDATE event
+           SET pin_enabled = false, pin_hash = NULL, pin_salt = NULL, updated_at = $2
+           WHERE id = $1`,
+          eventId,
+          now
+        );
+
+        await tx.execute(
+          `UPDATE public_access_credential
+           SET pin_required = false
+           WHERE event_id = $1 AND revoked_at IS NULL`,
+          eventId
+        );
+
+        pinEnabled = false;
+      } else {
+        throw new EventManagementError('INVALID_ARGUMENT', `Unsupported PIN action '${action}'`);
+      }
+
+      // 4. Invariant DEC-083: Revoke all active guest sessions
+      const revokedRows = await tx.query<{ id: string }>(
+        `UPDATE guest_session
+         SET revoked_at = $2
+         WHERE event_id = $1 AND revoked_at IS NULL
+         RETURNING id`,
+        eventId,
+        now
+      );
+
+      // 5. Clear failed pin attempts
+      await tx.execute(
+        `DELETE FROM guest_pin_attempt
+         WHERE lookup_key IN (SELECT lookup_key FROM public_access_credential WHERE event_id = $1)`,
+        eventId
+      );
+
+      // 6. Audit without logging raw PIN or hash
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_PIN_UPDATED',
+        actorId: actorContext.accountId,
+        targetIdentifier: eventId,
+        result: action === 'CHANGE_PIN' ? 'PIN_UPDATED' : 'PIN_DISABLED',
+        details: `PIN action '${action}' applied; revoked ${revokedRows.length} active guest sessions`,
+        timestamp: now
+      });
+
+      return {
+        eventId,
+        pinEnabled,
+        revokedSessionsCount: revokedRows.length,
+        updatedAt: now
+      };
+    });
+  }
+
+  /**
+   * Regenerates the public access credential and invalidates previous link/sessions (EL-TK-080, DEC-004, DEC-013, DEC-083).
+   * - Only authenticated owner organizer can regenerate credential.
+   * - Issues new unguessable PublicAccessCredential with incremented generation.
+   * - Immediately revokes prior active credentials.
+   * - Invariant (DEC-083): All active guest sessions created under previous credential are fully revoked.
+   */
+  public async regeneratePublicCredential(
+    command: RegeneratePublicCredentialCommand
+  ): Promise<RegeneratePublicCredentialResult> {
+    if (!command || typeof command !== 'object') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Regenerate public credential command is required');
+    }
+
+    const { actorContext, eventId, now: providedNow } = command;
+
+    if (
+      !actorContext ||
+      actorContext.actorType !== 'ORGANIZER_HUMAN' ||
+      !actorContext.accountId
+    ) {
+      throw new EventManagementError('UNAUTHORIZED', 'Authenticated organizer context is required');
+    }
+
+    if (!eventId || typeof eventId !== 'string') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Event ID is required');
+    }
+
+    const now = providedNow ?? new Date();
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      // 1. Lock event row
+      const eventRows = await tx.query<EventCheckRow>(
+        `SELECT id, organizer_id, status, pin_enabled
+         FROM event
+         WHERE id = $1
+         FOR UPDATE`,
+        eventId
+      );
+
+      if (eventRows.length === 0) {
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event '${eventId}' not found`);
+      }
+
+      const event = eventRows[0];
+
+      // 2. Owner check
+      if (event.organizer_id !== actorContext.accountId) {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_PUBLIC_CREDENTIAL_REGENERATED',
+          actorId: actorContext.accountId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_UNAUTHORIZED',
+          details: 'Actor is not the owner of this event',
+          timestamp: now
+        });
+        throw new EventManagementError('UNAUTHORIZED', 'Actor is not the owner of this event');
+      }
+
+      // 3. State restriction
+      if (event.status === 'PENDING_DELETION' || event.status === 'ARCHIVED') {
+        throw new EventManagementError('EVENT_TERMINAL', `Cannot regenerate credential for event in terminal state '${event.status}'`);
+      }
+
+      // 4. Find current generation
+      const activeRows = await tx.query<CredentialRow>(
+        `SELECT id, lookup_key, generation
+         FROM public_access_credential
+         WHERE event_id = $1 AND revoked_at IS NULL
+         ORDER BY generation DESC
+         LIMIT 1
+         FOR UPDATE`,
+        eventId
+      );
+
+      const previousGeneration = activeRows.length > 0 ? Number(activeRows[0].generation) : 0;
+      const nextGeneration = previousGeneration + 1;
+
+      // 5. Revoke previous credentials
+      await tx.execute(
+        `UPDATE public_access_credential
+         SET revoked_at = $2
+         WHERE event_id = $1 AND revoked_at IS NULL`,
+        eventId,
+        now
+      );
+
+      // 6. Generate new high-entropy unguessable credential without PII (DEC-004)
+      const lookupKey = randomBytes(18).toString('base64url');
+      const tokenHash = createHash('sha256').update(lookupKey).digest('hex');
+      const pinRequired = Boolean(event.pin_enabled);
+      const credentialId = randomUUID();
+
+      const insertedRows = await tx.query<CredentialRow>(
+        `INSERT INTO public_access_credential (
+           id, event_id, lookup_key, token_hash, generation, pin_required, created_at, revoked_at
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, NULL)
+         RETURNING id, event_id, lookup_key, token_hash, generation, pin_required, created_at, revoked_at`,
+        credentialId,
+        eventId,
+        lookupKey,
+        tokenHash,
+        nextGeneration,
+        pinRequired,
+        now
+      );
+
+      // 7. Invariant DEC-083: Revoke all existing guest sessions
+      const revokedSessionRows = await tx.query<{ id: string }>(
+        `UPDATE guest_session
+         SET revoked_at = $2
+         WHERE event_id = $1 AND revoked_at IS NULL
+         RETURNING id`,
+        eventId,
+        now
+      );
+
+      // 8. Clear previous pin attempts for old lookup keys
+      if (activeRows.length > 0) {
+        await tx.execute(
+          `DELETE FROM guest_pin_attempt WHERE lookup_key = $1`,
+          activeRows[0].lookup_key
+        );
+      }
+
+      // 9. Audit without leaking complete secret lookup key in plain text
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_PUBLIC_CREDENTIAL_REGENERATED',
+        actorId: actorContext.accountId,
+        targetIdentifier: eventId,
+        result: 'REGENERATED',
+        details: `Regenerated to generation ${nextGeneration}; revoked ${revokedSessionRows.length} guest sessions`,
+        timestamp: now
+      });
+
+      return {
+        credential: mapRowToCredential(insertedRows[0]),
+        previousGeneration,
+        revokedSessionsCount: revokedSessionRows.length,
+        outcome: 'REGENERATED'
+      };
+    });
+  }
+
+  /**
+   * Queries share payload and generates offline QR SVG for the active public access credential (EL-TK-081, DEC-004, DEC-013).
+   * - Only authenticated owner organizer can query share data.
+   * - Strictly returns the active credential, never a revoked one (Escenario 2).
+   * - Generates clean, accessible QR SVG representation without external network dependencies.
+   */
+  public async getShareAccessSnapshot(
+    command: GetShareAccessSnapshotCommand
+  ): Promise<ShareAccessSnapshotResult> {
+    if (!command || typeof command !== 'object') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Get share access snapshot command is required');
+    }
+
+    const { actorContext, eventId, baseUrl, now: providedNow } = command;
+
+    if (
+      !actorContext ||
+      actorContext.actorType !== 'ORGANIZER_HUMAN' ||
+      !actorContext.accountId
+    ) {
+      throw new EventManagementError('UNAUTHORIZED', 'Authenticated organizer context is required');
+    }
+
+    if (!eventId || typeof eventId !== 'string') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Event ID is required');
+    }
+
+    const now = providedNow ?? new Date();
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      // 1. Verify owner
+      const eventRows = await tx.query<{ id: string; organizer_id: string }>(
+        `SELECT id, organizer_id FROM event WHERE id = $1`,
+        eventId
+      );
+
+      if (eventRows.length === 0) {
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event '${eventId}' not found`);
+      }
+
+      if (eventRows[0].organizer_id !== actorContext.accountId) {
+        throw new EventManagementError('UNAUTHORIZED', 'Actor is not the owner of this event');
+      }
+
+      // 2. Fetch active credential
+      const credRows = await tx.query<CredentialRow>(
+        `SELECT id, event_id, lookup_key, token_hash, generation, pin_required, created_at, revoked_at
+         FROM public_access_credential
+         WHERE event_id = $1 AND revoked_at IS NULL
+         ORDER BY generation DESC
+         LIMIT 1`,
+        eventId
+      );
+
+      if (credRows.length === 0) {
+        throw new EventManagementError('CREDENTIAL_NOT_FOUND', `No active public access credential found for event '${eventId}'`);
+      }
+
+      const cred = credRows[0];
+      const cleanBase = baseUrl ? baseUrl.replace(/\/+$/, '') : '';
+      const sharePath = `/g/${cred.lookup_key}`;
+      const shareUrl = cleanBase ? `${cleanBase}${sharePath}` : sharePath;
+      const qrPayload = shareUrl;
+      const qrSvg = generateQrSvg(qrPayload);
+
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_SHARE_ACCESS_QUERIED',
+        actorId: actorContext.accountId,
+        targetIdentifier: eventId,
+        result: 'SUCCESS',
+        details: `Share access queried for generation ${cred.generation}`,
+        timestamp: now
+      });
+
+      return {
+        eventId,
+        lookupKey: cred.lookup_key,
+        sharePath,
+        shareUrl,
+        generation: Number(cred.generation),
+        pinRequired: Boolean(cred.pin_required),
+        qrPayload,
+        qrSvg
+      };
+    });
+  }
+
+  /**
+   * Routes an anonymous person without session to the removal intake flow (EL-TK-082, DEC-084, DEC-103..105).
+   * - Accessible with lookupKey without requiring or assuming a guest session.
+   * - Rejects invalid or revoked credentials fail-closed without leaking event info.
+   * - Returns intake route and contractual disclaimer: reception != execution.
+   */
+  public async getRemovalIntakeRoute(
+    command: GetRemovalIntakeRouteCommand
+  ): Promise<RemovalIntakeRouteResult> {
+    if (!command || typeof command !== 'object' || !command.lookupKey) {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Public lookupKey is required');
+    }
+
+    const trimmedKey = command.lookupKey.trim();
+    const now = command.now ?? new Date();
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      const rows = await tx.query<{
+        event_id: string;
+        revoked_at: Date | string | null;
+        event_name: string;
+        event_status: string;
+      }>(
+        `SELECT c.event_id, c.revoked_at, e.name AS event_name, e.status AS event_status
+         FROM public_access_credential c
+         JOIN event e ON e.id = c.event_id
+         WHERE c.lookup_key = $1
+         LIMIT 1`,
+        trimmedKey
+      );
+
+      if (rows.length === 0 || rows[0].revoked_at !== null) {
+        throw new EventManagementError('INVALID_CREDENTIAL', 'Public access credential is invalid or has been revoked');
+      }
+
+      const row = rows[0];
+
+      if (row.event_status === 'PENDING_DELETION' || row.event_status === 'ARCHIVED') {
+        throw new EventManagementError('EVENT_TERMINAL', 'Event has been deleted');
+      }
+
+      const cleanBase = command.baseUrl ? command.baseUrl.replace(/\/+$/, '') : '';
+      const intakePath = `${cleanBase}/removal-request?eventId=${row.event_id}`;
+      const disclaimer =
+        'La recepción de esta solicitud no constituye una eliminación automática ni inmediata del contenido. ' +
+        'El organizador o administrador del evento revisará la solicitud conforme a las políticas vigentes.';
+
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'REMOVAL_INTAKE_ROUTED',
+        actorId: 'GUEST_ANONYMOUS',
+        targetIdentifier: row.event_id,
+        result: 'SUCCESS',
+        details: `Removal intake route resolved for event '${row.event_id}' without active session`,
+        timestamp: now
+      });
+
+      return {
+        eventId: row.event_id,
+        eventName: row.event_name,
+        intakePath,
+        disclaimer,
+        requiresSession: false
       };
     });
   }

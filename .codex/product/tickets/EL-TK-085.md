@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador, **quiero** gestionar el PIN, consultar el enlace y QR para compartir y regenerar el acceso desde el panel de mi evento, **para** controlar de forma accesible cómo acceden mis invitados.
@@ -69,3 +69,15 @@ REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la superficie del or
 - **Componentes reutilizados:** Catálogo de configuración y compartir del organizador (§5.6..10/18..19) sin mezclar la interfaz guest ni inventar componentes nuevos ni tokens ad-hoc.
 - **Copy contractual:** Advertencias explícitas de revocación de sesiones guest anteriores al cambiar/desactivar PIN o regenerar credencial.
 - **Accesibilidad y responsive:** WCAG 2.2 AA (foco visible, atrapamiento y retorno de foco en diálogos modales, soporte de teclado y touch targets ≥ 44×44px).
+
+## Implementation Evidence — 2026-10-11
+- **Branch:** `feature/EL-TK-078`
+- **Frontend Architecture (`apps/web/src/app/event-access/`):**
+  - `EventAccessContainerComponent`: Orquestador reactivo de gestión de acceso para organizadores impulsado por `signal()`.
+  - `EventAccessSettingsComponent`: Configuración de PIN (activación/cambio a 6 dígitos con radio options y desactivación sin PIN) con advertencia visible de revocación de sesiones según DEC-083. No muestra ni persiste secretos en texto plano.
+  - `EventSharePanelComponent`: Previsualización de código QR SVG autónomo con sanitización (`DomSanitizer`), campo de solo lectura del enlace público, botón de copia con anuncio accesible mediante región en vivo `aria-live="polite"` (`.sr-only`), descarga directa de SVG y disparador del diálogo de regeneración.
+  - `RegenerateAccessDialogComponent`: Diálogo modal de confirmación destructiva con trampa de foco, atajo `Escape`, foco inicial seguro en botón Cancelar y retorno programático del foco al disparador al cerrar o confirmar.
+- **Test Coverage:**
+  - `apps/web/src/app/event-access/event-access.component.spec.ts` (4/4 tests unitarios PASS).
+  - Typecheck (`ngc --noEmit`): 0 errores.
+  - Production build (`ng build`): 0 errores.

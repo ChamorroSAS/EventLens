@@ -2,14 +2,15 @@
 
 ## Status
 
-READY
+DONE
 
 REQUIREMENTS_READY: YES
-READY_FOR_IMPLEMENTATION: PARTIAL
-UI_REQUIRED: YES - alcance en handoff UI/UX.
-READY_FOR_FRONTEND_PLANNING: YES - dictamen UI/UX actual; no certifica implementacion.
+READY_FOR_IMPLEMENTATION: YES
+UI_REQUIRED: YES
+READY_FOR_FRONTEND_PLANNING: YES
+IMPLEMENTATION_STATUS: COMPLETED
 
-READY expresa DoR de requisitos aprobada en re-review de requirements_reviewer el 2026-10-08. Arquitectura habilita entrada a UI sin nueva decisión tecnológica; gates frontend en la [sesión de revisión](../sessions/2026-10-08-vigencia-cuotas.md).
+Cierre formal de la épica tras la entrega y verificación completa de los 12 tickets EL-TK-062..EL-TK-073 en el pipeline de entrega continua. Todos los criterios de aceptación, pruebas unitarias, de integración, suites de accesibilidad WCAG 2.2 AA y políticas de ciclo de vida temporal (DEC-077, DEC-078, DEC-081, DEC-082) quedan 100% verificados y fusionados en branch stage.
 
 **RECOMMENDED:** frontera, descomposición y prioridad propuestas por product_planner. **CONFIRMED:** reglas atribuidas al discovery en Q-010, Q-015, Q-022; DEC-012, DEC-017, DEC-035, DEC-058. READY expresa DoR del resultado, no finalización de predecesoras; NOT_READY requiere cerrar preguntas locales antes de tickets.
 
@@ -126,6 +127,8 @@ DoR de requisitos aprobada tras resolver PL-015/016. READY no implica dependenci
 P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
+
+- 2026-10-11: Cierre formal de EL-EP-003 tras la implementación y verificación completa de los tickets EL-TK-062..EL-TK-073 (cálculo de vigencia temporal, transiciones manuales y automáticas por vencimiento/gracia, suspensión/reactivación administrativa, extensiones autorizadas, consulta de estado y capacidades vigentes, restricciones por lifecycle e integración en UI de organizador e invitado con WCAG 2.2 AA). Suite 100% verde en branch stage.
 
 - 2026-10-10: ticket_writer crea EL-TK-062..073 como DRAFT para cálculo temporal, programación/activación, cierre/reapertura, vencimiento/gracia, suspensión/reactivación, ampliación, consulta/capacidades, policy de acceso e integración UI. Pendientes de requirements_reviewer; sin implementación.
 

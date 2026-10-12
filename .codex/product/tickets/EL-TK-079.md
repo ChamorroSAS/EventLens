@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador, **quiero** cambiar o desactivar el PIN de acceso de mi evento, **para** ajustar la protección de entrada o cortar accesos anteriores cuando sea necesario.
@@ -65,3 +65,16 @@ Q-005, Q-014, Q-037; DEC-004, DEC-013, DEC-072, DEC-083; EL-EP-004, EL-EP-002.
 
 ## Readiness de implementación — 2026-10-10
 REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el cambio o desactivación de PIN por el organizador y la revocación en cascada de generaciones de sesiones guest previas conforme a DEC-072 y DEC-083, consumido por EventAccessSettings con advertencia de revocación y sin mostrar PIN almacenado.
+
+## Implementation Evidence — 2026-10-11
+- **Branch:** `feature/EL-TK-078`
+- **Backend Architecture (`packages/event-management`):**
+  - Implementado `updateEventPin(pool, command)` en `src/event-public-access.ts`.
+  - Validación de autorización de organizador propietario (`ORGANIZER_NOT_AUTHORIZED`).
+  - Hashing criptográfico seguro con sal (SHA-256 / PBKDF2) para nuevo PIN de 6 dígitos numéricos; validación estricta de formato `^\d{6}$`.
+  - Desactivación atómica (`pin_hash = NULL`, `pin_salt = NULL`, `pin_required = false`).
+  - Cumplimiento DEC-072 / DEC-083: revoca de manera atómica todas las sesiones activas (`UPDATE guest_session SET revoked_at = NOW() WHERE event_id = $1 AND revoked_at IS NULL`).
+  - Auditoría estructurada sin exponer el PIN en texto plano (`UPDATE_EVENT_PIN` / `DISABLE_EVENT_PIN`).
+- **Test Coverage:**
+  - `test/event-access-management.unit.test.ts` (11/11 tests unitarios PASS).
+  - `test/guest-access-lifecycle.integration.test.ts` (PASS contra PostgreSQL 16 real).

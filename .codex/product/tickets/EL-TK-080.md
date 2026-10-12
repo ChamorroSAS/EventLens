@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador, **quiero** regenerar el enlace/QR de acceso de mi evento, **para** invalidar una credencial pública filtrada.
@@ -65,3 +65,14 @@ Q-005, Q-014; DEC-004, DEC-013, DEC-083; EL-EP-004.
 
 ## Readiness de implementación — 2026-10-10
 REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la emisión de nueva credencial pública, invalidación atómica de la anterior y revocación de sesiones guest previas conforme a DEC-083, consumido por RegenerateAccessDialog con confirmación destructiva visible.
+
+## Implementation Evidence — 2026-10-11
+- **Branch:** `feature/EL-TK-078`
+- **Backend Architecture (`packages/event-management`):**
+  - Implementado `regeneratePublicCredential(pool, command)` en `src/event-public-access.ts`.
+  - Generación de nuevo token criptográfico no adivinable (`lookup_key` seguro generado con `crypto.randomBytes(16)`).
+  - Transacción atómica: incrementa número de generación (`generation = generation + 1`), desactiva la credencial pública previa e invalida atómicamente todas las sesiones de invitados (`UPDATE guest_session SET revoked_at = NOW() WHERE event_id = $1 AND revoked_at IS NULL`) per DEC-083.
+  - Auditoría estructurada `REGENERATE_PUBLIC_CREDENTIAL` registrando la nueva generación sin filtrar el lookup key completo.
+- **Test Coverage:**
+  - `test/event-access-management.unit.test.ts` (11/11 tests unitarios PASS).
+  - `test/guest-access-lifecycle.integration.test.ts` (PASS contra PostgreSQL 16 real).

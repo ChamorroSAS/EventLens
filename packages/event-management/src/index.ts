@@ -76,11 +76,22 @@ export {
   type ReconcilePolicyCancellationsResult,
   type GetUploadBatchSnapshotCommand,
   type UploadBatchItem,
-  type UploadBatchSnapshot,
+  type GetGuestContributionsCommand,
+  type GetGuestContributionsResult,
+  type GuestContributionItem,
+  type UpdateEventPinCommand,
+  type UpdateEventPinResult,
+  type RegeneratePublicCredentialCommand,
+  type RegeneratePublicCredentialResult,
+  type GetShareAccessSnapshotCommand,
+  type ShareAccessSnapshotResult,
+  type GetRemovalIntakeRouteCommand,
+  type RemovalIntakeRouteResult,
   type EventAuditRecord,
   type EventAuditSink
 } from './contracts.js';
 
+export { generateQrMatrix, generateQrSvg } from './qr-generator.js';
 export { EventAccessPolicy } from './access-policy.js';
 export { EventDraftService } from './event-draft.js';
 export { EventLifecycleService } from './event-lifecycle.js';
