@@ -20,12 +20,12 @@ Fecha: 2026-10-08. Handoffs read-only de ui_designer incorporados por el orquest
 | EL-EP-012 | READY | YES | READY | YES | Consola/consulta propias listas; cada acción incrustada conserva gate de su dueño. |
 | EL-EP-013 | READY | YES | READY | YES | Handoff incorporado: avisos contextuales y correo, sin bandeja adicional. |
 | EL-EP-014 | READY | YES | READY | YES | UI limitada a consulta de auditoría; sin dashboard operativo obligatorio. |
-| EL-EP-015 | READY | YES | READY | PARTIAL | Challenge/condiciones concretas de reautenticación requieren contrato técnico. |
+| EL-EP-015 | READY | YES | READY | YES | DEC-107 y handoff015 aprobados; gates técnicos de verifier/intakes se conservan por alcance. |
 | EL-EP-016 | READY | NO | NOT_REQUIRED | YES | Informe/evidencia operativa; no requiere pantalla nueva. |
 
 Las reglas aceptadas del [gate funcional previo](../product/sessions/2026-10-08-precisiones-finales-mvp.md) se conservan. PL-024..026 respondidas en DEC-103..105; requisitos y UX del intake aprobados en [sesión final](../product/sessions/2026-10-08-removal-intake.md). EL-EP-004/009 vuelven a READY de requisitos y UX. Los gates anteriores se conservan como historia; PARTIAL es un eje de readiness, no un estado canónico nuevo.
 
-YES de ticket writing significa suficiencia de requisitos/UX para el alcance indicado, sujeto a contratos/gates técnicos aplicables, no ejecución ni lanzamiento. Se reutiliza READY_FOR_FRONTEND_PLANNING: YES para UX READY sin bloqueo técnico material; PARTIAL solo para gates técnicos localizados 001/015. No se crea una segunda máquina de metadata: UX_READINESS y PRODUCT_READINESS de esta matriz leen gates existentes. No generar frontend de una épica con gate PARTIAL; backend independiente puede avanzar si sus propios contratos/requisitos están cerrados.
+YES de ticket writing significa suficiencia de requisitos/UX para el alcance indicado, sujeto a contratos/gates técnicos aplicables, no ejecución ni lanzamiento. Se reutiliza READY_FOR_FRONTEND_PLANNING: YES para UX READY sin bloqueo técnico material; PARTIAL sólo para gates frontend todavía abiertos en su alcance;015 tiene gate UI YES desde2026-10-12, con pendientes técnicos independientes. No se crea una segunda máquina de metadata: UX_READINESS y PRODUCT_READINESS de esta matriz leen gates existentes. No generar frontend de una épica con gate PARTIAL; backend independiente puede avanzar si sus propios contratos/requisitos están cerrados.
 
 ## Fuentes y precedencia
 
@@ -317,13 +317,13 @@ ENTRY/PRECONDITIONS: evento/cuenta propia, permiso/challenge según contrato; no
 
 FLOWS/SCREENS: EventDeleteRequestDialog contexto/recurso/bloqueo/72h/consecuencias → «Solicitar eliminación»/«Cancelar»; pendiente manual countdown fecha y cancelar permitido; cuenta sección sensible con ConfirmDialog alcance todos eventos/7d/reauth; cancelación confirmada calcula estado actual, no ACTIVE ciego. Gracia vencida y retiro propio irreversible no ofrecen cancelación. Purga en mismo detalle/avisos, sin pantalla por job ni controles de hold jurídico pendiente.
 
-REUSED_COMPONENTS: EventDeleteRequestDialog, EventDeletionCountdown, EventLifecyclePanel, EventStatusBadge, RetentionNotice/RemovalPolicyNotice, AdministrativeActionReason/auditoría, ConfirmDialog y feedback. NEW_COMPONENTS: ninguno. COMPONENT_EXTENSIONS: causas manual/gracia/retiro, principal vs residual, cancelación vs irreversible, DESIGNED; cuenta usa ConfirmDialog sin AccountDeletionDialog nuevo.
+REUSED_COMPONENTS: EventDeleteRequestDialog, EventDeletionCountdown, EventLifecyclePanel, EventStatusBadge, RetentionNotice/RemovalPolicyNotice, AdministrativeActionReason/auditoría, ConfirmDialog y feedback; LoginForm.REAUTH_ACCOUNT/SecurityNotice de MOD-001. NEW_COMPONENTS: ninguno. COMPONENT_EXTENSIONS: causas manual/gracia/retiro, principal vs residual, cancelación vs irreversible y reauth de cuenta, READY_FOR_IMPLEMENTATION en diseño tras gate explícito; cuenta usa ConfirmDialog sin AccountDeletionDialog nuevo.
 
 STATES COVERED: contrato común; ausencia solicitud, pendiente/cancelable, reauth required/expired, carrera al vencer, no cancelable/irreversible, parcial/fallo físico sin DELETED falso, principal verificado/terminal. Calendario UTC y anclas DEC-097..099 presentados con TZ; no porcentaje inventado ni backups borrados instantáneamente.
 
 RESPONSIVE/ACCESSIBILITY: consecuencias antes de CTA, cancel visible, foco en título/contenido; fecha exacta además de contador sin live tick. Mobile/tablet/desktop mantienen orden y controles sensibles legibles.
 
-UX_OPEN_QUESTIONS: ninguna funcional; challenge/cuándo requiere contrato técnico de architect, no elección UI. UX_READINESS: READY; READY_FOR_TICKET_WRITING: PARTIAL en formularios sensibles, backend cerrado independiente permitido. DOCUMENTATION_UPDATES_RECOMMENDED: §§7.17/18/6.5/6.6 refieren causas/copy; no copiar política ni habilitar hold.
+UX_OPEN_QUESTIONS: ninguna. DEC-107 completa el contrato técnico; [handoff incorporado](ui-deletion-flow.md) APPROVED por ui_designer el 2026-10-12. UX_READINESS: READY; READY_FOR_FRONTEND_PLANNING: YES. READY_FOR_TICKET_WRITING: YES desde UX para alcances diseñados; requisitos/arquitectura conservan sus gates independientes. Extensiones del catálogo actualizadas sin componentes nuevos ni hold habilitado. Dictamen anterior PARTIAL superado sólo en este alcance.
 
 ## EL-EP-016
 
@@ -355,6 +355,6 @@ DOCUMENTATION_UPDATES_RECOMMENDED: explicitar NO en épica; no convertir §14 de
 
 ## Resultado y documentación
 
-Revisadas 16; UI YES 15 (001..015); UI NO 016. UX READY 15; UX PARTIAL/NOT_READY ninguna; NOT_REQUIRED 016. Nuevos componentes/tokens: ninguno. PL-024..026 respondidas sin nuevas preguntas funcionales; política contraseña/tokens001 y reauth015 conservan gates técnicos localizados. EL-EP-004/009 requisitos/UX READY y frontend planning YES tras DEC-103..105; texto jurídico final conserva Q-029.
+Revisadas 16; UI YES 15 (001..015); UI NO 016. UX READY 15; UX PARTIAL/NOT_READY ninguna; NOT_REQUIRED 016. Nuevos componentes/tokens: ninguno. PL-024..026 respondidas sin nuevas preguntas funcionales; política contraseña/tokens001 conserva su gate; reauth015 tiene contrato DEC-107 y UI aprobados el2026-10-12, con pendientes técnicos por alcance en la épica. EL-EP-004/009 requisitos/UX READY y frontend planning YES tras DEC-103..105; texto jurídico final conserva Q-029.
 
 Actualizar metadata existente de épicas por referencias compactas a este handoff; conservar producto/IDs/prioridad/historia. Corregir catálogo retry/descarga y referencias obsoletas de ampliación; delimitar maturity por alcance. Actualizar handoff antiguo lifecycle para referir integración aquí sin copiarla. ui-design-system y ui-guest-flow no requieren redefinición; galería/carga/confirmaciones reutilizan sus principios. Documentos técnicos protegidos: propuestas de sincronización de referencias ya registradas, sin modificaciones.

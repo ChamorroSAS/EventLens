@@ -9,7 +9,7 @@ READY
 REQUIREMENTS_READY: YES
 READY_FOR_IMPLEMENTATION: PARTIAL
 UI_REQUIRED: YES - alcance en handoff UI/UX.
-READY_FOR_FRONTEND_PLANNING: PARTIAL - dictamen UI/UX actual; no certifica implementacion.
+READY_FOR_FRONTEND_PLANNING: YES - gate explícito ui_designer del 2026-10-12; no certifica implementación.
 
 ## Module
 
@@ -99,15 +99,26 @@ Ningún BLOCKER de requisitos propio: PL-013/014/018..020 respondidas en DEC-091
 
 ## UI/UX handoff
 
-READY_FOR_TICKET_WRITING: PARTIAL
+READY_FOR_TICKET_WRITING: PARTIAL global; YES para causas cerradas, consumidores neutrales, proyección/consulta y UI diseñada tras dictamen APPROVED de requirements_reviewer del2026-10-12. Ver límites por alcance abajo.
 
-UX_SCOPE: Confirmar/cancelar borrado, causas y retencion; formularios sensibles dependen de reautenticacion tecnica.
+UX_SCOPE: Confirmar/cancelar borrado, causas y retención; DEC-107 cierra reautenticación de cuenta. [Handoff aprobado](../../context/ui-deletion-flow.md).
 
 FLOWS / SCREENS / REUSED_COMPONENTS / COMPONENT_EXTENSIONS / STATES / RESPONSIVE / ACCESSIBILITY: [especificacion por epica](../../context/ui-mvp-epic-review.md#el-ep-015). NEW_COMPONENTS: ninguno.
 
-UX_DEPENDENCIES: Contrato tecnico reautenticacion; lifecycle003 y retiro009 por causa.
+UX_DEPENDENCIES: [Contrato MOD-001 aceptado](../../context/account-reauthentication-contract.md); lifecycle003 y retiro009 por causa. La ejecución integrada requiere las capacidades correspondientes, no su implementación completa para planificar UI.
 
 UX_OPEN_QUESTIONS: ninguna funcional nueva; gates tecnicos aplicables en el handoff.
+
+## Gate vigente por alcance — 2026-10-12
+
+DEC-107 completa la reautenticación aprobada sin modificar las ventanas ni reglas previas. [Coordinación MOD-008](../../context/deletion-coordination-contract.md) reutiliza ARCH-002/005/006/010 y los propietarios existentes. Los dictámenes previos se conservan como historia.
+
+- READY_FOR_IMPLEMENTATION: YES para contratos/consumidores de causas cerradas (manual evento/cuenta, gracia, retiro propio), proyección y UI diseñada; ejecución integrada conserva dependencias concretas.
+- READY_FOR_IMPLEMENTATION: PARTIAL global: selección/parámetros y migración segura del verifier humano MOD-001 pendientes; intake de papelera/cuarentena requiere política/ancla acreditada de su productor y reconciliación del estado productor con evidencia física. No se infiere una política nueva.
+- Implementación no terminada no equivale a contrato pendiente. Adapters/recovery/storage y validaciones reales siguen trabajo de integración/Beta, sin seleccionar proveedores ni declarar gates PASS.
+- LEGAL_OR_SECURITY_HOLD excluido; Q-029/EL-EP-017 no se cierran por este gate ordinario.
+
+Evidencia y acciones mínimas en [auditoría/revisiones](../sessions/2026-10-12-el-ep-015-gates.md).
 
 ## Definition of Ready
 
@@ -127,6 +138,8 @@ DoR de requisitos aprobada; no generar tickets frontend antes del gate UI comple
 P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
+
+- 2026-10-12: DEC-107 aprobada por usuario; gate UI aprobado expresamente; contratos localizados y auditoría de dependencias. Sin código/tickets nuevos ni cambios de reglas aceptadas; pendientes técnicos por alcance explícitos.
 
 - 2026-10-08: requirements_reviewer aprueba READY de requisitos sin hallazgos; implementacion/UI conservan gates aplicables. [Dictamen](../sessions/2026-10-08-precisiones-finales-mvp.md).
 
