@@ -38,6 +38,8 @@ CONFIRMED: revisión antes de lanzamiento público, organizadores adultos, menor
 
 **CONFIRMED — producto 2026-10-12:** (1) organizadores **personas naturales y organizaciones**; (2) galería privada de fotos/videos para participantes autorizados bajo controles del organizador y las restricciones de publicación/seguridad existentes; (3) denuncias y retiro sin crear cuenta conforme EL-EP-009. Estas elecciones confirman propósito y UX, **no** aprueban roles jurídicos de responsable/encargado ni consentimiento de retratados. [Análisis de compatibilidad y preguntas](../sessions/2026-10-12-el-ep-017-organizers-gallery-and-reports.md). No se crean cuentas de organizaciones, descargas guest ni ocultación automática por denuncias.
 
+**CONFIRMED — atención de derechos de los titulares, 2026-10-12:** canal principal de privacidad por **correo electrónico**, recepción y seguimiento **manual con trazabilidad mínima**, reutilizando las funciones de cuenta, denuncias y retiro sin cuenta de EL-EP-009 y eliminación de EL-EP-015. La dirección de correo publicable/operable, clasificación jurídica de casos, prueba proporcional de identidad y conservación del expediente continúan PENDING. [Procedimiento preparatorio](../sessions/2026-10-12-el-ep-017-data-subject-rights-manual-procedure.md). No se introduce un sistema paralelo de PQR ni se declara integración comprobada.
+
 ## Main scenarios
 
 Profesional revisa políticas y flujo; validar avisos/consentimientos; acordar derechos y retención; identificar ajustes previos al go-live público.
