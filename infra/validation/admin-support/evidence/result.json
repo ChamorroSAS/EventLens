@@ -1,11 +1,11 @@
 {
-  "ticket": "EL-TK-149",
-  "precedingTicket": "EL-TK-148",
-  "runId": "admin_supp_bf6b7c9b2e3341abb4cb410ac79a9b3f",
-  "testedAt": "2026-10-12T01:33:25.513Z",
+  "ticket": "EL-TK-150",
+  "precedingTicket": "EL-TK-149",
+  "runId": "admin_supp_323cbe41b5bd470a9cd2c0c27976b2e5",
+  "testedAt": "2026-10-12T01:45:19.098Z",
   "result": "PASS",
-  "tests": 64,
-  "passed": 64,
+  "tests": 79,
+  "passed": 79,
   "postgresql": "16 real isolated laboratory database",
   "jobInspection": "JobQueue query and sanitized technical error inspection for support (DEC-038, DEC-064, EL-TK-148)",
   "gates": {

@@ -9,6 +9,9 @@ export type AdminSupportErrorCode =
   | 'UNAUTHORIZED'
   | 'INVALID_ARGUMENT'
   | 'NOT_FOUND'
+  | 'MEDIA_NOT_FOUND'
+  | 'MEDIA_UNAVAILABLE'
+  | 'CROSS_EVENT_MISMATCH'
   | 'INCOMPATIBLE_JOB_STATUS'
   | 'JOB_LOCKED_OR_PROCESSING'
   | 'IDEMPOTENCY_CONFLICT'
@@ -75,7 +78,8 @@ export interface AdminSupportAuditEvent {
     | 'ADMIN_EVENT_DETAIL_VIEWED'
     | 'ADMIN_JOB_LIST_VIEWED'
     | 'ADMIN_JOB_DETAIL_VIEWED'
-    | 'ADMIN_JOB_ACTION_EXECUTED';
+    | 'ADMIN_JOB_ACTION_EXECUTED'
+    | 'ADMIN_MEDIA_ACCESS_GRANTED';
   readonly principalId: string;
   readonly details: string;
   readonly timestamp: Date;
@@ -265,4 +269,41 @@ export interface AdminCapacityPort {
 
 export interface AdminJobsPort {
   getEventJobsSummary(eventId: string): Promise<AdminEventJobsSection>;
+}
+
+// ==========================================
+// EL-TK-150: Acceso Multimedia Administrativo Justificado
+// ==========================================
+
+export type AdminMediaPurpose =
+  | 'INCIDENT_INVESTIGATION'
+  | 'SUPPORT_REQUEST'
+  | 'CORRUPTION_DIAGNOSIS'
+  | 'LEGAL_OR_SAFETY';
+
+export interface RequestMediaGrantCommand {
+  readonly actorContext: AdminActorContext;
+  readonly eventId: string;
+  readonly mediaId: string;
+  readonly purpose: AdminMediaPurpose;
+  readonly reason: string;
+  readonly preferredTarget?: 'PREVIEW' | 'DETAIL';
+  readonly ttlSeconds?: number;
+}
+
+export interface AdministrativeSupportMediaGrant {
+  readonly grantId: string;
+  readonly eventId: string;
+  readonly mediaId: string;
+  readonly purpose: AdminMediaPurpose;
+  readonly targetKind: 'PREVIEW' | 'DETAIL';
+  readonly storageKey: string;
+  readonly downloadUrl: string;
+  readonly grantedAt: string;
+  readonly expiresAt: string;
+  readonly grantedTo: string;
+}
+
+export interface MediaGrantSigner {
+  signDownloadUrl(key: string, ttlSeconds: number): Promise<string>;
 }
