@@ -80,7 +80,16 @@ export {
   type RevokeSpecificSessionCommand,
   type RevokeSpecificSessionResult,
   type RevokeOtherSessionsCommand,
-  type RevokeOtherSessionsResult
+  type RevokeOtherSessionsResult,
+  type RevokeAdminPrincipalCommand,
+  type RevokeAdminPrincipalResult,
+  type PasswordResetErrorCode,
+  PasswordResetError,
+  type PasswordResetNotificationPort,
+  type RequestPasswordResetCommand,
+  type RequestPasswordResetResult,
+  type CompletePasswordResetCommand,
+  type CompletePasswordResetResult
 } from './contracts.js';
 
 export { AdminProvisioningService } from './provisioning.js';
@@ -113,6 +122,11 @@ export {
   OrganizerAuthenticationService,
   type OrganizerAuthOptions
 } from './organizer-auth.js';
+
+export {
+  PasswordResetService,
+  type PasswordResetServiceOptions
+} from './password-reset.js';
 
 
 

@@ -33,13 +33,18 @@ function createMockTransactionRunner(db: InMemoryDb): TransactionRunner {
     async run<T>(work: (tx: SqlTransaction) => Promise<T>): Promise<T> {
       const tx: SqlTransaction = {
         async query<R extends object>(sql: string, ...params: unknown[]): Promise<R[]> {
-          if (sql.includes('SELECT is_consumed FROM operational_bootstrap_state')) {
+          const norm = sql.replace(/\s+/g, ' ');
+          if (norm.includes('SELECT is_consumed FROM operational_bootstrap_state')) {
             return [{ is_consumed: db.bootstrapState.is_consumed }] as unknown as R[];
           }
-          if (sql.includes('SELECT id, is_consumed FROM operational_bootstrap_state')) {
+          if (norm.includes('SELECT id, is_consumed FROM operational_bootstrap_state')) {
             return [{ id: db.bootstrapState.id, is_consumed: db.bootstrapState.is_consumed }] as unknown as R[];
           }
-          if (sql.includes('SELECT id, status FROM admin_principal WHERE id = $1')) {
+          if (norm.includes('SELECT COUNT(*) as count FROM admin_principal WHERE status = \'ACTIVE\'')) {
+            const count = [...db.principals.values()].filter((p) => p.status === 'ACTIVE').length;
+            return [{ count }] as unknown as R[];
+          }
+          if (norm.includes('SELECT id, status FROM admin_principal WHERE id = $1')) {
             const id = params[0] as string;
             const found = db.principals.get(id);
             if (found && found.status === 'ACTIVE') {
@@ -47,7 +52,28 @@ function createMockTransactionRunner(db: InMemoryDb): TransactionRunner {
             }
             return [] as unknown as R[];
           }
-          if (sql.includes('SELECT id FROM admin_principal WHERE identifier = $1')) {
+          if (norm.includes('FROM admin_principal WHERE id = $1 FOR UPDATE') || norm.includes('FROM admin_principal WHERE id = $1')) {
+            const id = params[0] as string;
+            const found = db.principals.get(id);
+            if (found) {
+              return [found] as unknown as R[];
+            }
+            return [] as unknown as R[];
+          }
+          if (norm.includes('UPDATE admin_principal') && norm.includes('RETURNING *')) {
+            const newRevision = BigInt(params[0] as string);
+            const updatedAt = params[1] as Date;
+            const id = params[2] as string;
+            const found = db.principals.get(id);
+            if (found) {
+              found.status = 'REVOKED';
+              found.auth_revision = newRevision;
+              found.updated_at = updatedAt;
+              return [found] as unknown as R[];
+            }
+            return [] as unknown as R[];
+          }
+          if (norm.includes('SELECT id FROM admin_principal WHERE identifier = $1')) {
             const identifier = params[0] as string;
             const found = [...db.principals.values()].find((p) => p.identifier === identifier);
             if (found) {
@@ -55,8 +81,8 @@ function createMockTransactionRunner(db: InMemoryDb): TransactionRunner {
             }
             return [] as unknown as R[];
           }
-          if (sql.includes('INSERT INTO admin_principal')) {
-            const isInitial = sql.includes('INITIAL_BOOTSTRAP');
+          if (norm.includes('INSERT INTO admin_principal')) {
+            const isInitial = norm.includes('INITIAL_BOOTSTRAP');
             const id = params[0] as string;
             const identifier = params[1] as string;
             const provisionedBy = isInitial ? 'SYSTEM_BOOTSTRAP' : (params[2] as string);
@@ -77,6 +103,12 @@ function createMockTransactionRunner(db: InMemoryDb): TransactionRunner {
           return [] as unknown as R[];
         },
         async execute(sql: string, ...params: unknown[]): Promise<number> {
+          if (sql.includes('UPDATE admin_credential')) {
+            return 1;
+          }
+          if (sql.includes('UPDATE admin_session')) {
+            return 2;
+          }
           if (sql.includes('UPDATE operational_bootstrap_state')) {
             const [consumedAt] = params as [Date];
             db.bootstrapState.is_consumed = true;
@@ -406,6 +438,133 @@ describe('AdminProvisioningService (Unit Tests)', () => {
     it('standalone assertPublicRegistrationSafe helper validates clean input', () => {
       expect(() => assertPublicRegistrationSafe({ email: 'test@example.com' })).not.toThrow();
       expect(() => assertPublicRegistrationSafe({ role: 'admin' })).toThrow(ProvisioningError);
+    });
+  });
+
+  describe('Admin Principal Revocation (EL-TK-045)', () => {
+    it('revokes an active admin principal and invalidates credentials/sessions', async () => {
+      const { service, secret, db } = setup();
+
+      // Bootstrap initial admin
+      const initialAdmin = await service.provisionInitialBootstrap({
+        operatorToken: secret,
+        identifier: 'initial-admin@eventlens.local'
+      });
+
+      // Provision a second admin
+      const secondAdmin = await service.provisionSubsequent({
+        authorizingActor: { id: initialAdmin.id, isAuthorizedProvisioner: true },
+        identifier: 'second-admin@eventlens.local'
+      });
+
+      // Initial admin revokes the second admin
+      const result = await service.revokeAdminPrincipal({
+        authorizingActor: { id: initialAdmin.id, isAuthorizedProvisioner: true },
+        targetPrincipalId: secondAdmin.id,
+        reason: 'Security rotation test'
+      });
+
+      expect(result.outcome).toBe('REVOKED');
+      expect(result.principal.status).toBe('REVOKED');
+      expect(result.principal.authRevision).toBe(2n);
+      expect(result.revokedSessionsCount).toBe(2);
+
+      // Verify db state
+      const targetInDb = db.principals.get(secondAdmin.id);
+      expect(targetInDb?.status).toBe('REVOKED');
+
+      // Verify audit trail
+      const revokeAudit = db.auditEvents.find((e) => e.procedure === 'ADMIN_PRINCIPAL_REVOKED' && e.result === 'PRINCIPAL_REVOKED');
+      expect(revokeAudit).toBeDefined();
+      expect(revokeAudit?.targetPrincipalId).toBe(secondAdmin.id);
+      expect(revokeAudit?.actorId).toBe(initialAdmin.id);
+    });
+
+    it('is idempotent when revoking an already revoked principal', async () => {
+      const { service, secret, db } = setup();
+
+      const initialAdmin = await service.provisionInitialBootstrap({
+        operatorToken: secret,
+        identifier: 'initial-admin@eventlens.local'
+      });
+
+      const secondAdmin = await service.provisionSubsequent({
+        authorizingActor: { id: initialAdmin.id, isAuthorizedProvisioner: true },
+        identifier: 'second-admin@eventlens.local'
+      });
+
+      // First revocation
+      await service.revokeAdminPrincipal({
+        authorizingActor: { id: initialAdmin.id, isAuthorizedProvisioner: true },
+        targetPrincipalId: secondAdmin.id
+      });
+
+      // Second revocation (idempotent retry)
+      const retryResult = await service.revokeAdminPrincipal({
+        authorizingActor: { id: initialAdmin.id, isAuthorizedProvisioner: true },
+        targetPrincipalId: secondAdmin.id
+      });
+
+      expect(retryResult.outcome).toBe('ALREADY_REVOKED');
+      expect(retryResult.revokedSessionsCount).toBe(0);
+
+      const idempotentAudit = db.auditEvents.find((e) => e.result === 'ALREADY_REVOKED');
+      expect(idempotentAudit).toBeDefined();
+    });
+
+    it('rejects revocation attempt by unauthorized caller', async () => {
+      const { service, secret } = setup();
+
+      const initialAdmin = await service.provisionInitialBootstrap({
+        operatorToken: secret,
+        identifier: 'initial-admin@eventlens.local'
+      });
+
+      await expect(
+        service.revokeAdminPrincipal({
+          authorizingActor: { id: initialAdmin.id, isAuthorizedProvisioner: false },
+          targetPrincipalId: initialAdmin.id
+        })
+      ).rejects.toMatchObject({
+        code: 'UNAUTHORIZED_PROVISIONER'
+      });
+    });
+
+    it('rejects revocation when target principal does not exist', async () => {
+      const { service, secret } = setup();
+
+      const initialAdmin = await service.provisionInitialBootstrap({
+        operatorToken: secret,
+        identifier: 'initial-admin@eventlens.local'
+      });
+
+      await expect(
+        service.revokeAdminPrincipal({
+          authorizingActor: { id: initialAdmin.id, isAuthorizedProvisioner: true },
+          targetPrincipalId: '00000000-0000-0000-0000-000000000000'
+        })
+      ).rejects.toMatchObject({
+        code: 'PRINCIPAL_NOT_FOUND'
+      });
+    });
+
+    it('guards against revoking the sole active administrator', async () => {
+      const { service, secret } = setup();
+
+      const initialAdmin = await service.provisionInitialBootstrap({
+        operatorToken: secret,
+        identifier: 'only-admin@eventlens.local'
+      });
+
+      // Only 1 admin in the system: cannot revoke
+      await expect(
+        service.revokeAdminPrincipal({
+          authorizingActor: { id: initialAdmin.id, isAuthorizedProvisioner: true },
+          targetPrincipalId: initialAdmin.id
+        })
+      ).rejects.toMatchObject({
+        code: 'CANNOT_REVOKE_SOLE_ACTIVE_ADMIN'
+      });
     });
   });
 

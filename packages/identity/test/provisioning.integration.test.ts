@@ -222,4 +222,83 @@ describeIntegration('AdminProvisioningService (Real PostgreSQL Integration Tests
     expect(auditRows.length).toBe(1);
     expect(auditRows[0].target_identifier).toBe('public-attacker@example.com');
   });
+
+  it('revokes an administrative principal and all its sessions/credentials in real PostgreSQL (EL-TK-045)', async () => {
+    // 1. Provision initial admin
+    const initial = await service.provisionInitialBootstrap({
+      operatorToken: secret,
+      identifier: 'initial-admin@eventlens.local'
+    });
+
+    // 2. Provision second admin
+    const second = await service.provisionSubsequent({
+      authorizingActor: { id: initial.id, isAuthorizedProvisioner: true },
+      identifier: 'second-admin@eventlens.local'
+    });
+
+    // 3. Create dummy credential and session for the second admin
+    const credId = '11111111-1111-1111-1111-111111111111';
+    await sql(`
+      INSERT INTO "admin_credential" ("id", "principal_id", "purpose", "secret_digest", "revision", "status", "created_at", "updated_at")
+      VALUES ('${credId}', '${second.id}', 'ADMIN_AUTHENTICATION', 'fake-digest', 1, 'ACTIVE', NOW(), NOW())
+    `);
+
+    const sessId = '22222222-2222-2222-2222-222222222222';
+    await sql(`
+      INSERT INTO "admin_session" (
+        "id", "principal_id", "token_digest", "csrf_token_digest", "auth_time",
+        "created_at", "expires_at", "last_active_at", "idle_expires_at", "session_watermark"
+      ) VALUES (
+        '${sessId}', '${second.id}', 'fake-tok', 'fake-csrf', NOW(),
+        NOW(), NOW() + interval '8 hours', NOW(), NOW() + interval '30 minutes', 1
+      )
+    `);
+
+    // 4. Initial admin revokes the second admin
+    const revokeResult = await service.revokeAdminPrincipal({
+      authorizingActor: { id: initial.id, isAuthorizedProvisioner: true },
+      targetPrincipalId: second.id,
+      reason: 'Revocation in PostgreSQL test'
+    });
+
+    expect(revokeResult.outcome).toBe('REVOKED');
+    expect(revokeResult.principal.status).toBe('REVOKED');
+    expect(revokeResult.revokedSessionsCount).toBe(1);
+
+    // 5. Verify database records
+    const principalRow = await query<{ status: string; auth_revision: string }>(
+      `SELECT status, auth_revision FROM "admin_principal" WHERE id = '${second.id}'`
+    );
+    expect(principalRow[0].status).toBe('REVOKED');
+    expect(Number(principalRow[0].auth_revision)).toBe(2);
+
+    const credRow = await query<{ status: string }>(
+      `SELECT status FROM "admin_credential" WHERE id = '${credId}'`
+    );
+    expect(credRow[0].status).toBe('REVOKED');
+
+    const sessRow = await query<{ revoked_at: Date; revocation_reason: string }>(
+      `SELECT revoked_at, revocation_reason FROM "admin_session" WHERE id = '${sessId}'`
+    );
+    expect(sessRow[0].revoked_at).toBeTruthy();
+    expect(sessRow[0].revocation_reason).toBe('PRINCIPAL_REVOKED');
+
+    // 6. Test idempotency
+    const retryResult = await service.revokeAdminPrincipal({
+      authorizingActor: { id: initial.id, isAuthorizedProvisioner: true },
+      targetPrincipalId: second.id
+    });
+    expect(retryResult.outcome).toBe('ALREADY_REVOKED');
+    expect(retryResult.revokedSessionsCount).toBe(0);
+
+    // 7. Verify sole active administrator guard
+    await expect(
+      service.revokeAdminPrincipal({
+        authorizingActor: { id: initial.id, isAuthorizedProvisioner: true },
+        targetPrincipalId: initial.id
+      })
+    ).rejects.toMatchObject({
+      code: 'CANNOT_REVOKE_SOLE_ACTIVE_ADMIN'
+    });
+  });
 });

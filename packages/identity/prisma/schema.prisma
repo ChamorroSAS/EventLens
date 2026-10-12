@@ -161,3 +161,19 @@ model BetaAccessRequest {
   @@index([status])
   @@map("beta_access_request")
 }
+
+model PasswordResetIntent {
+  id              String    @id @db.Uuid
+  accountId       String    @map("account_id") @db.Uuid
+  emailNormalized String    @map("email_normalized")
+  tokenDigest     String    @unique @map("token_digest")
+  status          String    @default("PENDING")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  expiresAt       DateTime  @map("expires_at") @db.Timestamptz
+  consumedAt      DateTime? @map("consumed_at") @db.Timestamptz
+
+  @@index([accountId, status])
+  @@index([tokenDigest])
+  @@index([emailNormalized])
+  @@map("password_reset_intent")
+}

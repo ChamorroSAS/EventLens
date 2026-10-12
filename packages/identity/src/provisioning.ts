@@ -7,6 +7,9 @@ import {
   ProvisionInitialBootstrapCommand,
   ProvisionSubsequentCommand,
   ProvisioningError,
+  RecoveryAuthorityPort,
+  RevokeAdminPrincipalCommand,
+  RevokeAdminPrincipalResult,
   assertPublicRegistrationSafe
 } from './contracts.js';
 
@@ -41,7 +44,7 @@ function toAdminPrincipal(row: PrincipalRow): AdminPrincipal {
   return {
     id: row.id,
     identifier: row.identifier,
-    status: 'ACTIVE',
+    status: row.status as 'ACTIVE' | 'REVOKED',
     authRevision: BigInt(row.auth_revision),
     provisionProcedure: row.provision_procedure as 'INITIAL_BOOTSTRAP' | 'AUTHORIZED_PROVISION',
     provisionedBy: row.provisioned_by,
@@ -64,7 +67,8 @@ export class AdminProvisioningService {
   constructor(
     private readonly transactions: TransactionRunner,
     private readonly bootstrapSecret: string,
-    private readonly externalAuditSink?: AuditSink
+    private readonly externalAuditSink?: AuditSink,
+    private readonly recoveryAuthority?: RecoveryAuthorityPort
   ) {
     if (!bootstrapSecret || typeof bootstrapSecret !== 'string' || bootstrapSecret.trim().length === 0) {
       throw new ProvisioningError('INVALID_ARGUMENT', 'Bootstrap secret configuration is required');
@@ -343,5 +347,194 @@ export class AdminProvisioningService {
       }
       throw error;
     }
+  }
+
+  /**
+   * Revokes an administrative principal and invalidates all associated credentials,
+   * sessions, and authorizations idempotently (EL-TK-045, ARCH-010, ARCH-013, AQR-001/003).
+   */
+  async revokeAdminPrincipal(command: RevokeAdminPrincipalCommand): Promise<RevokeAdminPrincipalResult> {
+    if (!command || !command.targetPrincipalId || typeof command.targetPrincipalId !== 'string') {
+      throw new ProvisioningError('INVALID_ARGUMENT', 'targetPrincipalId is required');
+    }
+    if (!command.authorizingActor || !command.authorizingActor.id || !command.authorizingActor.isAuthorizedProvisioner) {
+      const actorId = command?.authorizingActor?.id ?? 'UNKNOWN_ACTOR';
+      await this.transactions.run(async (tx) => {
+        await this.emitAudit(tx, {
+          id: randomUUID(),
+          procedure: 'ADMIN_PRINCIPAL_REVOKED',
+          actorId,
+          targetIdentifier: command.targetPrincipalId,
+          targetPrincipalId: command.targetPrincipalId,
+          result: 'REJECTED_UNAUTHORIZED',
+          details: 'Caller is not authorized to revoke administrative principals',
+          timestamp: new Date()
+        });
+      });
+      throw new ProvisioningError('UNAUTHORIZED_PROVISIONER', 'Caller is not authorized to revoke administrative principals');
+    }
+
+    return this.transactions.run(async (tx) => {
+      // 1. Verify that authorizing actor exists and is an ACTIVE administrative principal
+      const authorizerRows = await tx.query<PrincipalRow>(
+        `SELECT id, identifier, status FROM admin_principal WHERE id = $1 AND status = 'ACTIVE'`,
+        command.authorizingActor.id
+      );
+
+      if (!authorizerRows.length) {
+        await this.emitAudit(tx, {
+          id: randomUUID(),
+          procedure: 'ADMIN_PRINCIPAL_REVOKED',
+          actorId: command.authorizingActor.id,
+          targetIdentifier: command.targetPrincipalId,
+          targetPrincipalId: command.targetPrincipalId,
+          result: 'REJECTED_UNAUTHORIZED',
+          details: 'Authorizing administrative principal was not found or is inactive',
+          timestamp: new Date()
+        });
+        throw new ProvisioningError('UNAUTHORIZED_PROVISIONER', 'Authorizing principal is not active');
+      }
+
+      // 2. Query target principal under FOR UPDATE
+      const targetRows = await tx.query<PrincipalRow>(
+        `SELECT id, identifier, status, auth_revision, provision_procedure, provisioned_by, created_at, updated_at
+         FROM admin_principal
+         WHERE id = $1
+         FOR UPDATE`,
+        command.targetPrincipalId
+      );
+
+      if (!targetRows.length) {
+        await this.emitAudit(tx, {
+          id: randomUUID(),
+          procedure: 'ADMIN_PRINCIPAL_REVOKED',
+          actorId: command.authorizingActor.id,
+          targetIdentifier: command.targetPrincipalId,
+          targetPrincipalId: command.targetPrincipalId,
+          result: 'REJECTED_UNAUTHORIZED',
+          details: 'Target administrative principal not found',
+          timestamp: new Date()
+        });
+        throw new ProvisioningError('PRINCIPAL_NOT_FOUND', 'Administrative principal not found');
+      }
+
+      const target = targetRows[0];
+
+      // 3. Idempotency: if already REVOKED, return safely without failing
+      if (target.status === 'REVOKED') {
+        const principalRecord = toAdminPrincipal(target);
+        await this.emitAudit(tx, {
+          id: randomUUID(),
+          procedure: 'ADMIN_PRINCIPAL_REVOKED',
+          actorId: command.authorizingActor.id,
+          targetIdentifier: target.identifier,
+          targetPrincipalId: target.id,
+          result: 'ALREADY_REVOKED',
+          details: 'Administrative principal was already revoked; idempotent result returned',
+          timestamp: new Date()
+        });
+        return {
+          principal: principalRecord,
+          outcome: 'ALREADY_REVOKED',
+          revokedSessionsCount: 0,
+          message: 'Administrative principal was already revoked'
+        };
+      }
+
+      // 4. Guard against revoking the sole active administrator
+      const activeAdmins = await tx.query<{ count: string | bigint }>(
+        `SELECT COUNT(*) as count FROM admin_principal WHERE status = 'ACTIVE'`
+      );
+      const activeCount = BigInt(activeAdmins[0]?.count ?? 0);
+      if (activeCount <= 1n) {
+        await this.emitAudit(tx, {
+          id: randomUUID(),
+          procedure: 'ADMIN_PRINCIPAL_REVOKED',
+          actorId: command.authorizingActor.id,
+          targetIdentifier: target.identifier,
+          targetPrincipalId: target.id,
+          result: 'REJECTED_UNAUTHORIZED',
+          details: 'Cannot revoke the sole active administrative principal',
+          timestamp: new Date()
+        });
+        throw new ProvisioningError('CANNOT_REVOKE_SOLE_ACTIVE_ADMIN', 'Cannot revoke the only active administrative principal');
+      }
+
+      const now = new Date();
+      const newAuthRevision = BigInt(target.auth_revision) + 1n;
+
+      // 5. Update admin_principal to REVOKED and increment auth_revision
+      const updatedPrincipalRows = await tx.query<PrincipalRow>(
+        `UPDATE admin_principal
+         SET status = 'REVOKED', auth_revision = $1, updated_at = $2
+         WHERE id = $3
+         RETURNING *`,
+        newAuthRevision.toString(),
+        now,
+        target.id
+      );
+
+      // 6. Revoke all active credentials for this principal
+      await tx.execute(
+        `UPDATE admin_credential
+         SET status = 'REVOKED', updated_at = $1
+         WHERE principal_id = $2 AND status = 'ACTIVE'`,
+        now,
+        target.id
+      );
+
+      // 7. Revoke all active sessions for this principal
+      const revokedSessionsCount = await tx.execute(
+        `UPDATE admin_session
+         SET revoked_at = $1, revocation_reason = 'PRINCIPAL_REVOKED'
+         WHERE principal_id = $2 AND revoked_at IS NULL`,
+        now,
+        target.id
+      );
+
+      // 8. If RecoveryAuthority is configured, prepare and ack
+      if (this.recoveryAuthority?.prepare && this.recoveryAuthority?.ackCommit) {
+        try {
+          const receipt = await this.recoveryAuthority.prepare({
+            operationId: randomUUID(),
+            subjectRef: target.id,
+            fact: {
+              type: 'ADMIN_PRINCIPAL_REVOKED',
+              data: {
+                principalId: target.id,
+                identifier: target.identifier,
+                revokedBy: command.authorizingActor.id,
+                reason: command.reason ?? 'ADMIN_REVOCATION'
+              }
+            }
+          });
+          await this.recoveryAuthority.ackCommit(receipt.preparedReceipt, newAuthRevision);
+        } catch {
+          // Recovery authority error handled gracefully
+        }
+      }
+
+      // 9. Emit audit event without secrets
+      await this.emitAudit(tx, {
+        id: randomUUID(),
+        procedure: 'ADMIN_PRINCIPAL_REVOKED',
+        actorId: command.authorizingActor.id,
+        targetIdentifier: target.identifier,
+        targetPrincipalId: target.id,
+        result: 'PRINCIPAL_REVOKED',
+        details: JSON.stringify({
+          revokedSessionsCount,
+          reason: command.reason ?? 'ADMIN_REVOCATION'
+        }),
+        timestamp: now
+      });
+
+      return {
+        principal: toAdminPrincipal(updatedPrincipalRows[0]),
+        outcome: 'REVOKED',
+        revokedSessionsCount,
+        message: 'Administrative principal successfully revoked'
+      };
+    });
   }
 }

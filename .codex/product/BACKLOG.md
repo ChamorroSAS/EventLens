@@ -12,7 +12,7 @@
 
 | ID | Nombre | Módulo | Estado | Prioridad | Dependencias directas | Archivo |
 |---|---|---|---|---|---|---|
-| EL-EP-001 | Incorporar y proteger organizadores de la beta privada | MOD-001 | READY | P0 | Ninguna predecesora dura | [EL-EP-001](epics/EL-EP-001.md) |
+| EL-EP-001 | Incorporar y proteger organizadores de la beta privada | MOD-001 | DONE | P0 | Ninguna predecesora dura | [EL-EP-001](epics/EL-EP-001.md) |
 | EL-EP-002 | Preparar y personalizar el espacio del evento | MOD-002 | READY | P0 | EL-EP-001 | [EL-EP-002](epics/EL-EP-002.md) |
 | EL-EP-003 | Abrir y cerrar el evento según su vigencia | MOD-002 | DONE | P0 | EL-EP-002, EL-EP-011 | [EL-EP-003](epics/EL-EP-003.md) |
 | EL-EP-004 | Entrar por QR y participar con consentimiento sin cuenta | MOD-003 | DONE | P0 | EL-EP-003 | [EL-EP-004](epics/EL-EP-004.md) |
@@ -53,11 +53,11 @@
 | EL-TK-015 | Cerrar mi sesión actual | EL-EP-001 | DONE | P0 | EL-TK-013, EL-TK-046 | [EL-TK-015](tickets/EL-TK-015.md) |
 | EL-TK-016 | Cerrar una sesión propia seleccionada | EL-EP-001 | DONE | P0 | EL-TK-014, EL-TK-046 | [EL-TK-016](tickets/EL-TK-016.md) |
 | EL-TK-017 | Cerrar todas mis otras sesiones | EL-EP-001 | DONE | P0 | EL-TK-013, EL-TK-046 | [EL-TK-017](tickets/EL-TK-017.md) |
-| EL-TK-018 | Solicitar recuperación de contraseña | EL-EP-001 | READY | P0 | EL-TK-011, EL-TK-046 | [EL-TK-018](tickets/EL-TK-018.md) |
-| EL-TK-019 | Completar una recuperación de contraseña | EL-EP-001 | READY | P0 | EL-TK-013, EL-TK-018, EL-TK-046 | [EL-TK-019](tickets/EL-TK-019.md) |
+| EL-TK-018 | Solicitar recuperación de contraseña | EL-EP-001 | DONE | P0 | EL-TK-011, EL-TK-046 | [EL-TK-018](tickets/EL-TK-018.md) |
+| EL-TK-019 | Completar una recuperación de contraseña | EL-EP-001 | DONE | P0 | EL-TK-013, EL-TK-018, EL-TK-046 | [EL-TK-019](tickets/EL-TK-019.md) |
 | EL-TK-043 | Provisionar un principal administrativo mediante alta controlada | EL-EP-001 | DONE | P0 | — | [EL-TK-043](tickets/EL-TK-043.md) |
 | EL-TK-044 | Autenticar un principal administrativo provisto | EL-EP-001 | DONE | P0 | EL-TK-043, EL-TK-046 | [EL-TK-044](tickets/EL-TK-044.md) |
-| EL-TK-045 | Revocar un principal administrativo | EL-EP-001 | READY | P0 | EL-TK-044, EL-TK-046 | [EL-TK-045](tickets/EL-TK-045.md) |
+| EL-TK-045 | Revocar un principal administrativo | EL-EP-001 | DONE | P0 | EL-TK-044, EL-TK-046 | [EL-TK-045](tickets/EL-TK-045.md) |
 | EL-TK-046 | Reconciliar restricciones de MOD-001 tras recuperación | EL-EP-001 | DONE | P0 | contrato RecoveryAuthority acordado | [EL-TK-046](tickets/EL-TK-046.md) |
 | EL-TK-020 | Crear un borrador de evento | EL-EP-002 | DONE | P0 | EL-TK-013 | [EL-TK-020](tickets/EL-TK-020.md) |
 | EL-TK-021 | Cambiar el nombre de un borrador | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-021](tickets/EL-TK-021.md) |

@@ -73,6 +73,9 @@ describeIntegration('EmailVerificationService (Real PostgreSQL Integration Tests
   });
 
   beforeEach(async () => {
+    try {
+      await sql('DELETE FROM password_reset_intent');
+    } catch {}
     await sql('DELETE FROM email_verification_intent');
     await sql('DELETE FROM organizer_account');
     await sql('DELETE FROM beta_invitation');

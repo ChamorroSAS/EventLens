@@ -63,6 +63,7 @@ describeIntegration('BetaInvitationService (Real PostgreSQL Integration Tests â€
 
   beforeEach(async () => {
     try {
+      await sql('DELETE FROM password_reset_intent');
       await sql('DELETE FROM email_verification_intent');
       await sql('DELETE FROM organizer_credential');
       await sql('DELETE FROM organizer_account');

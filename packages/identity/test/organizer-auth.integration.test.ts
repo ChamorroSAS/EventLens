@@ -96,6 +96,9 @@ describeIntegration('OrganizerAuthenticationService (Real PostgreSQL Integration
   });
 
   beforeEach(async () => {
+    try {
+      await sql('DELETE FROM password_reset_intent');
+    } catch {}
     await sql('DELETE FROM organizer_session');
     await sql('DELETE FROM organizer_credential');
     await sql('DELETE FROM organizer_account');

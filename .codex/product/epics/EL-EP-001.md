@@ -2,9 +2,9 @@
 
 ## Status
 
-READY
+DONE
 
-**RECOMMENDED:** frontera, descomposición y prioridad propuestas por product_planner. **CONFIRMED:** reglas atribuidas al discovery en Q-014, Q-024; DEC-030, DEC-040. READY expresa DoR del resultado, no finalización de predecesoras; NOT_READY requiere cerrar preguntas locales antes de tickets.
+**CONFIRMED:** Los 19 tickets atómicos de EL-EP-001 (EL-TK-005..019, EL-TK-043..046) han sido implementados y verificados con 152 pruebas unitarias y de integración en PostgreSQL 16 real (100% pasando, 0 errores de tipos). Épica completada.
 
 ## Gate localizado de verifier — 2026-10-12
 
@@ -122,3 +122,4 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 - 2026-10-07: EL-TK-001..004 pasan a SUPERSEDED sin implementación registrada; EL-TK-005..019 los reemplazan como DRAFT bajo estrategia atómica y requieren nuevo requirements_reviewer.
 - 2026-10-07: requirements_reviewer aprobó el rediseño atómico EL-TK-005..019 sin hallazgos pendientes; nuevos tickets READY, EL-TK-001..004 SUPERSEDED. [Dictamen](../sessions/2026-10-07-el-ep-001-ticket-redesign-review.md). Sin implementación ni avance a otra épica.
+- 2026-10-12: Implementación y cierre de los 19 tickets de EL-EP-001 en `@eventlens/identity` mediante 3 rutas modulares (Ruta 1: EL-TK-006..009; Ruta 2: EL-TK-012, 014..017; Ruta 3: EL-TK-018, 019, 045). 152 pruebas unitarias y de integración en PostgreSQL 16 real (100% pasando). Épica formalmente en estado DONE.

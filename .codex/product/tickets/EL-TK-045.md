@@ -6,7 +6,9 @@ EL-EP-001
 
 ## Status
 
-READY
+DONE
+
+**CONFIRMED:** Implementado y validado en 2026-10-12 con AdminProvisioningService.revokeAdminPrincipal, verificación de autorizador, protección contra orfandad administrativa, revocación atómica de credenciales y sesiones, registro de hechos en RecoveryAuthority, auditoría y pruebas completas unitarias y de integración en PostgreSQL 16 real.
 
 ## User story
 

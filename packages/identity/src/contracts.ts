@@ -5,7 +5,9 @@ export type ProvisioningErrorCode =
   | 'BOOTSTRAP_ALREADY_CONSUMED'
   | 'UNAUTHORIZED_PROVISIONER'
   | 'PUBLIC_ELEVATION_DENIED'
-  | 'DUPLICATE_PRINCIPAL';
+  | 'DUPLICATE_PRINCIPAL'
+  | 'PRINCIPAL_NOT_FOUND'
+  | 'CANNOT_REVOKE_SOLE_ACTIVE_ADMIN';
 
 export class ProvisioningError extends Error {
   constructor(public readonly code: ProvisioningErrorCode, message?: string) {
@@ -184,7 +186,7 @@ export interface GetBetaAccessRequestResult {
 export interface AdminPrincipal {
   readonly id: string;
   readonly identifier: string;
-  readonly status: 'ACTIVE';
+  readonly status: 'ACTIVE' | 'REVOKED';
   readonly authRevision: bigint;
   readonly provisionProcedure: 'INITIAL_BOOTSTRAP' | 'AUTHORIZED_PROVISION';
   readonly provisionedBy: string;
@@ -207,6 +209,19 @@ export interface AuthorizingActor {
 export interface ProvisionSubsequentCommand {
   readonly authorizingActor: AuthorizingActor;
   readonly identifier: string;
+}
+
+export interface RevokeAdminPrincipalCommand {
+  readonly authorizingActor: AuthorizingActor;
+  readonly targetPrincipalId: string;
+  readonly reason?: string;
+}
+
+export interface RevokeAdminPrincipalResult {
+  readonly principal: AdminPrincipal;
+  readonly outcome: 'REVOKED' | 'ALREADY_REVOKED';
+  readonly revokedSessionsCount: number;
+  readonly message?: string;
 }
 
 export interface AdminCredentialRecord {
@@ -391,6 +406,7 @@ export interface AuditEventRecord {
   readonly procedure:
     | 'INITIAL_BOOTSTRAP'
     | 'AUTHORIZED_PROVISION'
+    | 'ADMIN_PRINCIPAL_REVOKED'
     | 'PUBLIC_ENTRY_REJECTED'
     | 'ADMIN_LOGIN'
     | 'ADMIN_REAUTH'
@@ -407,6 +423,8 @@ export interface AuditEventRecord {
     | 'ORGANIZER_REGISTRATION'
     | 'ORGANIZER_EMAIL_VERIFIED_AND_ACTIVATED'
     | 'ORGANIZER_EMAIL_VERIFICATION_RESENT'
+    | 'ORGANIZER_PASSWORD_RESET_REQUESTED'
+    | 'ORGANIZER_PASSWORD_RESET_COMPLETED'
     | 'ORGANIZER_LOGIN'
     | 'ORGANIZER_LOGOUT'
     | 'ORGANIZER_SESSION_VALIDATE'
@@ -437,6 +455,9 @@ export interface AuditEventRecord {
     | 'CANNOT_REVOKE_CONSUMED'
     | 'REQUEST_RECEIVED'
     | 'RESEND_ACCEPTED'
+    | 'RESET_REQUEST_RECEIVED'
+    | 'PASSWORD_RESET_COMPLETED'
+    | 'PRINCIPAL_REVOKED'
     | 'OTHER_SESSIONS_REVOKED';
   readonly details?: string;
   readonly timestamp: Date;
@@ -707,4 +728,54 @@ export interface RevokeOtherSessionsResult {
   readonly outcome: 'OTHER_SESSIONS_REVOKED';
   readonly revokedCount: number;
   readonly currentSessionId: string;
+}
+
+export type PasswordResetErrorCode =
+  | 'INVALID_EMAIL'
+  | 'INVALID_OR_UNUSABLE_TOKEN'
+  | 'TOKEN_EXPIRED'
+  | 'TOKEN_ALREADY_USED'
+  | 'TOKEN_REVOKED'
+  | 'ACCOUNT_NOT_ACTIVE'
+  | 'WEAK_PASSWORD'
+  | 'RATE_LIMITED'
+  | 'TEMPORARY_FAILURE'
+  | 'INVALID_ARGUMENT';
+
+export class PasswordResetError extends Error {
+  constructor(public readonly code: PasswordResetErrorCode, message?: string) {
+    super(message ?? code);
+    this.name = 'PasswordResetError';
+  }
+}
+
+export interface PasswordResetNotificationPort {
+  sendPasswordResetEmail(recipient: {
+    email: string;
+    token: string;
+    expiresAt: Date;
+  }): Promise<void>;
+}
+
+export interface RequestPasswordResetCommand {
+  readonly email: string;
+  readonly clientIp?: string;
+}
+
+export interface RequestPasswordResetResult {
+  readonly outcome: 'RESET_REQUEST_RECEIVED';
+  readonly message: string;
+}
+
+export interface CompletePasswordResetCommand {
+  readonly resetToken: string;
+  readonly newPassword: string;
+  readonly clientIp?: string;
+}
+
+export interface CompletePasswordResetResult {
+  readonly accountId: string;
+  readonly emailNormalized: string;
+  readonly outcome: 'PASSWORD_RESET_COMPLETED';
+  readonly revokedSessionsCount: number;
 }
