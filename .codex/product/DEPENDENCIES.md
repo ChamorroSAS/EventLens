@@ -180,7 +180,7 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-098 | 047, 053 | 100, 102 |
 | EL-TK-099 | 096, 097, 101 | 102; UI guest downstream |
 | EL-TK-100 | 098, 053, 054 | 102; UI owner downstream |
-| EL-TK-101 | 096, 097, 072, 074 | 099, 102 |
+| EL-TK-101 (DONE) | 096, 097, 072, 074 | 099, 102 |
 | EL-TK-102 | 096..101 | validación integrada de EL-EP-007 |
 
 7 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de galería guest PUBLISHED, grants temporales de derivados (DEC-063), biblioteca de media para el organizador, revalidación server-side y superficies UI aprobadas en ui-mvp-epic-review.md#el-ep-007. Se corrigió el ciclo 099 ↔ 101 (099 consume 101; 099 solo bloquea 102), se desacopló MediaViewGrant (097) de la consulta de galería guest (096) permitiendo su consumo compartido, y se eliminaron bloqueos asimétricos hacia 101. Moderación, retiro y descargas conservan ownership en EL-EP-008, EL-EP-009 y EL-EP-010 respectivamente.

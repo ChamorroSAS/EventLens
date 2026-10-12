@@ -115,6 +115,40 @@ export interface QueryGuestGalleryCommand {
 }
 
 // ==========================================
+// EL-TK-101: Revalidación de visibilidad y acceso
+// ==========================================
+
+export interface RevalidateMediaVisibilityCommand {
+  readonly eventId: string;
+  readonly mediaId: string;
+  readonly actor: MediaViewGrantActor;
+  readonly expectedRevision?: bigint;
+  readonly now?: Date;
+}
+
+export interface MediaVisibilityResult {
+  readonly isVisible: boolean;
+  readonly denialCode?: MediaGalleryDenialCode;
+  readonly denialReason?: string;
+  readonly currentStatus?: string;
+  readonly currentRevision?: bigint;
+}
+
+export interface RevalidateBatchVisibilityCommand {
+  readonly eventId: string;
+  readonly mediaIds: readonly string[];
+  readonly actor: MediaViewGrantActor;
+  readonly now?: Date;
+}
+
+export interface BatchVisibilityResult {
+  readonly eventId: string;
+  readonly visibleMediaIds: readonly string[];
+  readonly withdrawnMediaIds: readonly string[];
+  readonly denialCode?: MediaGalleryDenialCode;
+}
+
+// ==========================================
 // Observabilidad y Auditoría
 // ==========================================
 
