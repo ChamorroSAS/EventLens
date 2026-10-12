@@ -6,6 +6,14 @@
 
 **RECOMMENDED:** primera descomposición funcional; prioridad P0 = necesaria para beta operativa segura; P1 = evaluación beta o preparación pública. Estado READY significa DoR de épica, no autorización de lanzar ni dependencias ya realizadas. NOT_READY conserva bloqueantes explícitos. Los tickets existentes se enumeran en su sección y permanecen sujetos a sus puertas de revisión.
 
+## Propuestas nuevas de épicas (no incorporadas al alcance Beta aceptado)
+
+| ID propuesto | Resultado | Propiedad | Gate | Documento |
+|---|---|---|---|---|
+| EL-EP-018 | Home público informativo, entrada y navegación a cuenta/eventos | Frontend transversal MOD-001/002/003 | DRAFT; sin tickets ni revisión de requisitos/UI | [EL-EP-018](epics/EL-EP-018.md) |
+
+**PROPUESTA 2026-10-12 (actualizada):** EP-018 no altera el inventario de 17 épicas confirmadas. **CONFIRMED:** Home `/` sin redirección automática para visitantes y autenticados, más 12 elecciones editoriales (CTA Beta, 4 FAQ, cabecera equilibrada y footer minimalista), sin atribución personal. [Registro editorial y auditoría de rutas](sessions/2026-10-12-el-ep-018-editorial-and-routes.md). La redacción literal es propuesta para revisión. **CONFIRMED A/B/C:** `/mi-cuenta` compone datos básicos, seguridad, sesiones y solicitud de eliminación sin segundo dashboard; quien no tenga sesión entra por `/ingresar` y vuelve sólo a destino interno autorizado; invitado por QR accede directo sin Home ni login organizador. **PENDING técnico:** implementación real de `/ingresar` y `/mi-cuenta`, paths candidatos de Beta/Mis eventos, formato de URL QR, montaje Angular Router, UI/UX y revisión jurídica. Prioridad P0 propuesta para ruta/entrada operativa de la Beta y P1 para contenido institucional. **Permanece DRAFT; sin tickets ni implementación.** No crear registro libre ni cuenta guest.
+
 ## Epics
 
 **CONFIRMED - 2026-10-08, gate UI actual:** todas16 MVP READY de requisitos. Intake004009 aprobado DEC-103..105, frontend planning YES. EL-EP-017 sigue NOT_READY juridico publico. Total17:16 READY/1 NOT_READY. [Matriz vigente](../context/ui-mvp-epic-review.md), [gate intake](sessions/2026-10-08-removal-intake.md). Solo001015 mantienen gates tecnicos frontend localizados; no implementacion/lanzamiento certificados.

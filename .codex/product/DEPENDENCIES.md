@@ -518,3 +518,14 @@ TB-01/TB-02 dejan de bloquear.033/035/036/041/042/056 YES propio;058 NO ejecuci�
 
 
 
+
+## Propuesta sin aprobar — EL-EP-018 (Home y navegación)
+
+**DRAFT 2026-10-12 — NO ALTERA EL MAPA DE ÉPICAS ACEPTADAS.** [Propuesta](epics/EL-EP-018.md). No se crea módulo funcional nuevo ni ciclo con identidad/eventos. La navegación consume capacidades existentes, con fronteras:
+- `EL-EP-001`/`EL-TK-008` para login, cuenta y solicitud Beta; no registro abierto.
+- `EL-EP-002` para Mis eventos/OrganizerAppShell; no segundo dashboard.
+- `EL-EP-004` para acceso guest por QR/deep link; no directorio público de eventos.
+- `EL-EP-015` para sesión de eliminación restringida/gestión de cuenta; no nuevas políticas.
+- `EL-TK-203/204` para assets/foundation ya definidos; cambios visuales acotados, sin rediseño total.
+- `EL-EP-017` conserva gate jurídico antes de apertura pública; no impide propuesta documental.
+- Antes de tickets: auditar rutas Angular/runtime/guard, aprobar navegación y copy, `ui_designer`, `requirements_reviewer`, `architect`. Ningún DONE histórico se reabre sin correctivo nuevo explícito.
