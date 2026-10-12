@@ -4,6 +4,8 @@
 
 DONE
 
+Este estado conserva el cierre histórico del alcance original. La extensión CR-004 añade203/204 READY de requisitos y aún no implementados; véase la sección de extensión transversal y sus gates. No se incluye esa extensión en las17 entregas originales.
+
 **COMPLETADO — 2026-10-12:** Los 17 tickets de EL-EP-002 (EL-TK-020, 021, 022, 023, 024, 025, 027, 028, 029, 030, 031, 047, 048, 049, 050, 051, 052) han sido implementados y verificados al 100% con pruebas unitarias y de integración contra PostgreSQL 16 real en `@eventlens/event-management`. Totalmente funcional, tipado y documentado.
 
 ## Module
@@ -107,7 +109,13 @@ UX_OPEN_QUESTIONS: ninguna funcional nueva; gates tecnicos aplicables en el hand
 
 Las preguntas locales están cerradas y el quality gate final fue aprobado. Q-039 no resuelve PL-011 general.
 
-## Priority
+## Extensión transversal de marca — CR-004
+
+**CONFIRMED — 2026-10-12:** la solicitud aprobada añade sólo publicación de arte corporativo/favicon (EL-TK-203) y foundation mínima con piloto OrganizerAppShell (EL-TK-204), sin nueva épica, módulo, personalización avanzada, navegación o autenticación. Parent administrativo EL-EP-002 por su shell existente; los consumidores de otros módulos conservan propietarios y dependencias prospectivas.
+
+El estado DONE anterior corresponde exclusivamente al alcance original y permanece histórico;203/204 no están implementados. [CR-004](../changes/CR-004.md), [contrato](../../context/brand-integration-contract.md), [handoff UI](../../context/ui-brand-foundation.md) y [gates](../sessions/2026-10-12-brand-planning-gates.md) rigen la extensión. Requisitos/técnico/Gate2 APPROVED y frontend planning YES; tickets203/204 READY de requisitos, ejecución habilitada203 primero y204 sólo tras203 validado. Ninguna evidencia anterior certifica esta extensión o el runtime funcional de producto.
+
+## Prioridad del alcance original
 
 P0 — Capacidad necesaria para el MVP/BETA operativo.
 

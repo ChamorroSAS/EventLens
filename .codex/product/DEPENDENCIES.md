@@ -18,6 +18,12 @@
 
 ## Epics
 
+### Extensión visual CR-004
+
+EL-TK-203 → EL-TK-204;204 reutiliza también componente de048.203 no depende de routing/auth/API ni de una nueva feature.204 depende de salidas203 validadas, no de completar toda integración funcional de048. Piloto Angular real test-only; ninguna prueba de fixture acredita permiso/contrato de producción. Sin ciclo ni bloqueos retroactivos de tickets DONE. Las migraciones futuras guest/admin/biblioteca mantienen sus tickets propietarios; no se crea motor de temas. [Contrato](../context/brand-integration-contract.md) / [UI](../context/ui-brand-foundation.md) / [gates](sessions/2026-10-12-brand-planning-gates.md).
+
+### Dependencias funcionales existentes
+
 | Épica | Depende de | Tipo | Razón |
 |---|---|---|---|
 | EL-EP-001 | — | Base compartida | Un adulto invitado obtiene una cuenta verificada y conserva control seguro de sus sesiones. |

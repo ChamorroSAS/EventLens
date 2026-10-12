@@ -6,6 +6,8 @@ Fecha: 2026-10-12 (America/Bogota). Repositorio: ChamorroSAS/EventLens. Integrac
 
 Convención: **CONFIRMED** = evidencia inspeccionada o instrucción del propietario; **RECOMMENDED** = propuesta; **PENDING** = aprobación o verificación faltante. Un estado documental DONE no equivale a certificación de la aplicación desplegada.
 
+**Seguimiento posterior — 2026-10-12:** [CR-004](../../.codex/product/changes/CR-004.md) consolidó los manuales y formalizó [EL-TK-203](../../.codex/product/tickets/EL-TK-203.md) y [EL-TK-204](../../.codex/product/tickets/EL-TK-204.md), ambos READY de requisitos tras gates aprobados.203 listo para comenzar;204 espera203 validado. [Dictámenes](../../.codex/product/sessions/2026-10-12-brand-planning-gates.md). Las secciones siguientes conservan la auditoría/propuesta previa del snapshot2219dcc, incluidos estados históricos; los artefactos nuevos rigen la planificación actual, sin implementación visual ni atribución personal.
+
 ## 1. Corte de auditoría y evidencia
 
 - **CONFIRMED:** `main` y `stage`, locales y consultadas por API de GitHub, apuntaban a `2219dcc6dffeeabc4d1b42e5aeae3130d9830360`; no hay diferencias entre esos snapshots. Las conclusiones aplican a ese commit, no a cambios posteriores.
