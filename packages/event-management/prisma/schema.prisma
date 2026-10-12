@@ -27,6 +27,7 @@ model Event {
   pinEnabled             Boolean  @default(false) @map("pin_enabled")
   pinHash                String?  @map("pin_hash")
   pinSalt                String?  @map("pin_salt")
+  welcomeMessage         String?  @map("welcome_message")
   idempotencyKey         String?  @unique @map("idempotency_key")
   idempotencyPayloadHash String?  @map("idempotency_payload_hash")
   createdAt              DateTime @default(now()) @map("created_at") @db.Timestamptz

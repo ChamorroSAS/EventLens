@@ -6,9 +6,9 @@ EL-EP-002
 
 ## Status
 
-READY
+DONE
 
-**HISTÓRICO CONFIRMED — 2026-10-07:** requirements_reviewer declaró este ticket implementable, sin hallazgos pendientes. Se conservan sus dependencias de ejecución. Véase [dictamen](../sessions/2026-10-07-el-ep-002-ticket-review.md).
+**COMPLETADO — 2026-10-12:** Implementado en `EventDraftService.updateDraftName` en `@eventlens/event-management`. Valida propiedad exclusiva del organizador, estado DRAFT obligatorio, longitud [1, 120] caracteres tras trim, idempotencia persistente y auditoría inmutable (`EVENT_DRAFT_NAME_UPDATED`). Verificado con pruebas unitarias y de integración en PostgreSQL 16.
 
 ## User story
 

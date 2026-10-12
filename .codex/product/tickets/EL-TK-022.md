@@ -6,9 +6,9 @@ EL-EP-002
 
 ## Status
 
-READY
+DONE
 
-**HISTÓRICO CONFIRMED — 2026-10-07:** requirements_reviewer declaró este ticket implementable, sin hallazgos pendientes. Se conservan sus dependencias de ejecución. Véase [dictamen](../sessions/2026-10-07-el-ep-002-ticket-review.md).
+**COMPLETADO — 2026-10-12:** Implementado en `EventDraftService.setWelcomeMessage` en `@eventlens/event-management`. Migración de base de datos `202610120047_event_welcome_message` añade `welcome_message TEXT` a `event`. Valida longitud de mensaje [0, 1000] caracteres, soporte para reseteo/limpieza, idempotencia y auditoría inmutable (`EVENT_WELCOME_MESSAGE_SET`) sin registrar texto sensible. Verificado con pruebas unitarias y de integración en PostgreSQL 16.
 
 ## User story
 
