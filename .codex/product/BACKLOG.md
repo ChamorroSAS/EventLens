@@ -6,13 +6,13 @@
 
 **RECOMMENDED:** primera descomposición funcional; prioridad P0 = necesaria para beta operativa segura; P1 = evaluación beta o preparación pública. Estado READY significa DoR de épica, no autorización de lanzar ni dependencias ya realizadas. NOT_READY conserva bloqueantes explícitos. Los tickets existentes se enumeran en su sección y permanecen sujetos a sus puertas de revisión.
 
-## Propuestas nuevas de épicas (no incorporadas al alcance Beta aceptado)
+## Planificación frontend adicional (sin certificación de Beta)
 
-| ID propuesto | Resultado | Propiedad | Gate | Documento |
+| ID | Resultado | Propiedad | Gate | Documento |
 |---|---|---|---|---|
-| EL-EP-018 | Home público informativo, entrada y navegación a cuenta/eventos | Frontend transversal MOD-001/002/003 | DRAFT; sin tickets ni revisión de requisitos/UI | [EL-EP-018](epics/EL-EP-018.md) |
+| EL-EP-018 | Home público informativo, entrada y navegación a cuenta/eventos | Frontend transversal MOD-001/002/003 | READY de requisitos; arquitectura APPROVED, UI YES; EL-TK-205..214 READY | [EL-EP-018](epics/EL-EP-018.md) |
 
-**PROPUESTA 2026-10-12 (actualizada):** EP-018 no altera el inventario de 17 épicas confirmadas. **CONFIRMED:** Home `/` sin redirección automática para visitantes y autenticados, más 12 elecciones editoriales (CTA Beta, 4 FAQ, cabecera equilibrada y footer minimalista), sin atribución personal. [Registro editorial y auditoría de rutas](sessions/2026-10-12-el-ep-018-editorial-and-routes.md). La redacción literal es propuesta para revisión. **CONFIRMED A/B/C:** `/mi-cuenta` compone datos básicos, seguridad, sesiones y solicitud de eliminación sin segundo dashboard; quien no tenga sesión entra por `/ingresar` y vuelve sólo a destino interno autorizado; invitado por QR accede directo sin Home ni login organizador. **PENDING técnico:** implementación real de `/ingresar` y `/mi-cuenta`, paths candidatos de Beta/Mis eventos, formato de URL QR, montaje Angular Router, UI/UX y revisión jurídica. Prioridad P0 propuesta para ruta/entrada operativa de la Beta y P1 para contenido institucional. **Permanece DRAFT; sin tickets ni implementación.** No crear registro libre ni cuenta guest.
+**CONFIRMED — revisión018, 2026-10-12:** requisitos y arquitectura APPROVED, UI ratificada YES y ticket writing habilitado; sin implementación o certificación Beta. Historial editorial/A/B/C preservado. [Gates](sessions/2026-10-12-el-ep-018-review-gates.md), [contrato](../context/public-entry-contract.md), [UI/copy de diseño](../context/ui-public-entry.md). Paths `/solicitar-acceso` y `/mis-eventos` definidos; QR real `/g/:lookupKey`; logout propio confirmado→Home. Mi cuenta lee correo/verificación/estado efectivos; sesión restringida no accede a eventos/seguridad ordinaria. Correctivo de proyección ACTIVE y exposición API/cliente/SPA son trabajo de integración explícito, no gates de producto sin resolver. Publicación externa mantiene017/Q029. P0 propuesto integración operativa/P1 editorial, sin reordenar prioridades aceptadas ni crear registro libre/cuenta guest. Los cierres y gates originales de las17 épicas anteriores permanecen históricos.
 
 ## Epics
 
@@ -248,6 +248,16 @@
 | EL-TK-202 | Validar eliminación ordinaria de extremo a extremo y criterios de Beta | EL-EP-015 | READY | P0 | 194,196,198..201 | [EL-TK-202](tickets/EL-TK-202.md) |
 | EL-TK-203 | Validar y publicar los assets corporativos de marca | EL-EP-002 (CR-004) | DONE | P1 recomendado | — | [EL-TK-203](tickets/EL-TK-203.md) |
 | EL-TK-204 | Incorporar foundation visual y piloto aislado del shell de organizador | EL-EP-002 (CR-004) | DONE | P1 recomendado | 203,048 (componente existente) | [EL-TK-204](tickets/EL-TK-204.md) |
+| EL-TK-205 | Proyectar sesión efectiva de organizador para integración web | EL-EP-018 | READY | P0 | EL-TK-013, EL-TK-185 | [EL-TK-205](tickets/EL-TK-205.md) |
+| EL-TK-206 | Preparar infraestructura Router y contratos seguros de montaje | EL-EP-018 | READY | P0 | EL-TK-204 | [EL-TK-206](tickets/EL-TK-206.md) |
+| EL-TK-207 | Integrar ingreso y cierre de sesión del organizador | EL-EP-018 | READY | P0 | EL-TK-205, EL-TK-206, EL-TK-013, EL-TK-015, EL-TK-185 | [EL-TK-207](tickets/EL-TK-207.md) |
+| EL-TK-208 | Montar la solicitud pública de acceso Beta | EL-EP-018 | READY | P0 | EL-TK-008, EL-TK-206 | [EL-TK-208](tickets/EL-TK-208.md) |
+| EL-TK-209 | Componer Mi cuenta con superficies de sus propietarios | EL-EP-018 | READY | P0 | EL-TK-205, EL-TK-206, EL-TK-014, EL-TK-016, EL-TK-017, EL-TK-201 | [EL-TK-209](tickets/EL-TK-209.md) |
+| EL-TK-210 | Montar Mis eventos en la ruta del shell organizador | EL-EP-018 | READY | P0 | EL-TK-205, EL-TK-206, EL-TK-047, EL-TK-048 | [EL-TK-210](tickets/EL-TK-210.md) |
+| EL-TK-211 | Preservar la entrada guest por enlace o QR en el Router | EL-EP-018 | READY | P0 | EL-TK-206, EL-TK-074, EL-TK-075, EL-TK-076, EL-TK-077, EL-TK-078, EL-TK-082, EL-TK-083, EL-TK-084 | [EL-TK-211](tickets/EL-TK-211.md) |
+| EL-TK-212 | Configurar serving SPA y base confiable de enlaces guest | EL-EP-018 | READY | P0 | EL-TK-206, EL-TK-211 | [EL-TK-212](tickets/EL-TK-212.md) |
+| EL-TK-213 | Componer el Home público y cabecera sensible a capacidades | EL-EP-018 | READY | P1 | EL-TK-204, EL-TK-205, EL-TK-206, EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211 | [EL-TK-213](tickets/EL-TK-213.md) |
+| EL-TK-214 | Validar la entrada pública integrada | EL-EP-018 | READY | P0 | EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211, EL-TK-212, EL-TK-213 | [EL-TK-214](tickets/EL-TK-214.md) |
 
 **CONFIRMED — CR-004, 2026-10-12:** exactamente dos tickets nuevos de integración de marca, sin nueva épica, módulo o dependencia retroactiva de entregas DONE. Gates requisitos del cambio/técnico/UI y Gate2 APPROVED;203/204 pasan DRAFT→READY de requisitos.203 READY_FOR_IMPLEMENTATION YES;204 NO exclusivamente hasta ejecutar/validar203, con contrato propio aprobado. [Manual canónico](../../docs/branding/MANUAL-DE-MARCA.md), [contrato](../context/brand-integration-contract.md), [UI](../context/ui-brand-foundation.md) y [dictámenes](sessions/2026-10-12-brand-planning-gates.md). El cierre histórico de EL-EP-002 se conserva; la extensión no está implementada.
 
@@ -388,6 +398,12 @@ EL-TK-001..004 — SUPERSEDED por EL-TK-005..019; se preservan como historial. E
 **CONFIRMED — EL-TK-160 DONE, 2026-10-12:** generación de avisos de capacidad al 80% y 100% implementada en `@eventlens/notifications` (`CapacityNoticeService`) conforme a DEC-021, DEC-027 y contratos EL-TK-138. Genera intenciones de aviso contextual y correo (`CAPACITY_WARNING_80`, `CAPACITY_EXCEEDED_100`) con severidad `WARNING`/`CRITICAL`, acción autorizada de ampliación hacia `/events/${eventId}/capacity/extension`, estricta deduplicación/idempotencia por dedupKey ante señales repetidas, integración en `NoticeProjectionService` y plantillas accesibles en `EmailRenderer`, y auditoría sanitizada sin media. Suites de pruebas (4 unitarias y 2 de integración en PostgreSQL 16) PASS, typecheck y build limpios. Desbloquea downstream EL-TK-164 y EL-TK-165. Véase el [cierre](tickets/EL-TK-160.md).
 
 **CONFIRMED — EL-TK-163 DONE, 2026-10-12:** generación de avisos de denuncias e intervenciones según severidad autorizada implementada en `@eventlens/notifications` (`CaseNoticeService`) conforme a Q-018, DEC-021, DEC-023, DEC-088 y contratos EL-EP-009/014. Emite alertas prioritarias para administradores autorizados (`CASE_CRITICAL_ALERT`) ante casos críticos sin auto-ocultar contenido, copy mínimo autorizado para el organizador (`CASE_RESOLUTION_NOTICE`, `ADMIN_INTERVENTION`), supresión estricta por órdenes legales o de seguridad sin fugar razones confidenciales, y cero filtraciones de reportantes ni multimedia sensible en los payloads de notificación. Suites de pruebas (7 unitarias y 2 de integración en PostgreSQL 16) PASS, typecheck y build limpios. Desbloquea downstream EL-TK-164 y EL-TK-165. Véase el [cierre](tickets/EL-TK-163.md).
+
+
+
+
+
+**CONFIRMED — Gate 2 EL-EP-018, 2026-10-12:** EL-TK-205..214 formalizados y aprobados por requisitos, arquitectura y UI aplicable; READY de alcance, IMPLEMENTED NO. Ejecución condicionada a predecesoras verificadas; Mi cuenta espera EL-TK-201. [Dictámenes](sessions/2026-10-12-el-ep-018-review-gates.md). No certifica implementación ni apertura pública.
 
 
 

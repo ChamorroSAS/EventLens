@@ -524,13 +524,34 @@ TB-01/TB-02 dejan de bloquear.033/035/036/041/042/056 YES propio;058 NO ejecuci�
 
 
 
-## Propuesta sin aprobar — EL-EP-018 (Home y navegación)
+## Planificación revisada — EL-EP-018 (Home y navegación)
 
-**DRAFT 2026-10-12 — NO ALTERA EL MAPA DE ÉPICAS ACEPTADAS.** [Propuesta](epics/EL-EP-018.md). No se crea módulo funcional nuevo ni ciclo con identidad/eventos. La navegación consume capacidades existentes, con fronteras:
+**READY de requisitos, 2026-10-12; arquitectura/UI aprobadas.** [Épica](epics/EL-EP-018.md) / [gates](sessions/2026-10-12-el-ep-018-review-gates.md). Sin módulo funcional nuevo ni ciclo con identidad/eventos; esta revisión no certifica implementación, APIs montadas o Beta. La navegación consume capacidades existentes, con fronteras:
 - `EL-EP-001`/`EL-TK-008` para login, cuenta y solicitud Beta; no registro abierto.
 - `EL-EP-002` para Mis eventos/OrganizerAppShell; no segundo dashboard.
 - `EL-EP-004` para acceso guest por QR/deep link; no directorio público de eventos.
 - `EL-EP-015` para sesión de eliminación restringida/gestión de cuenta; no nuevas políticas.
 - `EL-TK-203/204` para assets/foundation ya definidos; cambios visuales acotados, sin rediseño total.
-- `EL-EP-017` conserva gate jurídico antes de apertura pública; no impide propuesta documental.
+- `EL-EP-017` conserva gate jurídico antes de apertura pública; no impide planificación/ticket writing.
+
+La proyección de sesión autoritativa y su correctivo ACTIVE preceden al consumo de navegación privada. Mi cuenta compone201 y predecesoras bajo owners; no duplicarlas. El montaje HTTP/client/SPA se separa de dominio DONE y de métodos frontend simulados. QR `/g/:lookupKey` permanece directo; estado guest/admin independiente de logout organizador. El grafo concreto revisado se registra debajo, sin dependencia retroactiva que reabra entregas cerradas.
 - Antes de tickets: auditar rutas Angular/runtime/guard, aprobar navegación y copy, `ui_designer`, `requirements_reviewer`, `architect`. Ningún DONE histórico se reabre sin correctivo nuevo explícito.
+
+### Grafo aprobado de tickets EL-EP-018
+
+READY describe el alcance revisado, no predecesoras ejecutadas. Cada salida debe verificarse antes del consumidor. No se alteran dependencias históricas de los owners.
+
+| Ticket | depends_on |
+|---|---|
+| [EL-TK-205](tickets/EL-TK-205.md) | EL-TK-013, EL-TK-185 |
+| [EL-TK-206](tickets/EL-TK-206.md) | EL-TK-204 |
+| [EL-TK-207](tickets/EL-TK-207.md) | EL-TK-205, EL-TK-206, EL-TK-013, EL-TK-015, EL-TK-185 |
+| [EL-TK-208](tickets/EL-TK-208.md) | EL-TK-008, EL-TK-206 |
+| [EL-TK-209](tickets/EL-TK-209.md) | EL-TK-205, EL-TK-206, EL-TK-014, EL-TK-016, EL-TK-017, EL-TK-201 |
+| [EL-TK-210](tickets/EL-TK-210.md) | EL-TK-205, EL-TK-206, EL-TK-047, EL-TK-048 |
+| [EL-TK-211](tickets/EL-TK-211.md) | EL-TK-206, EL-TK-074, EL-TK-075, EL-TK-076, EL-TK-077, EL-TK-078, EL-TK-082, EL-TK-083, EL-TK-084 |
+| [EL-TK-212](tickets/EL-TK-212.md) | EL-TK-206, EL-TK-211 |
+| [EL-TK-213](tickets/EL-TK-213.md) | EL-TK-204, EL-TK-205, EL-TK-206, EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211 |
+| [EL-TK-214](tickets/EL-TK-214.md) | EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211, EL-TK-212, EL-TK-213 |
+
+Orden:205 y206 independientes →207/208/209/210/211 según sus propias predecesoras →212 y213 →214.209 espera también201, aún READY.206 no activa bootstrap ni importa componentes futuros;213 ensambla descriptores reales una vez entregados207..211.212 puede avanzar junto a213 tras211;214 requiere ambos. Todo paralelo está sujeto a dependencias y propiedad de archivos sin solapamiento. EP017/Q029 conserva aprobación de apertura pública separada.
