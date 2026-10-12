@@ -103,7 +103,7 @@
 | EL-TK-070 | Extender la vigencia autorizada de un evento | EL-EP-003 | DONE | P0 | EL-TK-062, contrato EL-EP-011 | [EL-TK-070](tickets/EL-TK-070.md) |
 | EL-TK-071 | Consultar lifecycle y capacidades vigentes de un evento | EL-EP-003 | DONE | P0 | EL-TK-063..070 | [EL-TK-071](tickets/EL-TK-071.md) |
 | EL-TK-072 | Aplicar restricciones de acceso según el lifecycle vigente | EL-EP-003 | DONE | P0 | EL-TK-064,065,067,068,069,071 | [EL-TK-072](tickets/EL-TK-072.md) |
-| EL-TK-073 | Integrar el lifecycle en la interfaz de organizador e invitado | EL-EP-003 | READY | P0 | EL-TK-071, EL-TK-072 | [EL-TK-073](tickets/EL-TK-073.md) |
+| EL-TK-073 | Integrar el lifecycle en la interfaz de organizador e invitado | EL-EP-003 | DONE | P0 | EL-TK-071, EL-TK-072 | [EL-TK-073](tickets/EL-TK-073.md) |
 | EL-TK-074 | Resolver acceso público a un evento mediante credencial no adivinable | EL-EP-004 | DONE | P0 | EL-TK-020, EL-TK-072, EL-TK-084 | [EL-TK-074](tickets/EL-TK-074.md) |
 | EL-TK-075 | Validar PIN opcional y establecer una sesión anónima guest | EL-EP-004 | DONE | P0 | EL-TK-027, EL-TK-074 | [EL-TK-075](tickets/EL-TK-075.md) |
 | EL-TK-076 | Registrar consentimiento versionado antes de la primera carga | EL-EP-004 | DONE | P0 | EL-TK-075 | [EL-TK-076](tickets/EL-TK-076.md) |
@@ -310,4 +310,6 @@ EL-TK-001..004 — SUPERSEDED por EL-TK-005..019; se preservan como historial. E
 - **EL-TK-068 DONE:** Suspensión administrativa de un evento conservando `previous_status` y motivo conforme a DEC-078.
 - **EL-TK-069 DONE:** Reactivación administrativa de un evento SUSPENDED recalculando el estado temporal vigente según DEC-081, DEC-078 y DEC-082.
 - **EL-TK-070 DONE:** Extensión administrativa autorizada de la vigencia de un evento con recálculo canónico desde el ancla, reconciliación de GRACE_PERIOD a ACTIVE/CLOSED y bloqueo DEC-102. Suite total de pruebas en Docker PostgreSQL 16 real: 91/91 PASS.
-
+- **EL-TK-071 DONE:** Consulta de snapshot canónico de lifecycle y capacidades autorizadas por rol con garantías de no enumeración y privacidad.
+- **EL-TK-072 DONE:** Política unificada de acceso según lifecycle vigente con excepción aprobada de Mis aportes/solicitudes propias conforme a DEC-084.
+- **EL-TK-073 DONE:** Integración de componentes de frontend de ciclo de vida (`EventLifecyclePanelComponent`, `EventStatusBadgeComponent`, `EventAccessStatusComponent`, `EventGracePeriodBannerComponent`, diálogos modales accesibles) consumiendo snapshot del servidor, validación WCAG 2.2 AA y 28/28 pruebas PASS en `apps/web`.
