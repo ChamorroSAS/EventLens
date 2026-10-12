@@ -59,6 +59,20 @@ Fecha 2026-10-12. Estado: **FUNCTIONAL_CONFIRMED / LEGAL_REVIEW_PENDING / NOT_DE
 - Validar seguridad del expediente manual y factibilidad de calendario de días hábiles/festivos.
 - Revisar redacción legal con profesional exigido por DEC-031 antes de publicación.
 
+## Decisión confirmada — representación de menores y verificación proporcional
+
+**FUNCTIONAL_CONFIRMED (2026-10-12):** las personas que actúan como padre, madre o representante pueden presentar solicitudes relacionadas con fotografías de menores **sin cuenta**. La recepción no prueba automáticamente la representación ni concede permiso de visualizar datos privados o eliminar contenido ajeno.
+
+1. Recepción y localización del contenido mediante información mínima, evitando solicitar por defecto registros civiles, cédulas o fotografías adicionales.
+2. Evaluación manual de la legitimación y los riesgos. Pedir evidencia adicional **solo si es necesaria y proporcional**, mediante canal protegido y con acceso limitado.
+3. Casos sensibles: atención prioritaria y valoración por responsable autorizado de medidas cautelares justificadas, manteniendo DEC-088/089: la denuncia por sí sola **no** implica ocultamiento/eliminación automática.
+4. Reutilizar EL-EP-009/015 para clasificación, intervención y purga; no crear autorización nueva, bypass de moderación ni derecho a ver contenido de otros.
+5. Al cerrar, registrar exclusivamente evidencia mínima conforme política funcional confirmada; no conservar por defecto pruebas de filiación o identidad.
+
+**PENDING LEGAL:** suficiencia de la verificación y alternativas cuando no exista documentación, interés superior del menor, derecho a ser escuchado cuando proceda, fundamento del tratamiento y plazos de conservación excepcional. No sustituye dictamen profesional de DEC-031.
+
+`MINOR_REPRESENTATION_VERIFICATION: PROPORTIONAL_MANUAL_CONFIRMED`; `EL-EP-017: NOT_READY`; `Q-029: DEFERRED`.
+
 ## Gates inalterados
 
 `FUNCTIONAL_PRIVACY_INTAKE: CONFIRMED_EMAIL_MANUAL`.
