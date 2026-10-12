@@ -6,11 +6,9 @@ EL-EP-001
 
 ## Status
 
-READY
+DONE
 
-**HISTÓRICO — revisión de remediación:** el snapshot de 2026-10-08 permaneció DRAFT hasta el dictamen final; la aprobación de 2026-10-07 se conserva.
-
-**CONFIRMED:** requirements_reviewer aprobó este conjunto el 2026-10-07, sin hallazgos pendientes. Véase [dictamen](../sessions/2026-10-07-el-ep-001-ticket-redesign-review.md). READY expresa preparación de requisitos; se conservan las dependencias de ejecución.
+**CONFIRMED — 2026-10-12:** Implementado y validado en `@eventlens/identity` (`BetaAccessRequestService.requestAccess`). Endpoint público que no requiere sesión ni credenciales; valida rigurosamente formato RFC 5322; previene enumeración de usuarios garantizando respuesta neutra idéntica (`REQUEST_RECEIVED`) ante correos nuevos o ya existentes; deduplica solicitudes de forma idempotente sin emitir invitaciones ni cuentas activas; aplica limitación de tasa configurable (`RATE_LIMITED`). Persiste en PostgreSQL en `beta_access_request` y registra auditoría inmutable en `admin_audit_event`. 8/8 unit tests PASS, 3/3 integración PostgreSQL real PASS, 0 errores de typecheck. Desbloquea downstream `EL-TK-009`.
 
 ## User story
 

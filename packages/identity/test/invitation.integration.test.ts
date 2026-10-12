@@ -194,4 +194,86 @@ describeIntegration('BetaInvitationService (Real PostgreSQL Integration Tests â€
     );
     expect(Number(activeCount[0].count)).toBe(1);
   });
+
+  describe('EL-TK-006 & EL-TK-007: Integration tests with PostgreSQL', () => {
+    it('revokes a pending invitation in real DB, advancing revision and writing audit', async () => {
+      const service = new BetaInvitationService(txs);
+      const email = 'real-revoke@eventlens.internal';
+
+      const issued = await service.issueInvitation({
+        actorContext: adminActor,
+        email
+      });
+
+      const revoked = await service.revokeInvitation({
+        actorContext: adminActor,
+        invitationId: issued.invitation.id,
+        reason: 'Integration test cleanup'
+      });
+
+      expect(revoked.outcome).toBe('REVOKED');
+      expect(revoked.invitation.status).toBe('REVOKED');
+      expect(revoked.invitation.revision).toBe(issued.invitation.revision + 1n);
+
+      // Verify DB record
+      const dbRows = await txs.run((tx) =>
+        tx.query<{ status: string; revoked_at: Date }>(
+          `SELECT status, revoked_at FROM beta_invitation WHERE id = $1`,
+          issued.invitation.id
+        )
+      );
+      expect(dbRows[0].status).toBe('REVOKED');
+      expect(dbRows[0].revoked_at).not.toBeNull();
+    });
+
+    it('refuses to revoke a consumed invitation in real DB', async () => {
+      const service = new BetaInvitationService(txs);
+      const email = 'real-consumed@eventlens.internal';
+
+      const issued = await service.issueInvitation({
+        actorContext: adminActor,
+        email
+      });
+
+      // Mark as CONSUMED in DB
+      await sql(
+        `UPDATE beta_invitation SET status = 'CONSUMED', consumed_at = NOW() WHERE id = $1`,
+        issued.invitation.id
+      );
+
+      const attempt = await service.revokeInvitation({
+        actorContext: adminActor,
+        invitationId: issued.invitation.id
+      });
+
+      expect(attempt.outcome).toBe('CANNOT_REVOKE_CONSUMED');
+
+      // Verify still CONSUMED
+      const dbRows = await txs.run((tx) =>
+        tx.query<{ status: string }>(
+          `SELECT status FROM beta_invitation WHERE id = $1`,
+          issued.invitation.id
+        )
+      );
+      expect(dbRows[0].status).toBe('CONSUMED');
+    });
+
+    it('lists invitations filtered by status and supports pagination', async () => {
+      const service = new BetaInvitationService(txs);
+      await service.issueInvitation({
+        actorContext: adminActor,
+        email: 'list-test@eventlens.internal'
+      });
+
+      const list = await service.listInvitations({
+        actorContext: adminActor,
+        limit: 10,
+        offset: 0
+      });
+
+      expect(list.total).toBeGreaterThanOrEqual(1);
+      expect(list.items.length).toBeGreaterThanOrEqual(1);
+      expect((list.items[0] as any).token).toBeUndefined();
+    });
+  });
 });

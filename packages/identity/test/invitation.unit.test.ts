@@ -305,4 +305,299 @@ describe('BetaInvitationService (Unit Tests — EL-TK-005)', () => {
       expect(recordedAudits[0].result).toBe('SUCCESS');
     });
   });
+
+  describe('EL-TK-006: Revocar una invitación BETA no usada', () => {
+    it('rejects revocation when actor context is missing or not ADMIN_HUMAN', async () => {
+      const runner = new MockTransactionRunner();
+      const service = new BetaInvitationService(runner);
+
+      await expect(
+        service.revokeInvitation({
+          actorContext: null as any,
+          invitationId: randomUUID()
+        })
+      ).rejects.toMatchObject({ code: 'UNAUTHORIZED' });
+
+      await expect(
+        service.revokeInvitation({
+          actorContext: { ...adminActor, actorType: 'SYSTEM' as any },
+          invitationId: randomUUID()
+        })
+      ).rejects.toMatchObject({ code: 'UNAUTHORIZED' });
+    });
+
+    it('rejects with INVITATION_NOT_FOUND when invitation does not exist', async () => {
+      const runner = new MockTransactionRunner();
+      runner.mockRows = [];
+      const service = new BetaInvitationService(runner);
+
+      await expect(
+        service.revokeInvitation({
+          actorContext: adminActor,
+          invitationId: randomUUID()
+        })
+      ).rejects.toMatchObject({ code: 'INVITATION_NOT_FOUND' });
+    });
+
+    it('Scenario 1: revokes a PENDING invitation, advances revision and records audit', async () => {
+      const runner = new MockTransactionRunner();
+      const inviteId = randomUUID();
+      const recordedAudits: AuditEventRecord[] = [];
+      const service = new BetaInvitationService(runner, {
+        auditSink: { record: async (e) => { recordedAudits.push(e); } }
+      });
+
+      runner.mockRows = [
+        {
+          id: inviteId,
+          email: 'pending@eventlens.internal',
+          email_normalized: 'pending@eventlens.internal',
+          token_digest: 'token-digest',
+          status: 'PENDING',
+          issued_by: adminActor.principalId,
+          created_at: new Date(),
+          expires_at: new Date(Date.now() + 500000),
+          consumed_at: null,
+          revoked_at: null,
+          revision: 1n
+        }
+      ];
+
+      const result = await service.revokeInvitation({
+        actorContext: adminActor,
+        invitationId: inviteId,
+        reason: 'Requested by test'
+      });
+
+      expect(result.outcome).toBe('REVOKED');
+      expect(result.invitation.status).toBe('REVOKED');
+      expect(result.invitation.revokedAt).toBeDefined();
+      expect(result.invitation.revision).toBe(2n);
+
+      const updateQuery = runner.executedQueries.find((q) =>
+        q.sql.includes("UPDATE beta_invitation") && q.sql.includes("status = 'REVOKED'")
+      );
+      expect(updateQuery).toBeDefined();
+
+      expect(recordedAudits.length).toBe(1);
+      expect(recordedAudits[0].procedure).toBe('BETA_INVITE_REVOKE');
+      expect(recordedAudits[0].result).toBe('SUCCESS');
+    });
+
+    it('Scenario 2: does NOT modify invitation or account when invitation was already CONSUMED', async () => {
+      const runner = new MockTransactionRunner();
+      const inviteId = randomUUID();
+      const recordedAudits: AuditEventRecord[] = [];
+      const service = new BetaInvitationService(runner, {
+        auditSink: { record: async (e) => { recordedAudits.push(e); } }
+      });
+
+      runner.mockRows = [
+        {
+          id: inviteId,
+          email: 'active-organizer@eventlens.internal',
+          email_normalized: 'active-organizer@eventlens.internal',
+          token_digest: 'token-digest',
+          status: 'CONSUMED',
+          issued_by: adminActor.principalId,
+          created_at: new Date(),
+          expires_at: new Date(),
+          consumed_at: new Date(),
+          revoked_at: null,
+          revision: 2n
+        }
+      ];
+
+      const result = await service.revokeInvitation({
+        actorContext: adminActor,
+        invitationId: inviteId
+      });
+
+      expect(result.outcome).toBe('CANNOT_REVOKE_CONSUMED');
+      expect(result.invitation.status).toBe('CONSUMED');
+      expect(result.invitation.revision).toBe(2n);
+
+      // Verify no UPDATE query was executed
+      const updateQuery = runner.executedQueries.find((q) =>
+        q.sql.includes("UPDATE beta_invitation")
+      );
+      expect(updateQuery).toBeUndefined();
+
+      expect(recordedAudits.length).toBe(1);
+      expect(recordedAudits[0].procedure).toBe('BETA_INVITE_REVOKE');
+      expect(recordedAudits[0].result).toBe('CANNOT_REVOKE_CONSUMED');
+    });
+
+    it('is idempotent when invitation is already REVOKED', async () => {
+      const runner = new MockTransactionRunner();
+      const inviteId = randomUUID();
+      const service = new BetaInvitationService(runner);
+
+      const alreadyRevokedAt = new Date();
+      runner.mockRows = [
+        {
+          id: inviteId,
+          email: 'revoked@eventlens.internal',
+          email_normalized: 'revoked@eventlens.internal',
+          token_digest: 'token-digest',
+          status: 'REVOKED',
+          issued_by: adminActor.principalId,
+          created_at: new Date(),
+          expires_at: new Date(),
+          consumed_at: null,
+          revoked_at: alreadyRevokedAt,
+          revision: 3n
+        }
+      ];
+
+      const result = await service.revokeInvitation({
+        actorContext: adminActor,
+        invitationId: inviteId
+      });
+
+      expect(result.outcome).toBe('ALREADY_REVOKED');
+      expect(result.invitation.status).toBe('REVOKED');
+      expect(result.invitation.revision).toBe(3n);
+
+      const updateQuery = runner.executedQueries.find((q) =>
+        q.sql.includes("UPDATE beta_invitation")
+      );
+      expect(updateQuery).toBeUndefined();
+    });
+  });
+
+  describe('EL-TK-007: Consultar invitaciones BETA', () => {
+    it('rejects listing when actor context is missing or unauthorized', async () => {
+      const runner = new MockTransactionRunner();
+      const service = new BetaInvitationService(runner);
+
+      await expect(
+        service.listInvitations({
+          actorContext: null as any
+        })
+      ).rejects.toMatchObject({ code: 'UNAUTHORIZED' });
+
+      await expect(
+        service.getInvitation({
+          actorContext: { ...adminActor, actorType: 'SYSTEM' as any },
+          invitationId: randomUUID()
+        })
+      ).rejects.toMatchObject({ code: 'UNAUTHORIZED' });
+    });
+
+    it('Scenario 1: lists invitations with administrative details without exposing tokens', async () => {
+      const runner = new MockTransactionRunner();
+      const recordedAudits: AuditEventRecord[] = [];
+      const service = new BetaInvitationService(runner, {
+        auditSink: { record: async (e) => { recordedAudits.push(e); } }
+      });
+
+      const invite1 = {
+        id: randomUUID(),
+        email: 'organizer1@eventlens.internal',
+        email_normalized: 'organizer1@eventlens.internal',
+        token_digest: 'secret-hash-1',
+        status: 'PENDING',
+        issued_by: adminActor.principalId,
+        created_at: new Date(),
+        expires_at: new Date(Date.now() + 600000),
+        consumed_at: null,
+        revoked_at: null,
+        revision: 1n
+      };
+
+      // Mock returns count first, then rows
+      let callCount = 0;
+      runner.run = async (fn) => {
+        const tx: SqlTransaction = {
+          query: async <R extends object>(sql: string): Promise<R[]> => {
+            if (sql.includes('COUNT(*)')) {
+              return [{ total: 1 }] as any;
+            }
+            return [invite1] as any;
+          },
+          execute: async () => 1
+        };
+        return fn(tx);
+      };
+
+      const result = await service.listInvitations({
+        actorContext: adminActor,
+        status: 'PENDING'
+      });
+
+      expect(result.total).toBe(1);
+      expect(result.items.length).toBe(1);
+      expect(result.items[0].id).toBe(invite1.id);
+      expect(result.items[0].email).toBe(invite1.email);
+      expect(result.items[0].status).toBe('PENDING');
+
+      // Crucial: token plaintext and digests are strictly absent from summary records
+      expect((result.items[0] as any).token).toBeUndefined();
+      expect((result.items[0] as any).token_digest).toBeUndefined();
+      expect((result.items[0] as any).tokenDigest).toBeUndefined();
+    });
+
+    it('Scenario 2: returns empty list when no invitations exist without error', async () => {
+      const runner = new MockTransactionRunner();
+      runner.run = async (fn) => {
+        const tx: SqlTransaction = {
+          query: async <R extends object>(sql: string): Promise<R[]> => {
+            if (sql.includes('COUNT(*)')) {
+              return [{ total: 0 }] as any;
+            }
+            return [] as any;
+          },
+          execute: async () => 1
+        };
+        return fn(tx);
+      };
+
+      const service = new BetaInvitationService(runner);
+      const result = await service.listInvitations({
+        actorContext: adminActor,
+        status: 'ALL'
+      });
+
+      expect(result.total).toBe(0);
+      expect(result.items).toEqual([]);
+    });
+
+    it('gets a single invitation detail or null if nonexistent', async () => {
+      const runner = new MockTransactionRunner();
+      const service = new BetaInvitationService(runner);
+      const inviteId = randomUUID();
+
+      runner.mockRows = [
+        {
+          id: inviteId,
+          email: 'single@eventlens.internal',
+          email_normalized: 'single@eventlens.internal',
+          token_digest: 'secret-hash',
+          status: 'PENDING',
+          issued_by: adminActor.principalId,
+          created_at: new Date(),
+          expires_at: new Date(),
+          consumed_at: null,
+          revoked_at: null,
+          revision: 1n
+        }
+      ];
+
+      const found = await service.getInvitation({
+        actorContext: adminActor,
+        invitationId: inviteId
+      });
+      expect(found.invitation).not.toBeNull();
+      expect(found.invitation?.id).toBe(inviteId);
+
+      runner.mockRows = [];
+      const notFound = await service.getInvitation({
+        actorContext: adminActor,
+        invitationId: randomUUID()
+      });
+      expect(notFound.invitation).toBeNull();
+    });
+  });
 });
+

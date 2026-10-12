@@ -53,7 +53,23 @@ export {
   type OrganizerLoginCommand,
   type OrganizerLoginResult,
   type ValidateOrganizerSessionCommand,
-  type ValidateOrganizerSessionResult
+  type ValidateOrganizerSessionResult,
+  type BetaInvitationSummaryRecord,
+  type RevokeBetaInvitationCommand,
+  type RevokeBetaInvitationResult,
+  type ListBetaInvitationsQuery,
+  type ListBetaInvitationsResult,
+  type GetBetaInvitationQuery,
+  type GetBetaInvitationResult,
+  type AccessRequestErrorCode,
+  AccessRequestError,
+  type BetaAccessRequestRecord,
+  type RequestBetaAccessCommand,
+  type RequestBetaAccessResult,
+  type ListBetaAccessRequestsQuery,
+  type ListBetaAccessRequestsResult,
+  type GetBetaAccessRequestQuery,
+  type GetBetaAccessRequestResult
 } from './contracts.js';
 
 export { AdminProvisioningService } from './provisioning.js';
@@ -72,6 +88,11 @@ export {
   BetaInvitationService,
   type BetaInvitationServiceOptions
 } from './invitation.js';
+
+export {
+  BetaAccessRequestService,
+  type BetaAccessRequestServiceOptions
+} from './access-request.js';
 
 export { OrganizerRegistrationService } from './registration.js';
 

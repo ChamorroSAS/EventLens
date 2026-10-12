@@ -39,7 +39,8 @@ export type InvitationErrorCode =
   | 'INVITATION_NOT_FOUND'
   | 'INVITATION_ALREADY_USED'
   | 'INVITATION_REVOKED'
-  | 'INVITATION_EXPIRED';
+  | 'INVITATION_EXPIRED'
+  | 'CANNOT_REVOKE_CONSUMED';
 
 export class InvitationError extends Error {
   constructor(public readonly code: InvitationErrorCode, message?: string) {
@@ -62,6 +63,19 @@ export interface BetaInvitationRecord {
   readonly revision: bigint;
 }
 
+export interface BetaInvitationSummaryRecord {
+  readonly id: string;
+  readonly email: string;
+  readonly emailNormalized: string;
+  readonly status: 'PENDING' | 'CONSUMED' | 'REVOKED' | 'EXPIRED';
+  readonly issuedBy: string;
+  readonly createdAt: Date;
+  readonly expiresAt: Date;
+  readonly consumedAt?: Date | null;
+  readonly revokedAt?: Date | null;
+  readonly revision: bigint;
+}
+
 export interface IssueBetaInvitationCommand {
   readonly actorContext: AdminActorContext;
   readonly email: string;
@@ -71,6 +85,99 @@ export interface IssueBetaInvitationResult {
   readonly invitation: BetaInvitationRecord;
   readonly outcome: 'ISSUED' | 'ALREADY_PENDING' | 'ALREADY_CONSUMED' | 'RENEWED_EXPIRED';
   readonly message?: string;
+}
+
+export interface RevokeBetaInvitationCommand {
+  readonly actorContext: AdminActorContext;
+  readonly invitationId: string;
+  readonly reason?: string;
+}
+
+export interface RevokeBetaInvitationResult {
+  readonly invitation: BetaInvitationSummaryRecord;
+  readonly outcome: 'REVOKED' | 'ALREADY_REVOKED' | 'CANNOT_REVOKE_CONSUMED';
+  readonly message?: string;
+}
+
+export interface ListBetaInvitationsQuery {
+  readonly actorContext: AdminActorContext;
+  readonly status?: 'PENDING' | 'CONSUMED' | 'REVOKED' | 'EXPIRED' | 'ALL';
+  readonly limit?: number;
+  readonly offset?: number;
+}
+
+export interface ListBetaInvitationsResult {
+  readonly items: readonly BetaInvitationSummaryRecord[];
+  readonly total: number;
+  readonly limit: number;
+  readonly offset: number;
+}
+
+export interface GetBetaInvitationQuery {
+  readonly actorContext: AdminActorContext;
+  readonly invitationId: string;
+}
+
+export interface GetBetaInvitationResult {
+  readonly invitation: BetaInvitationSummaryRecord | null;
+}
+
+export type AccessRequestErrorCode =
+  | 'INVALID_EMAIL'
+  | 'RATE_LIMITED'
+  | 'UNAUTHORIZED'
+  | 'REQUEST_NOT_FOUND'
+  | 'INVALID_ARGUMENT';
+
+export class AccessRequestError extends Error {
+  constructor(public readonly code: AccessRequestErrorCode, message?: string) {
+    super(message ?? code);
+    this.name = 'AccessRequestError';
+  }
+}
+
+export interface BetaAccessRequestRecord {
+  readonly id: string;
+  readonly email: string;
+  readonly emailNormalized: string;
+  readonly status: 'PENDING_REVIEW' | 'REVIEWED';
+  readonly notes?: string | null;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
+export interface RequestBetaAccessCommand {
+  readonly email: string;
+  readonly notes?: string;
+  readonly clientIp?: string;
+}
+
+export interface RequestBetaAccessResult {
+  readonly outcome: 'REQUEST_RECEIVED';
+  readonly message: string;
+  readonly requestId: string;
+}
+
+export interface ListBetaAccessRequestsQuery {
+  readonly actorContext: AdminActorContext;
+  readonly limit?: number;
+  readonly offset?: number;
+}
+
+export interface ListBetaAccessRequestsResult {
+  readonly items: readonly BetaAccessRequestRecord[];
+  readonly total: number;
+  readonly limit: number;
+  readonly offset: number;
+}
+
+export interface GetBetaAccessRequestQuery {
+  readonly actorContext: AdminActorContext;
+  readonly requestId: string;
+}
+
+export interface GetBetaAccessRequestResult {
+  readonly request: BetaAccessRequestRecord | null;
 }
 
 export interface AdminPrincipal {
@@ -291,6 +398,11 @@ export interface AuditEventRecord {
     | 'BETA_INVITE_ISSUE'
     | 'BETA_INVITE_DUPLICATE_ATTEMPT'
     | 'BETA_INVITE_RENEW'
+    | 'BETA_INVITE_REVOKE'
+    | 'BETA_INVITE_LIST_VIEWED'
+    | 'BETA_ACCESS_REQUEST_SUBMITTED'
+    | 'BETA_ACCESS_REQUEST_LIST_VIEWED'
+    | 'BETA_ACCESS_REQUEST_DETAIL_VIEWED'
     | 'ORGANIZER_REGISTRATION'
     | 'ORGANIZER_EMAIL_VERIFIED_AND_ACTIVATED'
     | 'ORGANIZER_LOGIN'
@@ -314,7 +426,11 @@ export interface AuditEventRecord {
     | 'ALREADY_CONSUMED'
     | 'ALREADY_PENDING'
     | 'ALREADY_REGISTERED_PENDING'
-    | 'ACTIVATED';
+    | 'ACTIVATED'
+    | 'REVOKED'
+    | 'ALREADY_REVOKED'
+    | 'CANNOT_REVOKE_CONSUMED'
+    | 'REQUEST_RECEIVED';
   readonly details?: string;
   readonly timestamp: Date;
 }

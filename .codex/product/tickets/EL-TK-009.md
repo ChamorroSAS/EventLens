@@ -6,11 +6,9 @@ EL-EP-001
 
 ## Status
 
-READY
+DONE
 
-**HISTÓRICO — revisión de remediación:** el snapshot de 2026-10-08 permaneció DRAFT hasta el dictamen final; la aprobación de 2026-10-07 se conserva.
-
-**CONFIRMED:** requirements_reviewer aprobó este conjunto el 2026-10-07, sin hallazgos pendientes. Véase [dictamen](../sessions/2026-10-07-el-ep-001-ticket-redesign-review.md). READY expresa preparación de requisitos; se conservan las dependencias de ejecución.
+**CONFIRMED — 2026-10-12:** Implementado y validado en `@eventlens/identity` (`BetaAccessRequestService.listAccessRequests` y `getAccessRequest`). Requiere `AdminActorContext` (`ADMIN_HUMAN`); provee inspección administrativa de listado paginado y detalle de solicitud; estrictamente de solo lectura: no realiza aprobaciones, rechazos, transiciones de estado, emisión de invitaciones ni activación de cuentas; soporta lista vacía (`items: []`, `total: 0`) o solicitud inexistente (`request: null`) sin mutaciones; emite auditoría inmutable (`BETA_ACCESS_REQUEST_LIST_VIEWED`, `BETA_ACCESS_REQUEST_DETAIL_VIEWED`). 8/8 unit tests PASS, 3/3 integración PostgreSQL real PASS, 0 errores de typecheck.
 
 ## User story
 

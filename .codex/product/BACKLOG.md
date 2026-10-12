@@ -37,10 +37,10 @@
 | ID | Nombre | Épica | Estado | Prioridad | Depende de | Archivo |
 |---|---|---|---|---|---|---|
 | EL-TK-005 | Emitir una invitación BETA | EL-EP-001 | DONE | P0 | EL-TK-044 | [EL-TK-005](tickets/EL-TK-005.md) |
-| EL-TK-006 | Revocar una invitación BETA no usada | EL-EP-001 | READY | P0 | EL-TK-005, EL-TK-044, EL-TK-046 | [EL-TK-006](tickets/EL-TK-006.md) |
-| EL-TK-007 | Consultar invitaciones BETA | EL-EP-001 | READY | P0 | EL-TK-005, EL-TK-044 | [EL-TK-007](tickets/EL-TK-007.md) |
-| EL-TK-008 | Solicitar acceso a la BETA | EL-EP-001 | READY | P0 | — | [EL-TK-008](tickets/EL-TK-008.md) |
-| EL-TK-009 | Revisar solicitudes de acceso BETA | EL-EP-001 | READY | P0 | EL-TK-008, EL-TK-044 | [EL-TK-009](tickets/EL-TK-009.md) |
+| EL-TK-006 | Revocar una invitación BETA no usada | EL-EP-001 | DONE | P0 | EL-TK-005, EL-TK-044, EL-TK-046 | [EL-TK-006](tickets/EL-TK-006.md) |
+| EL-TK-007 | Consultar invitaciones BETA | EL-EP-001 | DONE | P0 | EL-TK-005, EL-TK-044 | [EL-TK-007](tickets/EL-TK-007.md) |
+| EL-TK-008 | Solicitar acceso a la BETA | EL-EP-001 | DONE | P0 | — | [EL-TK-008](tickets/EL-TK-008.md) |
+| EL-TK-009 | Revisar solicitudes de acceso BETA | EL-EP-001 | DONE | P0 | EL-TK-008, EL-TK-044 | [EL-TK-009](tickets/EL-TK-009.md) |
 | EL-TK-010 | Iniciar el registro de un organizador invitado | EL-EP-001 | DONE | P0 | EL-TK-005 | [EL-TK-010](tickets/EL-TK-010.md) |
 | EL-TK-011 | Verificar el correo y activar una cuenta pendiente | EL-EP-001 | DONE | P0 | EL-TK-010, EL-TK-046 | [EL-TK-011](tickets/EL-TK-011.md) |
 | EL-TK-012 | Reenviar la verificación de correo | EL-EP-001 | READY | P0 | EL-TK-011 | [EL-TK-012](tickets/EL-TK-012.md) |

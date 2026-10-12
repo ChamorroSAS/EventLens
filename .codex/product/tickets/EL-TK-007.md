@@ -6,11 +6,9 @@ EL-EP-001
 
 ## Status
 
-READY
+DONE
 
-**HISTÓRICO — revisión de remediación:** el snapshot de 2026-10-08 permaneció DRAFT hasta el dictamen final; la aprobación de 2026-10-07 se conserva.
-
-**CONFIRMED:** requirements_reviewer aprobó este conjunto el 2026-10-07, sin hallazgos pendientes. Véase [dictamen](../sessions/2026-10-07-el-ep-001-ticket-redesign-review.md). READY expresa preparación de requisitos; se conservan las dependencias de ejecución.
+**CONFIRMED — 2026-10-12:** Implementado y validado en `@eventlens/identity` (`BetaInvitationService.listInvitations` y `getInvitation`). Requiere `AdminActorContext` (`ADMIN_HUMAN`); consulta segura con paginación (`limit`, `offset`) y filtros por estado; protege estrictamente secretos y tokens omitiendo digests y tokens planos de las proyecciones (`BetaInvitationSummaryRecord`); soporta estado vacío (`items: []`, `total: 0`) ante ausencia de registros o filtros sin coincidencia; emite auditoría inmutable `BETA_INVITE_LIST_VIEWED`. 15/15 unit tests PASS, 7/7 integración PostgreSQL real PASS, 0 errores de typecheck.
 
 ## User story
 

@@ -67,10 +67,10 @@
 | Ticket | Depende de | Bloquea |
 |---|---|---|
 | EL-TK-005 (DONE) | EL-TK-044 | EL-TK-006, EL-TK-007, EL-TK-010 |
-| EL-TK-006 | EL-TK-005, EL-TK-044, EL-TK-046 | — |
-| EL-TK-007 | EL-TK-005, EL-TK-044 | — |
-| EL-TK-008 | — | EL-TK-009 |
-| EL-TK-009 | EL-TK-008, EL-TK-044 | — |
+| EL-TK-006 (DONE) | EL-TK-005, EL-TK-044, EL-TK-046 | — |
+| EL-TK-007 (DONE) | EL-TK-005, EL-TK-044 | — |
+| EL-TK-008 (DONE) | — | EL-TK-009 |
+| EL-TK-009 (DONE) | EL-TK-008, EL-TK-044 | — |
 | EL-TK-010 (DONE) | EL-TK-005 | EL-TK-011 |
 | EL-TK-011 (DONE) | EL-TK-010, EL-TK-046 | EL-TK-012, EL-TK-013, EL-TK-018 |
 | EL-TK-012 | EL-TK-011 | — |
@@ -464,5 +464,14 @@ TB-01/TB-02 dejan de bloquear.033/035/036/041/042/056 YES propio;058 NO ejecuci�
 **CONFIRMED — EL-TK-105 DONE, 2026-10-12:** dependencias EL-TK-098 y EL-TK-101 satisfechas; servicio de ocultamiento de medios (`HideMediaService`) implementado en `@eventlens/media-inspection` (`packages/media-inspection/src/media-visibility.ts`) permitiendo al organizador propietario transicionar `PUBLISHED` a `HIDDEN` de forma atómica y reversible. Preserva íntegramente el original físico y no reduce el consumo contable ni la cuota comercial (DEC-005, DEC-018, DEC-039). Se integra con `MediaVisibilityRevalidator` para retirar el medio de inmediato de consultas de galería y grants guest. Suite 11/11 PASS en `media-visibility.test.ts`. Véase el [cierre](tickets/EL-TK-105.md).
 
 **CONFIRMED — EL-TK-106 DONE, 2026-10-12:** dependencias EL-TK-105 y EL-TK-101 satisfechas; servicio de re-publicación de medios (`RepublishMediaService`) implementado en `@eventlens/media-inspection` (`packages/media-inspection/src/media-visibility.ts`) permitiendo restaurar visibilidad (`HIDDEN` a `PUBLISHED`). Valida en tiempo real que no existan bloqueos vigentes (inspección de seguridad fallida `DENIED` deniega con `SAFETY_BLOCKED`, o carrera concurrente deniega con `CONFLICT` conforme a DEC-005, DEC-086 y DEC-087). Suite 11/11 PASS en `media-visibility.test.ts`. Véase el [cierre](tickets/EL-TK-106.md).
+
+**CONFIRMED — EL-TK-006 DONE, 2026-10-12:** dependencias EL-TK-005, EL-TK-044 y EL-TK-046 satisfechas; revocación de invitación BETA no usada (`BetaInvitationService.revokeInvitation`) implementada y validada en `@eventlens/identity`. Requiere `AdminActorContext` (`ADMIN_HUMAN`); transaccional bajo `SELECT ... FOR UPDATE` con avance atómico de revisión CAS `revision + 1n`; revoca invitaciones `PENDING` o `EXPIRED` inhabilitándolas de inmediato; preserva cuentas activas rechazando la revocación con `CANNOT_REVOKE_CONSUMED` si la invitación fue consumida; idempotente ante invitaciones ya revocadas (`ALREADY_REVOKED`); registra auditoría append-only `BETA_INVITE_REVOKE`. 15/15 unit tests PASS, 7/7 integración PostgreSQL real PASS, 0 errores de typecheck. Véase el [cierre](tickets/EL-TK-006.md).
+
+**CONFIRMED — EL-TK-007 DONE, 2026-10-12:** dependencias EL-TK-005 y EL-TK-044 satisfechas; consulta administrativa de invitaciones BETA (`BetaInvitationService.listInvitations` y `getInvitation`) implementada y validada en `@eventlens/identity`. Requiere `AdminActorContext` (`ADMIN_HUMAN`); soporta paginación (`limit`, `offset`) y filtros por estado (`PENDING`, `CONSUMED`, `REVOKED`, `EXPIRED`, `ALL`); protege estrictamente secretos y tokens omitiendo digests y tokens planos de las proyecciones (`BetaInvitationSummaryRecord`); soporta estado vacío (`items: []`, `total: 0`); registra auditoría `BETA_INVITE_LIST_VIEWED`. 15/15 unit tests PASS, 7/7 integración PostgreSQL real PASS, 0 errores de typecheck. Véase el [cierre](tickets/EL-TK-007.md).
+
+**CONFIRMED — EL-TK-008 DONE, 2026-10-12:** sin predecesoras funcionales duras; solicitud pública de acceso a la BETA (`BetaAccessRequestService.requestAccess`) implementada y validada en `@eventlens/identity`. Flujo público seguro que valida rigurosamente formato RFC 5322; previene enumeración de usuarios garantizando respuesta neutra idéntica (`REQUEST_RECEIVED`) ante correos nuevos o existentes; deduplica solicitudes de forma idempotente sin emitir invitaciones ni crear cuentas activas; aplica limitación de tasa configurable (`RATE_LIMITED`). Persiste en PostgreSQL en `beta_access_request` y registra auditoría `BETA_ACCESS_REQUEST_SUBMITTED`. 8/8 unit tests PASS, 3/3 integración PostgreSQL real PASS, 0 errores de typecheck. Desbloquea downstream EL-TK-009. Véase el [cierre](tickets/EL-TK-008.md).
+
+**CONFIRMED — EL-TK-009 DONE, 2026-10-12:** dependencias EL-TK-008 y EL-TK-044 satisfechas; inspección administrativa de solicitudes de acceso BETA (`BetaAccessRequestService.listAccessRequests` y `getAccessRequest`) implementada y validada en `@eventlens/identity`. Requiere `AdminActorContext` (`ADMIN_HUMAN`); provee consulta de listado paginado y detalle de solicitud; estrictamente de solo lectura: no realiza aprobaciones, transiciones de estado, emisión de invitaciones ni activación de cuentas; soporta lista vacía (`items: []`, `total: 0`) o solicitud inexistente (`request: null`) sin mutaciones; emite auditoría inmutable (`BETA_ACCESS_REQUEST_LIST_VIEWED`, `BETA_ACCESS_REQUEST_DETAIL_VIEWED`). 8/8 unit tests PASS, 3/3 integración PostgreSQL real PASS, 0 errores de typecheck. Véase el [cierre](tickets/EL-TK-009.md).
+
 
 
