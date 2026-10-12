@@ -4,7 +4,7 @@
 EL-EP-003
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** usuario autorizado, **quiero** ver el estado y las acciones vigentes del evento, **para** comprender apertura, cierre, vencimiento y restricciones sin inferirlas localmente.
@@ -103,3 +103,25 @@ Q-015; DEC-017, DEC-084; EL-EP-003; handoff ui-mvp-epic-review.md#el-ep-003.
 
 ### Gates para nueva revisión
 REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el alcance UI propio de lifecycle en organizador e invitado.
+
+## Implementation Evidence — 2026-10-11
+- **Branch:** `feature/EL-TK-073`
+- **Frontend Architecture & Components (`apps/web/src/app/lifecycle/`):**
+  - `EventLifecyclePanelComponent`: Panel principal del organizador presentando la jerarquía visual requerida: Nombre → `EventStatusBadgeComponent` → Inicio/TZ/Vencimiento/Gracia → Acciones autorizadas (`canSchedule`, `canActivateEarly`, `canClose`, `canReopen`, `canSuspend`, `canReactivate`). No inventa estado `EXPIRED`; contadores son informativos y las fechas textuales son la autoridad visible.
+  - `EventStatusBadgeComponent`: Badge accesible con texto explícito para cada estado (`DRAFT` Borrador, `SCHEDULED` Programado, `ACTIVE` Activo, `CLOSED` Cerrado, `GRACE_PERIOD` Periodo de gracia, `PENDING_DELETION` Pendiente de eliminación, `SUSPENDED` Suspendido, `DELETED` Eliminado) sin depender únicamente del color (WCAG 2.2 AA).
+  - `EventAccessStatusComponent`: Superficie para invitados presentando copy contractual aprobado para cada estado (SCHEDULED: «El evento aún no inicia», CLOSED: «Las cargas están cerradas», GRACE_PERIOD: «La vigencia del evento terminó», SUSPENDED: «Evento no disponible temporalmente» garantizando que nunca se filtren motivos de investigación confidencial). Preserva la excepción de DEC-084 para *Mis aportes* y solicitud de retiro propio ante sesiones válidas (`hasGuestSession: true`).
+  - `EventGracePeriodBannerComponent`: Banner informativo de periodo de gracia destacando la disponibilidad de descargas y canalizando extensiones de vigencia hacia planes de capacidad (EL-EP-011).
+  - `EventCloseDialogComponent`: Diálogo accesible de confirmación advirtiendo que cerrar no pausa vigencia ni gracia.
+  - `EventScheduleFormComponent`: Formulario accesible para programar fecha/hora de inicio en TZ del evento y duración en días.
+  - `SuspendEventDialogComponent`: Diálogo administrativo con motivo de justificación obligatorio (`AdministrativeActionReason`).
+  - `ReactivateEventDialogComponent`: Diálogo administrativo con advertencia de recálculo temporal en el instante actual per DEC-081.
+  - `EventLifecycleService`: Cliente de frontend para consumo de `LifecycleSnapshot` y ejecución de acciones de ciclo de vida.
+- **Accessibility & UX Invariants (WCAG 2.2 AA):**
+  - Mobile-first, foco visible, navegación completa por teclado, captura y retorno de foco en diálogos.
+  - Temporizadores y refrescos automáticos NO roban foco ni emiten anuncios continuos en cada segundo a lectores de pantalla (Escenario 3).
+- **Test Coverage:**
+  - `apps/web/src/app/lifecycle/event-lifecycle-panel.component.spec.ts` (6 tests unitarios PASS).
+  - `apps/web/src/app/lifecycle/event-access-status.component.spec.ts` (5 tests unitarios PASS).
+  - Total tests en `apps/web`: 28/28 PASS.
+  - Typecheck (`ngc --noEmit`) y build (`ng build`): 0 errores.
+  - Suite completa del workspace (`node scripts/workspace.mjs test`): PASS en todos los paquetes.

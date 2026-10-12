@@ -103,7 +103,7 @@
 | EL-TK-070 | Extender la vigencia autorizada de un evento | EL-EP-003 | DONE | P0 | EL-TK-062, contrato EL-EP-011 | [EL-TK-070](tickets/EL-TK-070.md) |
 | EL-TK-071 | Consultar lifecycle y capacidades vigentes de un evento | EL-EP-003 | DONE | P0 | EL-TK-063..070 | [EL-TK-071](tickets/EL-TK-071.md) |
 | EL-TK-072 | Aplicar restricciones de acceso según el lifecycle vigente | EL-EP-003 | DONE | P0 | EL-TK-064,065,067,068,069,071 | [EL-TK-072](tickets/EL-TK-072.md) |
-| EL-TK-073 | Integrar el lifecycle en la interfaz de organizador e invitado | EL-EP-003 | READY | P0 | EL-TK-071, EL-TK-072 | [EL-TK-073](tickets/EL-TK-073.md) |
+| EL-TK-073 | Integrar el lifecycle en la interfaz de organizador e invitado | EL-EP-003 | DONE | P0 | EL-TK-071, EL-TK-072 | [EL-TK-073](tickets/EL-TK-073.md) |
 | EL-TK-074 | Resolver acceso público a un evento mediante credencial no adivinable | EL-EP-004 | DONE | P0 | EL-TK-020, EL-TK-072, EL-TK-084 | [EL-TK-074](tickets/EL-TK-074.md) |
 | EL-TK-075 | Validar PIN opcional y establecer una sesión anónima guest | EL-EP-004 | DONE | P0 | EL-TK-027, EL-TK-074 | [EL-TK-075](tickets/EL-TK-075.md) |
 | EL-TK-076 | Registrar consentimiento versionado antes de la primera carga | EL-EP-004 | DONE | P0 | EL-TK-075 | [EL-TK-076](tickets/EL-TK-076.md) |
@@ -310,8 +310,11 @@ EL-TK-001..004 — SUPERSEDED por EL-TK-005..019; se preservan como historial. E
 - **EL-TK-068 DONE:** Suspensión administrativa de un evento conservando `previous_status` y motivo conforme a DEC-078.
 - **EL-TK-069 DONE:** Reactivación administrativa de un evento SUSPENDED recalculando el estado temporal vigente según DEC-081, DEC-078 y DEC-082.
 - **EL-TK-070 DONE:** Extensión administrativa autorizada de la vigencia de un evento con recálculo canónico desde el ancla, reconciliación de GRACE_PERIOD a ACTIVE/CLOSED y bloqueo DEC-102. Suite total de pruebas en Docker PostgreSQL 16 real: 91/91 PASS.
+- **EL-TK-071 DONE:** Consulta de snapshot canónico de lifecycle y capacidades autorizadas por rol con garantías de no enumeración y privacidad.
+- **EL-TK-072 DONE:** Política unificada de acceso según lifecycle vigente con excepción aprobada de Mis aportes/solicitudes propias conforme a DEC-084.
+- **EL-TK-073 DONE:** Integración de componentes de frontend de ciclo de vida (`EventLifecyclePanelComponent`, `EventStatusBadgeComponent`, `EventAccessStatusComponent`, `EventGracePeriodBannerComponent`, diálogos modales accesibles) consumiendo snapshot del servidor, validación WCAG 2.2 AA y 28/28 pruebas PASS en `apps/web`.
 
-**CONFIRMED — EL-TK-146..152 (Admin Support Route) DONE, 2026-10-11:**
+**CONFIRMED — EL-TK-146..154 (Admin Support Route) DONE, 2026-10-11:**
 - **EL-TK-146 DONE:** Búsqueda administrativa de eventos y organizadores en `@eventlens/admin-support` (`AdminSearchService`) con sanitización de consultas, coincidencia parcial/prefijo, aislamiento multitenant, y ausencia estricta de previews multimedia y secretos.
 - **EL-TK-147 DONE:** Detalle administrativo agregado en `@eventlens/admin-support` (`AdminEventDetailService`) con estado parcial explícito por secciones independientes (owner, lifecycle, capacity, jobs, moderation) sin preview de media y con auditoría `ADMIN_EVENT_DETAIL_ACCESSED`.
 - **EL-TK-148 DONE:** Consulta de jobs y errores técnicos sanitizados en `@eventlens/admin-support` (`AdminJobInspectionService`) conforme a DEC-038 y DEC-064, con sanitización de tokens, paths y secretos en stack traces y auditoría `ADMIN_JOB_INSPECTED`.
@@ -319,4 +322,5 @@ EL-TK-001..004 — SUPERSEDED por EL-TK-005..019; se preservan como historial. E
 - **EL-TK-150 DONE:** Autorización de acceso multimedia administrativo por soporte o incidente en `@eventlens/admin-support` (`AdminMediaGrantService`) mediante emisión de `AdministrativeSupportMediaGrant` temporal (TTL acotado 60..3600s), revalidación contra `media_catalog` y `media_active_derivative`, aislamiento cross-event, denegación ante medios eliminados, fallback a original para `CORRUPTION_DIAGNOSIS`, persistencia durable en `admin_media_grant` y auditoría `ADMIN_MEDIA_ACCESS_GRANTED` sin exponer URLs completas ni firmas.
 - **EL-TK-151 DONE:** Orquestación de intervenciones administrativas mediante delegación a contratos propietarios en `@eventlens/admin-support` (`AdminInterventionOrchestrator`) para suspensión, reactivación, extensión de vigencia, cierre anticipado, revocación masiva de sesiones guest y overrides de capacidad sin bypass de políticas propietarias, con validación de `AdminActorContext` (`ADMIN_HUMAN`, EL-TK-044), motivo obligatorio, propagación de conflictos y auditoría `ADMIN_INTERVENTION_ORCHESTRATED`.
 - **EL-TK-152 DONE:** Reutilización de solicitudes de ampliación (EL-EP-011), reportes y denuncias (EL-EP-009, estrictamente sin preview de media per DEC-019) e invitaciones BETA (EL-EP-001) en el detalle administrativo (`AdminEventDetailService`), componiendo contratos propietarios con tolerancia a fallos parciales (`overallAvailability: 'PARTIAL'`) y restricciones explícitas sin invención de acciones. Suite total de pruebas en Docker PostgreSQL 16 real: 99/99 PASS (14 archivos).
-
+- **EL-TK-153 DONE:** Integración de diagnóstico y operaciones de jobs en consola administrativa de frontend (`JobsViewerComponent`, `JobDetailDialogComponent`, `JobActionConfirmDialogComponent` con WCAG 2.2 AA y preservación de feedback honesto).
+- **EL-TK-154 DONE:** Integración unificada de consola administrativa en frontend (`AdminAppShellComponent`, `AdminEventSearchComponent`, `AdminEventDetailComponent`, `AdminMediaGrantDialogComponent`, `AdminInterventionDialogComponent`), con cero preview previo de multimedia y explicación explícita de acciones READ_ONLY sin bypass.
