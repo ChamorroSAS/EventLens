@@ -29,6 +29,8 @@ export interface MediaCardModel {
   eventRef: string;
   fileName: string;
   format?: string;
+  mimeType?: string;
+  sizeBytes?: number;
   status: MediaCatalogStatus;
   previewUrl?: string;
   capabilities: MediaCapabilitiesModel;
@@ -36,6 +38,30 @@ export interface MediaCardModel {
     outcome: SafetyOutcome;
   };
   observableProgress?: MediaObservableProgressModel;
+  createdAt?: string;
+}
+
+export type MediaStatusFilter =
+  | 'ALL'
+  | 'PUBLISHED'
+  | 'PROCESSING'
+  | 'PROCESSING_FAILED'
+  | 'QUARANTINED'
+  | 'PENDING_REVIEW'
+  | 'HIDDEN'
+  | 'REJECTED'
+  | 'TRASHED';
+
+export type EmptyReason = 'EMPTY_LIBRARY' | 'EMPTY_FILTER_RESULTS';
+
+export interface OrganizerMediaLibrarySnapshotModel {
+  eventRef: string;
+  items: MediaCardModel[];
+  totalCount: number;
+  filterCount: number;
+  limit: number;
+  offset: number;
+  emptyReason?: EmptyReason;
 }
 
 export interface RetryCycleResponse {

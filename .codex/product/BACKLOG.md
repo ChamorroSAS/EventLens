@@ -77,8 +77,8 @@
 | EL-TK-040 | Solicitar un nuevo ciclo para un fallo técnico elegible | EL-EP-006 | DONE | P0 | EL-TK-033, EL-TK-039 | [EL-TK-040](tickets/EL-TK-040.md) |
 | EL-TK-041 | Liberar una cuarentena mediante actor autorizado | EL-EP-006 | DONE | P0 | EL-TK-032, EL-TK-034, EL-TK-038, EL-TK-044 | [EL-TK-041](tickets/EL-TK-041.md) |
 | EL-TK-042 | Eliminar una media en cuarentena mediante actor autorizado | EL-EP-006 | DONE | P0 | EL-TK-034, EL-TK-044 | [EL-TK-042](tickets/EL-TK-042.md) |
-| EL-TK-047 | Consultar mis eventos y su configuración autorizada | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-047](tickets/EL-TK-047.md) |
-| EL-TK-048 | Navegar por la configuración de un evento propio | EL-EP-002 | READY | P0 | EL-TK-047 | [EL-TK-048](tickets/EL-TK-048.md) |
+| EL-TK-047 | Consultar mis eventos y su configuración autorizada | EL-EP-002 | DONE | P0 | EL-TK-020 | [EL-TK-047](tickets/EL-TK-047.md) |
+| EL-TK-048 | Navegar por la configuración de un evento propio | EL-EP-002 | DONE | P0 | EL-TK-047 | [EL-TK-048](tickets/EL-TK-048.md) |
 | EL-TK-049 | Autorizar y confirmar una carga de portada EVENT_COVER | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-049](tickets/EL-TK-049.md) |
 | EL-TK-050 | Integrar el procesamiento seguro de una portada EventAsset | EL-EP-002 | READY | P0 | EL-TK-049 | [EL-TK-050](tickets/EL-TK-050.md) |
 | EL-TK-051 | Asignar una portada READY segura mediante revisión CAS | EL-EP-002 | READY | P0 | EL-TK-020, EL-TK-050 | [EL-TK-051](tickets/EL-TK-051.md) |
@@ -128,9 +128,9 @@
 | EL-TK-095 | Validar el flujo completo de carga móvil y resultado parcial | EL-EP-005 | DONE | P0 | EL-TK-086..094 | [EL-TK-095](tickets/EL-TK-095.md) |
 | EL-TK-096 | Consultar la galería guest de media publicada y autorizada | EL-EP-007 | DONE | P0 | EL-TK-074, EL-TK-075, EL-TK-072, EL-TK-037 | [EL-TK-096](tickets/EL-TK-096.md) |
 | EL-TK-097 | Autorizar visualización temporal de un derivado privado | EL-EP-007 | DONE | P0 | EL-TK-072, EL-TK-074, EL-TK-035, EL-TK-037 | [EL-TK-097](tickets/EL-TK-097.md) |
-| EL-TK-098 | Consultar la biblioteca de media del organizador | EL-EP-007 | READY | P0 | EL-TK-047, EL-TK-053 | [EL-TK-098](tickets/EL-TK-098.md) |
+| EL-TK-098 | Consultar la biblioteca de media del organizador | EL-EP-007 | DONE | P0 | EL-TK-047, EL-TK-053 | [EL-TK-098](tickets/EL-TK-098.md) |
 | EL-TK-099 | Integrar la galería y viewer privados en la experiencia guest | EL-EP-007 | DONE | P0 | EL-TK-096, EL-TK-097, EL-TK-101 | [EL-TK-099](tickets/EL-TK-099.md) |
-| EL-TK-100 | Integrar la biblioteca de media en la interfaz del organizador | EL-EP-007 | READY | P0 | EL-TK-098, EL-TK-053, EL-TK-054 | [EL-TK-100](tickets/EL-TK-100.md) |
+| EL-TK-100 | Integrar la biblioteca de media en la interfaz del organizador | EL-EP-007 | DONE | P0 | EL-TK-098, EL-TK-053, EL-TK-054 | [EL-TK-100](tickets/EL-TK-100.md) |
 | EL-TK-101 | Revalidar visibilidad cuando cambia el acceso o la media | EL-EP-007 | DONE | P0 | EL-TK-096, EL-TK-097, EL-TK-072, EL-TK-074 | [EL-TK-101](tickets/EL-TK-101.md) |
 | EL-TK-102 | Validar privacidad y experiencia móvil de galería y biblioteca | EL-EP-007 | READY | P0 | EL-TK-096..101 | [EL-TK-102](tickets/EL-TK-102.md) |
 | EL-TK-103 | Aprobar una media pendiente de revisión | EL-EP-008 | READY | P0 | 098,037 | [EL-TK-103](tickets/EL-TK-103.md) |

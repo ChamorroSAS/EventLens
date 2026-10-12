@@ -1,0 +1,191 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { OrganizerDashboardComponent } from './organizer-dashboard.component.js';
+import { OrganizerService } from './organizer.service.js';
+import type { OrganizerEventModel, EventConfigurationModel } from './organizer.types.js';
+
+describe('OrganizerDashboardComponent & Organizer Navigation (EL-TK-048)', () => {
+  let organizerServiceMock: {
+    listEvents: ReturnType<typeof vi.fn>;
+    getEventConfiguration: ReturnType<typeof vi.fn>;
+  };
+
+  const sampleEvents: OrganizerEventModel[] = [
+    {
+      id: 'event-101',
+      organizerId: 'org-1',
+      name: 'Cumpleaños de Valentina',
+      status: 'DRAFT',
+      timezone: 'America/Bogota',
+      startsAtLocal: '2026-11-20T18:00:00',
+      scheduledAt: '2026-11-20T23:00:00.000Z',
+      utcOffsetMinutes: -300,
+      expiresAt: null,
+      graceEndsAt: null,
+      uploadsEnabled: false,
+      guestGalleryEnabled: false,
+      moderationMode: 'AUTO_PUBLISH',
+      pinEnabled: true,
+      createdAt: '2026-10-10T10:00:00.000Z',
+      updatedAt: '2026-10-10T10:00:00.000Z'
+    },
+    {
+      id: 'event-102',
+      organizerId: 'org-1',
+      name: 'Festival de Fotografía',
+      status: 'ACTIVE',
+      timezone: 'America/Bogota',
+      startsAtLocal: '2026-10-01T09:00:00',
+      scheduledAt: '2026-10-01T14:00:00.000Z',
+      utcOffsetMinutes: -300,
+      expiresAt: '2026-10-15T14:00:00.000Z',
+      graceEndsAt: null,
+      uploadsEnabled: true,
+      guestGalleryEnabled: true,
+      moderationMode: 'AUTO_PUBLISH',
+      pinEnabled: false,
+      createdAt: '2026-09-25T10:00:00.000Z',
+      updatedAt: '2026-09-25T10:00:00.000Z'
+    }
+  ];
+
+  const sampleConfig: EventConfigurationModel = {
+    event: sampleEvents[0],
+    revision: '1696939200000',
+    capabilities: {
+      canEditSchedule: true,
+      canEditSettings: true,
+      canManageAccess: true,
+      canViewLifecycle: true,
+      canViewCapacity: true,
+      canPublishOrActivate: true
+    }
+  };
+
+  beforeEach(async () => {
+    organizerServiceMock = {
+      listEvents: vi.fn().mockResolvedValue(sampleEvents),
+      getEventConfiguration: vi.fn().mockResolvedValue(sampleConfig)
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [OrganizerDashboardComponent],
+      providers: [
+        { provide: OrganizerService, useValue: organizerServiceMock }
+      ]
+    }).compileComponents();
+  });
+
+  async function createDashboard(): Promise<ComponentFixture<OrganizerDashboardComponent>> {
+    const fixture = TestBed.createComponent(OrganizerDashboardComponent);
+    await fixture.whenStable();
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  it('Escenario 1: Renderiza lista de eventos con sus cards y badges de estado', async () => {
+    const fixture = await createDashboard();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const titleEl = fixture.nativeElement.querySelector('.dashboard-title');
+    expect(titleEl.textContent).toContain('Mis eventos');
+
+    const cards = fixture.nativeElement.querySelectorAll('eventlens-event-card');
+    expect(cards.length).toBe(2);
+
+    expect(fixture.nativeElement.textContent).toContain('Cumpleaños de Valentina');
+    expect(fixture.nativeElement.textContent).toContain('Festival de Fotografía');
+  });
+
+  it('Escenario 2: Renderiza estado vacío accesible cuando no hay eventos registrados', async () => {
+    organizerServiceMock.listEvents.mockResolvedValue([]);
+    const fixture = await createDashboard();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const emptyState = fixture.nativeElement.querySelector('.empty-state');
+    expect(emptyState).toBeTruthy();
+    expect(emptyState.textContent).toContain('Aún no tienes eventos creados');
+    expect(emptyState.getAttribute('role')).toBe('status');
+  });
+
+  it('Escenario 3: Maneja error de carga y permite reintentar', async () => {
+    organizerServiceMock.listEvents.mockRejectedValue(new Error('COMMUNICATION_ERROR'));
+    const fixture = await createDashboard();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const errorEl = fixture.nativeElement.querySelector('.error-state');
+    expect(errorEl).toBeTruthy();
+    expect(errorEl.getAttribute('role')).toBe('alert');
+    expect(errorEl.textContent).toContain('No fue posible cargar tus eventos');
+
+    // Recuperación con reintentar
+    organizerServiceMock.listEvents.mockResolvedValue(sampleEvents);
+    const retryBtn = fixture.nativeElement.querySelector('.btn-retry');
+    retryBtn.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.error-state')).toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('eventlens-event-card').length).toBe(2);
+  });
+
+  it('Escenario 4: Selecciona un evento, carga su configuración autorizada y navega entre secciones', async () => {
+    const fixture = await createDashboard();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    // Seleccionar primer evento
+    const configBtns = fixture.nativeElement.querySelectorAll('eventlens-event-card button');
+    configBtns[0].click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(organizerServiceMock.getEventConfiguration).toHaveBeenCalledWith('event-101');
+    expect(fixture.componentInstance.selectedEventId()).toBe('event-101');
+
+    // Contexto en AppShell
+    const contextEl = fixture.nativeElement.querySelector('.event-context-area');
+    expect(contextEl).toBeTruthy();
+    expect(contextEl.textContent).toContain('Cumpleaños de Valentina');
+
+    // Barra de navegación de configuración
+    const nav = fixture.nativeElement.querySelector('eventlens-event-settings-nav');
+    expect(nav).toBeTruthy();
+
+    // Cambiar a sección de programación
+    const navTabs = fixture.nativeElement.querySelectorAll('.nav-tab');
+    navTabs[1].click(); // Tab Programación
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.activeSection()).toBe('schedule');
+    expect(fixture.nativeElement.textContent).toContain('Programación y timeline');
+    expect(fixture.nativeElement.textContent).toContain('✓ La reprogramación está permitida en este estado');
+  });
+
+  it('Escenario 5: Botón Volver a mis eventos restablece la vista de lista sin mutaciones', async () => {
+    const fixture = await createDashboard();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    // Seleccionar evento
+    await fixture.componentInstance.onEventSelected('event-101');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.selectedEventId()).toBe('event-101');
+
+    // Clic en Volver
+    const backBtn = fixture.nativeElement.querySelector('.btn-back');
+    backBtn.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.selectedEventId()).toBeNull();
+    expect(fixture.componentInstance.selectedEventConfig()).toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('eventlens-event-card').length).toBe(2);
+  });
+});

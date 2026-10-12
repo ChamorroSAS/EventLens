@@ -4,7 +4,8 @@
 EL-EP-007
 
 ## Status
-READY
+DONE
+
 
 REQUIREMENTS_READY: YES
 READY_FOR_IMPLEMENTATION: YES
@@ -72,3 +73,15 @@ Q-005, Q-016; DEC-003, DEC-018, DEC-032, DEC-033, DEC-037; EL-EP-007, EL-EP-006.
 - **Desacoplamiento de módulos:** La biblioteca actúa como agregador de lectura de medios para el organizador; no muta estados de moderación ni interfiere con las transiciones de JobQueue de EL-EP-006.
 - **Diferenciación de filtros:** Se implementa discriminación explícita entre un evento sin medios subidos y una búsqueda o filtro por estado sin coincidencias.
 - **Seguridad multi-organizador:** Verificación estricta en base de datos para impedir que un organizador consulte o filtre medios pertenecientes a otro `eventId`.
+ 
+## Evidencia de implementación y verificación — 2026-10-12
+
+- **Servicio y contratos (`packages/media-inspection/src/organizer-library.ts`):** `OrganizerMediaLibraryService`, `PostgresOrganizerMediaLibraryRepository`, `OrganizerMediaLibrarySnapshot`, `OrganizerMediaLibraryItem`, `QueryOrganizerMediaLibraryCommand`, `MediaStatusFilter`.
+- **Aislamiento y capacidades:**
+  - Consulta multi-tabla sobre `media_catalog`, `media_active_derivative`, `media_inspection` y `job_queue` aislada estrictamente por `event_ref`.
+  - Autorización mandatoria mediante `EventStatusAuthorizer` rechazando accesos cruzados con `ACCESS_DENIED`.
+  - Discriminación estricta entre `EMPTY_LIBRARY` (cero medios en el evento) y `EMPTY_FILTER_RESULTS` (medios existentes pero cero coincidencias con el filtro de estado seleccionado).
+  - Cálculo de capacidades server-side: `canRetry` (solo `PROCESSING_FAILED` con safety no denegado), `canDownloadOriginal` (safety `APPROVED` per DEC-075), `canView` y `canDelete`, sin exponer jobs internos ni logs de workers.
+- **Pruebas unitarias (`packages/media-inspection/test/organizer-library.test.ts`):** 5/5 pruebas unitarias PASS.
+- **Pruebas de integración (`packages/media-inspection/test/organizer-library.integration.test.ts`):** 5/5 pruebas de integración PASS contra PostgreSQL 16 real. Desbloquea downstream `EL-TK-100`.
+

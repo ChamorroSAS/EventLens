@@ -6,7 +6,7 @@ EL-EP-002
 
 ## Status
 
-READY
+DONE
 
 ## User story
 
@@ -60,3 +60,12 @@ GAP-EL-EP-002-01; EL-EP-002; handoff UI002; EL-TD-001..007.
 - [x] Nuevo quality gate de requirements_reviewer APPROVED
 
 REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES. [Dictamen final](../sessions/2026-10-08-el-ep-002-ticket-remediation-review.md). YES limitado al alcance contractual propio neutral; conserva predecesoras y no certifica integración Beta ni adapters. EL-TK-013 PENDING no bloquea automáticamente capacidades independientes de MOD-002.
+
+## Evidencia de implementación y verificación — 2026-10-12
+
+- **Contratos (`contracts.ts`):** `OrganizerEventSummary`, `EventConfigurationCapabilities`, `AuthorizedEventConfiguration`, `ListOrganizerEventsCommand`, `GetAuthorizedConfigurationCommand`.
+- **Servicio (`event-draft.ts`):** Implementados `listOrganizerEvents` y `getAuthorizedConfiguration` en `EventDraftService` con validación estricta de `ORGANIZER_HUMAN`, aislamiento multi-inquilino de `organizer_id`, cero exposición de hashes/sales de PIN, retorno limpio de arreglo vacío `[]` para cero eventos, no-revelación anti-enumeración ante eventos ajenos (`EVENT_NOT_FOUND`), y cálculo de capacidades por estado (`canEditSchedule`, `canEditSettings`, `canManageAccess`, `canPublishOrActivate`, etc.).
+- **Pruebas unitarias (`test/event-organizer-query.unit.test.ts`):** 8/8 pruebas unitarias PASS verificando validación de actor, array vacío sin simular error, aislamiento entre organizadores A y B, propagación real de errores de DB, no-revelación ante evento ajeno y cálculo de capacidades en DRAFT, ACTIVE, CLOSED y SUSPENDED.
+- **Pruebas de integración (`test/event-organizer-query.integration.test.ts`):** 4/4 pruebas de integración PASS contra contenedor PostgreSQL 16 real.
+- **Suite de paquete:** 243/243 pruebas PASS en `@eventlens/event-management`. Desbloquea downstream `EL-TK-048`.
+

@@ -888,3 +888,51 @@ export interface EventAuditSink {
   record(event: EventAuditRecord): Promise<void>;
 }
 
+// ==========================================
+// EL-TK-047: Organizer Event & Configuration Query Contracts
+// ==========================================
+
+export interface OrganizerEventSummary {
+  readonly id: string;
+  readonly organizerId: string;
+  readonly name: string;
+  readonly status: EventStatus;
+  readonly timezone: string;
+  readonly startsAtLocal: string | null;
+  readonly scheduledAt: Date | null;
+  readonly utcOffsetMinutes: number | null;
+  readonly expiresAt: Date | null;
+  readonly graceEndsAt: Date | null;
+  readonly uploadsEnabled: boolean;
+  readonly guestGalleryEnabled: boolean;
+  readonly moderationMode: ModerationMode;
+  readonly pinEnabled: boolean;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
+export interface EventConfigurationCapabilities {
+  readonly canEditSchedule: boolean;
+  readonly canEditSettings: boolean;
+  readonly canManageAccess: boolean;
+  readonly canViewLifecycle: boolean;
+  readonly canViewCapacity: boolean;
+  readonly canPublishOrActivate: boolean;
+}
+
+export interface AuthorizedEventConfiguration {
+  readonly event: OrganizerEventSummary;
+  readonly revision: string;
+  readonly capabilities: EventConfigurationCapabilities;
+}
+
+export interface ListOrganizerEventsCommand {
+  readonly actorContext: OrganizerActorContext;
+}
+
+export interface GetAuthorizedConfigurationCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly eventId: string;
+}
+
+

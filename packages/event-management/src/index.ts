@@ -88,7 +88,12 @@ export {
   type GetRemovalIntakeRouteCommand,
   type RemovalIntakeRouteResult,
   type EventAuditRecord,
-  type EventAuditSink
+  type EventAuditSink,
+  type OrganizerEventSummary,
+  type EventConfigurationCapabilities,
+  type AuthorizedEventConfiguration,
+  type ListOrganizerEventsCommand,
+  type GetAuthorizedConfigurationCommand
 } from './contracts.js';
 
 export { generateQrMatrix, generateQrSvg } from './qr-generator.js';
