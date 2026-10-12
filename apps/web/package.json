@@ -21,6 +21,7 @@
     "@angular/build": "21.2.26",
     "@angular/cli": "21.2.26",
     "@angular/compiler-cli": "21.2.25",
+    "sass": "1.97.3",
     "typescript": "5.9.3",
     "vitest": "4.0.18",
     "jsdom": "28.1.0"

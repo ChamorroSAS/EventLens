@@ -25,57 +25,57 @@ import type { MediaCardModel } from './media.types.js';
   `,
   styles: `
     .quarantined-container {
-      padding: 1rem;
-      background-color: #fff7ed;
-      border: 1px solid #fed7aa;
-      border-radius: 0.5rem;
+      padding: var(--el-space-md);
+      background-color: var(--el-color-warning-soft);
+      border: 1px solid var(--el-color-warning);
+      border-radius: var(--el-radius-md);
       display: flex;
       flex-direction: column;
-      gap: 0.625rem;
+      gap: var(--el-space-sm);
     }
     .quarantine-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 0.5rem;
+      gap: var(--el-space-sm);
     }
     .quarantine-title {
       margin: 0;
-      font-size: 0.9375rem;
-      font-weight: 600;
-      color: #9a3412;
+      font-size: var(--el-font-size-button);
+      font-weight: var(--el-font-weight-semibold);
+      color: var(--el-color-text);
     }
     .quarantine-badge {
       display: inline-block;
-      padding: 0.125rem 0.5rem;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #7c2d12;
-      background-color: #ffedd5;
-      border: 1px solid #fdba74;
-      border-radius: 9999px;
+      padding: var(--el-space-xs) var(--el-space-sm);
+      font-size: var(--el-font-size-caption);
+      font-weight: var(--el-font-weight-semibold);
+      color: var(--el-color-text);
+      background-color: var(--el-color-warning-soft);
+      border: 1px solid var(--el-color-warning);
+      border-radius: var(--el-radius-pill);
     }
     .quarantine-explanation {
       margin: 0;
-      font-size: 0.875rem;
-      line-height: 1.4;
-      color: #9a3412;
+      font-size: var(--el-font-size-body-small);
+      line-height: var(--el-line-height-normal);
+      color: var(--el-color-text);
     }
     .quarantine-footer {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
-      font-size: 0.8125rem;
-      color: #78350f;
+      gap: var(--el-space-xs);
+      font-size: var(--el-font-size-body-small);
+      color: var(--el-color-text);
     }
     .file-ref {
-      font-weight: 500;
+      font-weight: var(--el-font-weight-medium);
       word-break: break-all;
     }
     .immutable-notice {
-      font-size: 0.75rem;
+      font-size: var(--el-font-size-caption);
       font-style: italic;
-      color: #9a3412;
+      color: var(--el-color-text-secondary);
     }
   `,
 })

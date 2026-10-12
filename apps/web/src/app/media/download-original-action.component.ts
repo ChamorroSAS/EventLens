@@ -18,40 +18,45 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
     </div>
   `,
   styles: `
+    @use 'mixins' as m;
+
     .download-action-container {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--el-space-sm);
       flex-wrap: wrap;
     }
     .download-btn {
       display: inline-flex;
       align-items: center;
-      padding: 0.5rem 0.875rem;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #0f172a;
-      background-color: #f1f5f9;
-      border: 1px solid #cbd5e1;
-      border-radius: 0.375rem;
-      cursor: pointer;
+      padding: var(--el-space-sm) var(--el-space-md);
+      font-size: var(--el-font-size-body-small);
+      font-weight: var(--el-font-weight-medium);
+      color: var(--el-color-text);
+      background-color: var(--el-color-surface-muted);
+      border: 1px solid var(--el-color-border-strong);
+      border-radius: var(--el-radius-sm);
       transition: background-color 0.15s ease-in-out;
     }
     .download-btn:hover:not(:disabled) {
-      background-color: #e2e8f0;
+      background-color: var(--el-color-border);
     }
     .download-btn:focus-visible {
-      outline: 2px solid #0f172a;
-      outline-offset: 2px;
+      @include m.el-focus-ring;
     }
     .download-btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
     .security-badge {
-      font-size: 0.75rem;
-      color: #15803d;
-      font-weight: 500;
+      display: inline-block;
+      padding: var(--el-space-xs) var(--el-space-sm);
+      font-size: var(--el-font-size-caption);
+      font-weight: var(--el-font-weight-medium);
+      color: var(--el-color-text);
+      background-color: var(--el-color-success-soft);
+      border: 1px solid var(--el-color-success);
+      border-radius: var(--el-radius-pill);
     }
   `,
 })

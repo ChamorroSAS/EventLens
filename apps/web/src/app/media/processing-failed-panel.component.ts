@@ -62,67 +62,67 @@ import { DownloadOriginalActionComponent } from './download-original-action.comp
   `,
   styles: `
     .failed-panel {
-      padding: 1rem;
-      background-color: #fef2f2;
-      border: 1px solid #fecaca;
-      border-radius: 0.5rem;
+      padding: var(--el-space-md);
+      background-color: var(--el-color-danger-soft);
+      border: 1px solid var(--el-color-danger);
+      border-radius: var(--el-radius-md);
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: var(--el-space-md);
     }
     .panel-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 0.5rem;
+      gap: var(--el-space-sm);
       flex-wrap: wrap;
     }
     .panel-title {
       margin: 0;
-      font-size: 0.9375rem;
-      font-weight: 600;
-      color: #991b1b;
+      font-size: var(--el-font-size-button);
+      font-weight: var(--el-font-weight-semibold);
+      color: var(--el-color-text);
     }
     .status-badge {
       display: inline-block;
-      padding: 0.125rem 0.5rem;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #7f1d1d;
-      background-color: #fee2e2;
-      border: 1px solid #fca5a5;
-      border-radius: 9999px;
+      padding: var(--el-space-xs) var(--el-space-sm);
+      font-size: var(--el-font-size-caption);
+      font-weight: var(--el-font-weight-semibold);
+      color: var(--el-color-text);
+      background-color: var(--el-color-danger-soft);
+      border: 1px solid var(--el-color-danger);
+      border-radius: var(--el-radius-pill);
     }
     .explanation {
       margin: 0;
-      font-size: 0.875rem;
-      line-height: 1.4;
-      color: #7f1d1d;
+      font-size: var(--el-font-size-body-small);
+      line-height: var(--el-line-height-normal);
+      color: var(--el-color-text);
     }
     .file-details {
       display: flex;
       align-items: center;
-      gap: 0.375rem;
-      font-size: 0.8125rem;
-      color: #374151;
+      gap: var(--el-space-xs);
+      font-size: var(--el-font-size-body-small);
+      color: var(--el-color-text);
     }
     .detail-label {
-      font-weight: 500;
-      color: #4b5563;
+      font-weight: var(--el-font-weight-medium);
+      color: var(--el-color-text-secondary);
     }
     .detail-value {
-      font-weight: 600;
+      font-weight: var(--el-font-weight-semibold);
       word-break: break-all;
     }
     .detail-format {
-      color: #6b7280;
+      color: var(--el-color-text-secondary);
     }
     .actions-row {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--el-space-md);
       flex-wrap: wrap;
-      margin-top: 0.25rem;
+      margin-top: var(--el-space-xs);
     }
   `,
 })

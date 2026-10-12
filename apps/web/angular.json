@@ -11,7 +11,10 @@
           "options": {
             "browser": "src/main.ts", "index": "src/index.html",
             "tsConfig": "tsconfig.app.json", "outputPath": "dist/web",
-            "styles": []
+            "assets": [{ "glob": "**/*", "input": "public" }],
+            "inlineStyleLanguage": "scss",
+            "stylePreprocessorOptions": { "includePaths": ["src/styles"] },
+            "styles": ["src/styles/styles.scss"]
           },
           "configurations": {
             "production": { "outputHashing": "all", "budgets": [{ "type": "initial", "maximumWarning": "500kB", "maximumError": "1MB" }] },

@@ -36,32 +36,32 @@ import type { RetryCycleResponse } from './media.types.js';
     </div>
   `,
   styles: `
+    @use 'mixins' as m;
+
     .retry-action-container {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--el-space-sm);
       align-items: flex-start;
     }
     .retry-btn {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #ffffff;
-      background-color: #2563eb;
+      gap: var(--el-space-sm);
+      padding: var(--el-space-sm) var(--el-space-md);
+      font-size: var(--el-font-size-body-small);
+      font-weight: var(--el-font-weight-medium);
+      color: var(--el-color-surface);
+      background-color: var(--el-color-primary);
       border: 1px solid transparent;
-      border-radius: 0.375rem;
-      cursor: pointer;
+      border-radius: var(--el-radius-sm);
       transition: background-color 0.15s ease-in-out;
     }
     .retry-btn:hover:not(:disabled) {
-      background-color: #1d4ed8;
+      background-color: var(--el-color-primary-hover);
     }
     .retry-btn:focus-visible {
-      outline: 2px solid #2563eb;
-      outline-offset: 2px;
+      @include m.el-focus-ring;
     }
     .retry-btn:disabled {
       opacity: 0.6;
@@ -69,11 +69,11 @@ import type { RetryCycleResponse } from './media.types.js';
     }
     .feedback-msg {
       margin: 0;
-      font-size: 0.8125rem;
-      color: #166534;
+      font-size: var(--el-font-size-body-small);
+      color: var(--el-color-text);
     }
     .feedback-msg.error {
-      color: #991b1b;
+      color: var(--el-color-danger);
     }
     .spinner {
       display: inline-block;
@@ -87,6 +87,11 @@ import type { RetryCycleResponse } from './media.types.js';
     @keyframes spin {
       to {
         transform: rotate(360deg);
+      }
+    }
+    @include m.el-reduced-motion {
+      .spinner {
+        animation-duration: 2s;
       }
     }
   `,

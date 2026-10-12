@@ -1,0 +1,38 @@
+// EventLens responsive breakpoints.
+//
+// CSS custom properties cannot be used inside @media queries, so breakpoints
+// live here as SCSS values and are consumed through the el-media mixins. This
+// keeps a single source of truth instead of repeating raw pixel values.
+
+$el-breakpoint-tablet: 640px;
+$el-breakpoint-desktop: 1024px;
+
+// Applies content from the given breakpoint upward (mobile-first).
+@mixin el-media-up($breakpoint) {
+  @if $breakpoint == tablet {
+    @media (min-width: $el-breakpoint-tablet) {
+      @content;
+    }
+  } @else if $breakpoint == desktop {
+    @media (min-width: $el-breakpoint-desktop) {
+      @content;
+    }
+  } @else {
+    @error "Unknown breakpoint `#{$breakpoint}`. Use `tablet` or `desktop`.";
+  }
+}
+
+// Applies content below the given breakpoint.
+@mixin el-media-down($breakpoint) {
+  @if $breakpoint == tablet {
+    @media (max-width: ($el-breakpoint-tablet - 0.02px)) {
+      @content;
+    }
+  } @else if $breakpoint == desktop {
+    @media (max-width: ($el-breakpoint-desktop - 0.02px)) {
+      @content;
+    }
+  } @else {
+    @error "Unknown breakpoint `#{$breakpoint}`. Use `tablet` or `desktop`.";
+  }
+}
