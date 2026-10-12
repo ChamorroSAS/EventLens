@@ -222,7 +222,7 @@
 
 | EL-TK-185 | Corregir el verifier humano y migrar credenciales de organizador | EL-EP-001 | DONE | P0 | 013,018,019,046 | [EL-TK-185](tickets/EL-TK-185.md) |
 | EL-TK-186 | Emitir y consumir evidencia de reautenticación sensible de cuenta | EL-EP-001 | DONE | P0 | 185,013,014,046 | [EL-TK-186](tickets/EL-TK-186.md) |
-| EL-TK-187 | Corregir disposición y liberación de media en cuarentena | EL-EP-006 | READY | P0 | 041,042,046; contrato 015 | [EL-TK-187](tickets/EL-TK-187.md) |
+| EL-TK-187 | Corregir disposición y liberación de media en cuarentena | EL-EP-006 | DONE | P0 | 041,042,046; contrato 015 | [EL-TK-187](tickets/EL-TK-187.md) |
 | EL-TK-188 | Persistir el contrato canónico de solicitudes e intenciones de eliminación | EL-EP-015 | READY | P0 | 046,067; DEC-091..110 | [EL-TK-188](tickets/EL-TK-188.md) |
 | EL-TK-189 | Solicitar eliminación manual de evento con bloqueo inmediato | EL-EP-015 | READY | P0 | 188,072 | [EL-TK-189](tickets/EL-TK-189.md) |
 | EL-TK-190 | Cancelar eliminación manual de evento antes del claim irreversible | EL-EP-015 | READY | P0 | 189,188;193 integración | [EL-TK-190](tickets/EL-TK-190.md) |

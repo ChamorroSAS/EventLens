@@ -4,7 +4,7 @@
 EL-EP-006
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** operación de seguridad, **quiero** impedir liberación tras una disposición irreversible, **para** alinear EL-TK-041/042 con ARCH-006 sin reescribir sus cierres históricos.
@@ -71,3 +71,12 @@ READY_FOR_FRONTEND_PLANNING: NOT_REQUIRED.
 REVIEW_STATUS: APPROVED — [dictámenes formales185..187](../sessions/2026-10-12-el-tk-185-187-readiness.md).
 
 Histórico: DRAFT en la propuesta original y fuera de la revisión188..202; READY tras revisión individual del 2026-10-12. No acredita implementación, pruebas, migración/cutover ni validation gates PASS.
+
+## Cierre de implementación — 2026-10-12
+- Implementado `QuarantineDeleteService` alineado estrictamente con Opción A (DEC-109/110 / ARCH-006): el estado de la media en `media_catalog` permanece `QUARANTINED` incrementando la revisión de control monótona; la eliminación física no se afirma sin verificación de MOD-003.
+- Ancla persistida única: `purge_started_at = dispositionConfirmedAt` originado exclusivamente del reloj servidor en SQL confirmado (`RETURNING clock_timestamp()`), con `policy_ref = 'MOD-008-TRASH-QUARANTINE-PURGE-POLICY-V1'`, `main_purge_deadline = +7 días UTC`, `residual_purge_deadline = +30 días UTC`, y `expected_revision`.
+- `QuarantineReleaseService` verifica bajo el mismo lock `FOR UPDATE` en `media_catalog` la existencia de intenciones de purga activas en `media_quarantine_purge_intent` (`PENDING` o `CONFIRMED`); rechaza cualquier solicitud o replay con `QuarantineReleaseDeniedError('DISPOSITION_BARRED')` y registra auditoría de denegación.
+- Función de reconciliación legacy `reconcileLegacyQuarantineDeleted(tx, mediaRef)` añadida: preserva el estado `DELETED` histórico con acceso restringido sin reactivar el recurso (`reopened: false`) y sin certificar purga física sin evidencia (`physicalPurged: false`).
+- Migración DDL agregada: `202610120022_quarantine_disposition_barrier/migration.sql` y ensamblado central verificado.
+- Verificación: 16 archivos de tests unitarios ejecutados en `@eventlens/media-inspection` (213 pruebas pasadas), suites de integración actualizadas con escenarios de barrera.
+
