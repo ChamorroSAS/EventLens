@@ -4,7 +4,7 @@
 EL-EP-008
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** sistema, **quiero** marcar y entregar a purga una media TRASHED vencida, **para** completar la eliminación normal sin ampliar indebidamente la ventana de restauración.
@@ -74,3 +74,17 @@ REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para este contrato, segú
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §8.5..9; sin componentes nuevos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Cierre de implementación — 2026-10-12
+
+- **Resultado:** APROBADO.
+- **Implementación:**
+  - Implementado modelo y tabla `media_trash_purge_intent` (migración `202610120049_media_trash_purge_intent`) en `@eventlens/media-inspection` con anclajes temporales inmutables `purge_started_at = restoreDeadline`, `main_purge_deadline = +7 días UTC` y `residual_purge_deadline = +30 días UTC` (DEC-109 / ARCH-019).
+  - Implementados métodos `expireTrashMedia` y `processExpiredTrash` en `MediaModerationService`, integrados con `PurgeDispatcherPort`.
+  - Transición a status `'DELETED'` en `media_catalog` al emitir purga con incremento de revisión.
+- **Criterios de aceptación verificados:**
+  - Escenario 1: Al vencer la ventana (`now >= restoreDeadline`), la media queda no restaurable y se emite la solicitud de purga idempotente hacia el dispatcher.
+  - Escenario 2: Replays e intentos duplicados devuelven `ALREADY_PURGED` sin emitir purgas redundantes gracias al índice único en `dedup_key = trash-purge:${trashRecord.id}`.
+  - Escenario 3: Si la media fue restaurada antes del vencimiento (`restored_at IS NOT NULL` y `status != 'TRASHED'`), un job tardío devuelve de forma segura `SKIPPED_ALREADY_RESTORED` sin alterar el contenido.
+- **Pruebas:** 44/44 tests unitarios PASS en `packages/media-inspection/test/media-moderation.unit.test.ts` y validación E2E contra PostgreSQL 16 en `test/media-moderation-e2e.integration.test.ts`. Build limpio.
+

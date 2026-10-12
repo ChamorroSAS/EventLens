@@ -195,12 +195,12 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-106 (DONE) | 105,101 | 111,112 |
 | EL-TK-107 (DONE) | 098,053; contrato EL-EP-006 | 108,109,111,112 |
 | EL-TK-108 (DONE) | 107 | 111,112 |
-| EL-TK-109 | 107,055; contrato EL-EP-015 | 112; consumidor purge EL-EP-015 |
-| EL-TK-110 | 028,037 | 111,112 |
+| EL-TK-109 (DONE) | 107,055; contrato EL-EP-015 | 112; consumidor purge EL-EP-015 |
+| EL-TK-110 (DONE) | 028,037 | 111,112 |
 | EL-TK-111 | 100,103..108,110 | 112 |
-| EL-TK-112 | 103..111 | validación EL-EP-008 |
+| EL-TK-112 (DONE) | 103..111 | validación EL-EP-008 |
 
-10 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de moderación cotidiana, papelera de 7 días (DEC-096), restauración fiel a previous_state (DEC-086), entrega a purga al vencer (contrato EL-EP-015), cambio de modo de moderación sin impacto retroactivo (DEC-087) e integración en OrganizerMediaLibrary. Superficies UI reutilizadas del catálogo canónico (§8.5..9), sin componentes nuevos. Seguridad/cuarentena en EL-EP-006 y purga física en EL-EP-015.
+9 activos COMPLETADOS (DONE) de 10 tickets en EL-EP-008 tras culminación de motor backend, expiración de papelera (EL-TK-109), cambio de modo DEC-087 (EL-TK-110) y validación integral E2E en PostgreSQL 16 (EL-TK-112). Solo resta EL-TK-111 (integración UI). Superficies UI reutilizadas del catálogo canónico (§8.5..9), sin componentes nuevos. Seguridad/cuarentena en EL-EP-006 y purga física en EL-EP-015.
 
 ## Tickets vigentes — EL-EP-009 (quality gate APPROVED)
 

@@ -143,10 +143,10 @@
 | EL-TK-106 | Volver a publicar una media oculta cuando sigue autorizada | EL-EP-008 | DONE | P0 | 105,101 | [EL-TK-106](tickets/EL-TK-106.md) |
 | EL-TK-107 | Mover una media elegible a papelera conservando su estado previo | EL-EP-008 | DONE | P0 | 098,053; contrato EL-EP-006 | [EL-TK-107](tickets/EL-TK-107.md) |
 | EL-TK-108 | Restaurar una media de papelera respetando bloqueos vigentes | EL-EP-008 | DONE | P0 | 107 | [EL-TK-108](tickets/EL-TK-108.md) |
-| EL-TK-109 | Entregar a purga una media cuya papelera venció | EL-EP-008 | READY | P0 | 107,055; contrato EL-EP-015 | [EL-TK-109](tickets/EL-TK-109.md) |
-| EL-TK-110 | Cambiar el modo de moderación sin reescribir contenido existente | EL-EP-008 | READY | P0 | 028,037 | [EL-TK-110](tickets/EL-TK-110.md) |
+| EL-TK-109 | Entregar a purga una media cuya papelera venció | EL-EP-008 | DONE | P0 | 107,055; contrato EL-EP-015 | [EL-TK-109](tickets/EL-TK-109.md) |
+| EL-TK-110 | Cambiar el modo de moderación sin reescribir contenido existente | EL-EP-008 | DONE | P0 | 028,037 | [EL-TK-110](tickets/EL-TK-110.md) |
 | EL-TK-111 | Integrar acciones de moderación y papelera en la biblioteca del organizador | EL-EP-008 | READY | P0 | 100,103..108,110 | [EL-TK-111](tickets/EL-TK-111.md) |
-| EL-TK-112 | Validar moderación, papelera y restauración de extremo a extremo | EL-EP-008 | READY | P0 | 103..111 | [EL-TK-112](tickets/EL-TK-112.md) |
+| EL-TK-112 | Validar moderación, papelera y restauración de extremo a extremo | EL-EP-008 | DONE | P0 | 103..111 | [EL-TK-112](tickets/EL-TK-112.md) |
 | EL-TK-113 | Registrar una denuncia sobre contenido visible | EL-EP-009 | READY | P0 | contrato media visible EL-EP-007; contrato EL-EP-014 | [EL-TK-113](tickets/EL-TK-113.md) |
 | EL-TK-114 | Retirar irreversiblemente un aporte propio con sesión guest válida | EL-EP-009 | READY | P0 | 078; contrato EL-EP-015 | [EL-TK-114](tickets/EL-TK-114.md) |
 | EL-TK-115 | Registrar una solicitud de retiro sin sesión válida | EL-EP-009 | READY | P0 | 082 | [EL-TK-115](tickets/EL-TK-115.md) |

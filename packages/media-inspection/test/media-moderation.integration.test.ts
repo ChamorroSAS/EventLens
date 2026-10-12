@@ -57,14 +57,29 @@ describeIntegration('MediaModerationService Integration Tests (PostgreSQL 16 —
         org1
       );
 
+      // Insert prerequisite job and intent
+      const intent1 = 'intent:' + randomUUID();
+      const job1 = randomUUID();
+      await tx.execute(
+        `INSERT INTO job_queue (id, dedup_key, fingerprint, type, handler_version, resource_ref, generation, queue, priority, payload, status, available_at)
+         VALUES ($1::uuid, $2, 'fp', 'MEDIA_INSPECTION', '1', $3, 1, 'q', 1, '{}'::jsonb, 'COMPLETED', NOW())`,
+        job1, 'dedup:' + randomUUID(), media1
+      );
+      await tx.execute(
+        `INSERT INTO media_acceptance_intent (intent_id, media_ref, generation, fingerprint, facts)
+         VALUES ($1, $2, 1, 'fp', '{}'::jsonb)`,
+        intent1, media1
+      );
+
       // Insert dummy media in PENDING_REVIEW
       await tx.execute(
         `INSERT INTO media_catalog (media_ref, intent_id, event_ref, guest_ref, generation, revision, status, original, job_id)
-         VALUES ($1, $2, $3, 'guest:1', 1, 1, 'PENDING_REVIEW', '{"name":"foto.jpg"}'::jsonb, gen_random_uuid())
+         VALUES ($1, $2, $3, 'guest:1', 1, 1, 'PENDING_REVIEW', '{"name":"foto.jpg"}'::jsonb, $4::uuid)
          ON CONFLICT (media_ref) DO UPDATE SET status = 'PENDING_REVIEW'`,
         media1,
-        'intent:' + randomUUID(),
-        event1
+        intent1,
+        event1,
+        job1
       );
 
       // Insert safety fact APPROVED
@@ -94,7 +109,10 @@ describeIntegration('MediaModerationService Integration Tests (PostgreSQL 16 —
 
   afterAll(async () => {
     await transactions.run(async tx => {
+      await tx.execute('DELETE FROM audit_event WHERE resource_id = $1', media1);
+      await tx.execute('DELETE FROM media_inspection WHERE media_ref = $1', media1);
       await tx.execute('DELETE FROM media_catalog WHERE media_ref = $1', media1);
+      await tx.execute('DELETE FROM media_acceptance_intent WHERE media_ref = $1', media1);
       await tx.execute('DELETE FROM test_event_organizer WHERE event_ref = $1', event1);
     });
   });

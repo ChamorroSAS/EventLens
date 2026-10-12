@@ -432,16 +432,36 @@ describe('EL-EP-002 Ruta 1: Configuración del Borrador (Unit Tests)', () => {
       expect(db.events.get(eventId).moderation_mode).toBe('AUTO_PUBLISH');
     });
 
-    it('rechaza si el evento no está en DRAFT con EVENT_NOT_IN_DRAFT', async () => {
-      db.events.get(eventId).status = 'ACTIVE';
+    it('permite cambiar moderación en DRAFT, SCHEDULED y ACTIVE, y rechaza en CLOSED con INVALID_STATE (EL-TK-110)', async () => {
+      // SCHEDULED permitido
+      db.events.get(eventId).status = 'SCHEDULED';
+      const resScheduled = await service.setModerationMode({
+        actorContext: ownerActor,
+        eventId,
+        moderationMode: 'MANUAL_REVIEW'
+      });
+      expect(resScheduled.outcome).toBe('UPDATED');
+      expect(resScheduled.event.moderationMode).toBe('MANUAL_REVIEW');
 
+      // ACTIVE permitido
+      db.events.get(eventId).status = 'ACTIVE';
+      const resActive = await service.setModerationMode({
+        actorContext: ownerActor,
+        eventId,
+        moderationMode: 'AUTO_PUBLISH'
+      });
+      expect(resActive.outcome).toBe('UPDATED');
+      expect(resActive.event.moderationMode).toBe('AUTO_PUBLISH');
+
+      // CLOSED rechazado
+      db.events.get(eventId).status = 'CLOSED';
       await expect(
         service.setModerationMode({
           actorContext: ownerActor,
           eventId,
           moderationMode: 'MANUAL_REVIEW'
         })
-      ).rejects.toMatchObject({ code: 'EVENT_NOT_IN_DRAFT' });
+      ).rejects.toMatchObject({ code: 'INVALID_STATE' });
     });
 
     it('soporta idempotencia replay y conflicto', async () => {
