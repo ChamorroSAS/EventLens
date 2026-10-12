@@ -19,7 +19,7 @@
 | EL-EP-005 | Cargar recuerdos con tolerancia a fallos móviles | MOD-003 | READY | P0 | EL-EP-004, EL-EP-011 | [EL-EP-005](epics/EL-EP-005.md) |
 | EL-EP-006 | Procesar multimedia preservando originales y aislando riesgos | MOD-003 | READY | P0 | EL-EP-005 | [EL-EP-006](epics/EL-EP-006.md) |
 | EL-EP-007 | Visualizar recuerdos en una galería privada móvil | MOD-004 | DONE | P0 | EL-EP-004, EL-EP-006 | [EL-EP-007](epics/EL-EP-007.md) |
-| EL-EP-008 | Moderar, ocultar y recuperar contenido del evento | MOD-004 | READY | P0 | EL-EP-006, EL-EP-007 | [EL-EP-008](epics/EL-EP-008.md) |
+| EL-EP-008 | Moderar, ocultar y recuperar contenido del evento | MOD-004 | DONE | P0 | EL-EP-006, EL-EP-007 | [EL-EP-008](epics/EL-EP-008.md) |
 | EL-EP-009 | Atender denuncias y solicitudes de retiro sin cuenta | MOD-004 | DONE | P0 | EL-EP-004, EL-EP-007, EL-EP-014 | [EL-EP-009](epics/EL-EP-009.md) |
 | EL-EP-010 | Recuperar originales individualmente y por exportación | MOD-005 | READY | P0 | EL-EP-006, EL-EP-008, EL-EP-013 | [EL-EP-010](epics/EL-EP-010.md) |
 | EL-EP-011 | Aplicar planes BETA y ampliaciones controladas | MOD-006 | READY | P0 | EL-EP-001 | [EL-EP-011](epics/EL-EP-011.md) |
@@ -145,7 +145,7 @@
 | EL-TK-108 | Restaurar una media de papelera respetando bloqueos vigentes | EL-EP-008 | DONE | P0 | 107 | [EL-TK-108](tickets/EL-TK-108.md) |
 | EL-TK-109 | Entregar a purga una media cuya papelera venció | EL-EP-008 | DONE | P0 | 107,055; contrato EL-EP-015 | [EL-TK-109](tickets/EL-TK-109.md) |
 | EL-TK-110 | Cambiar el modo de moderación sin reescribir contenido existente | EL-EP-008 | DONE | P0 | 028,037 | [EL-TK-110](tickets/EL-TK-110.md) |
-| EL-TK-111 | Integrar acciones de moderación y papelera en la biblioteca del organizador | EL-EP-008 | READY | P0 | 100,103..108,110 | [EL-TK-111](tickets/EL-TK-111.md) |
+| EL-TK-111 | Integrar acciones de moderación y papelera en la biblioteca del organizador | EL-EP-008 | DONE | P0 | 100,103..108,110 | [EL-TK-111](tickets/EL-TK-111.md) |
 | EL-TK-112 | Validar moderación, papelera y restauración de extremo a extremo | EL-EP-008 | DONE | P0 | 103..111 | [EL-TK-112](tickets/EL-TK-112.md) |
 | EL-TK-113 | Registrar una denuncia sobre contenido visible | EL-EP-009 | DONE | P0 | contrato media visible EL-EP-007; contrato EL-EP-014 | [EL-TK-113](tickets/EL-TK-113.md) |
 | EL-TK-114 | Retirar irreversiblemente un aporte propio con sesión guest válida | EL-EP-009 | DONE | P0 | 078; contrato EL-EP-015 | [EL-TK-114](tickets/EL-TK-114.md) |

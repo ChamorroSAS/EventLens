@@ -203,10 +203,10 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-108 (DONE) | 107 | 111,112 |
 | EL-TK-109 (DONE) | 107,055; contrato EL-EP-015 | 112; consumidor purge EL-EP-015 |
 | EL-TK-110 (DONE) | 028,037 | 111,112 |
-| EL-TK-111 | 100,103..108,110 | 112 |
+| EL-TK-111 (DONE) | 100,103..108,110 | 112 |
 | EL-TK-112 (DONE) | 103..111 | validación EL-EP-008 |
 
-9 activos COMPLETADOS (DONE) de 10 tickets en EL-EP-008 tras culminación de motor backend, expiración de papelera (EL-TK-109), cambio de modo DEC-087 (EL-TK-110) y validación integral E2E en PostgreSQL 16 (EL-TK-112). Solo resta EL-TK-111 (integración UI). Superficies UI reutilizadas del catálogo canónico (§8.5..9), sin componentes nuevos. Seguridad/cuarentena en EL-EP-006 y purga física en EL-EP-015.
+10 activos COMPLETADOS (DONE) de 10 tickets en EL-EP-008 tras culminación de motor backend, expiración de papelera (EL-TK-109), cambio de modo DEC-087 (EL-TK-110), integración UI de moderación, papelera, avisos y diálogos en Angular (@eventlens/web per EL-TK-111) y validación integral E2E en PostgreSQL 16 (EL-TK-112). Épica EL-EP-008 formalmente cerrada como DONE. Superficies UI reutilizadas del catálogo canónico (§8.5..9), sin componentes nuevos. Seguridad/cuarentena en EL-EP-006 y purga física en EL-EP-015.
 
 ## Tickets vigentes — EL-EP-009 (quality gate APPROVED)
 
