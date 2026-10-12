@@ -6,9 +6,9 @@ EL-EP-002
 
 ## Status
 
-READY
+DONE
 
-**HISTÓRICO CONFIRMED — 2026-10-07:** requirements_reviewer declaró este ticket implementable, sin hallazgos pendientes. Se conservan sus dependencias de ejecución. Véase [dictamen](../sessions/2026-10-07-el-ep-002-ticket-review.md).
+**COMPLETADO — 2026-10-12:** Implementado en `EventDraftService.setGuestUploads` en `@eventlens/event-management`. Configura `uploads_enabled` de forma independiente sin alterar `guest_gallery_enabled`, asegura aislamiento estricto por cuenta en DRAFT, soporta idempotencia y audita la transición de valores (`EVENT_GUEST_UPLOADS_CONFIGURED`). Verificado con pruebas unitarias y de integración en PostgreSQL 16.
 
 ## User story
 

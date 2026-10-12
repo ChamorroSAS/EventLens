@@ -16,7 +16,17 @@ import {
   type EventConfigurationCapabilities,
   type AuthorizedEventConfiguration,
   type ListOrganizerEventsCommand,
-  type GetAuthorizedConfigurationCommand
+  type GetAuthorizedConfigurationCommand,
+  type UpdateEventDraftNameCommand,
+  type UpdateEventDraftNameResult,
+  type SetEventWelcomeMessageCommand,
+  type SetEventWelcomeMessageResult,
+  type SetEventModerationModeCommand,
+  type SetEventModerationModeResult,
+  type SetEventGuestUploadsCommand,
+  type SetEventGuestUploadsResult,
+  type SetEventGuestGalleryCommand,
+  type SetEventGuestGalleryResult
 } from './contracts.js';
 import { resolveScheduleLocalTime } from './timezone.js';
 
@@ -45,6 +55,7 @@ interface EventRow {
   pin_enabled: boolean;
   pin_hash?: string | null;
   pin_salt?: string | null;
+  welcome_message?: string | null;
   idempotency_key?: string | null;
   idempotency_payload_hash?: string | null;
   created_at: Date | string;
@@ -75,6 +86,7 @@ function mapRowToRecord(row: EventRow): EventRecord {
     guestGalleryEnabled: Boolean(row.guest_gallery_enabled),
     moderationMode: row.moderation_mode as ModerationMode,
     pinEnabled: Boolean(row.pin_enabled),
+    welcomeMessage: row.welcome_message ?? null,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at)
   };
@@ -96,6 +108,7 @@ function mapRowToSummary(row: EventRow): OrganizerEventSummary {
     guestGalleryEnabled: Boolean(row.guest_gallery_enabled),
     moderationMode: row.moderation_mode as ModerationMode,
     pinEnabled: Boolean(row.pin_enabled),
+    welcomeMessage: row.welcome_message ?? null,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at)
   };
@@ -316,6 +329,7 @@ export class EventDraftService {
         guestGalleryEnabled,
         moderationMode,
         pinEnabled,
+        welcomeMessage: null,
         createdAt: now,
         updatedAt: now
       };
@@ -348,8 +362,10 @@ export class EventDraftService {
 
     return this.runner.run(async (tx: SqlTransaction) => {
       const rows = await tx.query<EventRow>(
-        `SELECT id, organizer_id, name, status, timezone, uploads_enabled,
-                guest_gallery_enabled, moderation_mode, pin_enabled,
+        `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
+                expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
+                suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
+                guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
                 created_at, updated_at
          FROM event
          WHERE id = $1`,
@@ -361,6 +377,715 @@ export class EventDraftService {
       }
 
       return mapRowToRecord(rows[0]);
+    });
+  }
+
+  /**
+   * Updates the name of an event draft (EL-TK-021).
+   * Validates owner authorization, DRAFT status, non-empty name [1, 120] chars,
+   * idempotency replay and concurrency control.
+   */
+  public async updateDraftName(command: UpdateEventDraftNameCommand): Promise<UpdateEventDraftNameResult> {
+    if (!command || typeof command !== 'object') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Command is required');
+    }
+
+    const { actorContext, eventId, name, idempotencyKey } = command;
+
+    if (
+      !actorContext ||
+      actorContext.actorType !== 'ORGANIZER_HUMAN' ||
+      !actorContext.accountId ||
+      typeof actorContext.accountId !== 'string'
+    ) {
+      throw new EventManagementError('UNAUTHORIZED', 'Authenticated organizer context is required');
+    }
+
+    if (!eventId || typeof eventId !== 'string') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Valid eventId is required');
+    }
+
+    if (!name || typeof name !== 'string') {
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_DRAFT_NAME_UPDATED',
+        actorId: actorContext.accountId,
+        targetIdentifier: eventId,
+        result: 'REJECTED_INVALID_NAME',
+        details: 'Update name rejected: missing or invalid name string',
+        timestamp: new Date()
+      });
+      throw new EventManagementError('INVALID_NAME', 'Event name is required and cannot be empty');
+    }
+
+    const trimmedName = name.trim();
+    if (trimmedName.length === 0 || trimmedName.length > 120) {
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_DRAFT_NAME_UPDATED',
+        actorId: actorContext.accountId,
+        targetIdentifier: eventId,
+        result: 'REJECTED_INVALID_NAME',
+        details: `Update name rejected: name length ${trimmedName.length} outside [1, 120]`,
+        timestamp: new Date()
+      });
+      throw new EventManagementError('INVALID_NAME', 'Event name must be between 1 and 120 characters');
+    }
+
+    const payloadHash = idempotencyKey
+      ? createHash('sha256')
+          .update(JSON.stringify({ eventId, name: trimmedName }))
+          .digest('hex')
+      : null;
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      const rows = await tx.query<EventRow>(
+        `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
+                expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
+                suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
+                guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
+                idempotency_key, idempotency_payload_hash, created_at, updated_at
+         FROM event
+         WHERE id = $1
+         FOR UPDATE`,
+        eventId
+      );
+
+      if (!rows.length) {
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event with ID ${eventId} not found`);
+      }
+
+      const current = rows[0];
+
+      if (current.organizer_id !== actorContext.accountId) {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_DRAFT_NAME_UPDATED',
+          actorId: actorContext.accountId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_UNAUTHORIZED',
+          details: 'Actor attempted to modify name of an event owned by another organizer',
+          timestamp: new Date()
+        });
+        throw new EventManagementError('UNAUTHORIZED', 'Actor is not authorized to edit this event draft');
+      }
+
+      if (current.status !== 'DRAFT') {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_DRAFT_NAME_UPDATED',
+          actorId: actorContext.accountId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_INVALID_STATE',
+          details: `Attempted to update name on event in '${current.status}' status (must be DRAFT)`,
+          timestamp: new Date()
+        });
+        throw new EventManagementError(
+          'EVENT_NOT_IN_DRAFT',
+          `Name can only be updated for events in DRAFT status, current is '${current.status}'`
+        );
+      }
+
+      if (idempotencyKey && current.idempotency_key === idempotencyKey) {
+        if (current.idempotency_payload_hash === payloadHash) {
+          return {
+            event: mapRowToRecord(current),
+            outcome: 'IDEMPOTENT_REPLAY'
+          };
+        }
+        throw new EventManagementError(
+          'IDEMPOTENCY_CONFLICT',
+          'Idempotency key has already been used with different parameters'
+        );
+      }
+
+      const now = new Date();
+      const updatedRows = await tx.query<EventRow>(
+        `UPDATE event
+         SET name = $1,
+             idempotency_key = $2,
+             idempotency_payload_hash = $3,
+             updated_at = $4
+         WHERE id = $5
+         RETURNING id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
+                   expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
+                   suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
+                   guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
+                   idempotency_key, idempotency_payload_hash, created_at, updated_at`,
+        trimmedName,
+        idempotencyKey ?? null,
+        payloadHash,
+        now,
+        eventId
+      );
+
+      const updated = updatedRows[0];
+
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_DRAFT_NAME_UPDATED',
+        actorId: actorContext.accountId,
+        targetIdentifier: eventId,
+        result: 'SUCCESS',
+        details: `Updated name from '${current.name}' to '${trimmedName}'`,
+        timestamp: now
+      });
+
+      return {
+        event: mapRowToRecord(updated),
+        outcome: 'UPDATED'
+      };
+    });
+  }
+
+  /**
+   * Sets the welcome message for an event draft (EL-TK-022).
+   * Validates owner authorization, DRAFT status, message length [0, 1000] chars,
+   * idempotency replay and audit logging without logging sensitive message text.
+   */
+  public async setWelcomeMessage(command: SetEventWelcomeMessageCommand): Promise<SetEventWelcomeMessageResult> {
+    if (!command || typeof command !== 'object') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Command is required');
+    }
+
+    const { actorContext, eventId, welcomeMessage, idempotencyKey } = command;
+
+    if (
+      !actorContext ||
+      actorContext.actorType !== 'ORGANIZER_HUMAN' ||
+      !actorContext.accountId ||
+      typeof actorContext.accountId !== 'string'
+    ) {
+      throw new EventManagementError('UNAUTHORIZED', 'Authenticated organizer context is required');
+    }
+
+    if (!eventId || typeof eventId !== 'string') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Valid eventId is required');
+    }
+
+    let sanitizedMessage: string | null = null;
+    if (welcomeMessage !== null && welcomeMessage !== undefined) {
+      if (typeof welcomeMessage !== 'string') {
+        throw new EventManagementError('INVALID_ARGUMENT', 'Welcome message must be a string or null');
+      }
+      const trimmed = welcomeMessage.trim();
+      if (trimmed.length > 1000) {
+        throw new EventManagementError('INVALID_ARGUMENT', 'Welcome message cannot exceed 1000 characters');
+      }
+      sanitizedMessage = trimmed.length > 0 ? trimmed : null;
+    }
+
+    const payloadHash = idempotencyKey
+      ? createHash('sha256')
+          .update(JSON.stringify({ eventId, welcomeMessage: sanitizedMessage }))
+          .digest('hex')
+      : null;
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      const rows = await tx.query<EventRow>(
+        `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
+                expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
+                suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
+                guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
+                idempotency_key, idempotency_payload_hash, created_at, updated_at
+         FROM event
+         WHERE id = $1
+         FOR UPDATE`,
+        eventId
+      );
+
+      if (!rows.length) {
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event with ID ${eventId} not found`);
+      }
+
+      const current = rows[0];
+
+      if (current.organizer_id !== actorContext.accountId) {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_WELCOME_MESSAGE_SET',
+          actorId: actorContext.accountId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_UNAUTHORIZED',
+          details: 'Actor attempted to modify welcome message of an event owned by another organizer',
+          timestamp: new Date()
+        });
+        throw new EventManagementError('UNAUTHORIZED', 'Actor is not authorized to edit this event draft');
+      }
+
+      if (current.status !== 'DRAFT') {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_WELCOME_MESSAGE_SET',
+          actorId: actorContext.accountId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_INVALID_STATE',
+          details: `Attempted to set welcome message on event in '${current.status}' status (must be DRAFT)`,
+          timestamp: new Date()
+        });
+        throw new EventManagementError(
+          'EVENT_NOT_IN_DRAFT',
+          `Welcome message can only be defined for events in DRAFT status, current is '${current.status}'`
+        );
+      }
+
+      if (idempotencyKey && current.idempotency_key === idempotencyKey) {
+        if (current.idempotency_payload_hash === payloadHash) {
+          return {
+            event: mapRowToRecord(current),
+            outcome: 'IDEMPOTENT_REPLAY'
+          };
+        }
+        throw new EventManagementError(
+          'IDEMPOTENCY_CONFLICT',
+          'Idempotency key has already been used with different parameters'
+        );
+      }
+
+      const now = new Date();
+      const updatedRows = await tx.query<EventRow>(
+        `UPDATE event
+         SET welcome_message = $1,
+             idempotency_key = $2,
+             idempotency_payload_hash = $3,
+             updated_at = $4
+         WHERE id = $5
+         RETURNING id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
+                   expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
+                   suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
+                   guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
+                   idempotency_key, idempotency_payload_hash, created_at, updated_at`,
+        sanitizedMessage,
+        idempotencyKey ?? null,
+        payloadHash,
+        now,
+        eventId
+      );
+
+      const updated = updatedRows[0];
+
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_WELCOME_MESSAGE_SET',
+        actorId: actorContext.accountId,
+        targetIdentifier: eventId,
+        result: 'SUCCESS',
+        details: sanitizedMessage ? 'Welcome message defined' : 'Welcome message cleared',
+        timestamp: now
+      });
+
+      return {
+        event: mapRowToRecord(updated),
+        outcome: 'UPDATED'
+      };
+    });
+  }
+
+  /**
+   * Sets the moderation mode for an event draft (EL-TK-028).
+   * Validates owner authorization, DRAFT status, valid ModerationMode ('AUTO_PUBLISH' | 'MANUAL_REVIEW'),
+   * idempotency replay and audit logging of previous and new modes.
+   */
+  public async setModerationMode(command: SetEventModerationModeCommand): Promise<SetEventModerationModeResult> {
+    if (!command || typeof command !== 'object') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Command is required');
+    }
+
+    const { actorContext, eventId, moderationMode, idempotencyKey } = command;
+
+    if (
+      !actorContext ||
+      actorContext.actorType !== 'ORGANIZER_HUMAN' ||
+      !actorContext.accountId ||
+      typeof actorContext.accountId !== 'string'
+    ) {
+      throw new EventManagementError('UNAUTHORIZED', 'Authenticated organizer context is required');
+    }
+
+    if (!eventId || typeof eventId !== 'string') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Valid eventId is required');
+    }
+
+    if (moderationMode !== 'AUTO_PUBLISH' && moderationMode !== 'MANUAL_REVIEW') {
+      throw new EventManagementError(
+        'INVALID_ARGUMENT',
+        `Invalid moderation mode '${moderationMode}'. Expected 'AUTO_PUBLISH' or 'MANUAL_REVIEW'`
+      );
+    }
+
+    const payloadHash = idempotencyKey
+      ? createHash('sha256')
+          .update(JSON.stringify({ eventId, moderationMode }))
+          .digest('hex')
+      : null;
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      const rows = await tx.query<EventRow>(
+        `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
+                expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
+                suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
+                guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
+                idempotency_key, idempotency_payload_hash, created_at, updated_at
+         FROM event
+         WHERE id = $1
+         FOR UPDATE`,
+        eventId
+      );
+
+      if (!rows.length) {
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event with ID ${eventId} not found`);
+      }
+
+      const current = rows[0];
+
+      if (current.organizer_id !== actorContext.accountId) {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_MODERATION_MODE_SET',
+          actorId: actorContext.accountId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_UNAUTHORIZED',
+          details: 'Actor attempted to modify moderation mode of an event owned by another organizer',
+          timestamp: new Date()
+        });
+        throw new EventManagementError('UNAUTHORIZED', 'Actor is not authorized to edit this event draft');
+      }
+
+      if (current.status !== 'DRAFT') {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_MODERATION_MODE_SET',
+          actorId: actorContext.accountId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_INVALID_STATE',
+          details: `Attempted to set moderation mode on event in '${current.status}' status (must be DRAFT)`,
+          timestamp: new Date()
+        });
+        throw new EventManagementError(
+          'EVENT_NOT_IN_DRAFT',
+          `Moderation mode can only be chosen for events in DRAFT status, current is '${current.status}'`
+        );
+      }
+
+      if (idempotencyKey && current.idempotency_key === idempotencyKey) {
+        if (current.idempotency_payload_hash === payloadHash) {
+          return {
+            event: mapRowToRecord(current),
+            outcome: 'IDEMPOTENT_REPLAY'
+          };
+        }
+        throw new EventManagementError(
+          'IDEMPOTENCY_CONFLICT',
+          'Idempotency key has already been used with different parameters'
+        );
+      }
+
+      const now = new Date();
+      const updatedRows = await tx.query<EventRow>(
+        `UPDATE event
+         SET moderation_mode = $1,
+             idempotency_key = $2,
+             idempotency_payload_hash = $3,
+             updated_at = $4
+         WHERE id = $5
+         RETURNING id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
+                   expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
+                   suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
+                   guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
+                   idempotency_key, idempotency_payload_hash, created_at, updated_at`,
+        moderationMode,
+        idempotencyKey ?? null,
+        payloadHash,
+        now,
+        eventId
+      );
+
+      const updated = updatedRows[0];
+
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_MODERATION_MODE_SET',
+        actorId: actorContext.accountId,
+        targetIdentifier: eventId,
+        result: 'SUCCESS',
+        details: `Updated moderation mode from '${current.moderation_mode}' to '${moderationMode}'`,
+        timestamp: now
+      });
+
+      return {
+        event: mapRowToRecord(updated),
+        outcome: 'UPDATED'
+      };
+    });
+  }
+
+  /**
+   * Configures uploads_enabled for an event draft (EL-TK-029).
+   * Validates owner authorization, DRAFT status, boolean uploadsEnabled,
+   * preserves guest_gallery_enabled untouched, and logs audit.
+   */
+  public async setGuestUploads(command: SetEventGuestUploadsCommand): Promise<SetEventGuestUploadsResult> {
+    if (!command || typeof command !== 'object') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Command is required');
+    }
+
+    const { actorContext, eventId, uploadsEnabled, idempotencyKey } = command;
+
+    if (
+      !actorContext ||
+      actorContext.actorType !== 'ORGANIZER_HUMAN' ||
+      !actorContext.accountId ||
+      typeof actorContext.accountId !== 'string'
+    ) {
+      throw new EventManagementError('UNAUTHORIZED', 'Authenticated organizer context is required');
+    }
+
+    if (!eventId || typeof eventId !== 'string') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Valid eventId is required');
+    }
+
+    if (typeof uploadsEnabled !== 'boolean') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'uploadsEnabled must be a boolean');
+    }
+
+    const payloadHash = idempotencyKey
+      ? createHash('sha256')
+          .update(JSON.stringify({ eventId, uploadsEnabled }))
+          .digest('hex')
+      : null;
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      const rows = await tx.query<EventRow>(
+        `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
+                expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
+                suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
+                guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
+                idempotency_key, idempotency_payload_hash, created_at, updated_at
+         FROM event
+         WHERE id = $1
+         FOR UPDATE`,
+        eventId
+      );
+
+      if (!rows.length) {
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event with ID ${eventId} not found`);
+      }
+
+      const current = rows[0];
+
+      if (current.organizer_id !== actorContext.accountId) {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_GUEST_UPLOADS_CONFIGURED',
+          actorId: actorContext.accountId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_UNAUTHORIZED',
+          details: 'Actor attempted to modify guest uploads of an event owned by another organizer',
+          timestamp: new Date()
+        });
+        throw new EventManagementError('UNAUTHORIZED', 'Actor is not authorized to edit this event draft');
+      }
+
+      if (current.status !== 'DRAFT') {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_GUEST_UPLOADS_CONFIGURED',
+          actorId: actorContext.accountId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_INVALID_STATE',
+          details: `Attempted to configure guest uploads on event in '${current.status}' status (must be DRAFT)`,
+          timestamp: new Date()
+        });
+        throw new EventManagementError(
+          'EVENT_NOT_IN_DRAFT',
+          `Guest uploads can only be configured for events in DRAFT status, current is '${current.status}'`
+        );
+      }
+
+      if (idempotencyKey && current.idempotency_key === idempotencyKey) {
+        if (current.idempotency_payload_hash === payloadHash) {
+          return {
+            event: mapRowToRecord(current),
+            outcome: 'IDEMPOTENT_REPLAY'
+          };
+        }
+        throw new EventManagementError(
+          'IDEMPOTENCY_CONFLICT',
+          'Idempotency key has already been used with different parameters'
+        );
+      }
+
+      const now = new Date();
+      const updatedRows = await tx.query<EventRow>(
+        `UPDATE event
+         SET uploads_enabled = $1,
+             idempotency_key = $2,
+             idempotency_payload_hash = $3,
+             updated_at = $4
+         WHERE id = $5
+         RETURNING id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
+                   expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
+                   suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
+                   guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
+                   idempotency_key, idempotency_payload_hash, created_at, updated_at`,
+        uploadsEnabled,
+        idempotencyKey ?? null,
+        payloadHash,
+        now,
+        eventId
+      );
+
+      const updated = updatedRows[0];
+
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_GUEST_UPLOADS_CONFIGURED',
+        actorId: actorContext.accountId,
+        targetIdentifier: eventId,
+        result: 'SUCCESS',
+        details: `Updated uploads_enabled from ${current.uploads_enabled} to ${uploadsEnabled}`,
+        timestamp: now
+      });
+
+      return {
+        event: mapRowToRecord(updated),
+        outcome: 'UPDATED'
+      };
+    });
+  }
+
+  /**
+   * Configures guest_gallery_enabled for an event draft (EL-TK-030).
+   * Validates owner authorization, DRAFT status, boolean guestGalleryEnabled,
+   * preserves uploads_enabled untouched, and logs audit.
+   */
+  public async setGuestGallery(command: SetEventGuestGalleryCommand): Promise<SetEventGuestGalleryResult> {
+    if (!command || typeof command !== 'object') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Command is required');
+    }
+
+    const { actorContext, eventId, guestGalleryEnabled, idempotencyKey } = command;
+
+    if (
+      !actorContext ||
+      actorContext.actorType !== 'ORGANIZER_HUMAN' ||
+      !actorContext.accountId ||
+      typeof actorContext.accountId !== 'string'
+    ) {
+      throw new EventManagementError('UNAUTHORIZED', 'Authenticated organizer context is required');
+    }
+
+    if (!eventId || typeof eventId !== 'string') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Valid eventId is required');
+    }
+
+    if (typeof guestGalleryEnabled !== 'boolean') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'guestGalleryEnabled must be a boolean');
+    }
+
+    const payloadHash = idempotencyKey
+      ? createHash('sha256')
+          .update(JSON.stringify({ eventId, guestGalleryEnabled }))
+          .digest('hex')
+      : null;
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      const rows = await tx.query<EventRow>(
+        `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
+                expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
+                suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
+                guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
+                idempotency_key, idempotency_payload_hash, created_at, updated_at
+         FROM event
+         WHERE id = $1
+         FOR UPDATE`,
+        eventId
+      );
+
+      if (!rows.length) {
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event with ID ${eventId} not found`);
+      }
+
+      const current = rows[0];
+
+      if (current.organizer_id !== actorContext.accountId) {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_GUEST_GALLERY_CONFIGURED',
+          actorId: actorContext.accountId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_UNAUTHORIZED',
+          details: 'Actor attempted to modify guest gallery of an event owned by another organizer',
+          timestamp: new Date()
+        });
+        throw new EventManagementError('UNAUTHORIZED', 'Actor is not authorized to edit this event draft');
+      }
+
+      if (current.status !== 'DRAFT') {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_GUEST_GALLERY_CONFIGURED',
+          actorId: actorContext.accountId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_INVALID_STATE',
+          details: `Attempted to configure guest gallery on event in '${current.status}' status (must be DRAFT)`,
+          timestamp: new Date()
+        });
+        throw new EventManagementError(
+          'EVENT_NOT_IN_DRAFT',
+          `Guest gallery can only be configured for events in DRAFT status, current is '${current.status}'`
+        );
+      }
+
+      if (idempotencyKey && current.idempotency_key === idempotencyKey) {
+        if (current.idempotency_payload_hash === payloadHash) {
+          return {
+            event: mapRowToRecord(current),
+            outcome: 'IDEMPOTENT_REPLAY'
+          };
+        }
+        throw new EventManagementError(
+          'IDEMPOTENCY_CONFLICT',
+          'Idempotency key has already been used with different parameters'
+        );
+      }
+
+      const now = new Date();
+      const updatedRows = await tx.query<EventRow>(
+        `UPDATE event
+         SET guest_gallery_enabled = $1,
+             idempotency_key = $2,
+             idempotency_payload_hash = $3,
+             updated_at = $4
+         WHERE id = $5
+         RETURNING id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
+                   expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
+                   suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
+                   guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
+                   idempotency_key, idempotency_payload_hash, created_at, updated_at`,
+        guestGalleryEnabled,
+        idempotencyKey ?? null,
+        payloadHash,
+        now,
+        eventId
+      );
+
+      const updated = updatedRows[0];
+
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_GUEST_GALLERY_CONFIGURED',
+        actorId: actorContext.accountId,
+        targetIdentifier: eventId,
+        result: 'SUCCESS',
+        details: `Updated guest_gallery_enabled from ${current.guest_gallery_enabled} to ${guestGalleryEnabled}`,
+        timestamp: now
+      });
+
+      return {
+        event: mapRowToRecord(updated),
+        outcome: 'UPDATED'
+      };
     });
   }
 
@@ -748,7 +1473,7 @@ export class EventDraftService {
       const rows = await tx.query<EventRow>(
         `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at,
                 utc_offset_minutes, expires_at, grace_ends_at, uploads_enabled,
-                guest_gallery_enabled, moderation_mode, pin_enabled, created_at, updated_at
+                guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message, created_at, updated_at
          FROM event
          WHERE organizer_id = $1
          ORDER BY created_at DESC`,
@@ -783,7 +1508,7 @@ export class EventDraftService {
       const rows = await tx.query<EventRow>(
         `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at,
                 utc_offset_minutes, expires_at, grace_ends_at, uploads_enabled,
-                guest_gallery_enabled, moderation_mode, pin_enabled, created_at, updated_at
+                guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message, created_at, updated_at
          FROM event
          WHERE id = $1`,
         eventId

@@ -93,7 +93,17 @@ export {
   type EventConfigurationCapabilities,
   type AuthorizedEventConfiguration,
   type ListOrganizerEventsCommand,
-  type GetAuthorizedConfigurationCommand
+  type GetAuthorizedConfigurationCommand,
+  type UpdateEventDraftNameCommand,
+  type UpdateEventDraftNameResult,
+  type SetEventWelcomeMessageCommand,
+  type SetEventWelcomeMessageResult,
+  type SetEventModerationModeCommand,
+  type SetEventModerationModeResult,
+  type SetEventGuestUploadsCommand,
+  type SetEventGuestUploadsResult,
+  type SetEventGuestGalleryCommand,
+  type SetEventGuestGalleryResult
 } from './contracts.js';
 
 export { generateQrMatrix, generateQrSvg } from './qr-generator.js';

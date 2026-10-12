@@ -60,15 +60,15 @@
 | EL-TK-045 | Revocar un principal administrativo | EL-EP-001 | DONE | P0 | EL-TK-044, EL-TK-046 | [EL-TK-045](tickets/EL-TK-045.md) |
 | EL-TK-046 | Reconciliar restricciones de MOD-001 tras recuperación | EL-EP-001 | DONE | P0 | contrato RecoveryAuthority acordado | [EL-TK-046](tickets/EL-TK-046.md) |
 | EL-TK-020 | Crear un borrador de evento | EL-EP-002 | DONE | P0 | EL-TK-013 | [EL-TK-020](tickets/EL-TK-020.md) |
-| EL-TK-021 | Cambiar el nombre de un borrador | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-021](tickets/EL-TK-021.md) |
-| EL-TK-022 | Definir la bienvenida de un borrador | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-022](tickets/EL-TK-022.md) |
+| EL-TK-021 | Cambiar el nombre de un borrador | EL-EP-002 | DONE | P0 | EL-TK-020 | [EL-TK-021](tickets/EL-TK-021.md) |
+| EL-TK-022 | Definir la bienvenida de un borrador | EL-EP-002 | DONE | P0 | EL-TK-020 | [EL-TK-022](tickets/EL-TK-022.md) |
 | EL-TK-023 | Definir la fecha y hora local de un borrador | EL-EP-002 | DONE | P0 | EL-TK-020 | [EL-TK-023](tickets/EL-TK-023.md) |
 | EL-TK-024 | Cambiar la zona horaria de un evento preparado | EL-EP-002 | READY | P0 | EL-TK-020, EL-TK-023 | [EL-TK-024](tickets/EL-TK-024.md) |
 | EL-TK-025 | Corregir la zona horaria de un evento que alcanzó ACTIVE | EL-EP-002 | READY | P0 | EL-TK-020, EL-TK-023, EL-TK-044 | [EL-TK-025](tickets/EL-TK-025.md) |
 | EL-TK-027 | Establecer el PIN inicial de un borrador | EL-EP-002 | DONE | P0 | EL-TK-020 | [EL-TK-027](tickets/EL-TK-027.md) |
-| EL-TK-028 | Elegir el modo de moderación de un borrador | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-028](tickets/EL-TK-028.md) |
-| EL-TK-029 | Configurar la carga de invitados en un borrador | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-029](tickets/EL-TK-029.md) |
-| EL-TK-030 | Configurar la galería invitada en un borrador | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-030](tickets/EL-TK-030.md) |
+| EL-TK-028 | Elegir el modo de moderación de un borrador | EL-EP-002 | DONE | P0 | EL-TK-020 | [EL-TK-028](tickets/EL-TK-028.md) |
+| EL-TK-029 | Configurar la carga de invitados en un borrador | EL-EP-002 | DONE | P0 | EL-TK-020 | [EL-TK-029](tickets/EL-TK-029.md) |
+| EL-TK-030 | Configurar la galería invitada en un borrador | EL-EP-002 | DONE | P0 | EL-TK-020 | [EL-TK-030](tickets/EL-TK-030.md) |
 | EL-TK-031 | Previsualizar un borrador como invitado | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-031](tickets/EL-TK-031.md) |
 | EL-TK-032 | Encolar el procesamiento de un original aceptado | EL-EP-006 | DONE | P0 | Contrato de carga aceptada de EL-EP-005 | [EL-TK-032](tickets/EL-TK-032.md) |
 | EL-TK-033 | Inspeccionar un original antes de transformarlo | EL-EP-006 | DONE | P0 | EL-TK-032, EL-TK-056 | [EL-TK-033](tickets/EL-TK-033.md) |

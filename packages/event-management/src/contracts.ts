@@ -34,6 +34,7 @@ export interface EventRecord {
   readonly guestGalleryEnabled: boolean;
   readonly moderationMode: ModerationMode;
   readonly pinEnabled: boolean;
+  readonly welcomeMessage?: string | null;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -116,6 +117,86 @@ export interface CreateEventDraftCommand {
 export interface CreateEventDraftResult {
   readonly event: EventRecord;
   readonly outcome: 'CREATED' | 'IDEMPOTENT_REPLAY';
+}
+
+// ==========================================
+// EL-TK-021: Update Event Draft Name Contracts
+// ==========================================
+
+export interface UpdateEventDraftNameCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly eventId: string;
+  readonly name: string;
+  readonly idempotencyKey?: string;
+}
+
+export interface UpdateEventDraftNameResult {
+  readonly event: EventRecord;
+  readonly outcome: 'UPDATED' | 'IDEMPOTENT_REPLAY';
+}
+
+// ==========================================
+// EL-TK-022: Set Event Welcome Message Contracts
+// ==========================================
+
+export interface SetEventWelcomeMessageCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly eventId: string;
+  readonly welcomeMessage: string | null;
+  readonly idempotencyKey?: string;
+}
+
+export interface SetEventWelcomeMessageResult {
+  readonly event: EventRecord;
+  readonly outcome: 'UPDATED' | 'IDEMPOTENT_REPLAY';
+}
+
+// ==========================================
+// EL-TK-028: Set Event Moderation Mode Contracts
+// ==========================================
+
+export interface SetEventModerationModeCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly eventId: string;
+  readonly moderationMode: ModerationMode;
+  readonly idempotencyKey?: string;
+}
+
+export interface SetEventModerationModeResult {
+  readonly event: EventRecord;
+  readonly outcome: 'UPDATED' | 'IDEMPOTENT_REPLAY';
+}
+
+// ==========================================
+// EL-TK-029: Set Event Guest Uploads Contracts
+// ==========================================
+
+export interface SetEventGuestUploadsCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly eventId: string;
+  readonly uploadsEnabled: boolean;
+  readonly idempotencyKey?: string;
+}
+
+export interface SetEventGuestUploadsResult {
+  readonly event: EventRecord;
+  readonly outcome: 'UPDATED' | 'IDEMPOTENT_REPLAY';
+}
+
+// ==========================================
+// EL-TK-030: Set Event Guest Gallery Contracts
+// ==========================================
+
+export interface SetEventGuestGalleryCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly eventId: string;
+  readonly guestGalleryEnabled: boolean;
+  readonly idempotencyKey?: string;
+}
+
+export interface SetEventGuestGalleryResult {
+  readonly event: EventRecord;
+  readonly outcome: 'UPDATED' | 'IDEMPOTENT_REPLAY';
 }
 
 export interface SetEventScheduleCommand {
@@ -802,6 +883,11 @@ export interface EventAuditRecord {
   readonly id: string;
   readonly procedure:
     | 'EVENT_DRAFT_CREATED'
+    | 'EVENT_DRAFT_NAME_UPDATED'
+    | 'EVENT_WELCOME_MESSAGE_SET'
+    | 'EVENT_MODERATION_MODE_SET'
+    | 'EVENT_GUEST_UPLOADS_CONFIGURED'
+    | 'EVENT_GUEST_GALLERY_CONFIGURED'
     | 'EVENT_SCHEDULE_SET'
     | 'EVENT_SCHEDULED'
     | 'EVENT_ACTIVATED'
@@ -834,6 +920,7 @@ export interface EventAuditRecord {
   readonly targetIdentifier: string;
   readonly result:
     | 'SUCCESS'
+    | 'UPDATED'
     | 'EXTENDED'
     | 'REACTIVATED'
     | 'REGENERATED'
@@ -907,6 +994,7 @@ export interface OrganizerEventSummary {
   readonly guestGalleryEnabled: boolean;
   readonly moderationMode: ModerationMode;
   readonly pinEnabled: boolean;
+  readonly welcomeMessage?: string | null;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
