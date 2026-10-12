@@ -251,8 +251,7 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-141 (DONE) | 139,044 | 142,144,145 |
 | EL-TK-142 (DONE) | 134,141; contrato EL-EP-003 | 144,145 |
 | EL-TK-143 (DONE) | 135,139,140 | 145 |
-| EL-TK-144 (DONE) | 141,142; contrato EL-EP-012 | 145 |
-| EL-TK-145 | 134..144 | validación EL-EP-011 |
+| EL-TK-145 (DONE) | 134..144 | validación EL-EP-011 |
 
 12 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de plan BETA base y límites efectivos, consulta de consumo comercial y reservas separadas de storage operacional (DEC-079), reserva y liberación atómica de cuota (DEC-080), consolidación de consumo en aceptación/purga física, emisión de señales deduplicadas al 80% y 100%, solicitud de ampliación (DEC-093..095/100..102), respuesta en misma solicitud, revisión administrativa con motivo, aplicación de overrides/retorno al plan base con denegación de vencimiento pasado y superficies UI de organizador y consola administrativa. Superficies UI reutilizadas del catálogo canónico (ui-capacity-lifecycle.md y ui-mvp-epic-review.md §EL-EP-011), sin componentes nuevos. Carga en EL-EP-005, lifecycle en EL-EP-003 y notificaciones en EL-EP-013.
 
@@ -437,4 +436,10 @@ TB-01/TB-02 dejan de bloquear.033/035/036/041/042/056 YES propio;058 NO ejecuci�
 **CONFIRMED — EL-TK-141 DONE, 2026-10-11:** dependencias EL-TK-139 y EL-TK-044 satisfechas; revisión administrativa de solicitudes (APPROVE/REJECT/REQUEST_INFO) con integración de override, historial y permisos `ADMIN_HUMAN` implementada en `@eventlens/capacity-management` (`ExtensionRequestService.reviewRequest`). 56 pruebas PASS, typecheck y build limpios. Desbloquea downstream EL-TK-142, EL-TK-144 y EL-TK-145. Véase el [cierre](tickets/EL-TK-141.md).
 
 **CONFIRMED — EL-TK-142 DONE, 2026-10-11:** dependencias EL-TK-134, EL-TK-141 y contratos EL-EP-003 satisfechas; aplicación de overrides administrativos con salvaguarda de vencimiento pasado (DEC-102), preservación de archivos en reducción (DEC-080) y retorno al plan base implementada en `@eventlens/capacity-management` (`CapacityPlanService.applyOverride` y `removeOverride`). 63 pruebas PASS, typecheck y build limpios. Desbloquea downstream EL-TK-144 y EL-TK-145. Véase el [cierre](tickets/EL-TK-142.md).
+ 
+**CONFIRMED — EL-TK-143 DONE, 2026-10-11:** dependencias EL-TK-135, EL-TK-139 y EL-TK-140 satisfechas; experiencia de organizador con panel de capacidad, barras de progreso, alertas de umbral y diálogo de solicitud/respuesta de ampliación implementada en `@eventlens/web`. 5 pruebas unitarias PASS, 47/47 suite web PASS, typecheck limpio. Desbloquea downstream EL-TK-145. Véase el [cierre](tickets/EL-TK-143.md).
+
+**CONFIRMED — EL-TK-144 DONE, 2026-10-11:** dependencias EL-TK-141, EL-TK-142 y contratos EL-EP-012 satisfechas; consola administrativa con diálogo de overrides comerciales, motivo obligatorio de auditoría, retorno al plan base y gestión completa de solicitudes de ampliación implementada en `@eventlens/web`. 5 pruebas unitarias PASS, 52/52 suite web PASS, typecheck limpio. Desbloquea downstream EL-TK-145. Véase el [cierre](tickets/EL-TK-144.md).
+
+**CONFIRMED — EL-TK-145 DONE, 2026-10-11:** dependencias EL-TK-134..144 satisfechas; validación de extremo a extremo de la Épica `EL-EP-011` implementada en `@eventlens/capacity-management` (`test/capacity-epic-e2e.test.ts`). Valida con 4 escenarios canónicos: carreras concurrentes de uploads al límite comercial (DEC-079, DEC-080), sobregiro por reducción administrativa con preservación íntegra de archivos y rechazo DEC-102, ciclo completo de ampliación con aclaraciones y aprobación con override automático, y emisión/rearmado deduplicado de umbrales al 80% y 100%. Suite E2E 4/4 PASS, suite de capacidad 60/60 PASS, typecheck monorepo exit code 0. Épica `EL-EP-011` completada. Véase el [cierre](tickets/EL-TK-145.md).
 
