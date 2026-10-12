@@ -126,33 +126,33 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-065 (DONE) | 064 | 066,067,071,072 |
 | EL-TK-066 (DONE) | 065,062 | 071,072 |
 | EL-TK-067 (DONE) | 062,064,065,055; contrato EL-EP-015 | 069,071,072 |
-| EL-TK-068 | 044 | 069,071,072 |
-| EL-TK-069 | 062,067,068,044 | 071,072 |
-| EL-TK-070 | 062; contrato ampliaciones EL-EP-011 | 071,072 |
-| EL-TK-071 | 063..070 | 072,073 |
-| EL-TK-072 | 064,065,067,068,069,071 | consumidores guest/upload/gallery/export |
-| EL-TK-073 | 071,072 | integración UX downstream |
+| EL-TK-068 (DONE) | 044 | 069,071,072 |
+| EL-TK-069 (DONE) | 062,067,068,044 | 071,072 |
+| EL-TK-070 (DONE) | 062; contrato ampliaciones EL-EP-011 | 071,072 |
+| EL-TK-071 (DONE) | 063..070 | 072,073 |
+| EL-TK-072 (DONE) | 064,065,067,068,069,071 | consumidores guest/upload/gallery/export |
+| EL-TK-073 (DONE) | 071,072 | integración UX downstream |
 
-12 activos READY de requisitos tras [dictamen de 2026-10-10](sessions/2026-10-10-el-ep-003-ticket-review.md); REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: PARTIAL (sujeto a contratos técnicos y dependencias de EL-EP-011/015 y auth administrativa EL-TK-044). Los contratos de EL-EP-011 y EL-EP-015 se consumen por interfaz y no se reinterpretan dentro de lifecycle.
+12 activos COMPLETADOS (DONE). Implementación y verificación completa de EL-EP-003 (cálculo de timeline canónico, apertura programada, activación, cierre, reapertura, transiciones automáticas, suspensión, reactivación con recálculo DEC-081, extensiones de vigencia, snapshots de lifecycle, autorizaciones por estado y componentes de interfaz en Angular para organizador e invitado per WCAG 2.2 AA). Épica formalmente cerrada como DONE.
 
 ## Tickets vigentes — EL-EP-004 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
-| EL-TK-074 | 020, 072, 084 | 075, 081, 082, 083 |
-| EL-TK-075 | 027, 074 | 076, 077, 078, 083 |
-| EL-TK-076 | 075 | primera carga EL-EP-005; 083 |
-| EL-TK-077 | 075 | integración carga EL-EP-005; 083 |
-| EL-TK-078 | 075, 072 | 083; retiro propio EL-EP-009 |
-| EL-TK-079 | 027, 075 | 085 |
-| EL-TK-080 | 074, 075 | 081, 085 |
-| EL-TK-081 | 074, 084 | 085 |
-| EL-TK-082 | 074; contrato EL-EP-009 | 083 |
-| EL-TK-083 | 074..078, 082 | integración UI guest downstream |
-| EL-TK-084 | 020, 027 | 074, 081, 085 |
-| EL-TK-085 | 079, 080, 081, 084 | integración UI organizador downstream |
+| EL-TK-074 (DONE) | 020, 072, 084 | 075, 081, 082, 083 |
+| EL-TK-075 (DONE) | 027, 074 | 076, 077, 078, 083 |
+| EL-TK-076 (DONE) | 075 | primera carga EL-EP-005; 083 |
+| EL-TK-077 (DONE) | 075 | integración carga EL-EP-005; 083 |
+| EL-TK-078 (DONE) | 075, 072 | 083; retiro propio EL-EP-009 |
+| EL-TK-079 (DONE) | 027, 075 | 085 |
+| EL-TK-080 (DONE) | 074, 075 | 081, 085 |
+| EL-TK-081 (DONE) | 074, 084 | 085 |
+| EL-TK-082 (DONE) | 074; contrato EL-EP-009 | 083 |
+| EL-TK-083 (DONE) | 074..078, 082 | integración UI guest downstream |
+| EL-TK-084 (DONE) | 020, 027 | 074, 081, 085 |
+| EL-TK-085 (DONE) | 079, 080, 081, 084 | integración UI organizador downstream |
 
-12 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de acceso guest, consentimiento, identidad, emisión inicial y superficies UI aprobadas en ui-mvp-epic-review.md#el-ep-004. La resolución de solicitudes de retiro permanece en EL-EP-009 y la carga de archivos en EL-EP-005; esta épica sólo entrega acceso, sesión, consentimiento, identidad guest y superficies de gestión y participación.
+12 activos COMPLETADOS (DONE). Implementación y verificación completa de EL-EP-004 (resolución de acceso público, sesión anónima protegida por PIN, consentimiento versionado, apodo de aportante, consulta aislada de Mis aportes per DEC-084, cambio y desactivación de PIN con revocación atómica per DEC-072/083, regeneración de credencial pública per DEC-083, generador QR vectorial autónomo, derivación a solicitud de retiro sin sesión per DEC-103..105, experiencia móvil de invitado en Angular Zoneless y consola de gestión de acceso de organizador accesible WCAG 2.2 AA). Épica formalmente cerrada como DONE.
 
 ## Tickets vigentes — EL-EP-005 (quality gate APPROVED)
 
@@ -442,4 +442,6 @@ TB-01/TB-02 dejan de bloquear.033/035/036/041/042/056 YES propio;058 NO ejecuci�
 **CONFIRMED — EL-TK-144 DONE, 2026-10-11:** dependencias EL-TK-141, EL-TK-142 y contratos EL-EP-012 satisfechas; consola administrativa con diálogo de overrides comerciales, motivo obligatorio de auditoría, retorno al plan base y gestión completa de solicitudes de ampliación implementada en `@eventlens/web`. 5 pruebas unitarias PASS, 52/52 suite web PASS, typecheck limpio. Desbloquea downstream EL-TK-145. Véase el [cierre](tickets/EL-TK-144.md).
 
 **CONFIRMED — EL-TK-145 DONE, 2026-10-11:** dependencias EL-TK-134..144 satisfechas; validación de extremo a extremo de la Épica `EL-EP-011` implementada en `@eventlens/capacity-management` (`test/capacity-epic-e2e.test.ts`). Valida con 4 escenarios canónicos: carreras concurrentes de uploads al límite comercial (DEC-079, DEC-080), sobregiro por reducción administrativa con preservación íntegra de archivos y rechazo DEC-102, ciclo completo de ampliación con aclaraciones y aprobación con override automático, y emisión/rearmado deduplicado de umbrales al 80% y 100%. Suite E2E 4/4 PASS, suite de capacidad 60/60 PASS, typecheck monorepo exit code 0. Épica `EL-EP-011` completada. Véase el [cierre](tickets/EL-TK-145.md).
+
+**CONFIRMED — EL-EP-004 (EL-TK-074..085) DONE, 2026-10-11:** dependencias 020, 027, 072 y 084 satisfechas; implementación integral del acceso público al evento, sesión anónima de invitado protegida por PIN, consentimiento versionado, apodo de aportante, consulta aislada de 'Mis aportes' per DEC-084, cambio y desactivación de PIN con revocación atómica per DEC-072/DEC-083, regeneración de credencial pública per DEC-083, generador QR vectorial autónomo sin dependencias externas, derivación a solicitud de retiro sin sesión previa per DEC-103..105, experiencia móvil de invitado en Angular Zoneless y consola de gestión de acceso de organizador accesible per WCAG 2.2 AA completada y validada en `@eventlens/event-management` y `@eventlens/web` (tickets EL-TK-074..EL-TK-085; 231/231 pruebas en event-management, 51/51 pruebas en web, suite completa del workspace PASS; 0 errores de build y typecheck). Cierra formalmente la épica EL-EP-004. Véanse los cierres de tickets en `tickets/EL-TK-078.md`..`EL-TK-085.md` y la minuta en [sesión de entrega EL-EP-004](sessions/2026-10-11-el-ep-004-guest-access-delivery.md).
 
