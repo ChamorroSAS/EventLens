@@ -4,15 +4,17 @@
 
 ## Decisión de producto confirmada
 
-El operador inicial de EventLens será **persona natural**. Esto **no** identifica por sí solo qué persona es responsable de cada tratamiento ni define que el operador sea responsable exclusivo de fotografías de eventos gestionados por terceros. Evaluar rol por finalidad y quién decide sobre el tratamiento: [roles](CONTROLLER-ROLES.md).
+El operador inicial del proyecto (nombre técnico provisional: «EventLens») será **persona natural** y tendrá domicilio municipal en **Barranquilla, Atlántico, Colombia** (confirmado 2026-10-12). Esto **no** identifica por sí solo qué persona es responsable de cada tratamiento ni define que el operador sea responsable exclusivo de fotografías de eventos gestionados por terceros. Evaluar rol por finalidad y quién decide sobre el tratamiento: [roles](CONTROLLER-ROLES.md).
 
 La decisión no convierte a NCH SERVICIOS S.A.S. en operadora, no constituye una sociedad y no altera DEC/TC/ARCH. Tampoco modifica DEC-031, EL-EP-017 ni el estado DEFERRED de Q-029.
 
 ### Identificación y contacto — PENDIENTE
 
 - Nombre legal público de la persona natural: [NOMBRE_LEGAL_PENDIENTE].
-- Domicilio y dirección para notificaciones: [DOMICILIO_DIRECCION_PENDIENTES].
-- Correo exclusivo para ejercicio de derechos: [CORREO_PENDIENTE].
+- Municipio de domicilio: **Barranquilla, Atlántico, Colombia — CONFIRMED**.
+- Dirección física: **suministrada en conversación, NO incluida en Git**, pendiente de validar si será dirección pública de notificaciones; no inferir autorización para divulgar domicilio residencial.
+- Correo: **suministrado, pero con formato inválido (falta @); confirmar dirección exacta y su uso público** antes de registrarlo como contacto.
+- Correo exclusivo para ejercicio de derechos: [CORREO_VALIDO_CONFIRMADO_PENDIENTE].
 - Teléfono de contacto: [TELEFONO_PENDIENTE].
 - Fecha de vigencia y versión de la política: [PENDIENTE].
 
@@ -27,6 +29,10 @@ La decisión no convierte a NCH SERVICIOS S.A.S. en operadora, no constituye una
 | [BETA-PRIVACY-NOTICE-DRAFT.md](BETA-PRIVACY-NOTICE-DRAFT.md) | Aviso preliminar y criterios para recoger solicitudes Beta | DRAFT / NO PUBLICAR |
 | [COMPLIANCE-GATES.md](COMPLIANCE-GATES.md) | Bloqueos, trazabilidad y responsables técnicos sugeridos | DRAFT |
 | [Gate jurídico de Home](../../.codex/product/sessions/2026-10-12-el-ep-018-legal-ticket-gate.md) | Alcance del gate para tickets de EL-EP-018 | PASS_WITH_CONDITIONS sólo para tickets DRAFT |
+
+## Riesgo de denominación comercial — confirmado como hallazgo público, decisión pendiente
+
+El nombre **EventLens** ya se usa públicamente en plataformas de fotografía/eventos muy similares (especialmente https://eventlens.ai/es/ y https://www.eventlens.app/ ). Se ha documentado el [análisis preliminar y gate de naming](../branding/NAMING-RISK-2026-10-12.md). **No** adoptar un nombre alternativo ni sustituir logos/paquetes sin validar antecedentes SIC/SIPI, dominio y cambios de arquitectura. El operador persona natural permanece igual aunque cambie el nombre comercial.
 
 ## Base existente que se conserva
 
