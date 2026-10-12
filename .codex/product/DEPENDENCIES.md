@@ -361,6 +361,36 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 NOT_READY. Q-029 y revisión jurídica profesional siguen siendo blocker explícito; no se generan tickets de implementación ni se inventan políticas legales.
 
+## Tickets vigentes — EL-EP-018 (quality gate APPROVED)
+
+| Ticket | Depende de | Bloquea |
+|---|---|---|
+| EL-TK-205 (READY) | EL-TK-013, EL-TK-185 | EL-TK-207, EL-TK-209, EL-TK-210, EL-TK-213 |
+| EL-TK-206 (READY) | EL-TK-204 | EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211, EL-TK-212, EL-TK-213 |
+| EL-TK-207 (READY) | EL-TK-205, EL-TK-206, EL-TK-013, EL-TK-015, EL-TK-185 | EL-TK-213, EL-TK-214 |
+| EL-TK-208 (READY) | EL-TK-008, EL-TK-206 | EL-TK-213, EL-TK-214 |
+| EL-TK-209 (READY) | EL-TK-205, EL-TK-206, EL-TK-014, EL-TK-016, EL-TK-017, EL-TK-201 | EL-TK-213, EL-TK-214 |
+| EL-TK-210 (READY) | EL-TK-205, EL-TK-206, EL-TK-047, EL-TK-048 | EL-TK-213, EL-TK-214 |
+| EL-TK-211 (READY) | EL-TK-206, EL-TK-074, EL-TK-075, EL-TK-076, EL-TK-077, EL-TK-078, EL-TK-082, EL-TK-083, EL-TK-084 | EL-TK-212, EL-TK-213, EL-TK-214 |
+| EL-TK-212 (READY) | EL-TK-206, EL-TK-211 | EL-TK-214 |
+| EL-TK-213 (READY) | EL-TK-204, EL-TK-205, EL-TK-206, EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211 | EL-TK-214 |
+| EL-TK-214 (READY) | EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211, EL-TK-212, EL-TK-213 | — |
+
+**READY de requisitos, 2026-10-12; arquitectura/UI aprobadas.** [Épica](epics/EL-EP-018.md) / [gates](sessions/2026-10-12-el-ep-018-review-gates.md). Sin módulo funcional nuevo ni ciclo con identidad/eventos; esta revisión no certifica implementación, APIs montadas o Beta. La navegación consume capacidades existentes, con fronteras:
+- `EL-EP-001`/`EL-TK-008` para login, cuenta y solicitud Beta; no registro abierto.
+- `EL-EP-002` para Mis eventos/OrganizerAppShell; no segundo dashboard.
+- `EL-EP-004` para acceso guest por QR/deep link; no directorio público de eventos.
+- `EL-EP-015` para sesión de eliminación restringida/gestión de cuenta; no nuevas políticas.
+- `EL-TK-203/204` para assets/foundation ya definidos; cambios visuales acotados, sin rediseño total.
+- `EL-EP-017` conserva gate jurídico antes de apertura pública; no impide planificación/ticket writing.
+
+La proyección de sesión autoritativa y su correctivo ACTIVE preceden al consumo de navegación privada. Mi cuenta compone201 y predecesoras bajo owners; no duplicarlas. El montaje HTTP/client/SPA se separa de dominio DONE y de métodos frontend simulados. QR `/g/:lookupKey` permanece directo; estado guest/admin independiente de logout organizador. El grafo concreto revisado se registra debajo, sin dependencia retroactiva que reabra entregas cerradas.
+- Antes de tickets: auditar rutas Angular/runtime/guard, aprobar navegación y copy, `ui_designer`, `requirements_reviewer`, `architect`. Ningún DONE histórico se reabre sin correctivo nuevo explícito.
+
+READY describe el alcance revisado, no predecesoras ejecutadas. Cada salida debe verificarse antes del consumidor. No se alteran dependencias históricas de los owners.
+
+Orden:205 y206 independientes →207/208/209/210/211 según sus propias predecesoras →212 y213 →214.209 espera también201, aún READY.206 no activa bootstrap ni importa componentes futuros;213 ensambla descriptores reales una vez entregados207..211.212 puede avanzar junto a213 tras211;214 requiere ambos. Todo paralelo está sujeto a dependencias y propiedad de archivos sin solapamiento. EP017/Q029 conserva aprobación de apertura pública separada.
+
 ## Tickets vigentes — EL-EP-006 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
@@ -517,41 +547,3 @@ TB-01/TB-02 dejan de bloquear.033/035/036/041/042/056 YES propio;058 NO ejecuci�
 **CONFIRMED — EL-TK-160 DONE, 2026-10-12:** dependencias EL-TK-156 y contrato EL-TK-138 satisfechas; generación de avisos de capacidad al 80% y 100% implementada y validada en `@eventlens/notifications` (`CapacityNoticeService`, `packages/notifications/src/capacity-notice-service.ts`) conforme a DEC-021, DEC-027 y contratos EL-EP-011 / EL-TK-138. Genera intenciones deduplicadas `CAPACITY_WARNING_80` (severidad `WARNING`, acción `/events/${eventId}/capacity`) y `CAPACITY_EXCEEDED_100` (severidad `CRITICAL`, acción autorizada de ampliación `/events/${eventId}/capacity/extension`), garantizando estricta idempotencia por dedupKey ante señales repetidas, compatibilidad con `NoticeProjectionService` y `EmailRenderer`, y auditoría sin fugar media ni datos confidenciales. 4/4 pruebas unitarias PASS en `capacity-notice.unit.test.ts`, 2/2 pruebas de integración PASS contra PostgreSQL 16 real en `capacity-notice.integration.test.ts`, 0 errores de typecheck. Desbloquea downstream EL-TK-164 y EL-TK-165. Véase el [cierre](tickets/EL-TK-160.md).
 
 **CONFIRMED — EL-TK-163 DONE, 2026-10-12:** dependencias EL-TK-156, hechos de dominio EL-EP-009 y contrato de auditoría EL-EP-014 satisfechas; generación de avisos de denuncias e intervenciones según severidad autorizada implementada y validada en `@eventlens/notifications` (`CaseNoticeService`, `packages/notifications/src/case-notice-service.ts`) conforme a Q-018, DEC-021, DEC-023, DEC-088 y contratos EL-EP-009/014. Emite alertas prioritarias para administradores autorizados (`CASE_CRITICAL_ALERT`, severidad `CRITICAL`) ante reportes críticos sin auto-ocultamiento de contenido, copy mínimo autorizado para el organizador (`CASE_RESOLUTION_NOTICE`, `ADMIN_INTERVENTION`), supresión estricta por órdenes legales o directivas de seguridad sin fugar razones confidenciales al destinatario, y garantía de cero filtraciones de reportantes o previews multimedia en los payloads de notificación. 7/7 pruebas unitarias PASS en `case-notice.unit.test.ts`, 2/2 pruebas de integración PASS contra PostgreSQL 16 real en `case-notice.integration.test.ts`, 0 errores de typecheck. Desbloquea downstream EL-TK-164 y EL-TK-165. Véase el [cierre](tickets/EL-TK-163.md).
-
-
-
-
-
-
-
-## Planificación revisada — EL-EP-018 (Home y navegación)
-
-**READY de requisitos, 2026-10-12; arquitectura/UI aprobadas.** [Épica](epics/EL-EP-018.md) / [gates](sessions/2026-10-12-el-ep-018-review-gates.md). Sin módulo funcional nuevo ni ciclo con identidad/eventos; esta revisión no certifica implementación, APIs montadas o Beta. La navegación consume capacidades existentes, con fronteras:
-- `EL-EP-001`/`EL-TK-008` para login, cuenta y solicitud Beta; no registro abierto.
-- `EL-EP-002` para Mis eventos/OrganizerAppShell; no segundo dashboard.
-- `EL-EP-004` para acceso guest por QR/deep link; no directorio público de eventos.
-- `EL-EP-015` para sesión de eliminación restringida/gestión de cuenta; no nuevas políticas.
-- `EL-TK-203/204` para assets/foundation ya definidos; cambios visuales acotados, sin rediseño total.
-- `EL-EP-017` conserva gate jurídico antes de apertura pública; no impide planificación/ticket writing.
-
-La proyección de sesión autoritativa y su correctivo ACTIVE preceden al consumo de navegación privada. Mi cuenta compone201 y predecesoras bajo owners; no duplicarlas. El montaje HTTP/client/SPA se separa de dominio DONE y de métodos frontend simulados. QR `/g/:lookupKey` permanece directo; estado guest/admin independiente de logout organizador. El grafo concreto revisado se registra debajo, sin dependencia retroactiva que reabra entregas cerradas.
-- Antes de tickets: auditar rutas Angular/runtime/guard, aprobar navegación y copy, `ui_designer`, `requirements_reviewer`, `architect`. Ningún DONE histórico se reabre sin correctivo nuevo explícito.
-
-### Grafo aprobado de tickets EL-EP-018
-
-READY describe el alcance revisado, no predecesoras ejecutadas. Cada salida debe verificarse antes del consumidor. No se alteran dependencias históricas de los owners.
-
-| Ticket | depends_on |
-|---|---|
-| [EL-TK-205](tickets/EL-TK-205.md) | EL-TK-013, EL-TK-185 |
-| [EL-TK-206](tickets/EL-TK-206.md) | EL-TK-204 |
-| [EL-TK-207](tickets/EL-TK-207.md) | EL-TK-205, EL-TK-206, EL-TK-013, EL-TK-015, EL-TK-185 |
-| [EL-TK-208](tickets/EL-TK-208.md) | EL-TK-008, EL-TK-206 |
-| [EL-TK-209](tickets/EL-TK-209.md) | EL-TK-205, EL-TK-206, EL-TK-014, EL-TK-016, EL-TK-017, EL-TK-201 |
-| [EL-TK-210](tickets/EL-TK-210.md) | EL-TK-205, EL-TK-206, EL-TK-047, EL-TK-048 |
-| [EL-TK-211](tickets/EL-TK-211.md) | EL-TK-206, EL-TK-074, EL-TK-075, EL-TK-076, EL-TK-077, EL-TK-078, EL-TK-082, EL-TK-083, EL-TK-084 |
-| [EL-TK-212](tickets/EL-TK-212.md) | EL-TK-206, EL-TK-211 |
-| [EL-TK-213](tickets/EL-TK-213.md) | EL-TK-204, EL-TK-205, EL-TK-206, EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211 |
-| [EL-TK-214](tickets/EL-TK-214.md) | EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211, EL-TK-212, EL-TK-213 |
-
-Orden:205 y206 independientes →207/208/209/210/211 según sus propias predecesoras →212 y213 →214.209 espera también201, aún READY.206 no activa bootstrap ni importa componentes futuros;213 ensambla descriptores reales una vez entregados207..211.212 puede avanzar junto a213 tras211;214 requiere ambos. Todo paralelo está sujeto a dependencias y propiedad de archivos sin solapamiento. EP017/Q029 conserva aprobación de apertura pública separada.
