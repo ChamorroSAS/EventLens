@@ -4,7 +4,7 @@
 EL-EP-008
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador propietario, **quiero** mover una media elegible a papelera, **para** retirarla temporalmente con opción de restauración durante siete días.
@@ -68,3 +68,17 @@ Q-019, Q-023; DEC-022, DEC-039, DEC-096; EL-EP-008, EL-EP-015.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §8.5..9; sin componentes nuevos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Cierre de implementación — 2026-10-12
+
+- **Resultado:** APROBADO.
+- **Implementación:** Implementado comando `trashMedia` en [`MediaModerationService`](file:///c:/Users/geren/Documents/GitHub/EventLens/packages/media-inspection/src/media-moderation.ts) y persistencia en tabla `media_trash_record` mediante migración `202610120021_media_trash` y [`PostgresMediaModerationRepository`](file:///c:/Users/geren/Documents/GitHub/EventLens/packages/media-inspection/src/media-moderation.ts).
+- **Criterios de aceptación verificados:**
+  - Escenario 1: Medios en `PUBLISHED`, `HIDDEN`, `PENDING_REVIEW` o `REJECTED` transicionan a `TRASHED`, guardan `previousStatus`, registran `trashedAt` y calculan `restoreDeadline` con ventana canónica de 7 días (DEC-096).
+  - Escenario 2: Medios en curso (`PROCESSING`, `UPLOADED`) se deniegan con `INELIGIBLE_STATE`. Medios en `QUARANTINED` se deniegan con `SAFETY_BLOCKED`.
+  - Escenario 3: Medios en `PROCESSING_FAILED` solo se admiten si cuentan con inspección de seguridad aprobada (`outcome: 'APPROVED'`); de lo contrario se deniegan con `SAFETY_BLOCKED`.
+- **Prevalencia de seguridad y retención:** Inspección con `DENIED` o `INCONCLUSIVE` bloquea con `SAFETY_BLOCKED`; bloqueos de retiro activos devuelven `REMOVAL_BLOCKED`. Los archivos físicos y consumo en `media_consumption_ledger` se conservan hasta purga física (EL-EP-015).
+- **Idempotencia y concurrencia:** Reintento sobre media ya `TRASHED` retorna de forma idempotente la información activa sin duplicar transiciones. Concurrencia protegida mediante `expectedRevision` con código `CONCURRENCY_CONFLICT`.
+- **Aislamiento y permisos:** Validación de pertenencia del evento al organizador; intentos no autorizados o cross-event devuelven `ACCESS_DENIED`.
+- **Pruebas:** 28/28 pruebas unitarias PASS en `packages/media-inspection/test/media-moderation.unit.test.ts`. Build y typecheck completados con 0 errores.
+- **Observabilidad:** Registro de auditoría en `audit_event` (`MEDIA_TRASHED`) con metadata de trazabilidad (actor, previousStatus, newStatus, revision, reason, timestamps) sin almacenar binarios.

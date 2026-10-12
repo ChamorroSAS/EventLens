@@ -137,7 +137,7 @@
 | EL-TK-104 | Rechazar una media pendiente de revisión | EL-EP-008 | DONE | P0 | 098 | [EL-TK-104](tickets/EL-TK-104.md) |
 | EL-TK-105 | Ocultar una media publicada sin eliminarla | EL-EP-008 | READY | P0 | 098,101 | [EL-TK-105](tickets/EL-TK-105.md) |
 | EL-TK-106 | Volver a publicar una media oculta cuando sigue autorizada | EL-EP-008 | READY | P0 | 105,101 | [EL-TK-106](tickets/EL-TK-106.md) |
-| EL-TK-107 | Mover una media elegible a papelera conservando su estado previo | EL-EP-008 | READY | P0 | 098,053; contrato EL-EP-006 | [EL-TK-107](tickets/EL-TK-107.md) |
+| EL-TK-107 | Mover una media elegible a papelera conservando su estado previo | EL-EP-008 | DONE | P0 | 098,053; contrato EL-EP-006 | [EL-TK-107](tickets/EL-TK-107.md) |
 | EL-TK-108 | Restaurar una media de papelera respetando bloqueos vigentes | EL-EP-008 | READY | P0 | 107 | [EL-TK-108](tickets/EL-TK-108.md) |
 | EL-TK-109 | Entregar a purga una media cuya papelera venció | EL-EP-008 | READY | P0 | 107,055; contrato EL-EP-015 | [EL-TK-109](tickets/EL-TK-109.md) |
 | EL-TK-110 | Cambiar el modo de moderación sin reescribir contenido existente | EL-EP-008 | READY | P0 | 028,037 | [EL-TK-110](tickets/EL-TK-110.md) |
