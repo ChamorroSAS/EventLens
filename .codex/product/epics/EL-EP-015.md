@@ -120,6 +120,18 @@ DEC-107 completa la reautenticación aprobada sin modificar las ventanas ni regl
 
 Evidencia histórica en [primer gate](../sessions/2026-10-12-el-ep-015-gates.md); cierre/impacto vigente en [decisiones y reevaluación](../sessions/2026-10-12-el-ep-015-decisions.md). EL-TK-018/019 conservan sus gates independientes de política/token: no bloquean construir verifier/consumidores, pero recuperación debe estar implementada antes de depender de resets forzados.
 
+## Descomposición de tickets propuesta — 2026-10-12
+
+**DOCUMENTAL / PENDIENTE DE REVISIÓN:** La épica conserva sus gates aprobados (REQUIREMENTS_READY, READY_FOR_IMPLEMENTATION por alcance, READY_FOR_FRONTEND_PLANNING y READY_FOR_TICKET_WRITING en YES). Esta propuesta crea **18 tickets DRAFT**, sin acreditación de implementación o revisión formal ticket por ticket. [Grafo, frontera de ownership y dictamen estructural](../sessions/2026-10-12-el-ep-015-ticket-plan.md).
+
+- Correctivos con propietario propio: EL-TK-185/186 → EL-EP-001 (verifier Argon2id, challenge/evidence); EL-TK-187 → EL-EP-006 (carrera disposición/liberación en cuarentena). No reabrir ni declarar inválidos los cierres históricos de EL-TK-018/019 y 041/042; verificar código y corregir gap real.
+- Núcleo MOD-008: EL-TK-188..199 — intents, solicitud/cancelación evento y cuenta, barreras, intake por causa, inventario/drenaje, purga, RecoveryAuthority y evidencia principal/residual.
+- UI aprobada: EL-TK-200/201 usan el handoff existente, sin nuevas superficies/servicios.
+- Validación E2E: EL-TK-202, dependiente de integraciones y almacenamiento/restore con evidencia real.
+- Contratos propietarios existentes NO duplicados: EL-TK-067, 109, 114/119, 128, 137, 159, 172/174 y correctivo de frontera EL-TK-108. LEGAL_OR_SECURITY_HOLD excluido.
+
+La revisión de requirements_reviewer, architect y comprobación UI de tickets 200/201 son **pendientes de aceptación del PR**; ningún cambio a los estados de Beta, MEDIA-001/CAP-001/DR-001/EXPORT-001 o políticas jurídicas.
+
 ## Definition of Ready
 
 - [x] Objective confirmed
