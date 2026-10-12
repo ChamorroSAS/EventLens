@@ -17,6 +17,12 @@ export interface MediaCapabilitiesModel {
   canDownloadOriginal: boolean;
   canView: boolean;
   canDelete: boolean;
+  canApprove?: boolean;
+  canReject?: boolean;
+  canHide?: boolean;
+  canRepublish?: boolean;
+  canTrash?: boolean;
+  canRestore?: boolean;
 }
 
 export interface MediaObservableProgressModel {
@@ -32,6 +38,9 @@ export interface MediaCardModel {
   mimeType?: string;
   sizeBytes?: number;
   status: MediaCatalogStatus;
+  previousStatus?: string;
+  trashedAt?: string;
+  restoreDeadline?: string;
   previewUrl?: string;
   capabilities: MediaCapabilitiesModel;
   safety: {
@@ -39,6 +48,14 @@ export interface MediaCardModel {
   };
   observableProgress?: MediaObservableProgressModel;
   createdAt?: string;
+}
+
+export type EventModerationMode = 'AUTO_PUBLISH' | 'ORGANIZER_REVIEW';
+
+export interface EventModerationSettingsModel {
+  eventRef: string;
+  moderationMode: EventModerationMode;
+  canChangeModerationMode: boolean;
 }
 
 export type MediaStatusFilter =

@@ -4,11 +4,17 @@ import type {
   MediaStatusFilter,
   EmptyReason,
   RetryCycleResponse,
+  EventModerationMode,
 } from './media.types.js';
 import { MediaLibraryService } from './media-library.service.js';
 import { MediaStatusFilterComponent } from './media-status-filter.component.js';
 import { OrganizerMediaCardComponent } from './organizer-media-card.component.js';
 import { OrganizerMediaTableComponent } from './organizer-media-table.component.js';
+import { HideMediaDialogComponent } from './hide-media-dialog.component.js';
+import { RejectMediaDialogComponent } from './reject-media-dialog.component.js';
+import { TrashMediaDialogComponent } from './trash-media-dialog.component.js';
+import { RetentionNoticeComponent } from './retention-notice.component.js';
+import { ModerationSettingsComponent } from './moderation-settings.component.js';
 
 @Component({
   selector: 'eventlens-organizer-media-library',
@@ -17,6 +23,11 @@ import { OrganizerMediaTableComponent } from './organizer-media-table.component.
     MediaStatusFilterComponent,
     OrganizerMediaCardComponent,
     OrganizerMediaTableComponent,
+    HideMediaDialogComponent,
+    RejectMediaDialogComponent,
+    TrashMediaDialogComponent,
+    RetentionNoticeComponent,
+    ModerationSettingsComponent,
   ],
   template: `
     <div class="organizer-media-library" [attr.aria-label]="'Biblioteca de medios del evento ' + eventRef">
@@ -34,6 +45,18 @@ import { OrganizerMediaTableComponent } from './organizer-media-table.component.
         </div>
 
         <div class="header-actions">
+          <!-- BOTÓN TOGGLE AJUSTES MODERACIÓN -->
+          <button
+            type="button"
+            class="btn-toggle-settings"
+            [class.active]="showSettings()"
+            [attr.aria-expanded]="showSettings()"
+            aria-label="Configurar modo de moderación del evento"
+            (click)="toggleSettings()"
+          >
+            <span aria-hidden="true">⚙️</span> Moderación
+          </button>
+
           <!-- CONMUTADOR DE VISTA (CUADRÍCULA / TABLA) -->
           <div class="view-switcher" role="group" aria-label="Modo de visualización">
             <button
@@ -69,6 +92,54 @@ import { OrganizerMediaTableComponent } from './organizer-media-table.component.
           </button>
         </div>
       </header>
+
+      <!-- PANEL DE AJUSTES DE MODERACIÓN (OPCIONAL/COLAPSABLE) -->
+      @if (showSettings()) {
+        <section class="settings-collapsible" aria-label="Sección de configuración de moderación">
+          <eventlens-moderation-settings
+            [eventRef]="eventRef"
+            [moderationMode]="moderationMode()"
+            [disabled]="isLoading()"
+            (modeChanged)="onModerationModeChanged($event)"
+          />
+        </section>
+      }
+
+      <!-- ALERTAS Y MENSAJES DE ACCIÓN -->
+      @if (actionSuccessMessage()) {
+        <div class="alert-banner alert-success" role="status" aria-live="polite">
+          <span class="alert-icon" aria-hidden="true">✓</span>
+          <span>{{ actionSuccessMessage() }}</span>
+          <button
+            type="button"
+            class="btn-dismiss"
+            aria-label="Cerrar mensaje"
+            (click)="actionSuccessMessage.set(null)"
+          >
+            ✕
+          </button>
+        </div>
+      }
+
+      @if (actionErrorMessage()) {
+        <div class="alert-banner alert-danger" role="alert">
+          <span class="alert-icon" aria-hidden="true">⚠️</span>
+          <span>{{ actionErrorMessage() }}</span>
+          <button
+            type="button"
+            class="btn-dismiss"
+            aria-label="Cerrar mensaje de error"
+            (click)="actionErrorMessage.set(null)"
+          >
+            ✕
+          </button>
+        </div>
+      }
+
+      <!-- AVISO DE RETENCIÓN EN PAPELERA (CUANDO EL FILTRO ES TRASHED) -->
+      @if (activeFilter() === 'TRASHED') {
+        <eventlens-retention-notice />
+      }
 
       <!-- BARRA DE FILTROS ACCESIBLE -->
       <section class="toolbar-section" aria-label="Opciones de filtrado">
@@ -135,6 +206,12 @@ import { OrganizerMediaTableComponent } from './organizer-media-table.component.
                     (retryCycleSubmitted)="onRetryCycleSubmitted($event)"
                     (refreshRequested)="loadLibrary()"
                     (downloadTriggered)="onDownloadTriggered(item)"
+                    (approveRequested)="onApproveRequested($event)"
+                    (rejectRequested)="onRejectRequested($event)"
+                    (hideRequested)="onHideRequested($event)"
+                    (republishRequested)="onRepublishRequested($event)"
+                    (trashRequested)="onTrashRequested($event)"
+                    (restoreRequested)="onRestoreRequested($event)"
                   />
                 </div>
               }
@@ -145,10 +222,41 @@ import { OrganizerMediaTableComponent } from './organizer-media-table.component.
               (retryCycleSubmitted)="onRetryCycleSubmitted($event)"
               (refreshRequested)="loadLibrary()"
               (downloadTriggered)="onDownloadTriggered($event)"
+              (approveRequested)="onApproveRequested($event)"
+              (rejectRequested)="onRejectRequested($event)"
+              (hideRequested)="onHideRequested($event)"
+              (republishRequested)="onRepublishRequested($event)"
+              (trashRequested)="onTrashRequested($event)"
+              (restoreRequested)="onRestoreRequested($event)"
             />
           }
         }
       </div>
+
+      <!-- MODALES DE CONFIRMACIÓN -->
+      <eventlens-hide-media-dialog
+        [media]="selectedDialogMedia()"
+        [isOpen]="isHideDialogOpen()"
+        [isSubmitting]="isDialogSubmitting()"
+        (confirm)="onConfirmHide($event)"
+        (cancel)="closeDialogs()"
+      />
+
+      <eventlens-reject-media-dialog
+        [media]="selectedDialogMedia()"
+        [isOpen]="isRejectDialogOpen()"
+        [isSubmitting]="isDialogSubmitting()"
+        (confirm)="onConfirmReject($event)"
+        (cancel)="closeDialogs()"
+      />
+
+      <eventlens-trash-media-dialog
+        [media]="selectedDialogMedia()"
+        [isOpen]="isTrashDialogOpen()"
+        [isSubmitting]="isDialogSubmitting()"
+        (confirm)="onConfirmTrash($event)"
+        (cancel)="closeDialogs()"
+      />
     </div>
   `,
   styles: `
@@ -189,6 +297,29 @@ import { OrganizerMediaTableComponent } from './organizer-media-table.component.
       gap: 0.75rem;
       flex-wrap: wrap;
     }
+    .btn-toggle-settings {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      min-height: 38px;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.375rem;
+      border: 1px solid #cbd5e1;
+      background-color: #ffffff;
+      color: #334155;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+    .btn-toggle-settings:hover {
+      background-color: #f1f5f9;
+    }
+    .btn-toggle-settings.active {
+      background-color: #eff6ff;
+      border-color: #3b82f6;
+      color: #1d4ed8;
+    }
     .view-switcher {
       display: inline-flex;
       border: 1px solid #cbd5e1;
@@ -199,153 +330,176 @@ import { OrganizerMediaTableComponent } from './organizer-media-table.component.
     .btn-view {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
       gap: 0.375rem;
-      min-height: 44px;
-      padding: 0.5rem 0.875rem;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #475569;
-      background: none;
+      min-height: 38px;
+      padding: 0.375rem 0.75rem;
       border: none;
+      background: none;
+      color: #475569;
+      font-size: 0.8125rem;
+      font-weight: 600;
       cursor: pointer;
-      transition: all 0.15s ease-in-out;
+      transition: background-color 0.15s ease, color 0.15s ease;
     }
     .btn-view:hover:not(.active) {
-      background-color: #e2e8f0;
-      color: #0f172a;
+      background-color: #f1f5f9;
     }
     .btn-view.active {
-      background-color: #2563eb;
-      color: #ffffff;
-      font-weight: 600;
-    }
-    .btn-view:focus-visible {
-      outline: 2px solid #2563eb;
-      outline-offset: -2px;
-      z-index: 1;
+      background-color: #ffffff;
+      color: #0f172a;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
     .btn-refresh {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
       gap: 0.375rem;
-      min-height: 44px;
-      padding: 0.5rem 0.875rem;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #334155;
-      background-color: #f8fafc;
+      min-height: 38px;
+      padding: 0.375rem 0.75rem;
       border: 1px solid #cbd5e1;
       border-radius: 0.5rem;
+      background-color: #ffffff;
+      color: #334155;
+      font-size: 0.8125rem;
+      font-weight: 600;
       cursor: pointer;
       transition: background-color 0.15s ease;
     }
     .btn-refresh:hover:not(:disabled) {
-      background-color: #e2e8f0;
-      color: #0f172a;
-    }
-    .btn-refresh:focus-visible {
-      outline: 2px solid #2563eb;
-      outline-offset: 2px;
+      background-color: #f1f5f9;
     }
     .btn-refresh:disabled {
       opacity: 0.6;
       cursor: not-allowed;
+    }
+    .settings-collapsible {
+      animation: fadeIn 0.15s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .alert-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+    }
+    .alert-success {
+      background-color: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+    }
+    .alert-danger {
+      background-color: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+    .btn-dismiss {
+      background: none;
+      border: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+      color: inherit;
+      padding: 0.25rem;
     }
     .toolbar-section {
       width: 100%;
     }
     .library-content {
       width: 100%;
+      min-height: 240px;
     }
     .state-card {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 3rem 1.5rem;
-      background-color: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 0.75rem;
-      text-align: center;
       gap: 0.75rem;
+      padding: 3rem 1.5rem;
+      border: 1px dashed #cbd5e1;
+      border-radius: 0.75rem;
+      background-color: #ffffff;
+      text-align: center;
     }
-    .spinner, .empty-icon, .alert-icon {
-      font-size: 2.25rem;
+    .loading-state p {
+      margin: 0;
+      font-size: 0.875rem;
+      color: #64748b;
     }
-    .state-card h3 {
+    .spinner {
+      font-size: 2rem;
+    }
+    .error-state {
+      border-color: #fca5a5;
+      background-color: #fef2f2;
+    }
+    .alert-icon {
+      font-size: 2rem;
+    }
+    .error-details h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #991b1b;
+    }
+    .error-details p {
+      margin: 0 0 1rem;
+      font-size: 0.875rem;
+      color: #7f1d1d;
+    }
+    .btn-retry {
+      min-height: 40px;
+      padding: 0.5rem 1.25rem;
+      border-radius: 0.375rem;
+      border: 1px solid #dc2626;
+      background-color: #dc2626;
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .btn-retry:hover {
+      background-color: #b91c1c;
+    }
+    .empty-icon {
+      font-size: 2.5rem;
+    }
+    .empty-library-state h3,
+    .empty-filter-state h3 {
       margin: 0;
       font-size: 1.125rem;
-      font-weight: 600;
+      font-weight: 700;
       color: #0f172a;
     }
     .empty-description {
       margin: 0;
       font-size: 0.875rem;
       color: #64748b;
-      max-width: 440px;
+      max-width: 380px;
     }
     .btn-clear-filters {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 44px;
-      padding: 0.5rem 1.25rem;
-      border-radius: 0.5rem;
-      background-color: #2563eb;
-      color: #ffffff;
-      font-size: 0.875rem;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
+      min-height: 40px;
+      padding: 0.5rem 1rem;
       margin-top: 0.5rem;
-      transition: background-color 0.15s ease;
+      border-radius: 0.375rem;
+      border: 1px solid #cbd5e1;
+      background-color: #f8fafc;
+      color: #0f172a;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
     }
     .btn-clear-filters:hover {
-      background-color: #1d4ed8;
-    }
-    .btn-clear-filters:focus-visible {
-      outline: 2px solid #2563eb;
-      outline-offset: 2px;
-    }
-    .error-details {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .error-state p {
-      margin: 0;
-      color: #991b1b;
-      font-size: 0.875rem;
-    }
-    .btn-retry {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 44px;
-      padding: 0.5rem 1rem;
-      border-radius: 0.5rem;
-      background-color: #dc2626;
-      color: #ffffff;
-      font-size: 0.875rem;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      margin-top: 0.25rem;
-    }
-    .btn-retry:hover {
-      background-color: #b91c1c;
-    }
-    .btn-retry:focus-visible {
-      outline: 2px solid #dc2626;
-      outline-offset: 2px;
+      background-color: #e2e8f0;
     }
     .media-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 1.25rem;
+      gap: 1rem;
+      width: 100%;
     }
     @media (min-width: 640px) {
       .media-grid {
@@ -361,6 +515,10 @@ import { OrganizerMediaTableComponent } from './organizer-media-table.component.
       .media-grid {
         grid-template-columns: repeat(4, 1fr);
       }
+    }
+    button:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
     }
   `,
 })
@@ -382,11 +540,27 @@ export class OrganizerMediaLibraryComponent implements OnInit {
   readonly errorMessage = signal<string | null>(null);
   readonly viewMode = signal<'grid' | 'table'>('grid');
 
+  // Moderation Settings & Notices
+  readonly showSettings = signal<boolean>(false);
+  readonly moderationMode = signal<EventModerationMode>('AUTO_PUBLISH');
+
+  // Dialogs
+  readonly selectedDialogMedia = signal<MediaCardModel | null>(null);
+  readonly isHideDialogOpen = signal<boolean>(false);
+  readonly isRejectDialogOpen = signal<boolean>(false);
+  readonly isTrashDialogOpen = signal<boolean>(false);
+  readonly isDialogSubmitting = signal<boolean>(false);
+
+  // Feedback alerts
+  readonly actionSuccessMessage = signal<string | null>(null);
+  readonly actionErrorMessage = signal<string | null>(null);
+
   async ngOnInit(): Promise<void> {
     if (this.initialFilter) {
       this.activeFilter.set(this.initialFilter);
     }
     await this.loadLibrary();
+    await this.loadModerationSettings();
   }
 
   async loadLibrary(): Promise<void> {
@@ -422,6 +596,16 @@ export class OrganizerMediaLibraryComponent implements OnInit {
     }
   }
 
+  async loadModerationSettings(): Promise<void> {
+    if (!this.eventRef) return;
+    try {
+      const settings = await this.mediaLibraryService.getModerationSettings(this.eventRef);
+      this.moderationMode.set(settings.moderationMode);
+    } catch {
+      // Keep default AUTO_PUBLISH if settings query fails
+    }
+  }
+
   async onFilterChanged(filter: MediaStatusFilter): Promise<void> {
     this.activeFilter.set(filter);
     await this.loadLibrary();
@@ -436,13 +620,157 @@ export class OrganizerMediaLibraryComponent implements OnInit {
     this.viewMode.set(mode);
   }
 
+  toggleSettings(): void {
+    this.showSettings.set(!this.showSettings());
+  }
+
+  async onModerationModeChanged(mode: EventModerationMode): Promise<void> {
+    this.actionErrorMessage.set(null);
+    try {
+      await this.mediaLibraryService.updateModerationMode(this.eventRef, mode);
+      this.moderationMode.set(mode);
+      this.actionSuccessMessage.set(
+        `Modo de moderación actualizado a: ${
+          mode === 'AUTO_PUBLISH' ? 'Publicación automática' : 'Revisión previa del organizador'
+        }.`
+      );
+    } catch (err: unknown) {
+      this.handleActionError(err, 'actualizar el modo de moderación');
+    }
+  }
+
   onRetryCycleSubmitted(response: RetryCycleResponse): void {
     this.retryCycleTriggered.emit(response);
-    // Reload library to update progress indicators
     void this.loadLibrary();
   }
 
   onDownloadTriggered(item: MediaCardModel): void {
     this.downloadItemTriggered.emit(item);
+  }
+
+  // --- ACCIONES DIRECTAS DE MODERACIÓN ---
+
+  async onApproveRequested(media: MediaCardModel): Promise<void> {
+    this.clearAlerts();
+    try {
+      await this.mediaLibraryService.approveMedia(this.eventRef, media.mediaRef);
+      this.actionSuccessMessage.set(`«${media.fileName}» fue aprobada y publicada en la galería.`);
+      await this.loadLibrary();
+    } catch (err: unknown) {
+      this.handleActionError(err, 'aprobar la foto/video');
+    }
+  }
+
+  async onRepublishRequested(media: MediaCardModel): Promise<void> {
+    this.clearAlerts();
+    try {
+      await this.mediaLibraryService.republishMedia(this.eventRef, media.mediaRef);
+      this.actionSuccessMessage.set(`«${media.fileName}» fue vuelta a publicar.`);
+      await this.loadLibrary();
+    } catch (err: unknown) {
+      this.handleActionError(err, 'volver a publicar');
+    }
+  }
+
+  async onRestoreRequested(media: MediaCardModel): Promise<void> {
+    this.clearAlerts();
+    try {
+      await this.mediaLibraryService.restoreMedia(this.eventRef, media.mediaRef);
+      this.actionSuccessMessage.set(`«${media.fileName}» fue restaurada de la papelera con éxito.`);
+      await this.loadLibrary();
+    } catch (err: unknown) {
+      this.handleActionError(err, 'restaurar de la papelera');
+    }
+  }
+
+  // --- APERTURA DE DIALOGS DE CONFIRMACIÓN ---
+
+  onHideRequested(media: MediaCardModel): void {
+    this.clearAlerts();
+    this.selectedDialogMedia.set(media);
+    this.isHideDialogOpen.set(true);
+  }
+
+  onRejectRequested(media: MediaCardModel): void {
+    this.clearAlerts();
+    this.selectedDialogMedia.set(media);
+    this.isRejectDialogOpen.set(true);
+  }
+
+  onTrashRequested(media: MediaCardModel): void {
+    this.clearAlerts();
+    this.selectedDialogMedia.set(media);
+    this.isTrashDialogOpen.set(true);
+  }
+
+  closeDialogs(): void {
+    this.isHideDialogOpen.set(false);
+    this.isRejectDialogOpen.set(false);
+    this.isTrashDialogOpen.set(false);
+    this.selectedDialogMedia.set(null);
+  }
+
+  // --- CONFIRMACIÓN EN DIALOGS ---
+
+  async onConfirmHide(media: MediaCardModel): Promise<void> {
+    this.isDialogSubmitting.set(true);
+    try {
+      await this.mediaLibraryService.hideMedia(this.eventRef, media.mediaRef);
+      this.closeDialogs();
+      this.actionSuccessMessage.set(`«${media.fileName}» fue ocultada de la galería de invitados.`);
+      await this.loadLibrary();
+    } catch (err: unknown) {
+      this.handleActionError(err, 'ocultar el archivo');
+    } finally {
+      this.isDialogSubmitting.set(false);
+    }
+  }
+
+  async onConfirmReject(event: { media: MediaCardModel; reason?: string }): Promise<void> {
+    this.isDialogSubmitting.set(true);
+    try {
+      await this.mediaLibraryService.rejectMedia(this.eventRef, event.media.mediaRef, event.reason);
+      this.closeDialogs();
+      this.actionSuccessMessage.set(`«${event.media.fileName}» fue rechazada.`);
+      await this.loadLibrary();
+    } catch (err: unknown) {
+      this.handleActionError(err, 'rechazar el archivo');
+    } finally {
+      this.isDialogSubmitting.set(false);
+    }
+  }
+
+  async onConfirmTrash(event: { media: MediaCardModel; reason?: string }): Promise<void> {
+    this.isDialogSubmitting.set(true);
+    try {
+      await this.mediaLibraryService.trashMedia(this.eventRef, event.media.mediaRef, event.reason);
+      this.closeDialogs();
+      this.actionSuccessMessage.set(`«${event.media.fileName}» fue enviada a la papelera (retención 7 días).`);
+      await this.loadLibrary();
+    } catch (err: unknown) {
+      this.handleActionError(err, 'mover a papelera');
+    } finally {
+      this.isDialogSubmitting.set(false);
+    }
+  }
+
+  private clearAlerts(): void {
+    this.actionSuccessMessage.set(null);
+    this.actionErrorMessage.set(null);
+  }
+
+  private handleActionError(err: unknown, actionDesc: string): void {
+    const code = err instanceof Error ? err.message : '';
+    if (code === 'SAFETY_BLOCKED') {
+      this.actionErrorMessage.set('Acción denegada: El archivo tiene un bloqueo de seguridad vigente.');
+    } else if (code === 'CONCURRENCY_CONFLICT') {
+      this.actionErrorMessage.set('Conflicto concurrente: El archivo cambió en el servidor. Actualiza la lista.');
+    } else if (code === 'RESTORE_WINDOW_EXPIRED') {
+      this.actionErrorMessage.set('Ventana vencida: El archivo ya superó los 7 días en papelera y no puede restaurarse.');
+    } else if (code === 'ACCESS_DENIED') {
+      this.actionErrorMessage.set(`Permiso denegado para ${actionDesc}.`);
+    } else {
+      this.actionErrorMessage.set(`Ocurrió un error al intentar ${actionDesc}.`);
+    }
   }
 }
