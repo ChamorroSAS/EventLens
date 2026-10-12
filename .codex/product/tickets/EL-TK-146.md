@@ -4,7 +4,7 @@
 EL-EP-012
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** administración autorizada, **quiero** buscar eventos u organizadores por referencias permitidas, **para** localizar rápidamente el contexto de soporte sin abrir multimedia.

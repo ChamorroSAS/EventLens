@@ -260,15 +260,15 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
-| EL-TK-146 | 044; contrato EL-EP-002 | 147,154,155 |
-| EL-TK-147 | 146; contratos propietarios | 148,150,151,152,153,154,155 |
-| EL-TK-148 | 147; contrato JobQueue | 149,153,154,155 |
-| EL-TK-149 | 148,044; contrato JobQueue | 153,154,155 |
-| EL-TK-150 | 147, 044, contrato MediaViewGrant (097); contrato EL-EP-014 | 154,155 |
-| EL-TK-151 | 147; contratos propietarios | 154,155 |
-| EL-TK-152 | 147; contratos EL-EP-001/009/011 | 154,155 |
-| EL-TK-153 | 148,149 | 154,155 |
-| EL-TK-154 | 146,147,150..153 | 155 |
+| EL-TK-146 (DONE) | 044; contrato EL-EP-002 | 147,154,155 |
+| EL-TK-147 (DONE) | 146; contratos propietarios | 148,150,151,152,153,154,155 |
+| EL-TK-148 (DONE) | 147; contrato JobQueue | 149,153,154,155 |
+| EL-TK-149 (DONE) | 148,044; contrato JobQueue | 153,154,155 |
+| EL-TK-150 (DONE) | 147, 044, contrato MediaViewGrant (097); contrato EL-EP-014 | 154,155 |
+| EL-TK-151 (DONE) | 147; contratos propietarios | 154,155 |
+| EL-TK-152 (DONE) | 147; contratos EL-EP-001/009/011 | 154,155 |
+| EL-TK-153 (DONE) | 148,149 | 154,155 |
+| EL-TK-154 (DONE) | 146,147,150..153 | 155 |
 | EL-TK-155 | 146..154 | validación EL-EP-012 |
 
 10 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de búsqueda administrativa sanitizada sin preview multimedia, detalle agregado con estado parcial explícito, consulta y diagnóstico de jobs con errores técnicos sanitizados (DEC-061..064), comandos autorizados sobre jobs (retry/cancel/marcar no repetir), acceso multimedia administrativo condicionado a razón operativa registrada (DEC-019/020), orquestación de intervenciones mediante delegación a contratos propietarios sin bypass de reglas de dominio, y superficies UI unificadas en consola administrativa. Superficies UI reutilizadas del catálogo canónico (ui-mvp-epic-review.md §EL-EP-012), sin consola paralela ni componentes nuevos. Políticas conservan ownership en sus módulos propietarios.

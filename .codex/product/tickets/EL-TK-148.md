@@ -4,7 +4,7 @@
 EL-EP-012
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** administración autorizada, **quiero** consultar cola y detalle de jobs relevantes, **para** diagnosticar fallos sin exponer payloads, secretos ni bytes.

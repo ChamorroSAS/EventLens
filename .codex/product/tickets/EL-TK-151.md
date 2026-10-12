@@ -4,7 +4,7 @@
 EL-EP-012
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** administración autorizada, **quiero** ejecutar desde la consola acciones permitidas de lifecycle, acceso y capacidad, **para** intervenir sin duplicar reglas de otros módulos.

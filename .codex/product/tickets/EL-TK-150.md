@@ -4,7 +4,7 @@
 EL-EP-012
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** administración autorizada, **quiero** acceder temporalmente a una media solo con razón operativa válida, **para** investigar soporte/incidentes sin navegación indiscriminada.

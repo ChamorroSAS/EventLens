@@ -4,7 +4,7 @@
 EL-EP-012
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** administración autorizada, **quiero** ver y operar jobs autorizados desde el detalle, **para** resolver fallos técnicos con feedback claro y accesible.

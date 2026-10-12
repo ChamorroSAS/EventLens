@@ -4,7 +4,7 @@
 EL-EP-012
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** administración autorizada, **quiero** reintentar, cancelar o marcar no repetir un job cuando el contrato lo permita, **para** recuperar operación sin editar directamente la cola.
