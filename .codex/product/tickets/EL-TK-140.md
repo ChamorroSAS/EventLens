@@ -4,7 +4,7 @@
 EL-EP-011
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador propietario, **quiero** responder dentro de la misma solicitud, **para** continuar la revisión sin abrir un caso duplicado.

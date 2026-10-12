@@ -405,6 +405,7 @@ export interface RespondExtensionInfoCommand {
   requestId: string;
   actorContext: CapacityActorContext;
   response: string;
+  idempotencyKey?: string;
 }
 
 export type ExtensionDecisionType = 'APPROVE' | 'REJECT' | 'REQUEST_INFO';

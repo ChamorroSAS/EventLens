@@ -8,6 +8,8 @@ import {
   ExtensionRequestStatus,
   ExtensionRequestType,
   CapacityActorContext,
+  RespondExtensionInfoCommand,
+  ReviewExtensionRequestCommand,
 } from './contracts.js';
 import type { EventOwnershipVerifier } from './capacity-query.js';
 
@@ -153,8 +155,8 @@ export class ExtensionRequestService {
       await tx.execute(
         `INSERT INTO extension_request_message (
           id, request_id, author_role, author_id, message_type, content, created_at
-        ) VALUES ($1, $2, 'ORGANIZER', $3, 'INITIAL_REQUEST', $4, $5)`,
-        [messageId, requestId, organizerId, command.reason.trim(), now]
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [messageId, requestId, 'ORGANIZER', organizerId, 'INITIAL_REQUEST', command.reason.trim(), now]
       );
 
       const initialMessage: ExtensionRequestMessage = {
@@ -277,6 +279,121 @@ export class ExtensionRequestService {
         results.push(await this.hydrateRequestWithMessages(tx, row));
       }
       return results;
+    });
+  }
+
+  /**
+   * Responde a una solicitud de información adicional de ampliación (EL-TK-140).
+   * Añade respuesta al historial y devuelve la solicitud a PENDING_REVIEW sin duplicar.
+   */
+  public async respondToInfoRequest(command: RespondExtensionInfoCommand): Promise<ExtensionRequest> {
+    if (!command.requestId || typeof command.requestId !== 'string' || !command.requestId.trim()) {
+      throw new CapacityError('INVALID_ARGUMENT', 'Valid requestId is required');
+    }
+
+    if (!command.response || typeof command.response !== 'string' || !command.response.trim()) {
+      throw new CapacityError('INVALID_ARGUMENT', 'A valid response text is required');
+    }
+
+    const actor = command.actorContext;
+    if (!actor) {
+      throw new CapacityError('UNAUTHORIZED', 'ActorContext is required');
+    }
+
+    let organizerId: string;
+    if (actor.actorType === 'ORGANIZER_HUMAN') {
+      organizerId = (actor as { accountId: string }).accountId;
+    } else {
+      throw new CapacityError('FORBIDDEN', 'Only organizers can respond to extension info requests');
+    }
+
+    return this.transactions.run(async (tx: SqlTransaction) => {
+      const rows = await tx.query<RawExtensionRequestRow>(
+        `SELECT id, event_id, requested_by, request_type, additional_gb, additional_days,
+                reason, status, resolved_at, resolved_by, decision_reason, created_at, updated_at
+         FROM extension_request
+         WHERE id = $1
+         LIMIT 1
+         FOR UPDATE`,
+        [command.requestId]
+      );
+
+      if (rows.length === 0) {
+        throw new CapacityError('EXTENSION_REQUEST_NOT_FOUND', `Extension request '${command.requestId}' not found`);
+      }
+
+      const reqRow = rows[0];
+
+      // Verificar pertenencia / ownership
+      if (reqRow.requested_by !== organizerId) {
+        if (this.ownershipVerifier) {
+          const isOwner = await this.ownershipVerifier(reqRow.event_id, organizerId);
+          if (!isOwner) {
+            throw new CapacityError(
+              'FORBIDDEN',
+              `Organizer '${organizerId}' is not authorized to respond to request '${command.requestId}'`
+            );
+          }
+        } else {
+          throw new CapacityError(
+            'FORBIDDEN',
+            `Organizer '${organizerId}' is not authorized to respond to request '${command.requestId}'`
+          );
+        }
+      }
+
+      // Escenario 2: Replay idempotente si ya está en PENDING_REVIEW y el último mensaje coincide
+      if (reqRow.status === 'PENDING_REVIEW') {
+        const lastMessages = await tx.query<RawMessageRow>(
+          `SELECT id, request_id, author_role, author_id, message_type, content, created_at
+           FROM extension_request_message
+           WHERE request_id = $1
+           ORDER BY created_at DESC
+           LIMIT 1`,
+          [command.requestId]
+        );
+
+        if (
+          lastMessages.length > 0 &&
+          lastMessages[0].message_type === 'INFORMATION_PROVIDED' &&
+          lastMessages[0].content === command.response.trim()
+        ) {
+          return this.hydrateRequestWithMessages(tx, reqRow);
+        }
+      }
+
+      // Escenario 3: La solicitud ya no admite respuesta
+      if (reqRow.status !== 'INFORMATION_REQUESTED') {
+        const error = new CapacityError(
+          'EXTENSION_REQUEST_INVALID_STATE',
+          `Extension request '${command.requestId}' is in status '${reqRow.status}' and does not accept information responses`
+        );
+        (error as unknown as { currentStatus: string }).currentStatus = reqRow.status;
+        throw error;
+      }
+
+      // Escenario 1: Añadir al historial y transicionar a PENDING_REVIEW
+      const now = new Date();
+      const messageId = randomUUID();
+
+      await tx.execute(
+        `INSERT INTO extension_request_message (
+          id, request_id, author_role, author_id, message_type, content, created_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [messageId, command.requestId, 'ORGANIZER', organizerId, 'INFORMATION_PROVIDED', command.response.trim(), now]
+      );
+
+      await tx.execute(
+        `UPDATE extension_request
+         SET status = 'PENDING_REVIEW', updated_at = $1
+         WHERE id = $2`,
+        [now, command.requestId]
+      );
+
+      reqRow.status = 'PENDING_REVIEW';
+      reqRow.updated_at = now;
+
+      return this.hydrateRequestWithMessages(tx, reqRow);
     });
   }
 

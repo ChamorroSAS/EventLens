@@ -432,3 +432,5 @@ TB-01/TB-02 dejan de bloquear.033/035/036/041/042/056 YES propio;058 NO ejecuci�
 
 **CONFIRMED — EL-TK-139 DONE, 2026-10-11:** dependencias EL-TK-134 y EL-TK-135 satisfechas; creación de solicitudes de ampliación para almacenamiento o vigencia con aislamiento, unicidad de caso abierto y decimales DEC-100 implementada en `@eventlens/capacity-management` (`ExtensionRequestService`) con migración `202610110042_extension_request`. 45 pruebas PASS, typecheck y build limpios. Desbloquea downstream EL-TK-140, EL-TK-141 y EL-TK-145. Véase el [cierre](tickets/EL-TK-139.md).
 
+**CONFIRMED — EL-TK-140 DONE, 2026-10-11:** dependencia EL-TK-139 satisfecha; respuesta textual dentro de la misma solicitud en `INFORMATION_REQUESTED` y retorno a `PENDING_REVIEW` implementada en `@eventlens/capacity-management` (`ExtensionRequestService.respondToInfoRequest`). 50 pruebas PASS, typecheck y build limpios. Desbloquea downstream EL-TK-141 y EL-TK-145. Véase el [cierre](tickets/EL-TK-140.md).
+

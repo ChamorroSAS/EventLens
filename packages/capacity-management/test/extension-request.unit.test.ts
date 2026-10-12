@@ -38,6 +38,13 @@ describe('ExtensionRequestService (Unit - EL-TK-139)', () => {
         }
         if (sql.includes('FROM extension_request_message') && sql.includes('WHERE request_id = $1')) {
           const msgs = mockMessages.get(params[0]) || [];
+          if (sql.includes('ORDER BY created_at DESC') && sql.includes('LIMIT 1')) {
+            const sorted = [...msgs].sort((a, b) => {
+              const diff = b.created_at.getTime() - a.created_at.getTime();
+              return diff !== 0 ? diff : msgs.indexOf(b) - msgs.indexOf(a);
+            });
+            return sorted.slice(0, 1) as T[];
+          }
           return msgs as T[];
         }
         if (sql.includes('FROM extension_request') && sql.includes('WHERE id = $1')) {
@@ -84,6 +91,17 @@ describe('ExtensionRequestService (Unit - EL-TK-139)', () => {
           });
           mockMessages.set(reqId, list);
           return 1;
+        }
+        if (sql.includes('UPDATE extension_request')) {
+          const [updatedAt, id] = params;
+          const req = mockStorage.get(id);
+          if (req) {
+            req.status = 'PENDING_REVIEW';
+            req.updated_at = updatedAt;
+            mockStorage.set(id, req);
+            return 1;
+          }
+          return 0;
         }
         return 0;
       },
@@ -268,6 +286,132 @@ describe('ExtensionRequestService (Unit - EL-TK-139)', () => {
     it('retorna null en getOpenRequest si no hay solicitud abierta', async () => {
       const openReq = await service.getOpenRequest(eventId, ownerActor);
       expect(openReq).toBeNull();
+    });
+  });
+
+  describe('EL-TK-140: Responder solicitud de información adicional', () => {
+    let requestId: string;
+
+    beforeEach(async () => {
+      const created = await service.createRequest({
+        eventId,
+        actorContext: ownerActor,
+        requestType: 'STORAGE',
+        additionalGb: 10,
+        reason: 'Solicitud para ampliación',
+      });
+      requestId = created.id;
+
+      // Ajustar fechas previas para que la secuencia sea estrictamente cronológica
+      const stored = mockStorage.get(requestId);
+      stored.status = 'INFORMATION_REQUESTED';
+      stored.created_at = new Date(Date.now() - 20000);
+      mockStorage.set(requestId, stored);
+
+      const msgs = mockMessages.get(requestId) || [];
+      if (msgs.length > 0) {
+        msgs[0].created_at = new Date(Date.now() - 20000);
+      }
+      msgs.push({
+        id: randomUUID(),
+        request_id: requestId,
+        author_role: 'ADMIN',
+        author_id: 'admin-1',
+        message_type: 'INFORMATION_REQUESTED',
+        content: '¿Cuántos fotógrafos concurren al evento?',
+        created_at: new Date(Date.now() - 10000),
+      });
+      mockMessages.set(requestId, msgs);
+    });
+
+    describe('Escenario 1: Solicitud requiere información, owner responde y vuelve a PENDING_REVIEW', () => {
+      it('añade respuesta al historial y actualiza el estado a PENDING_REVIEW', async () => {
+        const responseText = 'Tendremos 4 fotógrafos y 2 videógrafos acreditados.';
+        const result = await service.respondToInfoRequest({
+          requestId,
+          actorContext: ownerActor,
+          response: responseText,
+        });
+
+        expect(result.id).toBe(requestId);
+        expect(result.status).toBe('PENDING_REVIEW');
+        expect(result.messages).toHaveLength(3); // INITIAL_REQUEST + INFORMATION_REQUESTED + INFORMATION_PROVIDED
+
+        const lastMsg = result.messages![result.messages!.length - 1];
+        expect(lastMsg.authorRole).toBe('ORGANIZER');
+        expect(lastMsg.authorId).toBe(ownerId);
+        expect(lastMsg.messageType).toBe('INFORMATION_PROVIDED');
+        expect(lastMsg.content).toBe(responseText);
+      });
+    });
+
+    describe('Escenario 2: Repetición de la misma respuesta por retry no duplica entradas', () => {
+      it('maneja replay idempotente retornando la solicitud vigente sin duplicar', async () => {
+        const responseText = 'Respuesta idempotente única.';
+
+        // Primer envío
+        const first = await service.respondToInfoRequest({
+          requestId,
+          actorContext: ownerActor,
+          response: responseText,
+        });
+        expect(first.status).toBe('PENDING_REVIEW');
+        const countAfterFirst = first.messages!.length;
+
+        // Segundo envío idéntico (simula retry de red)
+        const second = await service.respondToInfoRequest({
+          requestId,
+          actorContext: ownerActor,
+          response: responseText,
+        });
+
+        expect(second.status).toBe('PENDING_REVIEW');
+        expect(second.messages!.length).toBe(countAfterFirst);
+      });
+    });
+
+    describe('Escenario 3: Solicitud ya no admite respuesta', () => {
+      it('rechaza con EXTENSION_REQUEST_INVALID_STATE cuando la solicitud ya fue resuelta o no espera información', async () => {
+        // Poner estado en APPROVED
+        const stored = mockStorage.get(requestId);
+        stored.status = 'APPROVED';
+        mockStorage.set(requestId, stored);
+
+        try {
+          await service.respondToInfoRequest({
+            requestId,
+            actorContext: ownerActor,
+            response: 'Intento tardío',
+          });
+          expect.unreachable('Debería haber lanzado EXTENSION_REQUEST_INVALID_STATE');
+        } catch (err: any) {
+          expect(err).toBeInstanceOf(CapacityError);
+          expect(err.code).toBe('EXTENSION_REQUEST_INVALID_STATE');
+          expect(err.currentStatus).toBe('APPROVED');
+        }
+      });
+    });
+
+    describe('Validaciones y permisos en respuesta', () => {
+      it('rechaza si el actor no es el owner del evento/solicitud', async () => {
+        await expect(
+          service.respondToInfoRequest({
+            requestId,
+            actorContext: strangerActor,
+            response: 'Respuesta ajena',
+          })
+        ).rejects.toThrow('is not authorized to respond to request');
+      });
+
+      it('rechaza si la respuesta está en blanco', async () => {
+        await expect(
+          service.respondToInfoRequest({
+            requestId,
+            actorContext: ownerActor,
+            response: '   ',
+          })
+        ).rejects.toThrow('A valid response text is required');
+      });
     });
   });
 });
