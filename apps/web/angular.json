@@ -11,6 +11,9 @@
           "options": {
             "browser": "src/main.ts", "index": "src/index.html",
             "tsConfig": "tsconfig.app.json", "outputPath": "dist/web",
+            "assets": [
+              { "glob": "**/*", "input": "public" }
+            ],
             "styles": []
           },
           "configurations": {

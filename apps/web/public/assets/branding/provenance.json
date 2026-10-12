@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "masterDocument": {
+    "path": "docs/branding/assets/EventLens-logo.pdf",
+    "pages": 5,
+    "sizeBytes": 827382,
+    "sha256": "5cafd9496466ebf7d5246e9afd891c53de9588569390f0c56c63c749e3540ba3"
+  },
+  "assets": [
+    {
+      "name": "logo-primary.svg",
+      "sourcePage": 2,
+      "sourcePath": "docs/branding/assets/logo-primary.svg",
+      "publishedPath": "assets/branding/logo-primary.svg",
+      "method": "direct-copy",
+      "sha256": "d21623b6bbf80f7c80a0302c44b74000956496de82d27ddd9cbc1140aa086900",
+      "viewBox": "0 0 1970 310",
+      "aspectRatio": "197:31 (6.355:1)",
+      "usage": "Logotipo oficial horizontal, superficies claras, header y acceso"
+    },
+    {
+      "name": "logo-dark.svg",
+      "sourcePage": 3,
+      "sourcePath": "docs/branding/assets/logo-dark.svg",
+      "publishedPath": "assets/branding/logo-dark.svg",
+      "method": "direct-copy",
+      "sha256": "6764599518ff8da2fc460cda4793e4b823fcd9260964ac2858d97c06d5493af4",
+      "viewBox": "0 0 1970 310",
+      "aspectRatio": "197:31 (6.355:1)",
+      "usage": "Variante para fondo oscuro"
+    },
+    {
+      "name": "logo-grayscale.svg",
+      "sourcePage": 4,
+      "sourcePath": "docs/branding/assets/logo-grayscale.svg",
+      "publishedPath": "assets/branding/logo-grayscale.svg",
+      "method": "direct-copy",
+      "sha256": "9e09d99ba51ca2733275fe8b57bd25f8aacaf35bba397655ea8e3708c944eafb",
+      "viewBox": "0 0 1970 310",
+      "aspectRatio": "197:31 (6.355:1)",
+      "usage": "Reproducción en escala de grises"
+    },
+    {
+      "name": "favicon.svg",
+      "sourcePage": 5,
+      "sourcePath": "docs/branding/assets/favicon.svg",
+      "publishedPath": "assets/branding/favicon.svg",
+      "method": "direct-copy",
+      "sha256": "6feacde4cbb7ab8c84543b4a4ca082522395bc5240938ffb4235a6e7410a11c2",
+      "viewBox": "0 0 502.147 497.739",
+      "aspectRatio": "502.147:497.739 (~1.008:1)",
+      "usage": "Monograma EL candidato compacto para favicon y pestaña de navegador"
+    }
+  ]
+}
