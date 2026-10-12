@@ -6,7 +6,9 @@ EL-EP-002
 
 ## Status
 
-READY
+DONE
+
+**COMPLETADO — 2026-10-12:** Implementado en `CoverAssetService.cleanupCoverAssets` en `@eventlens/event-management`. Ejecuta la limpieza de portadas anteriores, no asignadas o fallidas con una **garantía estricta de protección de la portada activa**: bajo ninguna circunstancia se borra el asset referenciado en `event.cover_asset_id` (se filtra explícitamente y se devuelve en `preservedActiveAssetId`). Realiza la eliminación física de objetos originales y derivados (`thumbnailKey`, `previewKey`) a través de `DirectUploadStoragePort.abortOrDeleteObject` con manejo tolerante a fallos, marca los registros como `DELETED` en PostgreSQL 16 y registra la auditoría inmutable `EVENT_COVER_CLEANED_UP`. Verificado con pruebas unitarias y de integración contra PostgreSQL 16 real.
 
 ## User story
 

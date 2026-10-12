@@ -6,7 +6,9 @@ EL-EP-002
 
 ## Status
 
-READY
+DONE
+
+**COMPLETADO — 2026-10-12:** Implementado en `CoverAssetService.assignCoverAsset` en `@eventlens/event-management`. Permite al organizador propietario asignar un `EventAsset` en estado `READY` seguro como portada vigente (`event.cover_asset_id`), asegurando control de concurrencia optimista mediante revisión CAS (`expectedCoverRevision`). Si la revisión no coincide, rechaza con `CONCURRENCY_CONFLICT` y no altera la portada. Exige que el candidato pertenezca al mismo evento/organizador y se encuentre verificado en estado `READY` (rechazando activos en `RECEIVED`, `FAILED` o `QUARANTINED` con `COVER_ASSET_NOT_READY`). Identifica la portada previa (`previousCoverAssetId`) para su delegación al cleanup posterior, avanza la revisión de configuración, admite repeticiones idempotentes y audita de forma inmutable (`EVENT_COVER_ASSIGNED`). Verificado con pruebas unitarias y de integración contra PostgreSQL 16 real.
 
 ## User story
 

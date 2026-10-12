@@ -6,7 +6,9 @@ EL-EP-002
 
 ## Status
 
-READY
+DONE
+
+**COMPLETADO — 2026-10-12:** Implementado en `CoverAssetService.processCoverAsset` en `@eventlens/event-management`. Procesa de forma segura un `EventAsset` de portada confirmado (`EVENT_COVER`). Valida cabeceras e integridad contra corrupción (`FAILED` / `CORRUPTED_OR_UNREADABLE_FILE`) y firmas de malware o spoofing (`QUARANTINED` / `SUSPICIOUS_OR_UNSAFE_PAYLOAD`), garantizando que la portada activa vigente permanece intacta ante cualquier anomalía. Ante archivos válidos, genera derivados web privados (`thumbnailKey`, `previewKey`, `previewUrl`), persiste el checksum SHA-256 y confirma el estado técnico `READY`. Transacciones SQL atómicas, idempotencia y registro de auditoría (`EVENT_COVER_PROCESSED_READY`, `EVENT_COVER_PROCESSING_FAILED`). Verificado con pruebas unitarias y de integración contra PostgreSQL 16 real.
 
 ## User story
 

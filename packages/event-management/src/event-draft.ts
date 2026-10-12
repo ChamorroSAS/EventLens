@@ -64,6 +64,7 @@ interface EventRow {
   pin_hash?: string | null;
   pin_salt?: string | null;
   welcome_message?: string | null;
+  cover_asset_id?: string | null;
   idempotency_key?: string | null;
   idempotency_payload_hash?: string | null;
   created_at: Date | string;
@@ -95,6 +96,7 @@ function mapRowToRecord(row: EventRow): EventRecord {
     moderationMode: row.moderation_mode as ModerationMode,
     pinEnabled: Boolean(row.pin_enabled),
     welcomeMessage: row.welcome_message ?? null,
+    coverAssetId: row.cover_asset_id ?? null,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at)
   };
@@ -117,6 +119,7 @@ function mapRowToSummary(row: EventRow): OrganizerEventSummary {
     moderationMode: row.moderation_mode as ModerationMode,
     pinEnabled: Boolean(row.pin_enabled),
     welcomeMessage: row.welcome_message ?? null,
+    coverAssetId: row.cover_asset_id ?? null,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at)
   };
@@ -339,6 +342,7 @@ export class EventDraftService {
         moderationMode,
         pinEnabled,
         welcomeMessage: null,
+        coverAssetId: null,
         createdAt: now,
         updatedAt: now
       };
@@ -374,7 +378,7 @@ export class EventDraftService {
         `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
                 expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
                 suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
-                guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
+                guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message, cover_asset_id,
                 created_at, updated_at
          FROM event
          WHERE id = $1`,
@@ -1482,7 +1486,7 @@ export class EventDraftService {
       const rows = await tx.query<EventRow>(
         `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at,
                 utc_offset_minutes, expires_at, grace_ends_at, uploads_enabled,
-                guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message, created_at, updated_at
+                guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message, cover_asset_id, created_at, updated_at
          FROM event
          WHERE organizer_id = $1
          ORDER BY created_at DESC`,
@@ -1517,7 +1521,7 @@ export class EventDraftService {
       const rows = await tx.query<EventRow>(
         `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at,
                 utc_offset_minutes, expires_at, grace_ends_at, uploads_enabled,
-                guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message, created_at, updated_at
+                guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message, cover_asset_id, created_at, updated_at
          FROM event
          WHERE id = $1`,
         eventId
@@ -2023,7 +2027,7 @@ export class EventDraftService {
         `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
                 expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
                 suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
-                guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
+                guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message, cover_asset_id,
                 created_at, updated_at
          FROM event
          WHERE id = $1`,
@@ -2054,6 +2058,14 @@ export class EventDraftService {
           coverPreviewUrl = await this.coverAssetResolver(eventId);
         } catch {
           coverPreviewUrl = null;
+        }
+      } else if (current.cover_asset_id) {
+        const coverRows = await tx.query<{ preview_url: string | null }>(
+          `SELECT preview_url FROM event_cover_asset WHERE id = $1 AND status = 'READY'`,
+          current.cover_asset_id
+        );
+        if (coverRows.length > 0) {
+          coverPreviewUrl = coverRows[0].preview_url ?? null;
         }
       }
 

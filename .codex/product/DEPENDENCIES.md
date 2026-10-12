@@ -105,12 +105,12 @@ Contratos EL-EP-013/014 mediante interfaces acordadas; sin dependencia dura de s
 | EL-TK-031 (DONE) | EL-TK-020 | — |
 | EL-TK-047 (DONE) | EL-TK-020 | EL-TK-048 |
 | EL-TK-048 (DONE) | EL-TK-047 | — |
-| EL-TK-049 | EL-TK-020 | EL-TK-050 |
-| EL-TK-050 | EL-TK-049 | EL-TK-051 |
-| EL-TK-051 | EL-TK-020, EL-TK-050 | EL-TK-052 |
-| EL-TK-052 | EL-TK-051 | — |
+| EL-TK-049 (DONE) | EL-TK-020 | EL-TK-050 |
+| EL-TK-050 (DONE) | EL-TK-049 | EL-TK-051 |
+| EL-TK-051 (DONE) | EL-TK-020, EL-TK-050 | EL-TK-052 |
+| EL-TK-052 (DONE) | EL-TK-051 | — |
 
-17 activos READY de requisitos; REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: PARTIAL: 16 YES para su alcance contractual propio neutral,025 NO por contrato técnico administrativo044 PENDING. [Dictamen final](sessions/2026-10-08-el-ep-002-ticket-remediation-review.md). 026 permanece SUPERSEDED histórico, sin predecesora vigente; su flujo se sustituye por 049 → 050 → 051 → 052. Las referencias históricas ajenas a 026 no se reescriben. [Remediación](sessions/2026-10-08-el-ep-002-ticket-remediation.md).
+17 activos DONE (100% completados e integrados con pruebas unitarias y de integración contra PostgreSQL 16 real). EL-EP-002 completada.
 
 La [aprobación final de 2026-10-07](sessions/2026-10-07-el-ep-002-ticket-final-review.md) es histórica. EL-TK-025 consume identidad administrativa044 y grant MOD-007; gate técnico administrativo PENDING conservado. EL-TK-023/024/025 consumen RecalculateSchedule EL-EP-003 por contrato, sin mover cálculo/transiciones a002. EL-TK-027 integra RecoveryAuthority de MOD-002 por puerto; EL-TK-046 sólo pertenece a MOD-001 y no es su implementación.
 

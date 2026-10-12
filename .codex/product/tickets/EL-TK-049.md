@@ -6,7 +6,9 @@ EL-EP-002
 
 ## Status
 
-READY
+DONE
+
+**COMPLETADO — 2026-10-12:** Implementado en `CoverAssetService.createCoverUpload` y `CoverAssetService.confirmCoverUpload` en `@eventlens/event-management`. Valida propiedad exclusiva del organizador (`actorType: 'ORGANIZER_HUMAN'`), estados DRAFT y SCHEDULED (rechaza ACTIVE/CLOSED con `INVALID_STATE`), formatos autorizados (JPEG, JPG, PNG, HEIC, HEIF, WebP), límite estricto de 25 MB (`MAX_COVER_BYTES = 25_000_000n`), staging temporal en `DirectUploadStoragePort`, verificación real de metadatos de almacenamiento (`getObjectMetadata`), detección de expiración de intentos (`COVER_UPLOAD_INTENT_EXPIRED`), inserción en `event_cover_asset` en estado `RECEIVED`, idempotencia transaccional y registro de auditoría (`EVENT_COVER_UPLOAD_AUTHORIZED`, `EVENT_COVER_UPLOAD_CONFIRMED`). Verificado con pruebas unitarias y de integración contra PostgreSQL 16 real.
 
 ## User story
 

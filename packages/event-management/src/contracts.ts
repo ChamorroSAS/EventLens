@@ -1,4 +1,5 @@
 import type { OrganizerActorContext, AdminActorContext } from '@eventlens/identity';
+export type { OrganizerActorContext, AdminActorContext };
 
 export type EventStatus =
   | 'DRAFT'
@@ -35,6 +36,7 @@ export interface EventRecord {
   readonly moderationMode: ModerationMode;
   readonly pinEnabled: boolean;
   readonly welcomeMessage?: string | null;
+  readonly coverAssetId?: string | null;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -96,7 +98,12 @@ export type EventManagementErrorCode =
   | 'SIZE_MISMATCH'
   | 'UNSUPPORTED_MEDIA_TYPE'
   | 'DURATION_EXCEEDS_LIMIT'
-  | 'CORRUPTED_OR_UNREADABLE_FILE';
+  | 'CORRUPTED_OR_UNREADABLE_FILE'
+  | 'COVER_ASSET_NOT_FOUND'
+  | 'COVER_ASSET_NOT_READY'
+  | 'COVER_UPLOAD_INTENT_NOT_FOUND'
+  | 'COVER_UPLOAD_INTENT_EXPIRED'
+  | 'CONCURRENCY_CONFLICT';
 
 export class EventManagementError extends Error {
   constructor(
@@ -266,6 +273,140 @@ export interface PreviewDraftAsGuestCommand {
 
 export interface PreviewDraftAsGuestResult {
   readonly snapshot: EventSnapshot;
+}
+
+// ==========================================
+// EL-TK-049: Event Cover Upload Authorization & Confirmation Contracts
+// ==========================================
+
+export type CoverAssetStatus =
+  | 'RECEIVED'
+  | 'PROCESSING'
+  | 'READY'
+  | 'FAILED'
+  | 'QUARANTINED'
+  | 'DELETED';
+
+export type CoverUploadIntentStatus =
+  | 'AUTHORIZED'
+  | 'CONFIRMED'
+  | 'CANCELLED'
+  | 'EXPIRED';
+
+export interface CoverUploadIntentRecord {
+  readonly id: string;
+  readonly eventId: string;
+  readonly ownerId: string;
+  readonly assetId: string;
+  readonly declaredSize: bigint;
+  readonly declaredType: string;
+  readonly stagingKey: string;
+  readonly status: CoverUploadIntentStatus;
+  readonly expiresAt: Date;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
+export interface CoverAssetRecord {
+  readonly id: string;
+  readonly eventId: string;
+  readonly ownerId: string;
+  readonly purpose: 'EVENT_COVER';
+  readonly status: CoverAssetStatus;
+  readonly originalKey: string;
+  readonly declaredSize: bigint;
+  readonly declaredType: string;
+  readonly actualSize: bigint | null;
+  readonly detectedType: string | null;
+  readonly checksumSha256: string | null;
+  readonly thumbnailKey: string | null;
+  readonly previewKey: string | null;
+  readonly previewUrl: string | null;
+  readonly generation: bigint;
+  readonly failureReason: string | null;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
+export interface CreateCoverUploadCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly eventId: string;
+  readonly declaredSize: bigint | number;
+  readonly declaredType: string;
+  readonly expectedConfigRevision?: string;
+  readonly idempotencyKey?: string;
+  readonly now?: Date;
+}
+
+export interface CreateCoverUploadResult {
+  readonly intent: CoverUploadIntentRecord;
+  readonly uploadGrant: DirectUploadGrant;
+  readonly outcome: 'AUTHORIZED' | 'IDEMPOTENT_REPLAY';
+}
+
+export interface ConfirmCoverUploadCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly intentId: string;
+  readonly now?: Date;
+}
+
+export interface ConfirmCoverUploadResult {
+  readonly asset: CoverAssetRecord;
+  readonly outcome: 'CONFIRMED' | 'IDEMPOTENT_REPLAY';
+}
+
+// ==========================================
+// EL-TK-050: Secure Cover Asset Processing Contracts
+// ==========================================
+
+export interface ProcessCoverAssetCommand {
+  readonly assetId: string;
+  readonly headerBytes?: Buffer | Uint8Array;
+  readonly checksumSha256?: string;
+  readonly now?: Date;
+}
+
+export interface ProcessCoverAssetResult {
+  readonly asset: CoverAssetRecord;
+  readonly status: 'READY' | 'FAILED' | 'QUARANTINED';
+  readonly outcome: 'PROCESSED' | 'IDEMPOTENT_REPLAY';
+}
+
+// ==========================================
+// EL-TK-051: Assign READY Cover Asset via CAS Contracts
+// ==========================================
+
+export interface AssignCoverAssetCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly eventId: string;
+  readonly assetId: string;
+  readonly expectedCoverRevision?: string;
+  readonly idempotencyKey?: string;
+  readonly now?: Date;
+}
+
+export interface AssignCoverAssetResult {
+  readonly event: EventRecord;
+  readonly assignedAssetId: string;
+  readonly previousCoverAssetId: string | null;
+  readonly newConfigRevision: string;
+  readonly outcome: 'ASSIGNED' | 'IDEMPOTENT_REPLAY';
+}
+
+// ==========================================
+// EL-TK-052: Asynchronous Cover Assets Cleanup Contracts
+// ==========================================
+
+export interface CleanupCoverAssetsCommand {
+  readonly eventId: string;
+  readonly targetAssetIds?: string[];
+  readonly now?: Date;
+}
+
+export interface CleanupCoverAssetsResult {
+  readonly cleanedAssetIds: string[];
+  readonly preservedActiveAssetId: string | null;
+  readonly outcome: 'CLEANED_UP';
 }
 
 export interface SetEventScheduleCommand {
@@ -961,6 +1102,12 @@ export interface EventAuditRecord {
     | 'EVENT_TIMEZONE_CHANGED'
     | 'ADMIN_EVENT_TIMEZONE_CORRECTED'
     | 'EVENT_DRAFT_PREVIEWED'
+    | 'EVENT_COVER_UPLOAD_AUTHORIZED'
+    | 'EVENT_COVER_UPLOAD_CONFIRMED'
+    | 'EVENT_COVER_PROCESSED_READY'
+    | 'EVENT_COVER_PROCESSING_FAILED'
+    | 'EVENT_COVER_ASSIGNED'
+    | 'EVENT_COVER_CLEANED_UP'
     | 'EVENT_SCHEDULED'
     | 'EVENT_ACTIVATED'
     | 'EVENT_CLOSED'
@@ -996,6 +1143,14 @@ export interface EventAuditRecord {
     | 'RECALCULATED_SCHEDULE'
     | 'TIMEZONE_CHANGED'
     | 'TIMEZONE_CORRECTED'
+    | 'COVER_UPLOAD_AUTHORIZED'
+    | 'COVER_UPLOAD_CONFIRMED'
+    | 'COVER_PROCESSED_READY'
+    | 'COVER_PROCESSING_FAILED'
+    | 'COVER_ASSIGNED'
+    | 'COVER_CLEANED_UP'
+    | 'REJECTED_ASSET_NOT_READY'
+    | 'REJECTED_REVISION_MISMATCH'
     | 'EXTENDED'
     | 'REACTIVATED'
     | 'REGENERATED'
@@ -1071,6 +1226,7 @@ export interface OrganizerEventSummary {
   readonly moderationMode: ModerationMode;
   readonly pinEnabled: boolean;
   readonly welcomeMessage?: string | null;
+  readonly coverAssetId?: string | null;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }

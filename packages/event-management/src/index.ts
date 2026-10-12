@@ -110,12 +110,27 @@ export {
   type AdminCorrectEventTimezoneResult,
   type EventSnapshot,
   type PreviewDraftAsGuestCommand,
-  type PreviewDraftAsGuestResult
+  type PreviewDraftAsGuestResult,
+  type CoverAssetStatus,
+  type CoverUploadIntentStatus,
+  type CoverUploadIntentRecord,
+  type CoverAssetRecord,
+  type CreateCoverUploadCommand,
+  type CreateCoverUploadResult,
+  type ConfirmCoverUploadCommand,
+  type ConfirmCoverUploadResult,
+  type ProcessCoverAssetCommand,
+  type ProcessCoverAssetResult,
+  type AssignCoverAssetCommand,
+  type AssignCoverAssetResult,
+  type CleanupCoverAssetsCommand,
+  type CleanupCoverAssetsResult
 } from './contracts.js';
 
 export { generateQrMatrix, generateQrSvg } from './qr-generator.js';
 export { EventAccessPolicy } from './access-policy.js';
 export { EventDraftService } from './event-draft.js';
+export { CoverAssetService } from './cover-asset.js';
 export { EventLifecycleService } from './event-lifecycle.js';
 export { EventPublicAccessService } from './event-public-access.js';
 export { GuestSessionService } from './guest-session.js';

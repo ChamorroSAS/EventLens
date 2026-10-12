@@ -13,7 +13,7 @@
 | ID | Nombre | Módulo | Estado | Prioridad | Dependencias directas | Archivo |
 |---|---|---|---|---|---|---|
 | EL-EP-001 | Incorporar y proteger organizadores de la beta privada | MOD-001 | DONE | P0 | Ninguna predecesora dura | [EL-EP-001](epics/EL-EP-001.md) |
-| EL-EP-002 | Preparar y personalizar el espacio del evento | MOD-002 | READY | P0 | EL-EP-001 | [EL-EP-002](epics/EL-EP-002.md) |
+| EL-EP-002 | Preparar y personalizar el espacio del evento | MOD-002 | DONE | P0 | EL-EP-001 | [EL-EP-002](epics/EL-EP-002.md) |
 | EL-EP-003 | Abrir y cerrar el evento según su vigencia | MOD-002 | DONE | P0 | EL-EP-002, EL-EP-011 | [EL-EP-003](epics/EL-EP-003.md) |
 | EL-EP-004 | Entrar por QR y participar con consentimiento sin cuenta | MOD-003 | DONE | P0 | EL-EP-003 | [EL-EP-004](epics/EL-EP-004.md) |
 | EL-EP-005 | Cargar recuerdos con tolerancia a fallos móviles | MOD-003 | READY | P0 | EL-EP-004, EL-EP-011 | [EL-EP-005](epics/EL-EP-005.md) |
@@ -83,10 +83,10 @@
 | EL-TK-042 | Eliminar una media en cuarentena mediante actor autorizado | EL-EP-006 | DONE | P0 | EL-TK-034, EL-TK-044 | [EL-TK-042](tickets/EL-TK-042.md) |
 | EL-TK-047 | Consultar mis eventos y su configuración autorizada | EL-EP-002 | DONE | P0 | EL-TK-020 | [EL-TK-047](tickets/EL-TK-047.md) |
 | EL-TK-048 | Navegar por la configuración de un evento propio | EL-EP-002 | DONE | P0 | EL-TK-047 | [EL-TK-048](tickets/EL-TK-048.md) |
-| EL-TK-049 | Autorizar y confirmar una carga de portada EVENT_COVER | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-049](tickets/EL-TK-049.md) |
-| EL-TK-050 | Integrar el procesamiento seguro de una portada EventAsset | EL-EP-002 | READY | P0 | EL-TK-049 | [EL-TK-050](tickets/EL-TK-050.md) |
-| EL-TK-051 | Asignar una portada READY segura mediante revisión CAS | EL-EP-002 | READY | P0 | EL-TK-020, EL-TK-050 | [EL-TK-051](tickets/EL-TK-051.md) |
-| EL-TK-052 | Limpiar portadas anteriores o no asignadas sin borrar la vigente | EL-EP-002 | READY | P0 | EL-TK-051 | [EL-TK-052](tickets/EL-TK-052.md) |
+| EL-TK-049 | Autorizar y confirmar una carga de portada EVENT_COVER | EL-EP-002 | DONE | P0 | EL-TK-020 | [EL-TK-049](tickets/EL-TK-049.md) |
+| EL-TK-050 | Integrar el procesamiento seguro de una portada EventAsset | EL-EP-002 | DONE | P0 | EL-TK-049 | [EL-TK-050](tickets/EL-TK-050.md) |
+| EL-TK-051 | Asignar una portada READY segura mediante revisión CAS | EL-EP-002 | DONE | P0 | EL-TK-020, EL-TK-050 | [EL-TK-051](tickets/EL-TK-051.md) |
+| EL-TK-052 | Limpiar portadas anteriores o no asignadas sin borrar la vigente | EL-EP-002 | DONE | P0 | EL-TK-051 | [EL-TK-052](tickets/EL-TK-052.md) |
 | EL-TK-053 | Consultar el estado y capacidades autorizadas de una media | EL-EP-006 | DONE | P0 | ninguna | [EL-TK-053](tickets/EL-TK-053.md) |
 | EL-TK-054 | Integrar estados de fallo y retry en la biblioteca compartida | EL-EP-006 | DONE | P0 | EL-TK-040, EL-TK-053 | [EL-TK-054](tickets/EL-TK-054.md) |
 | EL-TK-055 | Reservar ejecuciones JobQueue PostgreSQL con lease y fencing | EL-EP-006 | DONE | P0 | ninguna | [EL-TK-055](tickets/EL-TK-055.md) |

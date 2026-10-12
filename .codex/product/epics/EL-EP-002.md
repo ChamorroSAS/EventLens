@@ -2,9 +2,9 @@
 
 ## Status
 
-READY
+DONE
 
-**RECOMMENDED:** frontera, descomposición y prioridad propuestas por product_planner. **CONFIRMED:** reglas atribuidas al discovery en Q-004, Q-015, Q-016, Q-022; DEC-017, DEC-018, DEC-035, DEC-036. READY expresa DoR del resultado, no finalización de predecesoras; NOT_READY requiere cerrar preguntas locales antes de tickets.
+**COMPLETADO — 2026-10-12:** Los 17 tickets de EL-EP-002 (EL-TK-020, 021, 022, 023, 024, 025, 027, 028, 029, 030, 031, 047, 048, 049, 050, 051, 052) han sido implementados y verificados al 100% con pruebas unitarias y de integración contra PostgreSQL 16 real en `@eventlens/event-management`. Totalmente funcional, tipado y documentado.
 
 ## Module
 
@@ -120,3 +120,4 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 - 2026-10-07: Q-038/Q-039 y DEC-073/074 cierran formato/almacenamiento de PIN y unidad decimal de portada; pendiente nueva revisión de requisitos.
 - 2026-10-07: requirements_reviewer completó el gate de EL-TK-020..031: PARTIAL. Diez tickets READY; EL-TK-026/027 NOT_READY por Q-039/Q-038. [Dictamen](../sessions/2026-10-07-el-ep-002-ticket-review.md). Sin implementación ni avance a otra épica.
 - 2026-10-07: requirements_reviewer aprobó la reevaluación de EL-TK-026/027 y confirmó EL-TK-020..031 implementables. EL-EP-002 y los doce tickets READY; [dictamen final](../sessions/2026-10-07-el-ep-002-ticket-final-review.md). Sin implementación ni avance a otra épica.
+- 2026-10-12: Implementación y verificación completa de EL-EP-002 (17/17 tickets DONE). Ruta 1 (configuración básica), Ruta 2 (zona horaria y preview) y Ruta 3 (gestión de portadas EVENT_COVER) implementadas en `@eventlens/event-management`. Cobertura 100% de pruebas unitarias y de integración contra PostgreSQL 16 real. Estado pasa a DONE.
