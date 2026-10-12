@@ -4,7 +4,7 @@
 EL-EP-015
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador, **quiero** gestionar el borrado de evento desde su detalle, **para** ver consecuencias y fecha límite antes de confirmar.
@@ -70,4 +70,9 @@ UI_REQUIRED: YES.
 READY_FOR_FRONTEND_PLANNING: YES — dictamen explícito ui_designer APPROVED.
 REVIEW_STATUS: APPROVED — [dictámenes formales y validación documental](../sessions/2026-10-12-el-ep-015-ticket-readiness.md).
 
-Histórico: DRAFT en la propuesta original; READY tras revisión individual del 2026-10-12. No acredita implementación, ejecución de pruebas ni PASS de validation gates.
+Histórico: DRAFT en la propuesta original; READY tras revisión individual del 2026-10-12.
+
+## Evidencia de cierre — 2026-10-12
+- **Implementación:** `packages/event-management/src/deletion-ui-controllers.ts` (`EventDeletionUiController`, `EventDeleteRequestDialogViewModel`, `EventDeletionCountdownViewModel`, `EventLifecycleDeletionPanelViewModel`) y `apps/web/src/app/deletion-management.component.ts` (`DeletionManagementComponent`).
+- **Verificación:** `packages/event-management/test/deletion-ui-workflows.unit.test.ts`, `packages/event-management/test/deletion-beta-e2e.integration.test.ts` y `apps/web/src/app/deletion-management.component.spec.ts` (PASS).
+

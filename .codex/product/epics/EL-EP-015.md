@@ -2,14 +2,14 @@
 
 ## Status
 
-READY
+DONE
 
 **RECOMMENDED:** frontera, descomposición y prioridad propuestas por product_planner. **CONFIRMED:** reglas atribuidas al discovery en Q-019, Q-026; DEC-043, DEC-044, DEC-045, DEC-059. READY expresa DoR del resultado, no finalización de predecesoras; NOT_READY requiere cerrar preguntas locales antes de tickets.
 
 REQUIREMENTS_READY: YES
-READY_FOR_IMPLEMENTATION: YES - para el alcance propio contractual aprobado; no acredita integración ni Beta. Dictamen actualizado2026-10-12, DEC-108..110 / ARCH-018..019.
+READY_FOR_IMPLEMENTATION: YES - implementado y verificado en código, base de datos PostgreSQL 16 real y pruebas E2E (`EL-TK-188`..`EL-TK-202`). Dictamen actualizado2026-10-12, DEC-108..110 / ARCH-018..019.
 UI_REQUIRED: YES - alcance en handoff UI/UX.
-READY_FOR_FRONTEND_PLANNING: YES - gate explícito ui_designer del 2026-10-12; no certifica implementación.
+READY_FOR_FRONTEND_PLANNING: YES - gate explícito ui_designer del 2026-10-12; implementación UI verificada en `EL-TK-200` y `EL-TK-201`.
 
 ## Module
 
@@ -150,6 +150,8 @@ DoR de requisitos aprobada; no generar tickets frontend antes del gate UI comple
 P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
+
+- 2026-10-12: implementación y verificación completa (PASS) de las 6 rutas de `EL-EP-015` (`EL-TK-188`..`EL-TK-202`) en `@eventlens/event-management`, `@eventlens/media-inspection` y `@eventlens/web`, con pruebas unitarias, integración PostgreSQL 16 real y suite E2E de criterios Beta (`EL-TK-202`). Estado promovido a `DONE`.
 
 - 2026-10-12: dictámenes formales individuales architect/requirements_reviewer y UI pertinente aprueban EL-TK-188..202 READY tras precisiones documentales;185..187 DRAFT fuera de alcance. Sin implementación, regeneración ni gates Beta PASS.
 
