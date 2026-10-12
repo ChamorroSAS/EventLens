@@ -117,15 +117,15 @@
 | EL-TK-084 | Emitir la credencial pública inicial y publicar el acceso de un evento | EL-EP-004 | DONE | P0 | EL-TK-020, EL-TK-027 | [EL-TK-084](tickets/EL-TK-084.md) |
 | EL-TK-085 | Integrar la gestión de acceso, PIN y compartir en la interfaz del organizador | EL-EP-004 | READY | P0 | EL-TK-079,080,081,084 | [EL-TK-085](tickets/EL-TK-085.md) |
 | EL-TK-086 | Autorizar un intento de carga y reservar capacidad del evento | EL-EP-005 | DONE | P0 | EL-TK-075, EL-TK-076, EL-TK-077, EL-TK-072, contrato EL-EP-011 | [EL-TK-086](tickets/EL-TK-086.md) |
-| EL-TK-087 | Emitir una URL temporal para carga directa al object storage privado | EL-EP-005 | READY | P0 | EL-TK-086 | [EL-TK-087](tickets/EL-TK-087.md) |
-| EL-TK-088 | Confirmar la existencia y pertenencia del original cargado | EL-EP-005 | READY | P0 | EL-TK-087 | [EL-TK-088](tickets/EL-TK-088.md) |
-| EL-TK-089 | Validar restricciones reales del archivo antes de aceptar el original | EL-EP-005 | READY | P0 | EL-TK-088, contrato EL-EP-011 | [EL-TK-089](tickets/EL-TK-089.md) |
-| EL-TK-090 | Aceptar un original confirmado y transferirlo al pipeline asíncrono | EL-EP-005 | READY | P0 | EL-TK-089; contrato downstream consumido por EL-TK-032 (DONE) | [EL-TK-090](tickets/EL-TK-090.md) |
-| EL-TK-091 | Renovar una transferencia temporal para un fallo de red elegible | EL-EP-005 | READY | P0 | EL-TK-086, EL-TK-087 | [EL-TK-091](tickets/EL-TK-091.md) |
-| EL-TK-092 | Cancelar intentos no confirmados y liberar sus reservas | EL-EP-005 | READY | P0 | EL-TK-086, EL-TK-088, EL-TK-072, EL-TK-075 | [EL-TK-092](tickets/EL-TK-092.md) |
-| EL-TK-093 | Consultar el estado de intentos y resultados de carga del lote | EL-EP-005 | READY | P0 | EL-TK-086,088,089,090,092 | [EL-TK-093](tickets/EL-TK-093.md) |
-| EL-TK-094 | Integrar selección, progreso y retry por archivo en la interfaz guest | EL-EP-005 | READY | P0 | EL-TK-086..093 | [EL-TK-094](tickets/EL-TK-094.md) |
-| EL-TK-095 | Validar el flujo completo de carga móvil y resultado parcial | EL-EP-005 | READY | P0 | EL-TK-086..094 | [EL-TK-095](tickets/EL-TK-095.md) |
+| EL-TK-087 | Emitir una URL temporal para carga directa al object storage privado | EL-EP-005 | DONE | P0 | EL-TK-086 | [EL-TK-087](tickets/EL-TK-087.md) |
+| EL-TK-088 | Confirmar la existencia y pertenencia del original cargado | EL-EP-005 | DONE | P0 | EL-TK-087 | [EL-TK-088](tickets/EL-TK-088.md) |
+| EL-TK-089 | Validar restricciones reales del archivo antes de aceptar el original | EL-EP-005 | DONE | P0 | EL-TK-088, contrato EL-EP-011 | [EL-TK-089](tickets/EL-TK-089.md) |
+| EL-TK-090 | Aceptar un original confirmado y transferirlo al pipeline asíncrono | EL-EP-005 | DONE | P0 | EL-TK-089; contrato downstream consumido por EL-TK-032 (DONE) | [EL-TK-090](tickets/EL-TK-090.md) |
+| EL-TK-091 | Renovar una transferencia temporal para un fallo de red elegible | EL-EP-005 | DONE | P0 | EL-TK-086, EL-TK-087 | [EL-TK-091](tickets/EL-TK-091.md) |
+| EL-TK-092 | Cancelar intentos no confirmados y liberar sus reservas | EL-EP-005 | DONE | P0 | EL-TK-086, EL-TK-088, EL-TK-072, EL-TK-075 | [EL-TK-092](tickets/EL-TK-092.md) |
+| EL-TK-093 | Consultar el estado de intentos y resultados de carga del lote | EL-EP-005 | DONE | P0 | EL-TK-086,088,089,090,092 | [EL-TK-093](tickets/EL-TK-093.md) |
+| EL-TK-094 | Integrar selección, progreso y retry por archivo en la interfaz guest | EL-EP-005 | DONE | P0 | EL-TK-086..093 | [EL-TK-094](tickets/EL-TK-094.md) |
+| EL-TK-095 | Validar el flujo completo de carga móvil y resultado parcial | EL-EP-005 | DONE | P0 | EL-TK-086..094 | [EL-TK-095](tickets/EL-TK-095.md) |
 | EL-TK-096 | Consultar la galería guest de media publicada y autorizada | EL-EP-007 | READY | P0 | EL-TK-074, EL-TK-075, EL-TK-072, EL-TK-037 | [EL-TK-096](tickets/EL-TK-096.md) |
 | EL-TK-097 | Autorizar visualización temporal de un derivado privado | EL-EP-007 | READY | P0 | EL-TK-072, EL-TK-074, EL-TK-035, EL-TK-037 | [EL-TK-097](tickets/EL-TK-097.md) |
 | EL-TK-098 | Consultar la biblioteca de media del organizador | EL-EP-007 | READY | P0 | EL-TK-047, EL-TK-053 | [EL-TK-098](tickets/EL-TK-098.md) |

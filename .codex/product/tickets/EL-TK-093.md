@@ -4,7 +4,7 @@
 EL-EP-005
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** invitado, **quiero** consultar el estado de cada archivo de mi lote, **para** distinguir qué fue recibido, qué requiere atención y qué sigue en progreso.
@@ -63,5 +63,12 @@ Q-009; DEC-011, DEC-014, DEC-085; EL-EP-005, EL-EP-006.
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
 
-## Readiness de implementación — 2026-10-10
-REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el endpoint de consulta autorizada del lote (UploadBatchSnapshot), que alimenta UploadProgressSummary y distingue claramente entre recepción y procesamiento asíncrono posterior.
+## Evidencia de Implementación y Verificación — 2026-10-11
+- **Implementación:**
+  - `packages/event-management/src/upload-lifecycle.ts`: método `getUploadBatchSnapshot` consultando los intentos vinculados estrictamente a la sesión (`guest_session_id`) y evento (`event_id`), aislando sesiones ajenas.
+  - Distinción contractual estricta: computa `receivedCount`, `inProgressCount`, `actionRequiredCount`, `rejectedCount` y asigna `canRetry` sin confundir recepción con transcodificación o moderación.
+- **Verificación:**
+  - `packages/event-management/test/upload-lifecycle.unit.test.ts` (15/15 PASS).
+  - `packages/event-management/test/upload-lifecycle.integration.test.ts` (7/7 PASS).
+  - `packages/event-management/test/upload-e2e-flow.integration.test.ts` (4/4 PASS).
+
