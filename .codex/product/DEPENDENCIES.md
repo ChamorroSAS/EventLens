@@ -194,7 +194,7 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-105 | 098,101 | 106,107,111,112 |
 | EL-TK-106 | 105,101 | 111,112 |
 | EL-TK-107 (DONE) | 098,053; contrato EL-EP-006 | 108,109,111,112 |
-| EL-TK-108 | 107 | 111,112 |
+| EL-TK-108 (DONE) | 107 | 111,112 |
 | EL-TK-109 | 107,055; contrato EL-EP-015 | 112; consumidor purge EL-EP-015 |
 | EL-TK-110 | 028,037 | 111,112 |
 | EL-TK-111 | 100,103..108,110 | 112 |

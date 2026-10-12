@@ -56,6 +56,7 @@ describe('MediaModerationService (EL-EP-008)', () => {
       recordAudit: vi.fn().mockResolvedValue(undefined),
       recordTrash: vi.fn().mockResolvedValue(undefined),
       getActiveTrashRecord: vi.fn().mockResolvedValue(null),
+      markTrashRestored: vi.fn().mockResolvedValue(undefined),
       ...overrides
     };
   }
@@ -761,6 +762,358 @@ describe('MediaModerationService (EL-EP-008)', () => {
 
       await expect(
         service.trashMedia({
+          organizerRef: 'org-ajeno',
+          eventRef: 'event-001',
+          mediaRef: 'media-001'
+        })
+      ).rejects.toMatchObject({ code: 'ACCESS_DENIED' });
+    });
+  });
+
+  describe('restoreMedia (EL-TK-108)', () => {
+    const trashedMedia: MediaCatalogRecord = {
+      ...baseMedia,
+      status: 'TRASHED',
+      revision: 4n
+    };
+
+    it.each(['PUBLISHED', 'HIDDEN', 'REJECTED'])(
+      'Escenario 1: Dado media TRASHED dentro de 7 días y sin nuevos bloqueos, restaura a previous_state (%s)',
+      async (previousStatus) => {
+        const mockAuthorizer: EventStatusAuthorizer = {
+          assertAuthorized: vi.fn().mockResolvedValue(undefined)
+        };
+
+        const activeTrashRecord: MediaTrashRecord = {
+          id: 'trash-rec-001',
+          operationId: 'op-trash-001',
+          mediaRef: 'media-001',
+          eventRef: 'event-001',
+          organizerRef: 'org-001',
+          previousStatus,
+          trashedAt: new Date(Date.now() - 3600000), // 1 hour ago
+          restoreDeadline: new Date(Date.now() + 6 * 24 * 3600000), // 6 days remaining
+          restoredAt: null,
+          reason: 'trash'
+        };
+
+        const mockRepo = createMockRepo({
+          lockAndGetMedia: vi.fn().mockResolvedValue(trashedMedia),
+          getActiveTrashRecord: vi.fn().mockResolvedValue(activeTrashRecord),
+          updateStatus: vi.fn().mockResolvedValue(5n)
+        });
+
+        const service = new MediaModerationService(
+          mockTransactions,
+          mockRepo,
+          mockAuthorizer
+        );
+
+        const result = await service.restoreMedia({
+          organizerRef: 'org-001',
+          eventRef: 'event-001',
+          mediaRef: 'media-001'
+        });
+
+        expect(result.status).toBe(previousStatus);
+        expect(result.previousStatus).toBe('TRASHED');
+        expect(result.restoredFromStatus).toBe(previousStatus);
+        expect(result.revision).toBe(5n);
+
+        expect(mockRepo.updateStatus).toHaveBeenCalledWith(dummyTx, 'media-001', 4n, previousStatus);
+        expect(mockRepo.markTrashRestored).toHaveBeenCalledWith(dummyTx, 'trash-rec-001', expect.any(Date));
+        expect(mockRepo.recordAudit).toHaveBeenCalledWith(
+          dummyTx,
+          expect.objectContaining({
+            action: 'MEDIA_RESTORED',
+            mediaRef: 'media-001',
+            previousStatus: 'TRASHED',
+            newStatus: previousStatus
+          })
+        );
+      }
+    );
+
+    it('Escenario 2: Dado previous_state era PENDING_REVIEW, al restaurar vuelve a PENDING_REVIEW y NO se publica', async () => {
+      const mockAuthorizer: EventStatusAuthorizer = {
+        assertAuthorized: vi.fn().mockResolvedValue(undefined)
+      };
+
+      const activeTrashRecord: MediaTrashRecord = {
+        id: 'trash-rec-002',
+        operationId: 'op-trash-002',
+        mediaRef: 'media-001',
+        eventRef: 'event-001',
+        organizerRef: 'org-001',
+        previousStatus: 'PENDING_REVIEW',
+        trashedAt: new Date(Date.now() - 3600000),
+        restoreDeadline: new Date(Date.now() + 6 * 24 * 3600000),
+        restoredAt: null,
+        reason: 'trash'
+      };
+
+      const mockRepo = createMockRepo({
+        lockAndGetMedia: vi.fn().mockResolvedValue(trashedMedia),
+        getActiveTrashRecord: vi.fn().mockResolvedValue(activeTrashRecord),
+        updateStatus: vi.fn().mockResolvedValue(5n)
+      });
+
+      const service = new MediaModerationService(
+        mockTransactions,
+        mockRepo,
+        mockAuthorizer
+      );
+
+      const result = await service.restoreMedia({
+        organizerRef: 'org-001',
+        eventRef: 'event-001',
+        mediaRef: 'media-001'
+      });
+
+      // DEC-086: vuelve estrictamente a PENDING_REVIEW, nunca publica automáticamente
+      expect(result.status).toBe('PENDING_REVIEW');
+      expect(result.previousStatus).toBe('TRASHED');
+      expect(mockRepo.updateStatus).toHaveBeenCalledWith(dummyTx, 'media-001', 4n, 'PENDING_REVIEW');
+    });
+
+    it('Escenario 3: Dado ventana de 7 días vencida, la restauración se deniega con RESTORE_WINDOW_EXPIRED', async () => {
+      const mockAuthorizer: EventStatusAuthorizer = {
+        assertAuthorized: vi.fn().mockResolvedValue(undefined)
+      };
+
+      const expiredTrashRecord: MediaTrashRecord = {
+        id: 'trash-rec-003',
+        operationId: 'op-trash-003',
+        mediaRef: 'media-001',
+        eventRef: 'event-001',
+        organizerRef: 'org-001',
+        previousStatus: 'PUBLISHED',
+        trashedAt: new Date(Date.now() - 8 * 24 * 3600000),
+        restoreDeadline: new Date(Date.now() - 1 * 24 * 3600000), // expired 1 day ago
+        restoredAt: null,
+        reason: 'trash'
+      };
+
+      const mockRepo = createMockRepo({
+        lockAndGetMedia: vi.fn().mockResolvedValue(trashedMedia),
+        getActiveTrashRecord: vi.fn().mockResolvedValue(expiredTrashRecord)
+      });
+
+      const service = new MediaModerationService(
+        mockTransactions,
+        mockRepo,
+        mockAuthorizer
+      );
+
+      await expect(
+        service.restoreMedia({
+          organizerRef: 'org-001',
+          eventRef: 'event-001',
+          mediaRef: 'media-001'
+        })
+      ).rejects.toMatchObject({ code: 'RESTORE_WINDOW_EXPIRED' });
+
+      expect(mockRepo.updateStatus).not.toHaveBeenCalled();
+    });
+
+    it('Escenario 3: Dado media purgada (DELETED), se deniega con MEDIA_PURGED sin recrear contenido', async () => {
+      const mockAuthorizer: EventStatusAuthorizer = {
+        assertAuthorized: vi.fn().mockResolvedValue(undefined)
+      };
+
+      const mockRepo = createMockRepo({
+        lockAndGetMedia: vi.fn().mockResolvedValue({
+          ...baseMedia,
+          status: 'DELETED'
+        })
+      });
+
+      const service = new MediaModerationService(
+        mockTransactions,
+        mockRepo,
+        mockAuthorizer
+      );
+
+      await expect(
+        service.restoreMedia({
+          organizerRef: 'org-001',
+          eventRef: 'event-001',
+          mediaRef: 'media-001'
+        })
+      ).rejects.toMatchObject({ code: 'MEDIA_PURGED' });
+
+      expect(mockRepo.updateStatus).not.toHaveBeenCalled();
+    });
+
+    it('Seguridad prevalece: Si hay bloqueo de seguridad vigente (DENIED), se rechaza con SAFETY_BLOCKED', async () => {
+      const mockAuthorizer: EventStatusAuthorizer = {
+        assertAuthorized: vi.fn().mockResolvedValue(undefined)
+      };
+
+      const activeTrashRecord: MediaTrashRecord = {
+        id: 'trash-rec-004',
+        operationId: 'op-trash-004',
+        mediaRef: 'media-001',
+        eventRef: 'event-001',
+        organizerRef: 'org-001',
+        previousStatus: 'PUBLISHED',
+        trashedAt: new Date(Date.now() - 3600000),
+        restoreDeadline: new Date(Date.now() + 6 * 24 * 3600000),
+        restoredAt: null,
+        reason: 'trash'
+      };
+
+      const deniedSafety: SafetyFact = {
+        ...approvedSafetyFact,
+        outcome: 'DENIED'
+      };
+
+      const mockRepo = createMockRepo({
+        lockAndGetMedia: vi.fn().mockResolvedValue(trashedMedia),
+        getActiveTrashRecord: vi.fn().mockResolvedValue(activeTrashRecord),
+        getSafetyFact: vi.fn().mockResolvedValue(deniedSafety)
+      });
+
+      const service = new MediaModerationService(
+        mockTransactions,
+        mockRepo,
+        mockAuthorizer
+      );
+
+      await expect(
+        service.restoreMedia({
+          organizerRef: 'org-001',
+          eventRef: 'event-001',
+          mediaRef: 'media-001'
+        })
+      ).rejects.toMatchObject({ code: 'SAFETY_BLOCKED' });
+
+      expect(mockRepo.updateStatus).not.toHaveBeenCalled();
+    });
+
+    it('Seguridad prevalece: Si hay bloqueo de retiro vigente, se rechaza con REMOVAL_BLOCKED', async () => {
+      const mockAuthorizer: EventStatusAuthorizer = {
+        assertAuthorized: vi.fn().mockResolvedValue(undefined)
+      };
+
+      const activeTrashRecord: MediaTrashRecord = {
+        id: 'trash-rec-005',
+        operationId: 'op-trash-005',
+        mediaRef: 'media-001',
+        eventRef: 'event-001',
+        organizerRef: 'org-001',
+        previousStatus: 'PUBLISHED',
+        trashedAt: new Date(Date.now() - 3600000),
+        restoreDeadline: new Date(Date.now() + 6 * 24 * 3600000),
+        restoredAt: null,
+        reason: 'trash'
+      };
+
+      const mockRepo = createMockRepo({
+        lockAndGetMedia: vi.fn().mockResolvedValue(trashedMedia),
+        getActiveTrashRecord: vi.fn().mockResolvedValue(activeTrashRecord),
+        hasActiveRemovalBlock: vi.fn().mockResolvedValue(true)
+      });
+
+      const service = new MediaModerationService(
+        mockTransactions,
+        mockRepo,
+        mockAuthorizer
+      );
+
+      await expect(
+        service.restoreMedia({
+          organizerRef: 'org-001',
+          eventRef: 'event-001',
+          mediaRef: 'media-001'
+        })
+      ).rejects.toMatchObject({ code: 'REMOVAL_BLOCKED' });
+
+      expect(mockRepo.updateStatus).not.toHaveBeenCalled();
+    });
+
+    it('Idempotencia: Si la media ya fue restaurada a su previousStatus, devuelve resultado sin error', async () => {
+      const mockAuthorizer: EventStatusAuthorizer = {
+        assertAuthorized: vi.fn().mockResolvedValue(undefined)
+      };
+
+      const activeTrashRecord: MediaTrashRecord = {
+        id: 'trash-rec-006',
+        operationId: 'op-trash-006',
+        mediaRef: 'media-001',
+        eventRef: 'event-001',
+        organizerRef: 'org-001',
+        previousStatus: 'PUBLISHED',
+        trashedAt: new Date(Date.now() - 7200000),
+        restoreDeadline: new Date(Date.now() + 6 * 24 * 3600000),
+        restoredAt: new Date(Date.now() - 3600000),
+        reason: 'trash'
+      };
+
+      const mockRepo = createMockRepo({
+        lockAndGetMedia: vi.fn().mockResolvedValue({
+          ...baseMedia,
+          status: 'PUBLISHED',
+          revision: 5n
+        }),
+        getActiveTrashRecord: vi.fn().mockResolvedValue(activeTrashRecord)
+      });
+
+      const service = new MediaModerationService(
+        mockTransactions,
+        mockRepo,
+        mockAuthorizer
+      );
+
+      const result = await service.restoreMedia({
+        organizerRef: 'org-001',
+        eventRef: 'event-001',
+        mediaRef: 'media-001'
+      });
+
+      expect(result.status).toBe('PUBLISHED');
+      expect(result.revision).toBe(5n);
+      expect(mockRepo.updateStatus).not.toHaveBeenCalled();
+    });
+
+    it('Concurrencia: Si expectedRevision no coincide, rechaza con CONCURRENCY_CONFLICT', async () => {
+      const mockAuthorizer: EventStatusAuthorizer = {
+        assertAuthorized: vi.fn().mockResolvedValue(undefined)
+      };
+
+      const mockRepo = createMockRepo({
+        lockAndGetMedia: vi.fn().mockResolvedValue(trashedMedia)
+      });
+
+      const service = new MediaModerationService(
+        mockTransactions,
+        mockRepo,
+        mockAuthorizer
+      );
+
+      await expect(
+        service.restoreMedia({
+          organizerRef: 'org-001',
+          eventRef: 'event-001',
+          mediaRef: 'media-001',
+          expectedRevision: 99n
+        })
+      ).rejects.toMatchObject({ code: 'CONCURRENCY_CONFLICT' });
+    });
+
+    it('Aislamiento y permisos: actor ajeno o media ajena rechaza con ACCESS_DENIED', async () => {
+      const mockAuthorizer: EventStatusAuthorizer = {
+        assertAuthorized: vi.fn().mockRejectedValue({ code: 'ACCESS_DENIED' })
+      };
+
+      const service = new MediaModerationService(
+        mockTransactions,
+        createMockRepo(),
+        mockAuthorizer
+      );
+
+      await expect(
+        service.restoreMedia({
           organizerRef: 'org-ajeno',
           eventRef: 'event-001',
           mediaRef: 'media-001'

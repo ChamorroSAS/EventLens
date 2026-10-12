@@ -4,7 +4,7 @@
 EL-EP-008
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador propietario, **quiero** restaurar una media antes de vencer su ventana, **para** recuperar su estado previo sin publicar ni liberar contenido indebidamente.
@@ -68,3 +68,17 @@ Q-019; DEC-022, DEC-086, DEC-096; EL-EP-008, EL-EP-015.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §8.5..9; sin componentes nuevos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Cierre de implementación — 2026-10-12
+
+- **Resultado:** APROBADO.
+- **Implementación:** Implementado comando `restoreMedia` en [`MediaModerationService`](file:///c:/Users/geren/Documents/GitHub/EventLens/packages/media-inspection/src/media-moderation.ts) y método `markTrashRestored` en [`PostgresMediaModerationRepository`](file:///c:/Users/geren/Documents/GitHub/EventLens/packages/media-inspection/src/media-moderation.ts) sobre la tabla `media_trash_record`.
+- **Criterios de aceptación verificados:**
+  - Escenario 1: Medios en `TRASHED` restaurados dentro de la ventana de 7 días recuperan fielmente su `previousStatus` registrado (`PUBLISHED`, `HIDDEN`, `REJECTED`), incrementando la revisión de control de concurrencia y marcando `restored_at`.
+  - Escenario 2: Si el estado previo era `PENDING_REVIEW`, al restaurarse vuelve estrictamente a `PENDING_REVIEW` sin publicarse automáticamente conforme a la decisión canónica DEC-086.
+  - Escenario 3: Si la ventana de 7 días venció (`restoreDeadline < now`), se deniega con `RESTORE_WINDOW_EXPIRED`. Si el medio fue purgado/eliminado (`status: 'DELETED'`), se deniega con `MEDIA_PURGED` sin recrear contenido ni eludir purga física.
+- **Prevalencia de seguridad y retiros vigentes:** Si la inspección de seguridad tiene resultado `DENIED` o `INCONCLUSIVE`, se rechaza con `SAFETY_BLOCKED`. Si existe un bloqueo de retiro o cuarentena activo, se rechaza con `REMOVAL_BLOCKED`.
+- **Idempotencia y concurrencia:** Si el medio ya se encuentra restaurado a su `previousStatus`, retorna resultado idempotente. Desacuerdos de versión contra `expectedRevision` devuelven `CONCURRENCY_CONFLICT`.
+- **Aislamiento y permisos:** Validación de propiedad del organizador sobre el evento; actores no autorizados o medios ajenos devuelven `ACCESS_DENIED`.
+- **Pruebas:** 39/39 pruebas unitarias PASS en `packages/media-inspection/test/media-moderation.unit.test.ts`. Build de `@eventlens/media-inspection` y typecheck con 0 errores.
+- **Observabilidad:** Registro de auditoría canónico en `audit_event` con acción `MEDIA_RESTORED`, registrando `previousStatus: 'TRASHED'`, nuevo estado y actor sin almacenar binarios.

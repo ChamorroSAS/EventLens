@@ -92,6 +92,26 @@ export interface MediaTrashRecord {
   readonly reason: string | null;
 }
 
+export interface RestoreMediaCommand {
+  readonly organizerRef: string;
+  readonly eventRef: string;
+  readonly mediaRef: string;
+  readonly expectedRevision?: bigint | string;
+  readonly operationId?: string;
+  readonly now?: Date;
+}
+
+export interface RestoreMediaResult {
+  readonly mediaRef: string;
+  readonly eventRef: string;
+  readonly status: string;
+  readonly previousStatus: 'TRASHED';
+  readonly restoredFromStatus: string;
+  readonly revision: bigint;
+  readonly restoredAt: Date;
+  readonly operationId: string;
+}
+
 export interface MediaCatalogRecord {
   readonly mediaRef: string;
   readonly eventRef: string;
@@ -159,6 +179,12 @@ export interface MediaModerationRepository {
     tx: SqlTransaction,
     mediaRef: string
   ): Promise<MediaTrashRecord | null>;
+
+  markTrashRestored(
+    tx: SqlTransaction,
+    trashRecordId: string,
+    restoredAt: Date
+  ): Promise<void>;
 }
 
 export class PostgresMediaModerationRepository
@@ -367,6 +393,20 @@ export class PostgresMediaModerationRepository
       restoredAt: r.restored_at ? new Date(r.restored_at) : null,
       reason: r.reason
     };
+  }
+
+  async markTrashRestored(
+    tx: SqlTransaction,
+    trashRecordId: string,
+    restoredAt: Date
+  ): Promise<void> {
+    await tx.execute(
+      `UPDATE media_trash_record
+       SET restored_at = $2
+       WHERE id = $1::uuid`,
+      trashRecordId,
+      restoredAt
+    );
   }
 }
 
@@ -781,6 +821,165 @@ export class MediaModerationService {
         revision: newRevision,
         trashedAt,
         restoreDeadline,
+        operationId
+      };
+    });
+  }
+
+  /**
+   * Restores a media from TRASHED back to its previous_status (EL-TK-108, DEC-086, DEC-096).
+   * Verifies restore window is not expired, safety and removal blocks, and preserves exact prior status.
+   */
+  async restoreMedia(command: RestoreMediaCommand): Promise<RestoreMediaResult> {
+    if (!command || typeof command !== 'object') {
+      throw new MediaModerationError('INVALID_ARGUMENT', 'Command is required');
+    }
+    const { organizerRef, eventRef, mediaRef, expectedRevision } = command;
+    if (!organizerRef || typeof organizerRef !== 'string' || !organizerRef.trim()) {
+      throw new MediaModerationError('INVALID_ARGUMENT', 'organizerRef is required');
+    }
+    if (!eventRef || typeof eventRef !== 'string' || !eventRef.trim()) {
+      throw new MediaModerationError('INVALID_ARGUMENT', 'eventRef is required');
+    }
+    if (!mediaRef || typeof mediaRef !== 'string' || !mediaRef.trim()) {
+      throw new MediaModerationError('INVALID_ARGUMENT', 'mediaRef is required');
+    }
+
+    const operationId = command.operationId ?? randomUUID();
+    const now = command.now ?? new Date();
+
+    return await this.transactions.run(async (tx) => {
+      // 1. Authorize organizer ownership on event
+      try {
+        await this.authorizer.assertAuthorized(tx, {
+          eventRef: eventRef.trim(),
+          actor: { role: 'ORGANIZER', organizerRef: organizerRef.trim() }
+        });
+      } catch (err: any) {
+        if (err.code === 'ACCESS_DENIED' || err.code === 'BARRED_EVENT') {
+          throw new MediaModerationError('ACCESS_DENIED', 'Access denied to event media');
+        }
+        throw err;
+      }
+
+      // 2. Lock and retrieve media row
+      const media = await this.repository.lockAndGetMedia(tx, mediaRef.trim());
+      if (!media) {
+        throw new MediaModerationError('MEDIA_NOT_FOUND', `Media '${mediaRef}' not found`);
+      }
+
+      // Multi-tenant check: media must belong to eventRef
+      if (media.eventRef !== eventRef.trim()) {
+        throw new MediaModerationError('ACCESS_DENIED', 'Media does not belong to specified event');
+      }
+
+      // 3. Check expected revision (concurrency)
+      if (expectedRevision !== undefined && media.revision !== BigInt(expectedRevision)) {
+        throw new MediaModerationError(
+          'CONCURRENCY_CONFLICT',
+          `Concurrent modification: expected revision ${expectedRevision}, current ${media.revision}`
+        );
+      }
+
+      // 4. Retrieve active trash record
+      const trashRecord = await this.repository.getActiveTrashRecord(tx, media.mediaRef);
+
+      // Check if media is purged or deleted (Escenario 3)
+      if (media.status === 'DELETED') {
+        throw new MediaModerationError(
+          'MEDIA_PURGED',
+          'Media has already been purged and cannot be restored'
+        );
+      }
+
+      // If media is not currently TRASHED:
+      if (media.status !== 'TRASHED') {
+        // Idempotency check: if media was already restored to its previousStatus
+        if (trashRecord && media.status === trashRecord.previousStatus) {
+          return {
+            mediaRef: media.mediaRef,
+            eventRef: media.eventRef,
+            status: media.status,
+            previousStatus: 'TRASHED',
+            restoredFromStatus: trashRecord.previousStatus,
+            revision: media.revision,
+            restoredAt: trashRecord.restoredAt ?? now,
+            operationId
+          };
+        }
+        throw new MediaModerationError(
+          'INVALID_STATE',
+          `Media is currently in status '${media.status}', cannot restore when not TRASHED`
+        );
+      }
+
+      if (!trashRecord) {
+        throw new MediaModerationError(
+          'INVALID_STATE',
+          'No active trash record found for media'
+        );
+      }
+
+      // 5. Restore window check (Escenario 3, DEC-096 7 days window)
+      if (trashRecord.restoreDeadline.getTime() < now.getTime()) {
+        throw new MediaModerationError(
+          'RESTORE_WINDOW_EXPIRED',
+          `Restore deadline '${trashRecord.restoreDeadline.toISOString()}' has expired`
+        );
+      }
+
+      // 6. Safety check and removal blocks revalidation (DEC-086: no evade seguridad ni retiros vigentes)
+      const safety = await this.repository.getSafetyFact(tx, media.mediaRef, media.generation);
+      if (safety && (safety.outcome === 'DENIED' || safety.outcome === 'INCONCLUSIVE')) {
+        throw new MediaModerationError(
+          'SAFETY_BLOCKED',
+          `Media is blocked by safety inspection outcome '${safety.outcome}'`
+        );
+      }
+
+      const hasRemovalBlock = await this.repository.hasActiveRemovalBlock(tx, media.mediaRef);
+      if (hasRemovalBlock) {
+        throw new MediaModerationError(
+          'REMOVAL_BLOCKED',
+          'Media is subject to an active removal lock'
+        );
+      }
+
+      // Target restored status is faithfully the previousStatus (DEC-086)
+      const targetStatus = trashRecord.previousStatus;
+
+      // 7. Update status back to targetStatus in media_catalog
+      const newRevision = await this.repository.updateStatus(
+        tx,
+        media.mediaRef,
+        media.revision,
+        targetStatus
+      );
+
+      // 8. Mark trash record as restored
+      await this.repository.markTrashRestored(tx, trashRecord.id, now);
+
+      // 9. Audit event
+      await this.repository.recordAudit(tx, {
+        action: 'MEDIA_RESTORED',
+        operationId,
+        mediaRef: media.mediaRef,
+        eventRef: media.eventRef,
+        actorRef: organizerRef.trim(),
+        previousStatus: 'TRASHED',
+        newStatus: targetStatus,
+        revision: newRevision,
+        timestamp: now
+      });
+
+      return {
+        mediaRef: media.mediaRef,
+        eventRef: media.eventRef,
+        status: targetStatus,
+        previousStatus: 'TRASHED',
+        restoredFromStatus: trashRecord.previousStatus,
+        revision: newRevision,
+        restoredAt: now,
         operationId
       };
     });
