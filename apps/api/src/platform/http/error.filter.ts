@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { Catch, HttpException, type ArgumentsHost, type ExceptionFilter } from '@nestjs/common';
+import { PublicHttpException } from './public-http.exception.js';
 const publicErrors:Record<number,{code:string;message:string}> = {
   400:{code:'INVALID_REQUEST',message:'La solicitud no es válida.'},
   401:{code:'UNAUTHENTICATED',message:'Se requiere autenticación.'},
@@ -18,6 +19,10 @@ export class PublicErrorFilter implements ExceptionFilter {
     const request = host.switchToHttp().getRequest();
     const correlationId = request.correlationId ?? randomUUID();
     const status = error instanceof HttpException ? error.getStatus() : 500;
+    if (error instanceof PublicHttpException) {
+      response.status(status).json({code:error.publicCode,message:error.publicMessage,correlationId});
+      return;
+    }
     const publicError = publicErrors[status] ?? {code:'INTERNAL_ERROR',message:'No se pudo completar la solicitud.'};
     response.status(status).json({...publicError,correlationId});
   }

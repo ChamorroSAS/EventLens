@@ -1,0 +1,117 @@
+import { Component, Input } from '@angular/core';
+
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive' | 'link';
+export type ButtonSize = 'small' | 'medium' | 'large';
+
+@Component({
+  selector: 'eventlens-button',
+  standalone: true,
+  template: `
+    <button
+      [attr.type]="type"
+      [class]="'el-button el-button--' + variant + ' el-button--' + size"
+      [disabled]="disabled || loading"
+      [attr.aria-busy]="loading ? 'true' : null"
+    >
+      @if (loading) {
+        <span class="el-button__spinner" aria-hidden="true"></span>
+      }
+      <span class="el-button__label"><ng-content /></span>
+    </button>
+  `,
+  styles: `
+    @use 'mixins' as m;
+
+    .el-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--el-space-sm);
+      font-family: var(--el-font-family);
+      font-size: var(--el-font-size-button);
+      font-weight: var(--el-font-weight-semibold);
+      line-height: var(--el-line-height-tight);
+      border: 1px solid transparent;
+      border-radius: var(--el-radius-md);
+      cursor: pointer;
+      padding: 0 var(--el-space-lg);
+      min-block-size: var(--el-touch-target-min);
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+    .el-button:focus-visible {
+      @include m.el-focus-ring;
+    }
+    .el-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    .el-button--small {
+      min-block-size: 32px;
+      padding: 0 var(--el-space-md);
+      font-size: var(--el-font-size-body-small);
+    }
+    .el-button--large {
+      min-block-size: 48px;
+      padding: 0 var(--el-space-xl);
+    }
+    .el-button--primary {
+      background-color: var(--el-color-primary);
+      color: #ffffff;
+    }
+    .el-button--primary:not(:disabled):hover {
+      background-color: var(--el-color-primary-hover);
+    }
+    .el-button--secondary {
+      background-color: var(--el-color-surface);
+      border-color: var(--el-color-border-strong);
+      color: var(--el-color-text);
+    }
+    .el-button--secondary:not(:disabled):hover {
+      background-color: var(--el-color-surface-muted);
+    }
+    .el-button--ghost {
+      background-color: transparent;
+      color: var(--el-color-primary);
+    }
+    .el-button--ghost:not(:disabled):hover {
+      background-color: var(--el-color-surface-muted);
+    }
+    .el-button--destructive {
+      background-color: var(--el-color-danger);
+      color: #ffffff;
+    }
+    .el-button--link {
+      background: none;
+      border: none;
+      padding: 0;
+      color: var(--el-color-primary);
+      text-decoration: underline;
+      min-block-size: auto;
+    }
+    .el-button__spinner {
+      inline-size: 1em;
+      block-size: 1em;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: var(--el-radius-pill);
+      animation: el-button-spin 0.7s linear infinite;
+    }
+    @keyframes el-button-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .el-button__spinner {
+        animation-duration: 1.5s;
+      }
+    }
+  `,
+})
+export class ButtonComponent {
+  @Input() variant: ButtonVariant = 'primary';
+  @Input() size: ButtonSize = 'medium';
+  @Input() type: 'button' | 'submit' | 'reset' = 'button';
+  @Input() disabled = false;
+  @Input() loading = false;
+}

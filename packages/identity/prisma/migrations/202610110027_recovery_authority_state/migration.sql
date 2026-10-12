@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS recovery_authority_state (
+  id TEXT PRIMARY KEY,
+  recovery_epoch BIGINT NOT NULL DEFAULT 1,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

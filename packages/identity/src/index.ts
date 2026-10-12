@@ -68,6 +68,8 @@ export {
   type Mod001RecoveryCoordinatorOptions
 } from './recovery.js';
 
+export { PostgresRecoveryAuthority } from './recovery-authority.js';
+
 export {
   BetaInvitationService,
   type BetaInvitationServiceOptions

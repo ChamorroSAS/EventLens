@@ -147,5 +147,13 @@ model OrganizerSession {
   @@map("organizer_session")
 }
 
+model RecoveryAuthorityState {
+  id            String   @id
+  recoveryEpoch BigInt   @default(1) @map("recovery_epoch")
+  updatedAt     DateTime @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@map("recovery_authority_state")
+}
+
 
 
