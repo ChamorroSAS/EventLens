@@ -25,6 +25,16 @@ Fecha 2026-10-12. Estado: **FUNCTIONAL_CONFIRMED / LEGAL_REVIEW_PENDING / NOT_DE
 - Reclamaciones con riesgos de menores o intimidad pueden ameritar revisión prioritaria, pero **no** cambian automáticamente las reglas de moderación de DEC-088/089 ni reemplazan objetivos operativos internos de EL-EP-009.
 - Para consultas/reclamos incluir tracking de festivos Colombia y comunicación de prórrogas. Validación jurídica de clasificación de cada caso requerida.
 
+## Decisión de producto confirmada — evidencia mínima al cierre (2026-10-12)
+
+- **Conservar con acceso restringido:** referencia del expediente, tipo de solicitud, fechas de recepción y respuesta, decisión adoptada y constancia mínima de respuesta/ejecución. Sólo añadir fundamento o actor responsable cuando sea necesario para justificar una actuación.
+- **No conservar por defecto:** imágenes del evento, documentos de identidad, copias completas de conversaciones ni datos personales que no sean necesarios para acreditar la gestión.
+- **Contacto del solicitante:** minimizar, proteger y eliminar cuando cese la necesidad acreditada; la operación no debe perder la capacidad de informar del resultado ni de demostrar que respondió.
+- **Retención:** plazo jurídico **PENDING**; no extrapolar la regla de seis meses de solicitudes Beta no invitadas a reclamaciones y expedientes de derechos. Hold excepcional sujeto a causa y autoridad legítimas, sin retención indefinida.
+- **Seguimiento manual:** evitar datos sensibles en asunto de correo, índice del expediente o auditoría; cualquier soporte imprescindible estará en repositorio privado con acceso mínimo, no en Git.
+
+`RIGHTS_CASE_EVIDENCE_POLICY: MINIMAL_CONFIRMED`; `RIGHTS_CASE_RETENTION: LEGAL_PENDING`; no se afirma ejecución operativa ni aprobación profesional.
+
 ## Registro manual mínimo sugerido
 
 `case_ref`, `received_at`, `type`, `data_scope` limitado, `requester_channel` protegido, `legitimacy_status`, `assigned_owner`, `legal_due_at`, `status`, `decision`, `decision_at`, `response_at`, `evidence_pointer` controlado, `purge_due_at` pendiente. Preferir buzón restringido y hoja/registro privado cifrado con acceso mínimo y backups controlados; no incluir identidad ni pruebas completas en repositorio.
