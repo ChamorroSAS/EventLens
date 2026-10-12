@@ -233,3 +233,105 @@ export interface ExecuteInterventionResult {
   readonly newStatus: string;
   readonly executedAt: string;
 }
+
+// ============================================================================
+// MODERATION & CASE GOVERNANCE TYPES (EL-TK-122 / EL-EP-009)
+// ============================================================================
+
+export type ModerationSeverity = 'CRITICAL' | 'NORMAL' | 'UNCLASSIFIED';
+export type ModerationCaseStatus = 'PENDING_REVIEW' | 'UNDER_INVESTIGATION' | 'ACTION_TAKEN' | 'DISMISSED';
+export type ModerationCaseType = 'REPORT' | 'REMOVAL_REQUEST';
+
+export interface AdminModerationQueueFilter {
+  readonly severity?: ModerationSeverity | 'ALL';
+  readonly status?: ModerationCaseStatus | 'ALL';
+  readonly eventId?: string;
+}
+
+export interface AdminModerationQueueItem {
+  readonly caseId: string;
+  readonly caseType: ModerationCaseType;
+  readonly eventId: string;
+  readonly mediaId: string;
+  readonly reason: string;
+  readonly severity: ModerationSeverity;
+  readonly status: ModerationCaseStatus;
+  readonly reportsCount: number;
+  readonly createdAt: string;
+  readonly lastReportedAt: string;
+}
+
+export interface AdminModerationQueueResult {
+  readonly items: readonly AdminModerationQueueItem[];
+  readonly total: number;
+  readonly emptyReason?: 'EMPTY_QUEUE' | 'EMPTY_FILTER_RESULTS';
+}
+
+export interface AdminCaseHistoryEntry {
+  readonly id: string;
+  readonly caseId: string;
+  readonly action: string;
+  readonly performedBy: string;
+  readonly reason?: string;
+  readonly details: Record<string, unknown>;
+  readonly createdAt: string;
+}
+
+export interface AdminCaseDetailCapabilities {
+  readonly canClassify: boolean;
+  readonly canAccessMedia: boolean;
+  readonly canPreventiveHide: boolean;
+  readonly canResolve: boolean;
+}
+
+export interface AdminCaseDetailResult {
+  readonly caseId: string;
+  readonly caseType: ModerationCaseType;
+  readonly eventId: string;
+  readonly mediaId: string;
+  readonly mediaStatus: 'PUBLISHED' | 'HIDDEN' | 'DELETED' | 'QUARANTINED';
+  readonly reason: string;
+  readonly description?: string;
+  readonly severity: ModerationSeverity;
+  readonly status: ModerationCaseStatus;
+  readonly history: readonly AdminCaseHistoryEntry[];
+  readonly capabilities: AdminCaseDetailCapabilities;
+}
+
+export interface AdminClassifyCasePayload {
+  readonly caseId: string;
+  readonly severity: ModerationSeverity;
+  readonly reason: string;
+}
+
+export interface AdminGrantMediaAccessPayload {
+  readonly caseId: string;
+  readonly reason: string;
+}
+
+export interface AdminMediaAccessGrantResult {
+  readonly grantToken: string;
+  readonly previewUrl: string;
+  readonly expiresAt: string;
+  readonly validMinutes: number;
+}
+
+export interface AdminPreventiveHidePayload {
+  readonly caseId: string;
+  readonly reason: string;
+}
+
+export interface AdminResolveCasePayload {
+  readonly caseId: string;
+  readonly resolution: 'DISMISSED' | 'REMOVED_PERMANENTLY';
+  readonly reason: string;
+}
+
+export interface AdminResolveCaseResult {
+  readonly caseId: string;
+  readonly status: ModerationCaseStatus;
+  readonly resolution: 'DISMISSED' | 'REMOVED_PERMANENTLY';
+  readonly downstreamPurged: boolean;
+  readonly message: string;
+}
+

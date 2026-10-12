@@ -220,11 +220,11 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-118 (DONE) | 116,117,101 | 119,122,123 |
 | EL-TK-119 (DONE) | 116,117; contratos EL-EP-013/014/015 | 122,123 |
 | EL-TK-120 (DONE) | 113,115,116 | 122,123 |
-| EL-TK-121 | 099,113,114,115 | 123 |
-| EL-TK-122 | 116..120; contrato EL-EP-012 | 123 |
-| EL-TK-123 | 113..122 | validación EL-EP-009 |
+| EL-TK-121 (DONE) | 099,113,114,115 | 123 |
+| EL-TK-122 (DONE) | 116..120; contrato EL-EP-012 | 123 |
+| EL-TK-123 (DONE) | 113..122 | validación EL-EP-009 |
 
-8 activos COMPLETADOS (DONE) de 11 tickets en EL-EP-009 tras la entrega de la Ruta A (EL-TK-113, 114, 115) y la Ruta B (EL-TK-116 a EL-TK-120): clasificación administrativa con alerta prioritaria sin auto-ocultamiento (EL-TK-116, DEC-088), autorización de acceso justificado temporal de 15 min strictly scoped sin exponer previewUrl en logs (EL-TK-117), ocultamiento preventivo explícito sin disparar purga (EL-TK-118), resolución formal con purga inmediata sin papelera de owner per DEC-089/DEC-097 e idempotencia ante repetición (EL-TK-119), y consulta de cola sanitizada y detalle con capacidades distinguiendo EMPTY_QUEUE de EMPTY_FILTER_RESULTS sin preview automático de media en lista (EL-TK-120). Restan tickets de integración UI (EL-TK-121, EL-TK-122) y validación E2E (EL-TK-123) (Ruta C). Superficies UI reutilizadas del catálogo canónico (§5.26..27 y §12.11..15), sin componentes nuevos. Purga en EL-EP-015, auditoría en EL-EP-014 y consola administrativa en EL-EP-012.
+11 activos COMPLETADOS (DONE) de 11 tickets en EL-EP-009. Culminación integral de la Ruta A (EL-TK-113..115), Ruta B (EL-TK-116..120) y Ruta C (EL-TK-121..123): reporte de contenido y retiro propio irreversible con sesión guest, intake sin sesión con declaración obligatoria no preseleccionada per DEC-103..105, clasificación administrativa con alerta sin auto-ocultamiento per DEC-088, acceso multimedia temporal acotado a 15 min previa justificación, ocultamiento preventivo a HIDDEN, resolución con purga downstream, cola sanitizada sin previews multimedia en el listado, integración completa en experiencias Angular (@eventlens/web) pública y administrativa, y validación E2E contra PostgreSQL 16. Épica EL-EP-009 formalmente cerrada como DONE.
 
 ## Tickets vigentes — EL-EP-010 (quality gate APPROVED)
 

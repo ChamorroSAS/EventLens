@@ -1324,6 +1324,7 @@ export interface CaseDetailResult {
     token: string;
     expiresAt: Date;
   } | null;
+  mediaStatus?: string;
 }
 
 export interface MediaCaseGovernanceRepository {
@@ -1950,6 +1951,7 @@ export class MediaCaseGovernanceService {
         resolutionNotes: caseRecord.resolutionNotes,
         history,
         capabilities,
+        mediaStatus,
         activeGrant: activeGrant
           ? {
               grantId: activeGrant.id,

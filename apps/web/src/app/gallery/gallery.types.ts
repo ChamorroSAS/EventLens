@@ -47,3 +47,24 @@ export interface FetchGalleryOptions {
   readonly guestSessionToken?: string;
   readonly publicLookupKey?: string;
 }
+
+export type MediaReportReason =
+  | 'INAPPROPRIATE_CONTENT'
+  | 'PRIVACY_VIOLATION'
+  | 'INTIMACY_VIOLATION'
+  | 'COPYRIGHT_INFRINGEMENT'
+  | 'OTHER';
+
+export interface SubmitReportPayload {
+  readonly eventId: string;
+  readonly mediaId: string;
+  readonly reason: MediaReportReason;
+  readonly description?: string;
+}
+
+export interface SubmitReportResult {
+  readonly reportId: string;
+  readonly status: 'PENDING_REVIEW';
+  readonly message: string;
+}
+

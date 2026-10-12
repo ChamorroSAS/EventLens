@@ -11,6 +11,7 @@ import { PinAccessFormComponent } from './pin-access-form.component.js';
 import { ConsentSheetComponent } from './consent-sheet.component.js';
 import { GuestIdentityFormComponent } from './guest-identity-form.component.js';
 import { MyContributionsListComponent } from './my-contributions-list.component.js';
+import { RemovalRequestFlowComponent } from './removal-request-flow.component.js';
 
 @Component({
   selector: 'el-guest-container',
@@ -20,7 +21,8 @@ import { MyContributionsListComponent } from './my-contributions-list.component.
     PinAccessFormComponent,
     ConsentSheetComponent,
     GuestIdentityFormComponent,
-    MyContributionsListComponent
+    MyContributionsListComponent,
+    RemovalRequestFlowComponent
   ],
   template: `
     <main class="guest-shell" role="main" aria-labelledby="event-title">
@@ -94,10 +96,23 @@ import { MyContributionsListComponent } from './my-contributions-list.component.
           <p class="removal-disclaimer">{{ removalIntakeView()?.disclaimer }}</p>
           <div class="removal-actions">
             <button type="button" class="close-removal-btn" (click)="closeRemovalModal()">Cerrar</button>
-            <a [href]="removalIntakeView()?.intakePath" class="intake-link-btn">Ir al formulario de solicitud</a>
+            <button type="button" class="intake-link-btn" (click)="openIntakeFlow()">Ir al formulario de solicitud</button>
           </div>
         </div>
       </div>
+
+      <!-- Escenario 4 & EL-TK-121: Flujo interactivo de retiro y denuncia -->
+      <el-removal-request-flow
+        *ngIf="showRemovalFlow()"
+        [isOpen]="showRemovalFlow()"
+        [variant]="removalFlowVariant()"
+        [eventId]="accessView?.eventId || 'event-1'"
+        [eventName]="accessView?.name || 'Evento'"
+        [mediaId]="targetMediaId()"
+        [sessionToken]="currentSession?.token || ''"
+        (close)="onCloseRemovalFlow()"
+        (removed)="onContributionRemoved($event)"
+      ></el-removal-request-flow>
     </main>
   `,
   styles: [`
@@ -268,8 +283,10 @@ export class GuestContainerComponent implements OnInit {
   readonly showIdentityForm = signal(false);
   readonly isSubmittingIdentity = signal(false);
   readonly identityErrorMessage = signal<string | null>(null);
-
   readonly removalIntakeView = signal<RemovalIntakeView | null>(null);
+  readonly showRemovalFlow = signal(false);
+  readonly removalFlowVariant = signal<'OWN_REMOVAL' | 'GUEST_INTAKE'>('GUEST_INTAKE');
+  readonly targetMediaId = signal<string>('');
 
   constructor(public guestService: GuestService) {}
 
@@ -369,5 +386,25 @@ export class GuestContainerComponent implements OnInit {
 
   closeRemovalModal(): void {
     this.removalIntakeView.set(null);
+  }
+
+  openOwnRemovalFlow(mediaId: string): void {
+    this.targetMediaId.set(mediaId);
+    this.removalFlowVariant.set('OWN_REMOVAL');
+    this.showRemovalFlow.set(true);
+  }
+
+  openIntakeFlow(): void {
+    this.removalIntakeView.set(null);
+    this.removalFlowVariant.set('GUEST_INTAKE');
+    this.showRemovalFlow.set(true);
+  }
+
+  onCloseRemovalFlow(): void {
+    this.showRemovalFlow.set(false);
+  }
+
+  onContributionRemoved(event: { mediaId: string }): void {
+    this.showRemovalFlow.set(false);
   }
 }

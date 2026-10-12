@@ -15,6 +15,7 @@ import { GalleryMediaCardComponent } from './gallery-media-card.component.js';
 import { GalleryEmptyStateComponent } from './gallery-empty-state.component.js';
 import { GalleryDisabledStateComponent } from './gallery-disabled-state.component.js';
 import { GalleryViewerComponent } from './gallery-viewer.component.js';
+import { ReportContentDialogComponent } from './report-content-dialog.component.js';
 
 @Component({
   selector: 'el-gallery',
@@ -24,7 +25,8 @@ import { GalleryViewerComponent } from './gallery-viewer.component.js';
     GalleryMediaCardComponent,
     GalleryEmptyStateComponent,
     GalleryDisabledStateComponent,
-    GalleryViewerComponent
+    GalleryViewerComponent,
+    ReportContentDialogComponent
   ],
   template: `
     <section class="gallery-root" aria-label="Galería de recuerdos">
@@ -115,8 +117,18 @@ import { GalleryViewerComponent } from './gallery-viewer.component.js';
         (close)="onCloseViewer()"
         (previous)="onViewerPrevious()"
         (next)="onViewerNext()"
+        (report)="onReportTriggered($event)"
         (retryGrant)="retryCurrentGrant()"
       ></el-gallery-viewer>
+
+      <!-- Diálogo de Reporte de Contenido (EL-TK-121 / DEC-088) -->
+      <el-report-content-dialog
+        *ngIf="reportingMediaId()"
+        [isOpen]="reportingMediaId() !== null"
+        [mediaId]="reportingMediaId()!"
+        [eventId]="eventId"
+        (close)="onCloseReportDialog()"
+      ></el-report-content-dialog>
     </section>
   `,
   styles: [`
@@ -289,6 +301,9 @@ export class GalleryComponent implements OnInit {
   // Cached grants for thumbnails
   readonly thumbnailGrants = signal<Map<string, MediaViewGrant>>(new Map());
 
+  // Diálogo de reporte (EL-TK-121)
+  readonly reportingMediaId = signal<string | null>(null);
+
   // Focus tracking for returning focus upon viewer close
   private lastTriggeringCardId: string | null = null;
 
@@ -385,6 +400,14 @@ export class GalleryComponent implements OnInit {
         }
       }, 0);
     }
+  }
+
+  public onReportTriggered(event: { eventId: string; mediaId: string }): void {
+    this.reportingMediaId.set(event.mediaId);
+  }
+
+  public onCloseReportDialog(): void {
+    this.reportingMediaId.set(null);
   }
 
   public onViewerPrevious(): void {

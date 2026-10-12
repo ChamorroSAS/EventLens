@@ -4,8 +4,9 @@ import { AdminEventSearchComponent } from './admin-event-search.component.js';
 import { AdminEventDetailComponent } from './admin-event-detail.component.js';
 import { JobsViewerComponent } from '../jobs/jobs-viewer.component.js';
 import { AuditLogViewerComponent } from '../audit/audit-log-viewer.component.js';
+import { AdminModerationPanelComponent } from './admin-moderation-panel.component.js';
 
-export type AdminConsoleTab = 'search' | 'detail' | 'jobs' | 'audit';
+export type AdminConsoleTab = 'search' | 'detail' | 'jobs' | 'audit' | 'moderation';
 
 @Component({
   selector: 'eventlens-admin-app-shell',
@@ -16,6 +17,7 @@ export type AdminConsoleTab = 'search' | 'detail' | 'jobs' | 'audit';
     AdminEventDetailComponent,
     JobsViewerComponent,
     AuditLogViewerComponent,
+    AdminModerationPanelComponent,
   ],
   template: `
     <div class="admin-app-shell">
@@ -40,6 +42,14 @@ export type AdminConsoleTab = 'search' | 'detail' | 'jobs' | 'audit';
             (click)="selectTab('jobs')"
           >
             Cola de Trabajos (Jobs)
+          </button>
+          <button
+            type="button"
+            class="nav-tab"
+            [class.active]="activeTab() === 'moderation'"
+            (click)="selectTab('moderation')"
+          >
+            Moderación y Casos
           </button>
           <button
             type="button"
@@ -78,6 +88,10 @@ export type AdminConsoleTab = 'search' | 'detail' | 'jobs' | 'audit';
           <eventlens-jobs-viewer
             [callerActorId]="callerActorId"
           ></eventlens-jobs-viewer>
+        } @else if (activeTab() === 'moderation') {
+          <eventlens-admin-moderation-panel
+            [callerActorId]="callerActorId"
+          ></eventlens-admin-moderation-panel>
         } @else if (activeTab() === 'audit') {
           <eventlens-audit-log-viewer
             [callerActorId]="callerActorId"
@@ -177,6 +191,8 @@ export class AdminAppShellComponent {
       this.announcerMessage.set('Sección de búsqueda de eventos cargada.');
     } else if (tab === 'jobs') {
       this.announcerMessage.set('Sección de diagnóstico de trabajos cargada.');
+    } else if (tab === 'moderation') {
+      this.announcerMessage.set('Panel de moderación y casos de gobernanza cargado.');
     } else if (tab === 'audit') {
       this.announcerMessage.set('Sección de auditoría inmutable cargada.');
     }
