@@ -369,8 +369,17 @@ model PipelineValidationReport {
   @@map("media_pipeline_validation_report")
 }
 
+model MediaTrashRecord {
+  id              String    @id @db.Uuid
+  operationId     String    @map("operation_id")
+  mediaRef        String    @map("media_ref")
+  eventRef        String    @map("event_ref")
+  organizerRef    String    @map("organizer_ref")
+  previousStatus  String    @map("previous_status")
+  trashedAt       DateTime  @map("trashed_at") @db.Timestamptz
+  restoreDeadline DateTime  @map("restore_deadline") @db.Timestamptz
+  restoredAt      DateTime? @map("restored_at") @db.Timestamptz
+  reason          String?
 
-
-
-
-
+  @@map("media_trash_record")
+}
