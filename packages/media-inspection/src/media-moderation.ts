@@ -37,6 +37,25 @@ export interface ApproveMediaResult {
   readonly operationId: string;
 }
 
+export interface RejectMediaCommand {
+  readonly organizerRef: string;
+  readonly eventRef: string;
+  readonly mediaRef: string;
+  readonly reason?: string;
+  readonly expectedRevision?: bigint | string;
+  readonly operationId?: string;
+}
+
+export interface RejectMediaResult {
+  readonly mediaRef: string;
+  readonly eventRef: string;
+  readonly status: 'REJECTED';
+  readonly previousStatus: string;
+  readonly revision: bigint;
+  readonly rejectedAt: Date;
+  readonly operationId: string;
+}
+
 export interface MediaCatalogRecord {
   readonly mediaRef: string;
   readonly eventRef: string;
@@ -72,6 +91,7 @@ export interface MediaModerationRepository {
   recordAudit(
     tx: SqlTransaction,
     params: {
+      action?: string;
       operationId: string;
       mediaRef: string;
       eventRef: string;
@@ -79,6 +99,7 @@ export interface MediaModerationRepository {
       previousStatus: string;
       newStatus: string;
       revision: bigint;
+      reason?: string;
       timestamp: Date;
     }
   ): Promise<void>;
@@ -180,6 +201,7 @@ export class PostgresMediaModerationRepository
   async recordAudit(
     tx: SqlTransaction,
     params: {
+      action?: string;
       operationId: string;
       mediaRef: string;
       eventRef: string;
@@ -187,26 +209,31 @@ export class PostgresMediaModerationRepository
       previousStatus: string;
       newStatus: string;
       revision: bigint;
+      reason?: string;
       timestamp: Date;
     }
   ): Promise<void> {
+    const action = params.action ?? 'MEDIA_APPROVED';
     await tx.execute(
       `INSERT INTO audit_event (
          id, occurred_at, actor_type, actor_id, action, resource_type,
          resource_id, result, reason, metadata, idempotency_key, created_at
        ) VALUES (
-         $1::uuid, $2, 'ORGANIZER', $3, 'MEDIA_APPROVED', 'MEDIA',
-         $4, 'SUCCESS', NULL, $5::jsonb, $6, $2
+         $1::uuid, $2, 'ORGANIZER', $3, $4, 'MEDIA',
+         $5, 'SUCCESS', $6, $7::jsonb, $8, $2
        )`,
       randomUUID(),
       params.timestamp,
       params.actorRef,
+      action,
       params.mediaRef,
+      params.reason ?? null,
       JSON.stringify({
         eventRef: params.eventRef,
         previousStatus: params.previousStatus,
         newStatus: params.newStatus,
-        revision: String(params.revision)
+        revision: String(params.revision),
+        reason: params.reason
       }),
       params.operationId
     );
@@ -339,6 +366,117 @@ export class MediaModerationService {
         previousStatus: media.status,
         revision: newRevision,
         approvedAt: now,
+        operationId
+      };
+    });
+  }
+
+  /**
+   * Rejects a media in PENDING_REVIEW state making it REJECTED (EL-TK-104).
+   * Verifies ownership, state compatibility, and CAS concurrency.
+   * Preserves original file and consumption while it physically exists.
+   */
+  async rejectMedia(command: RejectMediaCommand): Promise<RejectMediaResult> {
+    if (!command || typeof command !== 'object') {
+      throw new MediaModerationError('INVALID_ARGUMENT', 'Command is required');
+    }
+    const { organizerRef, eventRef, mediaRef, reason, expectedRevision } = command;
+    if (!organizerRef || typeof organizerRef !== 'string' || !organizerRef.trim()) {
+      throw new MediaModerationError('INVALID_ARGUMENT', 'organizerRef is required');
+    }
+    if (!eventRef || typeof eventRef !== 'string' || !eventRef.trim()) {
+      throw new MediaModerationError('INVALID_ARGUMENT', 'eventRef is required');
+    }
+    if (!mediaRef || typeof mediaRef !== 'string' || !mediaRef.trim()) {
+      throw new MediaModerationError('INVALID_ARGUMENT', 'mediaRef is required');
+    }
+
+    const operationId = command.operationId ?? randomUUID();
+    const now = new Date();
+
+    return await this.transactions.run(async (tx) => {
+      // 1. Authorize organizer ownership on event
+      try {
+        await this.authorizer.assertAuthorized(tx, {
+          eventRef: eventRef.trim(),
+          actor: { role: 'ORGANIZER', organizerRef: organizerRef.trim() }
+        });
+      } catch (err: any) {
+        if (err.code === 'ACCESS_DENIED' || err.code === 'BARRED_EVENT') {
+          throw new MediaModerationError('ACCESS_DENIED', 'Access denied to event media');
+        }
+        throw err;
+      }
+
+      // 2. Lock and retrieve media row
+      const media = await this.repository.lockAndGetMedia(tx, mediaRef.trim());
+      if (!media) {
+        throw new MediaModerationError('MEDIA_NOT_FOUND', `Media '${mediaRef}' not found`);
+      }
+
+      // Multi-tenant check: media must belong to eventRef
+      if (media.eventRef !== eventRef.trim()) {
+        throw new MediaModerationError('ACCESS_DENIED', 'Media does not belong to specified event');
+      }
+
+      // 3. Expected revision check (concurrency control)
+      if (expectedRevision !== undefined && media.revision !== BigInt(expectedRevision)) {
+        throw new MediaModerationError(
+          'CONCURRENCY_CONFLICT',
+          `Concurrent modification: expected revision ${expectedRevision}, current ${media.revision}`
+        );
+      }
+
+      // 4. State validation & Idempotency (Escenario 1 & 2)
+      if (media.status === 'REJECTED') {
+        // Idempotent replay: already rejected
+        return {
+          mediaRef: media.mediaRef,
+          eventRef: media.eventRef,
+          status: 'REJECTED',
+          previousStatus: 'REJECTED',
+          revision: media.revision,
+          rejectedAt: now,
+          operationId
+        };
+      }
+
+      if (media.status !== 'PENDING_REVIEW') {
+        throw new MediaModerationError(
+          'INVALID_STATE',
+          `Media is in status '${media.status}', cannot reject when not PENDING_REVIEW`
+        );
+      }
+
+      // 5. Transition to REJECTED (preserves original file and consumption)
+      const newRevision = await this.repository.updateStatus(
+        tx,
+        media.mediaRef,
+        media.revision,
+        'REJECTED'
+      );
+
+      // 6. Audit log (Observabilidad)
+      await this.repository.recordAudit(tx, {
+        action: 'MEDIA_REJECTED',
+        operationId,
+        mediaRef: media.mediaRef,
+        eventRef: media.eventRef,
+        actorRef: organizerRef.trim(),
+        previousStatus: media.status,
+        newStatus: 'REJECTED',
+        revision: newRevision,
+        reason,
+        timestamp: now
+      });
+
+      return {
+        mediaRef: media.mediaRef,
+        eventRef: media.eventRef,
+        status: 'REJECTED',
+        previousStatus: media.status,
+        revision: newRevision,
+        rejectedAt: now,
         operationId
       };
     });
