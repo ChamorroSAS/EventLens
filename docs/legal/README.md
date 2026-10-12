@@ -22,6 +22,8 @@ La decisión no convierte a NCH SERVICIOS S.A.S. en operadora, no constituye una
 
 **Decisión funcional 2026-10-12 — derechos de titulares:** usar canal de correo electrónico y funciones ya existentes, recepción manual con trazabilidad mínima. La dirección pública y su funcionamiento están pendientes de verificación y autorización; no insertar datos personales en Git. [Procedimiento preliminar](../../.codex/product/sessions/2026-10-12-el-ep-017-data-subject-rights-manual-procedure.md). Q-029/DEC-031 no cambian.
 
+**Borradores jurídicos nuevos para asesoría profesional (NO PUBLICAR):** [Política de Tratamiento de Datos](PRIVACY-POLICY-DRAFT.md) y [Términos y Condiciones](TERMS-OF-USE-DRAFT.md). No suplantan el aviso Beta ni cierran Q-029.
+
 ## Documentos del expediente
 
 | Documento | Finalidad | Estado |
