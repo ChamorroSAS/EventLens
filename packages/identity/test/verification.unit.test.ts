@@ -33,6 +33,13 @@ function createInMemoryRunner(db: InMemoryDb): TransactionRunner {
             return (intent ? [{ ...intent }] : []) as unknown as R[];
           }
 
+          // SELECT ... FROM organizer_account WHERE email_normalized = $1
+          if (normalizedSql.includes('FROM organizer_account') && normalizedSql.includes('email_normalized = $1')) {
+            const emailNormalized = (params[0] as string).toLowerCase();
+            const account = [...db.accounts.values()].find(a => a.email_normalized === emailNormalized);
+            return (account ? [{ ...account }] : []) as unknown as R[];
+          }
+
           // SELECT ... FROM organizer_account WHERE id = $1 FOR UPDATE / regular
           if (normalizedSql.includes('FROM organizer_account') && normalizedSql.includes('id = $1')) {
             const id = params[0] as string;
@@ -70,6 +77,17 @@ function createInMemoryRunner(db: InMemoryDb): TransactionRunner {
             return [] as unknown as R[];
           }
 
+          // UPDATE email_verification_intent SET status = 'SUPERSEDED'
+          if (normalizedSql.includes('UPDATE email_verification_intent') && normalizedSql.includes("status = 'SUPERSEDED'")) {
+            const accountId = params[0] as string;
+            for (const intent of db.verificationIntents.values()) {
+              if (intent.account_id === accountId && intent.status === 'PENDING') {
+                intent.status = 'SUPERSEDED';
+              }
+            }
+            return [] as unknown as R[];
+          }
+
           // UPDATE email_verification_intent SET status = 'CONSUMED'
           if (normalizedSql.includes('UPDATE email_verification_intent')) {
             const [consumed_at, id] = params;
@@ -78,6 +96,35 @@ function createInMemoryRunner(db: InMemoryDb): TransactionRunner {
               intent.status = 'CONSUMED';
               intent.consumed_at = consumed_at;
             }
+            return [] as unknown as R[];
+          }
+
+          // INSERT INTO email_verification_intent
+          if (normalizedSql.includes('INSERT INTO email_verification_intent')) {
+            let id: string;
+            let account_id: string;
+            let email_normalized: string | undefined;
+            let token_digest: string;
+            let status = 'PENDING';
+            let created_at: Date;
+            let expires_at: Date;
+
+            if (normalizedSql.includes('email_normalized')) {
+              [id, account_id, email_normalized, token_digest, created_at, expires_at] = params as [string, string, string, string, Date, Date];
+            } else {
+              [id, account_id, token_digest, status, expires_at, created_at] = params as [string, string, string, string, Date, Date];
+            }
+
+            db.verificationIntents.set(id, {
+              id,
+              account_id,
+              email_normalized,
+              token_digest,
+              status,
+              expires_at,
+              created_at,
+              consumed_at: null
+            });
             return [] as unknown as R[];
           }
 
@@ -106,7 +153,7 @@ function createInMemoryRunner(db: InMemoryDb): TransactionRunner {
   };
 }
 
-describe('EL-TK-011: EmailVerificationService (Unit Tests)', () => {
+describe('EL-TK-011 & EL-TK-012: EmailVerificationService (Unit Tests)', () => {
   function setup() {
     const db: InMemoryDb = {
       invitations: new Map(),
@@ -125,8 +172,17 @@ describe('EL-TK-011: EmailVerificationService (Unit Tests)', () => {
       getCredentialRevision: vi.fn().mockResolvedValue(1n),
       getAdminAuthWatermark: vi.fn().mockResolvedValue(1n)
     };
-    const service = new EmailVerificationService(runner, auditSink, recoveryAuthority);
-    return { db, runner, auditSink, recoveryAuthority, service };
+    const notificationPort = {
+      sendVerificationEmail: vi.fn(async () => {})
+    };
+    const service = new EmailVerificationService(
+      runner,
+      auditSink,
+      recoveryAuthority,
+      notificationPort,
+      { maxResendAttempts: 3, rateLimitWindowMs: 60000 }
+    );
+    return { db, runner, auditSink, recoveryAuthority, notificationPort, service };
   }
 
   function seedFixture(
@@ -197,6 +253,7 @@ describe('EL-TK-011: EmailVerificationService (Unit Tests)', () => {
       accountId,
       invitationId,
       intentId,
+      email,
       emailNormalized,
       rawVerificationToken,
       invitation,
@@ -363,4 +420,122 @@ describe('EL-TK-011: EmailVerificationService (Unit Tests)', () => {
     expect(res.status).toBe('ACTIVE');
     expect(res.accountId).toBe(fixture.accountId);
   });
+
+  describe('EL-TK-012: resendVerificationEmail', () => {
+    it('Criterio: Reenviar a cuenta PENDING_VERIFICATION emite nuevo token, reemplaza previos como SUPERSEDED y notifica', async () => {
+      const { db, service, notificationPort, auditSink } = setup();
+      const fixture = seedFixture(db, {
+        accountStatus: 'PENDING_VERIFICATION',
+        invitationStatus: 'PENDING',
+        invitationDaysLeft: 5,
+        tokenStatus: 'PENDING'
+      });
+
+      const previousIntent = db.verificationIntents.get(fixture.intentId);
+      expect(previousIntent.status).toBe('PENDING');
+
+      const result = await service.resendVerificationEmail({
+        email: fixture.email
+      });
+
+      expect(result.outcome).toBe('RESEND_ACCEPTED');
+      expect(previousIntent.status).toBe('SUPERSEDED');
+
+      // Un nuevo intent fue creado
+      expect(db.verificationIntents.size).toBe(2);
+      const newIntent = [...db.verificationIntents.values()].find(i => i.id !== fixture.intentId);
+      expect(newIntent).toBeDefined();
+      expect(newIntent.status).toBe('PENDING');
+
+      // NotificationPort fue invocado
+      expect(notificationPort.sendVerificationEmail).toHaveBeenCalledTimes(1);
+      const notificationArg = (notificationPort.sendVerificationEmail as any).mock.calls[0][0];
+      expect(notificationArg.email).toBe(fixture.email);
+      expect(notificationArg.token).toHaveLength(64); // 256 bits hex
+
+      // Auditoría registrada
+      expect(auditSink.record).toHaveBeenCalled();
+      const auditCalls = (auditSink.record as any).mock.calls;
+      const resendAudit = auditCalls.find((c: any) => c[0].procedure === 'ORGANIZER_EMAIL_VERIFICATION_RESENT');
+      expect(resendAudit).toBeDefined();
+      expect(resendAudit[0].result).toBe('RESEND_ACCEPTED');
+    });
+
+    it('Anti-enumeración: Correo inexistente responde RESEND_ACCEPTED sin emitir token ni notificar', async () => {
+      const { db, service, notificationPort } = setup();
+
+      const result = await service.resendVerificationEmail({
+        email: 'nobody@nowhere.internal'
+      });
+
+      expect(result.outcome).toBe('RESEND_ACCEPTED');
+      expect(notificationPort.sendVerificationEmail).not.toHaveBeenCalled();
+      expect(db.verificationIntents.size).toBe(0);
+    });
+
+    it('Anti-enumeración: Correo de cuenta ya activa responde RESEND_ACCEPTED sin emitir token ni notificar', async () => {
+      const { db, service, notificationPort } = setup();
+      const fixture = seedFixture(db, {
+        accountStatus: 'ACTIVE',
+        invitationStatus: 'CONSUMED'
+      });
+
+      const result = await service.resendVerificationEmail({
+        email: fixture.email
+      });
+
+      expect(result.outcome).toBe('RESEND_ACCEPTED');
+      expect(notificationPort.sendVerificationEmail).not.toHaveBeenCalled();
+    });
+
+    it('Invitación no utilizable: si la invitación está expirada o revocada, no emite nuevo token', async () => {
+      const { db, service, notificationPort } = setup();
+      const fixture = seedFixture(db, {
+        accountStatus: 'PENDING_VERIFICATION',
+        invitationStatus: 'REVOKED'
+      });
+
+      const result = await service.resendVerificationEmail({
+        email: fixture.email
+      });
+
+      expect(result.outcome).toBe('RESEND_ACCEPTED');
+      expect(notificationPort.sendVerificationEmail).not.toHaveBeenCalled();
+    });
+
+    it('Validación: Sintaxis de correo no RFC 5322 arroja INVALID_ARGUMENT', async () => {
+      const { service } = setup();
+
+      await expect(
+        service.resendVerificationEmail({ email: 'not-an-email' })
+      ).rejects.toMatchObject({
+        code: 'INVALID_ARGUMENT'
+      });
+
+      await expect(
+        service.resendVerificationEmail({ email: '' })
+      ).rejects.toMatchObject({
+        code: 'INVALID_ARGUMENT'
+      });
+    });
+
+    it('Rate limiting: exceso de intentos de reenvío arroja TEMPORARY_FAILURE', async () => {
+      const { db, service } = setup();
+      const email = 'rate.limit@eventlens.internal';
+
+      // 3 intentos permitidos
+      for (let i = 0; i < 3; i++) {
+        const res = await service.resendVerificationEmail({ email, clientIp: '192.168.1.1' });
+        expect(res.outcome).toBe('RESEND_ACCEPTED');
+      }
+
+      // 4to intento rechazado por rate limit
+      await expect(
+        service.resendVerificationEmail({ email, clientIp: '192.168.1.1' })
+      ).rejects.toMatchObject({
+        code: 'TEMPORARY_FAILURE'
+      });
+    });
+  });
 });
+

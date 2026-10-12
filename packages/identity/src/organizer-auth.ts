@@ -13,7 +13,16 @@ import {
   type OrganizerLoginCommand,
   type OrganizerLoginResult,
   type ValidateOrganizerSessionCommand,
-  type ValidateOrganizerSessionResult
+  type ValidateOrganizerSessionResult,
+  type OrganizerSessionSummaryRecord,
+  type ListOrganizerSessionsCommand,
+  type ListOrganizerSessionsResult,
+  type LogoutOrganizerCommand,
+  type LogoutOrganizerResult,
+  type RevokeSpecificSessionCommand,
+  type RevokeSpecificSessionResult,
+  type RevokeOtherSessionsCommand,
+  type RevokeOtherSessionsResult
 } from './contracts.js';
 
 interface OrganizerAccountRow {
@@ -440,4 +449,340 @@ export class OrganizerAuthenticationService {
       };
     });
   }
+
+  /**
+   * Lists active sessions belonging to the authenticated organizer (EL-TK-014).
+   * Strictly scopes query to actorContext.accountId. Only returns active, non-expired, non-revoked sessions.
+   * Identifies the current session via isCurrent. Never exposes session tokens or digests.
+   */
+  public async listSessions(
+    command: ListOrganizerSessionsCommand
+  ): Promise<ListOrganizerSessionsResult> {
+    if (!command || !command.actorContext || command.actorContext.actorType !== 'ORGANIZER_HUMAN') {
+      throw new AuthenticationError('UNAUTHENTICATED', 'Organizer authentication required');
+    }
+
+    const { actorContext } = command;
+    const now = new Date();
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      // 1. Validate that caller's current session exists and is active
+      const currentRows = await tx.query<OrganizerSessionRow>(
+        `SELECT id, account_id, revoked_at, expires_at, idle_expires_at
+         FROM organizer_session
+         WHERE id = $1 AND account_id = $2`,
+        actorContext.sessionId,
+        actorContext.accountId
+      );
+
+      if (!currentRows.length) {
+        throw new AuthenticationError('SESSION_EXPIRED', 'Current session not found');
+      }
+
+      const current = currentRows[0];
+      if (current.revoked_at) {
+        throw new AuthenticationError('SESSION_REVOKED', 'Current session has been revoked');
+      }
+
+      if (
+        now.getTime() >= new Date(current.expires_at).getTime() ||
+        now.getTime() >= new Date(current.idle_expires_at).getTime()
+      ) {
+        throw new AuthenticationError('SESSION_EXPIRED', 'Current session has expired');
+      }
+
+      // 2. Query all active sessions for this organizer account
+      const rows = await tx.query<OrganizerSessionRow>(
+        `SELECT id, account_id, auth_time, created_at, last_active_at, expires_at, idle_expires_at
+         FROM organizer_session
+         WHERE account_id = $1
+           AND revoked_at IS NULL
+           AND expires_at > $2
+           AND idle_expires_at > $2
+         ORDER BY created_at DESC`,
+        actorContext.accountId,
+        now
+      );
+
+      const sessions: OrganizerSessionSummaryRecord[] = rows.map((r) => ({
+        id: r.id,
+        accountId: r.account_id,
+        authTime: new Date(r.auth_time),
+        createdAt: new Date(r.created_at),
+        lastActiveAt: new Date(r.last_active_at),
+        expiresAt: new Date(r.expires_at),
+        idleExpiresAt: new Date(r.idle_expires_at),
+        isCurrent: r.id === actorContext.sessionId
+      }));
+
+      await this.auditSink.record({
+        id: randomUUID(),
+        procedure: 'ORGANIZER_SESSION_LIST_VIEWED',
+        actorId: actorContext.accountId,
+        targetIdentifier: actorContext.email,
+        targetPrincipalId: actorContext.accountId,
+        result: 'SUCCESS',
+        details: `Listed ${sessions.length} active sessions`,
+        timestamp: now
+      });
+
+      return {
+        sessions,
+        total: sessions.length
+      };
+    });
+  }
+
+  /**
+   * Logs out the organizer's current session (EL-TK-015).
+   * Revokes exclusively the current session (actorContext.sessionId).
+   * Rejects if session already revoked or expired.
+   */
+  public async logout(command: LogoutOrganizerCommand): Promise<LogoutOrganizerResult> {
+    if (!command || !command.actorContext || command.actorContext.actorType !== 'ORGANIZER_HUMAN') {
+      throw new AuthenticationError('UNAUTHENTICATED', 'Organizer authentication required');
+    }
+
+    const { actorContext } = command;
+    const now = new Date();
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      const rows = await tx.query<OrganizerSessionRow>(
+        `SELECT id, account_id, revoked_at, expires_at, idle_expires_at
+         FROM organizer_session
+         WHERE id = $1 AND account_id = $2
+         FOR UPDATE`,
+        actorContext.sessionId,
+        actorContext.accountId
+      );
+
+      if (!rows.length) {
+        throw new AuthenticationError('SESSION_EXPIRED', 'Session not found');
+      }
+
+      const session = rows[0];
+      if (session.revoked_at) {
+        throw new AuthenticationError('SESSION_REVOKED', 'Session already revoked');
+      }
+
+      if (
+        now.getTime() >= new Date(session.expires_at).getTime() ||
+        now.getTime() >= new Date(session.idle_expires_at).getTime()
+      ) {
+        throw new AuthenticationError('SESSION_EXPIRED', 'Session already expired');
+      }
+
+      await tx.execute(
+        `UPDATE organizer_session
+         SET revoked_at = $1, revocation_reason = 'USER_LOGOUT'
+         WHERE id = $2 AND revoked_at IS NULL`,
+        now,
+        session.id
+      );
+
+      await this.auditSink.record({
+        id: randomUUID(),
+        procedure: 'ORGANIZER_LOGOUT',
+        actorId: actorContext.accountId,
+        targetIdentifier: actorContext.email,
+        targetPrincipalId: actorContext.accountId,
+        result: 'SUCCESS',
+        details: 'Organizer session logged out successfully',
+        timestamp: now
+      });
+
+      return {
+        outcome: 'LOGGED_OUT',
+        sessionId: session.id
+      };
+    });
+  }
+
+  /**
+   * Revokes a specific session belonging to the authenticated organizer (EL-TK-016).
+   * Strictly verifies ownership: alien or non-existent sessions fail closed with SESSION_NOT_FOUND.
+   * Idempotent if already revoked (returns ALREADY_REVOKED).
+   */
+  public async revokeSpecificSession(
+    command: RevokeSpecificSessionCommand
+  ): Promise<RevokeSpecificSessionResult> {
+    if (!command || !command.actorContext || command.actorContext.actorType !== 'ORGANIZER_HUMAN') {
+      throw new AuthenticationError('UNAUTHENTICATED', 'Organizer authentication required');
+    }
+
+    if (!command.targetSessionId || typeof command.targetSessionId !== 'string' || !command.targetSessionId.trim()) {
+      throw new AuthenticationError('INVALID_ARGUMENT', 'Target session ID is required');
+    }
+
+    const { actorContext, targetSessionId } = command;
+    const now = new Date();
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      // 1. Ensure caller's current session is active and not revoked
+      const currentRows = await tx.query<OrganizerSessionRow>(
+        `SELECT id, account_id, revoked_at, expires_at, idle_expires_at
+         FROM organizer_session
+         WHERE id = $1 AND account_id = $2`,
+        actorContext.sessionId,
+        actorContext.accountId
+      );
+
+      if (!currentRows.length) {
+        throw new AuthenticationError('SESSION_EXPIRED', 'Current session not found');
+      }
+
+      const current = currentRows[0];
+      if (current.revoked_at) {
+        throw new AuthenticationError('SESSION_REVOKED', 'Current session has been revoked');
+      }
+
+      if (
+        now.getTime() >= new Date(current.expires_at).getTime() ||
+        now.getTime() >= new Date(current.idle_expires_at).getTime()
+      ) {
+        throw new AuthenticationError('SESSION_EXPIRED', 'Current session has expired');
+      }
+
+      // 2. Query target session owned by actorContext.accountId
+      const targetRows = await tx.query<OrganizerSessionRow>(
+        `SELECT id, account_id, revoked_at, expires_at, idle_expires_at
+         FROM organizer_session
+         WHERE id = $1 AND account_id = $2
+         FOR UPDATE`,
+        targetSessionId,
+        actorContext.accountId
+      );
+
+      if (!targetRows.length) {
+        // Alien or non-existent session: do NOT leak information, reject as SESSION_NOT_FOUND
+        throw new AuthenticationError('SESSION_NOT_FOUND', 'Target session not found');
+      }
+
+      const target = targetRows[0];
+      const isCurrentSession = target.id === actorContext.sessionId;
+
+      if (target.revoked_at) {
+        await this.auditSink.record({
+          id: randomUUID(),
+          procedure: 'ORGANIZER_SESSION_REVOKED',
+          actorId: actorContext.accountId,
+          targetIdentifier: actorContext.email,
+          targetPrincipalId: actorContext.accountId,
+          result: 'ALREADY_REVOKED',
+          details: `Target session ${target.id} was already revoked`,
+          timestamp: now
+        });
+
+        return {
+          outcome: 'ALREADY_REVOKED',
+          targetSessionId: target.id,
+          isCurrentSession
+        };
+      }
+
+      const reason = command.reason?.trim() || (isCurrentSession ? 'USER_LOGOUT' : 'REVOKED_BY_USER');
+
+      await tx.execute(
+        `UPDATE organizer_session
+         SET revoked_at = $1, revocation_reason = $2
+         WHERE id = $3 AND revoked_at IS NULL`,
+        now,
+        reason,
+        target.id
+      );
+
+      await this.auditSink.record({
+        id: randomUUID(),
+        procedure: 'ORGANIZER_SESSION_REVOKED',
+        actorId: actorContext.accountId,
+        targetIdentifier: actorContext.email,
+        targetPrincipalId: actorContext.accountId,
+        result: 'REVOKED',
+        details: `Revoked session ${target.id} with reason: ${reason}`,
+        timestamp: now
+      });
+
+      return {
+        outcome: 'REVOKED',
+        targetSessionId: target.id,
+        isCurrentSession
+      };
+    });
+  }
+
+  /**
+   * Revokes all active sessions belonging to the organizer EXCEPT the current one (EL-TK-017).
+   * Leaves current session intact and authorized. If no other sessions exist, completes successfully with count 0.
+   */
+  public async revokeOtherSessions(
+    command: RevokeOtherSessionsCommand
+  ): Promise<RevokeOtherSessionsResult> {
+    if (!command || !command.actorContext || command.actorContext.actorType !== 'ORGANIZER_HUMAN') {
+      throw new AuthenticationError('UNAUTHENTICATED', 'Organizer authentication required');
+    }
+
+    const { actorContext } = command;
+    const now = new Date();
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      // 1. Verify caller's current session is active and not revoked
+      const currentRows = await tx.query<OrganizerSessionRow>(
+        `SELECT id, account_id, revoked_at, expires_at, idle_expires_at
+         FROM organizer_session
+         WHERE id = $1 AND account_id = $2
+         FOR UPDATE`,
+        actorContext.sessionId,
+        actorContext.accountId
+      );
+
+      if (!currentRows.length) {
+        throw new AuthenticationError('SESSION_EXPIRED', 'Current session not found');
+      }
+
+      const current = currentRows[0];
+      if (current.revoked_at) {
+        throw new AuthenticationError('SESSION_REVOKED', 'Current session has been revoked');
+      }
+
+      if (
+        now.getTime() >= new Date(current.expires_at).getTime() ||
+        now.getTime() >= new Date(current.idle_expires_at).getTime()
+      ) {
+        throw new AuthenticationError('SESSION_EXPIRED', 'Current session has expired');
+      }
+
+      const reason = command.reason?.trim() || 'REVOKED_OTHER_SESSIONS';
+
+      // 2. Revoke other active sessions belonging to the same organizer account
+      const count = await tx.execute(
+        `UPDATE organizer_session
+         SET revoked_at = $1, revocation_reason = $2
+         WHERE account_id = $3
+           AND id <> $4
+           AND revoked_at IS NULL`,
+        now,
+        reason,
+        actorContext.accountId,
+        actorContext.sessionId
+      );
+
+      await this.auditSink.record({
+        id: randomUUID(),
+        procedure: 'ORGANIZER_OTHER_SESSIONS_REVOKED',
+        actorId: actorContext.accountId,
+        targetIdentifier: actorContext.email,
+        targetPrincipalId: actorContext.accountId,
+        result: 'OTHER_SESSIONS_REVOKED',
+        details: `Revoked ${count} other sessions`,
+        timestamp: now
+      });
+
+      return {
+        outcome: 'OTHER_SESSIONS_REVOKED',
+        revokedCount: count,
+        currentSessionId: actorContext.sessionId
+      };
+    });
+  }
 }
+

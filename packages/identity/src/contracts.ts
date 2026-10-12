@@ -18,6 +18,7 @@ export type AuthenticationErrorCode =
   | 'UNAUTHENTICATED'
   | 'SESSION_EXPIRED'
   | 'SESSION_REVOKED'
+  | 'SESSION_NOT_FOUND'
   | 'FRESH_AUTH_REQUIRED'
   | 'INVALID_ORIGIN'
   | 'CSRF_VALIDATION_FAILED'
@@ -405,9 +406,13 @@ export interface AuditEventRecord {
     | 'BETA_ACCESS_REQUEST_DETAIL_VIEWED'
     | 'ORGANIZER_REGISTRATION'
     | 'ORGANIZER_EMAIL_VERIFIED_AND_ACTIVATED'
+    | 'ORGANIZER_EMAIL_VERIFICATION_RESENT'
     | 'ORGANIZER_LOGIN'
     | 'ORGANIZER_LOGOUT'
-    | 'ORGANIZER_SESSION_VALIDATE';
+    | 'ORGANIZER_SESSION_VALIDATE'
+    | 'ORGANIZER_SESSION_LIST_VIEWED'
+    | 'ORGANIZER_SESSION_REVOKED'
+    | 'ORGANIZER_OTHER_SESSIONS_REVOKED';
   readonly actorId: string;
   readonly targetIdentifier: string;
   readonly targetPrincipalId?: string | null;
@@ -430,7 +435,9 @@ export interface AuditEventRecord {
     | 'REVOKED'
     | 'ALREADY_REVOKED'
     | 'CANNOT_REVOKE_CONSUMED'
-    | 'REQUEST_RECEIVED';
+    | 'REQUEST_RECEIVED'
+    | 'RESEND_ACCEPTED'
+    | 'OTHER_SESSIONS_REVOKED';
   readonly details?: string;
   readonly timestamp: Date;
 }
@@ -639,4 +646,65 @@ export interface ValidateOrganizerSessionResult {
   readonly actorContext: OrganizerActorContext;
 }
 
+export interface ResendVerificationEmailCommand {
+  readonly email: string;
+  readonly clientIp?: string;
+}
 
+export interface ResendVerificationEmailResult {
+  readonly outcome: 'RESEND_ACCEPTED';
+  readonly message: string;
+}
+
+export interface OrganizerSessionSummaryRecord {
+  readonly id: string;
+  readonly accountId: string;
+  readonly authTime: Date;
+  readonly createdAt: Date;
+  readonly lastActiveAt: Date;
+  readonly expiresAt: Date;
+  readonly idleExpiresAt: Date;
+  readonly isCurrent: boolean;
+}
+
+export interface ListOrganizerSessionsCommand {
+  readonly actorContext: OrganizerActorContext;
+}
+
+export interface ListOrganizerSessionsResult {
+  readonly sessions: readonly OrganizerSessionSummaryRecord[];
+  readonly total: number;
+}
+
+export interface LogoutOrganizerCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly origin?: string;
+}
+
+export interface LogoutOrganizerResult {
+  readonly outcome: 'LOGGED_OUT';
+  readonly sessionId: string;
+}
+
+export interface RevokeSpecificSessionCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly targetSessionId: string;
+  readonly reason?: string;
+}
+
+export interface RevokeSpecificSessionResult {
+  readonly outcome: 'REVOKED' | 'ALREADY_REVOKED';
+  readonly targetSessionId: string;
+  readonly isCurrentSession: boolean;
+}
+
+export interface RevokeOtherSessionsCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly reason?: string;
+}
+
+export interface RevokeOtherSessionsResult {
+  readonly outcome: 'OTHER_SESSIONS_REVOKED';
+  readonly revokedCount: number;
+  readonly currentSessionId: string;
+}

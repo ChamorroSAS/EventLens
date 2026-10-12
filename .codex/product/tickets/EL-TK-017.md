@@ -6,11 +6,9 @@ EL-EP-001
 
 ## Status
 
-READY
+DONE
 
-**HISTÓRICO — revisión de remediación:** el snapshot de 2026-10-08 permaneció DRAFT hasta el dictamen final; la aprobación de 2026-10-07 se conserva.
-
-**CONFIRMED:** requirements_reviewer aprobó este conjunto el 2026-10-07, sin hallazgos pendientes. Véase [dictamen](../sessions/2026-10-07-el-ep-001-ticket-redesign-review.md). READY expresa preparación de requisitos; se conservan las dependencias de ejecución.
+**IMPLEMENTADO Y VERIFICADO (2026-10-12):** Implementado `OrganizerAuthenticationService.revokeOtherSessions` en `@eventlens/identity`. Revoca atómicamente todas las sesiones activas del organizador distintas de la actual (`REVOKED_OTHER_SESSIONS`), preserva la sesión actual activa y autorizada, retorna `revokedCount: 0` sin fallar si no existen sesiones adicionales, no afecta cuentas ajenas, y audita el evento (`ORGANIZER_OTHER_SESSIONS_REVOKED`). Verificado con tests unitarios y de integración PostgreSQL 16 real.
 
 ## User story
 

@@ -139,6 +139,7 @@ describeIntegration('EmailVerificationService (Real PostgreSQL Integration Tests
       accountId,
       invitationId,
       intentId,
+      email,
       emailNormalized,
       rawVerificationToken
     };
@@ -253,4 +254,65 @@ describeIntegration('EmailVerificationService (Real PostgreSQL Integration Tests
     );
     expect(accounts[0].status).toBe('PENDING_VERIFICATION');
   });
+
+  it('EL-TK-012: resendVerificationEmail emite nuevo token persistido en PostgreSQL y marca previos como SUPERSEDED', async () => {
+    const sentEmails: Array<{ email: string; token: string }> = [];
+    const notificationPort = {
+      sendVerificationEmail: async (data: { email: string; token: string }) => {
+        sentEmails.push(data);
+      }
+    };
+    const auditEvents: any[] = [];
+    const auditSink = {
+      record: async (e: any) => { auditEvents.push(e); }
+    };
+
+    const service = new EmailVerificationService(
+      txs,
+      auditSink,
+      undefined,
+      notificationPort
+    );
+
+    const fixture = await seedTestScenario({
+      accountStatus: 'PENDING_VERIFICATION',
+      invitationStatus: 'PENDING',
+      invitationDaysLeft: 5
+    });
+
+    const resendResult = await service.resendVerificationEmail({
+      email: fixture.email
+    });
+
+    expect(resendResult.outcome).toBe('RESEND_ACCEPTED');
+    expect(sentEmails).toHaveLength(1);
+    expect(sentEmails[0].email).toBe(fixture.email);
+
+    // En PostgreSQL: el intento anterior debe estar SUPERSEDED
+    const prevRows = await txs.run((tx) =>
+      tx.query<{ status: string }>(
+        'SELECT status FROM email_verification_intent WHERE id = $1',
+        fixture.intentId
+      )
+    );
+    expect(prevRows[0].status).toBe('SUPERSEDED');
+
+    // Debe existir un nuevo intento PENDING
+    const allIntents = await txs.run((tx) =>
+      tx.query<{ id: string; status: string; token_digest: string }>(
+        'SELECT id, status, token_digest FROM email_verification_intent WHERE account_id = $1 ORDER BY created_at DESC',
+        fixture.accountId
+      )
+    );
+    expect(allIntents).toHaveLength(2);
+    expect(allIntents[0].status).toBe('PENDING');
+
+    // Y el token recién enviado permite activar la cuenta
+    const activation = await service.verifyEmailAndActivate({
+      verificationToken: sentEmails[0].token
+    });
+    expect(activation.outcome).toBe('ACTIVATED');
+    expect(activation.status).toBe('ACTIVE');
+  });
 });
+

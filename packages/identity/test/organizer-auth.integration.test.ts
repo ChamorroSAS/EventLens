@@ -105,9 +105,10 @@ describeIntegration('OrganizerAuthenticationService (Real PostgreSQL Integration
 
   async function seedActiveOrganizer(options: {
     status?: string;
+    email?: string;
     password?: string;
   } = {}) {
-    const email = 'real.organizer@eventlens.internal';
+    const email = options.email ?? `real.organizer.${randomUUID().slice(0, 8)}@eventlens.internal`;
     const emailNormalized = email.toLowerCase();
     const adminId = randomUUID();
     const invitationId = randomUUID();
@@ -116,7 +117,7 @@ describeIntegration('OrganizerAuthenticationService (Real PostgreSQL Integration
     const status = options.status ?? 'ACTIVE';
     const password = options.password ?? 'RealSecurePassword123!';
     const rawInvitationToken = randomBytes(32).toString('hex');
-    const invTokenDigest = createHash('sha256').update(rawInvitationToken).digest('hex');
+    const invTokenDigest = createHash('sha256').update(randomUUID() + rawInvitationToken).digest('hex');
 
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
@@ -301,4 +302,90 @@ describeIntegration('OrganizerAuthenticationService (Real PostgreSQL Integration
       expect(row.details).not.toContain(loginResult.sessionToken);
     }
   });
+
+  it('EL-TK-014: listSessions en PostgreSQL real recupera sesiones activas e identifica isCurrent', async () => {
+    const fixture = await seedActiveOrganizer({ status: 'ACTIVE' });
+    const auditEvents: AuditEventRecord[] = [];
+    const service = createService(auditEvents);
+
+    const s1 = await service.login({ email: fixture.email, password: fixture.password });
+    const s2 = await service.login({ email: fixture.email, password: fixture.password });
+
+    const list = await service.listSessions({ actorContext: s2.actorContext });
+    expect(list.total).toBe(2);
+    expect(list.sessions).toHaveLength(2);
+
+    const current = list.sessions.find(s => s.id === s2.actorContext.sessionId);
+    expect(current?.isCurrent).toBe(true);
+
+    const other = list.sessions.find(s => s.id === s1.actorContext.sessionId);
+    expect(other?.isCurrent).toBe(false);
+  });
+
+  it('EL-TK-015: logout en PostgreSQL real marca la sesión como revocada y rechaza validación posterior', async () => {
+    const fixture = await seedActiveOrganizer({ status: 'ACTIVE' });
+    const auditEvents: AuditEventRecord[] = [];
+    const service = createService(auditEvents);
+
+    const login = await service.login({ email: fixture.email, password: fixture.password });
+
+    const logoutResult = await service.logout({ actorContext: login.actorContext });
+    expect(logoutResult.outcome).toBe('LOGGED_OUT');
+
+    // Comprobar en PostgreSQL
+    const rows = await query<{ revoked_at: Date; revocation_reason: string }>(
+      'SELECT revoked_at, revocation_reason FROM organizer_session WHERE id = $1',
+      login.actorContext.sessionId
+    );
+    expect(rows[0].revoked_at).not.toBeNull();
+    expect(rows[0].revocation_reason).toBe('USER_LOGOUT');
+
+    // validateSession debe fallar
+    await expect(
+      service.validateSession({ sessionToken: login.sessionToken })
+    ).rejects.toMatchObject({ code: 'SESSION_REVOKED' });
+  });
+
+  it('EL-TK-016 & EL-TK-017: revokeSpecificSession y revokeOtherSessions en PostgreSQL garantizan aislamiento multi-inquilino', async () => {
+    const user = await seedActiveOrganizer({ status: 'ACTIVE' });
+    const alien = await seedActiveOrganizer({ status: 'ACTIVE' });
+    const auditEvents: AuditEventRecord[] = [];
+    const service = createService(auditEvents);
+
+    const u1 = await service.login({ email: user.email, password: user.password });
+    const u2 = await service.login({ email: user.email, password: user.password });
+    const u3 = await service.login({ email: user.email, password: user.password });
+    const alienSession = await service.login({ email: alien.email, password: alien.password });
+
+    // Intento de revocar sesión ajena rechaza con SESSION_NOT_FOUND
+    await expect(
+      service.revokeSpecificSession({
+        actorContext: u2.actorContext,
+        targetSessionId: alienSession.actorContext.sessionId
+      })
+    ).rejects.toMatchObject({ code: 'SESSION_NOT_FOUND' });
+
+    // u2 revoca u1 específicamente
+    const revoke1 = await service.revokeSpecificSession({
+      actorContext: u2.actorContext,
+      targetSessionId: u1.actorContext.sessionId
+    });
+    expect(revoke1.outcome).toBe('REVOKED');
+
+    // u2 revoca el resto de otras sesiones (u3)
+    const revokeOthers = await service.revokeOtherSessions({
+      actorContext: u2.actorContext
+    });
+    expect(revokeOthers.outcome).toBe('OTHER_SESSIONS_REVOKED');
+    expect(revokeOthers.revokedCount).toBe(1); // sólo u3 quedaba activa aparte de u2
+
+    // u2 sigue autorizada
+    const validU2 = await service.validateSession({ sessionToken: u2.sessionToken });
+    expect(validU2.actorContext.sessionId).toBe(u2.actorContext.sessionId);
+
+    // La sesión ajena de alien sigue autorizada
+    const validAlien = await service.validateSession({ sessionToken: alienSession.sessionToken });
+    expect(validAlien.actorContext.sessionId).toBe(alienSession.actorContext.sessionId);
+  });
 });
+

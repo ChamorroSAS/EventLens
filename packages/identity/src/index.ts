@@ -69,7 +69,18 @@ export {
   type ListBetaAccessRequestsQuery,
   type ListBetaAccessRequestsResult,
   type GetBetaAccessRequestQuery,
-  type GetBetaAccessRequestResult
+  type GetBetaAccessRequestResult,
+  type ResendVerificationEmailCommand,
+  type ResendVerificationEmailResult,
+  type OrganizerSessionSummaryRecord,
+  type ListOrganizerSessionsCommand,
+  type ListOrganizerSessionsResult,
+  type LogoutOrganizerCommand,
+  type LogoutOrganizerResult,
+  type RevokeSpecificSessionCommand,
+  type RevokeSpecificSessionResult,
+  type RevokeOtherSessionsCommand,
+  type RevokeOtherSessionsResult
 } from './contracts.js';
 
 export { AdminProvisioningService } from './provisioning.js';

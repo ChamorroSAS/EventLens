@@ -1,13 +1,17 @@
-import { createHash, randomUUID } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { SqlTransaction, TransactionRunner } from '@eventlens/database';
 import {
   AuditSink,
+  EmailVerificationNotificationPort,
   OrganizerAccountRecord,
   RecoveryAuthorityPort,
+  ResendVerificationEmailCommand,
+  ResendVerificationEmailResult,
   VerificationError,
   VerifyEmailAndActivateCommand,
   VerifyEmailAndActivateResult
 } from './contracts.js';
+import { BetaInvitationService } from './invitation.js';
 
 interface IntentRow {
   id: string;
@@ -39,12 +43,203 @@ interface InvitationRow {
   revoked_at?: Date | null;
 }
 
+export interface EmailVerificationServiceOptions {
+  readonly auditSink?: AuditSink;
+  readonly recoveryAuthority?: RecoveryAuthorityPort;
+  readonly notificationPort?: EmailVerificationNotificationPort;
+  readonly intentTtlMs?: number;
+  readonly maxResendAttempts?: number;
+  readonly rateLimitWindowMs?: number;
+}
+
 export class EmailVerificationService {
+  private readonly auditSink?: AuditSink;
+  private readonly recoveryAuthority?: RecoveryAuthorityPort;
+  private readonly notificationPort?: EmailVerificationNotificationPort;
+  private readonly intentTtlMs: number;
+  private readonly maxResendAttempts: number;
+  private readonly rateLimitWindowMs: number;
+  private readonly resendCounts = new Map<string, { count: number; firstAttemptAt: number }>();
+
   constructor(
     private readonly runner: TransactionRunner,
-    private readonly auditSink?: AuditSink,
-    private readonly recoveryAuthority?: RecoveryAuthorityPort
-  ) {}
+    optionsOrAuditSink?: EmailVerificationServiceOptions | AuditSink,
+    recoveryAuthority?: RecoveryAuthorityPort,
+    notificationPort?: EmailVerificationNotificationPort,
+    options?: Partial<EmailVerificationServiceOptions>
+  ) {
+    if (optionsOrAuditSink && typeof (optionsOrAuditSink as any).record === 'function') {
+      // Signature: (runner, auditSink, recoveryAuthority, notificationPort, options)
+      this.auditSink = optionsOrAuditSink as AuditSink;
+      this.recoveryAuthority = recoveryAuthority;
+      this.notificationPort = notificationPort;
+      this.intentTtlMs = options?.intentTtlMs ?? 24 * 60 * 60 * 1000;
+      this.maxResendAttempts = options?.maxResendAttempts ?? 3;
+      this.rateLimitWindowMs = options?.rateLimitWindowMs ?? 15 * 60 * 1000;
+    } else {
+      const opts = (optionsOrAuditSink as EmailVerificationServiceOptions) ?? {};
+      this.auditSink = opts.auditSink;
+      this.recoveryAuthority = opts.recoveryAuthority;
+      this.notificationPort = opts.notificationPort ?? notificationPort;
+      this.intentTtlMs = opts.intentTtlMs ?? 24 * 60 * 60 * 1000;
+      this.maxResendAttempts = opts.maxResendAttempts ?? 3;
+      this.rateLimitWindowMs = opts.rateLimitWindowMs ?? 15 * 60 * 1000;
+    }
+  }
+
+  public resetRateLimitTracker(): void {
+    this.resendCounts.clear();
+  }
+
+  private checkRateLimit(key: string): void {
+    const entry = this.resendCounts.get(key);
+    if (!entry) return;
+
+    const now = Date.now();
+    if (now - entry.firstAttemptAt > this.rateLimitWindowMs) {
+      this.resendCounts.delete(key);
+      return;
+    }
+
+    if (entry.count >= this.maxResendAttempts) {
+      throw new VerificationError(
+        'TEMPORARY_FAILURE',
+        'Too many resend attempts. Please wait before trying again.'
+      );
+    }
+  }
+
+  private recordAttempt(key: string): void {
+    const now = Date.now();
+    const entry = this.resendCounts.get(key);
+    if (!entry || now - entry.firstAttemptAt > this.rateLimitWindowMs) {
+      this.resendCounts.set(key, { count: 1, firstAttemptAt: now });
+    } else {
+      entry.count += 1;
+    }
+  }
+
+  /**
+   * Resends email verification intent for a pending registration (EL-TK-012).
+   *
+   * Business rules:
+   * - Strict RFC 5322 email validation; invalid emails throw INVALID_ARGUMENT.
+   * - Rate limited per IP/email; exceeding limit throws without modifying data.
+   * - Strict anti-enumeration guarantee: returns identical neutral outcome RESEND_ACCEPTED
+   *   regardless of whether account exists, is active, or not.
+   * - If pending registration exists with valid beta invitation: supersedes prior pending intents,
+   *   generates new 256-bit unguessable token, creates intent row and triggers notification port.
+   */
+  async resendVerificationEmail(
+    command: ResendVerificationEmailCommand
+  ): Promise<ResendVerificationEmailResult> {
+    if (!command || !command.email || !BetaInvitationService.isValidEmail(command.email)) {
+      throw new VerificationError('INVALID_ARGUMENT', 'Invalid email address format');
+    }
+
+    const normalizedEmail = BetaInvitationService.normalizeEmail(command.email);
+    const rateLimitKey = command.clientIp ? `ip:${command.clientIp}` : `email:${normalizedEmail}`;
+
+    this.checkRateLimit(rateLimitKey);
+    this.recordAttempt(rateLimitKey);
+
+    const now = new Date();
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      const accountRows = await tx.query<AccountRow>(
+        `SELECT id, email, email_normalized, status, declared_adult, declared_adult_at, invitation_id, verified_at, created_at, updated_at
+         FROM organizer_account
+         WHERE email_normalized = $1
+         FOR UPDATE`,
+        normalizedEmail
+      );
+
+      // Anti-enumeration: if account does not exist or is not pending, return neutral success
+      if (!accountRows.length || accountRows[0].status !== 'PENDING_VERIFICATION') {
+        return {
+          outcome: 'RESEND_ACCEPTED',
+          message: 'Si existe un registro pendiente para este correo, se ha enviado un nuevo enlace de verificación.'
+        };
+      }
+
+      const account = accountRows[0];
+
+      // Check associated beta invitation validity
+      const inviteRows = await tx.query<InvitationRow>(
+        `SELECT id, email_normalized, status, expires_at, revoked_at
+         FROM beta_invitation
+         WHERE id = $1
+         FOR UPDATE`,
+        account.invitation_id
+      );
+
+      if (
+        !inviteRows.length ||
+        inviteRows[0].status !== 'PENDING' ||
+        new Date(inviteRows[0].expires_at).getTime() <= now.getTime()
+      ) {
+        return {
+          outcome: 'RESEND_ACCEPTED',
+          message: 'Si existe un registro pendiente para este correo, se ha enviado un nuevo enlace de verificación.'
+        };
+      }
+
+      // Supersede prior pending intents
+      await tx.execute(
+        `UPDATE email_verification_intent
+         SET status = 'SUPERSEDED'
+         WHERE account_id = $1 AND status = 'PENDING'`,
+        account.id
+      );
+
+      // Generate new 256-bit unguessable token
+      const rawToken = randomBytes(32).toString('hex');
+      const tokenDigest = createHash('sha256').update(rawToken).digest('hex');
+      const intentId = randomUUID();
+      const expiresAt = new Date(now.getTime() + this.intentTtlMs);
+
+      await tx.execute(
+        `INSERT INTO email_verification_intent (id, account_id, email_normalized, token_digest, status, created_at, expires_at)
+         VALUES ($1, $2, $3, $4, 'PENDING', $5, $6)`,
+        intentId,
+        account.id,
+        normalizedEmail,
+        tokenDigest,
+        now,
+        expiresAt
+      );
+
+      if (this.notificationPort) {
+        try {
+          await this.notificationPort.sendVerificationEmail({
+            email: account.email,
+            token: rawToken,
+            expiresAt
+          });
+        } catch {
+          // Failure to notify allows controlled retry without breaking registration
+        }
+      }
+
+      if (this.auditSink) {
+        await this.auditSink.record({
+          id: randomUUID(),
+          procedure: 'ORGANIZER_EMAIL_VERIFICATION_RESENT',
+          actorId: account.id,
+          targetIdentifier: normalizedEmail,
+          targetPrincipalId: null,
+          result: 'RESEND_ACCEPTED',
+          details: JSON.stringify({ intentId }),
+          timestamp: now
+        });
+      }
+
+      return {
+        outcome: 'RESEND_ACCEPTED',
+        message: 'Si existe un registro pendiente para este correo, se ha enviado un nuevo enlace de verificación.'
+      };
+    });
+  }
 
   async verifyEmailAndActivate(
     command: VerifyEmailAndActivateCommand

@@ -45,12 +45,12 @@
 | EL-TK-009 | Revisar solicitudes de acceso BETA | EL-EP-001 | DONE | P0 | EL-TK-008, EL-TK-044 | [EL-TK-009](tickets/EL-TK-009.md) |
 | EL-TK-010 | Iniciar el registro de un organizador invitado | EL-EP-001 | DONE | P0 | EL-TK-005 | [EL-TK-010](tickets/EL-TK-010.md) |
 | EL-TK-011 | Verificar el correo y activar una cuenta pendiente | EL-EP-001 | DONE | P0 | EL-TK-010, EL-TK-046 | [EL-TK-011](tickets/EL-TK-011.md) |
-| EL-TK-012 | Reenviar la verificación de correo | EL-EP-001 | READY | P0 | EL-TK-011 | [EL-TK-012](tickets/EL-TK-012.md) |
+| EL-TK-012 | Reenviar la verificación de correo | EL-EP-001 | DONE | P0 | EL-TK-011 | [EL-TK-012](tickets/EL-TK-012.md) |
 | EL-TK-013 | Iniciar sesión como organizador verificado | EL-EP-001 | DONE | P0 | EL-TK-011, EL-TK-046 | [EL-TK-013](tickets/EL-TK-013.md) |
-| EL-TK-014 | Consultar mis sesiones activas | EL-EP-001 | READY | P0 | EL-TK-013, EL-TK-046 | [EL-TK-014](tickets/EL-TK-014.md) |
-| EL-TK-015 | Cerrar mi sesión actual | EL-EP-001 | READY | P0 | EL-TK-013, EL-TK-046 | [EL-TK-015](tickets/EL-TK-015.md) |
-| EL-TK-016 | Cerrar una sesión propia seleccionada | EL-EP-001 | READY | P0 | EL-TK-014, EL-TK-046 | [EL-TK-016](tickets/EL-TK-016.md) |
-| EL-TK-017 | Cerrar todas mis otras sesiones | EL-EP-001 | READY | P0 | EL-TK-013, EL-TK-046 | [EL-TK-017](tickets/EL-TK-017.md) |
+| EL-TK-014 | Consultar mis sesiones activas | EL-EP-001 | DONE | P0 | EL-TK-013, EL-TK-046 | [EL-TK-014](tickets/EL-TK-014.md) |
+| EL-TK-015 | Cerrar mi sesión actual | EL-EP-001 | DONE | P0 | EL-TK-013, EL-TK-046 | [EL-TK-015](tickets/EL-TK-015.md) |
+| EL-TK-016 | Cerrar una sesión propia seleccionada | EL-EP-001 | DONE | P0 | EL-TK-014, EL-TK-046 | [EL-TK-016](tickets/EL-TK-016.md) |
+| EL-TK-017 | Cerrar todas mis otras sesiones | EL-EP-001 | DONE | P0 | EL-TK-013, EL-TK-046 | [EL-TK-017](tickets/EL-TK-017.md) |
 | EL-TK-018 | Solicitar recuperación de contraseña | EL-EP-001 | READY | P0 | EL-TK-011, EL-TK-046 | [EL-TK-018](tickets/EL-TK-018.md) |
 | EL-TK-019 | Completar una recuperación de contraseña | EL-EP-001 | READY | P0 | EL-TK-013, EL-TK-018, EL-TK-046 | [EL-TK-019](tickets/EL-TK-019.md) |
 | EL-TK-043 | Provisionar un principal administrativo mediante alta controlada | EL-EP-001 | DONE | P0 | — | [EL-TK-043](tickets/EL-TK-043.md) |

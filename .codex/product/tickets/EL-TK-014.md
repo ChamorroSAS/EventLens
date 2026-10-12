@@ -6,11 +6,9 @@ EL-EP-001
 
 ## Status
 
-READY
+DONE
 
-**HISTÓRICO — revisión de remediación:** el snapshot de 2026-10-08 permaneció DRAFT hasta el dictamen final; la aprobación de 2026-10-07 se conserva.
-
-**CONFIRMED:** requirements_reviewer aprobó este conjunto el 2026-10-07, sin hallazgos pendientes. Véase [dictamen](../sessions/2026-10-07-el-ep-001-ticket-redesign-review.md). READY expresa preparación de requisitos; se conservan las dependencias de ejecución.
+**IMPLEMENTADO Y VERIFICADO (2026-10-12):** Implementado `OrganizerAuthenticationService.listSessions` en `@eventlens/identity`. Exige sesión autenticada vigente del organizador (`ORGANIZER_HUMAN`), filtra estrictamente por `accountId`, recupera únicamente sesiones activas no vencidas y no revocadas, identifica la sesión actual con `isCurrent`, omite terminantemente tokens o digests, y audita la consulta (`ORGANIZER_SESSION_LIST_VIEWED`). Verificado con tests unitarios y de integración PostgreSQL 16 real.
 
 ## User story
 
