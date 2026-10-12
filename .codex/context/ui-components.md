@@ -512,6 +512,8 @@ Reutilizar [handoff015](ui-deletion-flow.md) para irreversibilidad/causas; no ag
 ## 7.1 OrganizerAppShell
 Layout autenticado del organizador.
 
+Extensión visual CR-004: [handoff de foundation](ui-brand-foundation.md) y [contrato local](brand-integration-contract.md). Reutiliza shell/h1/contexto/salida/proyección existentes; con/sin evento, nombres largos, fallback de logo/fuente, responsive y foco definidos. Madurez de diseño: READY_FOR_IMPLEMENTATION tras Gate2; no acredita código ni pruebas. Manrope y roles sólo hojas propias; preservar herencia/fondos de proyección y badge hijo. Gate UI YES propio para203/204; ejecución204 depende de salidas203 validadas. No nuevo shell, variante funcional ni permiso.
+
 ## 7.2 OrganizerDashboard
 Eventos, estados, consumo, accesos rápidos y alertas.
 
