@@ -183,7 +183,7 @@
 | EL-TK-150 | Autorizar acceso multimedia administrativo por soporte o incidente | EL-EP-012 | READY | P0 | 147, 044, contrato MediaViewGrant (097); contrato EL-EP-014 | [EL-TK-150](tickets/EL-TK-150.md) |
 | EL-TK-151 | Orquestar intervenciones administrativas mediante contratos propietarios | EL-EP-012 | READY | P0 | 147; contratos propietarios | [EL-TK-151](tickets/EL-TK-151.md) |
 | EL-TK-152 | Reutilizar solicitudes, reportes e invitaciones en el detalle administrativo | EL-EP-012 | READY | P0 | 147; contratos EL-EP-001/009/011 | [EL-TK-152](tickets/EL-TK-152.md) |
-| EL-TK-153 | Integrar diagnóstico y operaciones de jobs en la consola administrativa | EL-EP-012 | READY | P0 | 148,149 | [EL-TK-153](tickets/EL-TK-153.md) |
+| EL-TK-153 | Integrar diagnóstico y operaciones de jobs en la consola administrativa | EL-EP-012 | DONE | P0 | 148,149 | [EL-TK-153](tickets/EL-TK-153.md) |
 | EL-TK-154 | Integrar búsqueda, detalle e intervenciones en la consola administrativa | EL-EP-012 | READY | P0 | 146,147,150..153 | [EL-TK-154](tickets/EL-TK-154.md) |
 | EL-TK-155 | Validar soporte e intervención administrativa de extremo a extremo | EL-EP-012 | READY | P0 | 146..154 | [EL-TK-155](tickets/EL-TK-155.md) |
 | EL-TK-156 | Registrar intenciones de notificación idempotentes desde hechos de dominio | EL-EP-013 | DONE | P0 | contratos de hechos propietarios | [EL-TK-156](tickets/EL-TK-156.md) |
