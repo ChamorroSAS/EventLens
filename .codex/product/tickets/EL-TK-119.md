@@ -4,7 +4,7 @@
 EL-EP-009
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** administración autorizada, **quiero** resolver un caso con resultado y justificación, **para** cerrar la revisión con trazabilidad y acciones proporcionales.
@@ -68,3 +68,18 @@ Q-012, Q-013, Q-019; DEC-023, DEC-029, DEC-059, DEC-088, DEC-097; EL-EP-009, EL-
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §5.26..27 y §12.11..15; sin componentes nuevos ni duplicación de flujos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Cierre de implementación — 2026-10-12
+
+- **Resultado:** APROBADO.
+- **Implementación:**
+  - Implementado método `resolveCase` en `MediaCaseGovernanceService` y `PostgresMediaCaseGovernanceRepository` en `@eventlens/media-inspection/src/media-report-and-removal.ts`.
+  - Agregadas columnas de resolución en `media_report_case` y `media_removal_request` (`resolved_at`, `resolved_by`, `resolution_type`, `resolution_notes` vía migración `202610120051_media_case_governance`).
+  - Soporte de resoluciones `DISMISSED`, `REMOVED_PERMANENTLY` y `HIDDEN_PERMANENTLY`.
+  - Enlace con `PurgeDispatcherPort` fijando anclajes inmutables `purge_started_at = now`, `main_purge_deadline = now + 7d`, `residual_purge_deadline = now + 30d`.
+- **Criterios de aceptación verificados:**
+  - Escenario 1: Resolución formal registra estado final (`DISMISSED` o `ACTION_TAKEN`/`RESOLVED`), actor, motivo y trazabilidad inmutable en `media_case_history` y `audit_event` sin adjuntar multimedia sensible al log.
+  - Escenario 2: Ante decisión `REMOVED_PERMANENTLY`, la media pasa a `DELETED` en el catálogo y se emite inmediatamente el contrato de purga a `PurgeDispatcherPort` **sin pasar por papelera del organizador ni ventana de cancelación**, conforme a `DEC-089` y `DEC-097`.
+  - Escenario 3: Replay idempotente: ante un caso ya resuelto, se devuelve el resultado previo con flag `alreadyResolved: true` y no se duplican acciones destructivas ni despachos de purga.
+- **Pruebas:** 4 pruebas unitarias en `media-report-and-removal.unit.test.ts` y prueba de integración en `media-report-and-removal.integration.test.ts` contra PostgreSQL 16 real. Build limpio.
+

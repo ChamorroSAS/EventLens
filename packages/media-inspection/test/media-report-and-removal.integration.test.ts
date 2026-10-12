@@ -4,13 +4,16 @@ import {
   PrismaTransactions,
   createPrismaClient,
 } from '@eventlens/job-queue';
+import type { AdminActorContext } from '@eventlens/identity';
 import {
   MediaReportService,
   OwnMediaRemovalService,
   RemovalRequestService,
+  MediaCaseGovernanceService,
   PostgresMediaReportRepository,
   PostgresOwnRemovalRepository,
   PostgresRemovalRequestRepository,
+  PostgresMediaCaseGovernanceRepository,
   PostgresGuestSessionResolver,
   OwnRemovalError,
 } from '../src/media-report-and-removal.js';
@@ -78,6 +81,8 @@ describeIntegration('EL-EP-009 Ruta A: Integración en PostgreSQL 16 (EL-TK-113,
 
   afterAll(async () => {
     await transactions.run(async (tx) => {
+      await tx.execute('DELETE FROM media_case_access_grant');
+      await tx.execute('DELETE FROM media_case_history');
       await tx.execute('DELETE FROM media_report_case WHERE event_ref = $1', eventId);
       await tx.execute('DELETE FROM media_removal_request WHERE event_ref = $1', eventId);
       await tx.execute('DELETE FROM media_own_removal_record WHERE event_ref = $1', eventId);
@@ -357,4 +362,279 @@ describeIntegration('EL-EP-009 Ruta A: Integración en PostgreSQL 16 (EL-TK-113,
       ).rejects.toThrow('La declaración de buena fe es obligatoria');
     });
   });
+
+  // =========================================================================
+  // EL-EP-009 RUTA B: Gobernanza de Casos en PostgreSQL 16 (EL-TK-116 .. EL-TK-120)
+  // =========================================================================
+  describe('EL-EP-009 Ruta B: Gobernanza de Casos en PostgreSQL 16 (EL-TK-116 .. EL-TK-120)', () => {
+    const govRepo = new PostgresMediaCaseGovernanceRepository();
+    const govPurgeDispatches: PurgeRequestPayload[] = [];
+    const govPurgeDispatcher: PurgeDispatcherPort = {
+      async dispatchPurgeRequest(req: PurgeRequestPayload) {
+        govPurgeDispatches.push(req);
+      },
+    };
+
+    const govService = new MediaCaseGovernanceService(
+      transactions,
+      govRepo,
+      govPurgeDispatcher
+    );
+
+    const adminContext: AdminActorContext = {
+      actorType: 'ADMIN_HUMAN',
+      principalId: randomUUID(),
+      identifier: 'admin-sec@eventlens.local',
+      sessionId: randomUUID(),
+      authTime: new Date(),
+      credentialRevision: 1n,
+      adminAuthRevision: 1n,
+      sessionWatermark: 1n,
+      recoveryEpoch: 1n,
+    };
+
+    let reportCaseId: string;
+    let removalCaseId: string;
+    const mediaGovRef = 'media:gov-test-' + randomUUID();
+    const mediaRemovalRef = 'media:gov-rem-' + randomUUID();
+
+    beforeAll(async () => {
+      // Sembrar media en PostgreSQL
+      await seedMediaCatalog(mediaGovRef, guestSessionId, 'PUBLISHED');
+      await seedMediaCatalog(mediaRemovalRef, guestSessionId, 'PUBLISHED');
+
+      // Crear reporte inicial
+      const reportRes = await reportService.registerReport({
+        mediaRef: mediaGovRef,
+        eventRef: eventId,
+        reason: 'INTIMACY_VIOLATION',
+        description: 'Caso grave para pruebas de gobernanza',
+        reporterContact: 'denunciante@test.com',
+      });
+      reportCaseId = reportRes.caseId;
+
+      // Crear solicitud de retiro inicial
+      const removalRes = await removalReqService.registerRequest({
+        mediaRef: mediaRemovalRef,
+        eventRef: eventId,
+        reason: 'APPEAR_IN_MEDIA',
+        description: 'Solicitud de retiro de mi imagen',
+        contactEmail: 'afectado@test.com',
+        declarationAccepted: true,
+      });
+      removalCaseId = removalRes.requestId;
+    });
+
+    it('EL-TK-116: Clasifica severidad a CRITICAL en PostgreSQL, emite alerta y preserva visibilidad de media (DEC-088)', async () => {
+      const result = await govService.classifyCase({
+        caseId: reportCaseId,
+        caseType: 'REPORT',
+        severity: 'CRITICAL',
+        justification: 'Infracción grave identificada por equipo de seguridad',
+        actorContext: adminContext,
+      });
+
+      expect(result.newSeverity).toBe('CRITICAL');
+      expect(result.priorityAlert).toBe(true);
+      expect(result.targetSlaHours).toBe(24);
+
+      // Verificar en PostgreSQL que severity se actualizó
+      const caseRows = await transactions.run(async (tx) =>
+        tx.query<{ severity: string; status: string }>(
+          'SELECT severity, status FROM media_report_case WHERE id = $1::uuid',
+          reportCaseId
+        )
+      );
+      expect(caseRows[0].severity).toBe('CRITICAL');
+
+      // Verificar que se registró en media_case_history
+      const historyRows = await transactions.run(async (tx) =>
+        tx.query<{ action: string; actor_id: string; justification: string }>(
+          'SELECT action, actor_id, justification FROM media_case_history WHERE case_id = $1::uuid AND action = $2',
+          reportCaseId,
+          'CLASSIFY'
+        )
+      );
+      expect(historyRows.length).toBe(1);
+      expect(historyRows[0].actor_id).toBe(adminContext.principalId);
+
+      // DEC-088: Verificar que la media SIGUE EN ESTADO PUBLISHED en PostgreSQL (no se auto-oculta)
+      const mediaRows = await transactions.run(async (tx) =>
+        tx.query<{ status: string }>(
+          'SELECT status FROM media_catalog WHERE media_ref = $1',
+          mediaGovRef
+        )
+      );
+      expect(mediaRows[0].status).toBe('PUBLISHED');
+    });
+
+    it('EL-TK-117: Emite acceso temporal de 15 minutos en PostgreSQL y persiste grant sin loggear URL completa', async () => {
+      const grant = await govService.grantAdministrativeMediaAccess({
+        caseId: reportCaseId,
+        caseType: 'REPORT',
+        justification: 'Inspección administrativa para cotejo visual del rostro',
+        actorContext: adminContext,
+      });
+
+      expect(grant.token).toBeDefined();
+      expect(grant.previewUrl).toContain(`/api/v1/admin/cases/${reportCaseId}/media/${mediaGovRef}/preview?token=`);
+      expect(grant.expiresAt.getTime()).toBeGreaterThan(Date.now() + 14 * 60 * 1000);
+
+      // Verificar persistencia en PostgreSQL
+      const grantRows = await transactions.run(async (tx) =>
+        tx.query<{ id: string; admin_id: string; token: string; justification: string }>(
+          'SELECT id, admin_id, token, justification FROM media_case_access_grant WHERE id = $1::uuid',
+          grant.grantId
+        )
+      );
+      expect(grantRows.length).toBe(1);
+      expect(grantRows[0].admin_id).toBe(adminContext.principalId);
+      expect(grantRows[0].justification).toBe('Inspección administrativa para cotejo visual del rostro');
+    });
+
+    it('EL-TK-118: Aplica ocultamiento preventivo administrativo pasando media a HIDDEN e idempotencia ante repetición', async () => {
+      const hideResult = await govService.applyPreventiveHide({
+        caseId: reportCaseId,
+        caseType: 'REPORT',
+        justification: 'Ocultamiento preventivo confirmado tras cotejo visual',
+        actorContext: adminContext,
+      });
+
+      expect(hideResult.previousStatus).toBe('PUBLISHED');
+      expect(hideResult.newStatus).toBe('HIDDEN');
+      expect(hideResult.idempotent).toBe(false);
+
+      // Verificar que en media_catalog pasó a HIDDEN
+      const mediaRows = await transactions.run(async (tx) =>
+        tx.query<{ status: string }>(
+          'SELECT status FROM media_catalog WHERE media_ref = $1',
+          mediaGovRef
+        )
+      );
+      expect(mediaRows[0].status).toBe('HIDDEN');
+
+      // Verificar que el caso pasó a UNDER_INVESTIGATION
+      const caseRows = await transactions.run(async (tx) =>
+        tx.query<{ status: string }>(
+          'SELECT status FROM media_report_case WHERE id = $1::uuid',
+          reportCaseId
+        )
+      );
+      expect(caseRows[0].status).toBe('UNDER_INVESTIGATION');
+
+      // Idempotencia: segundo llamado no altera nada
+      const hideRetry = await govService.applyPreventiveHide({
+        caseId: reportCaseId,
+        caseType: 'REPORT',
+        justification: 'Re-confirmación idempotente',
+        actorContext: adminContext,
+      });
+      expect(hideRetry.idempotent).toBe(true);
+      expect(hideRetry.newStatus).toBe('HIDDEN');
+    });
+
+    it('EL-TK-119: Resuelve con REMOVED_PERMANENTLY con purga inmediata sin papelera de owner e idempotencia ante repetición', async () => {
+      govPurgeDispatches.length = 0;
+
+      const resolveResult = await govService.resolveCase({
+        caseId: reportCaseId,
+        caseType: 'REPORT',
+        resolutionType: 'REMOVED_PERMANENTLY',
+        justification: 'Contenido infractor confirmado: eliminación definitiva y purga inmediata',
+        actorContext: adminContext,
+      });
+
+      expect(resolveResult.status).toBe('ACTION_TAKEN');
+      expect(resolveResult.resolutionType).toBe('REMOVED_PERMANENTLY');
+      expect(resolveResult.mediaStatus).toBe('DELETED');
+      expect(resolveResult.purgeDispatched).toBe(true);
+      expect(resolveResult.alreadyResolved).toBe(false);
+
+      // Verificar en PostgreSQL resolución del caso
+      const caseRows = await transactions.run(async (tx) =>
+        tx.query<{ status: string; resolution_type: string; resolved_by: string }>(
+          'SELECT status, resolution_type, resolved_by FROM media_report_case WHERE id = $1::uuid',
+          reportCaseId
+        )
+      );
+      expect(caseRows[0].status).toBe('ACTION_TAKEN');
+      expect(caseRows[0].resolution_type).toBe('REMOVED_PERMANENTLY');
+      expect(caseRows[0].resolved_by).toBe(adminContext.principalId);
+
+      // Verificar que media pasó a DELETED en PostgreSQL
+      const mediaRows = await transactions.run(async (tx) =>
+        tx.query<{ status: string }>(
+          'SELECT status FROM media_catalog WHERE media_ref = $1',
+          mediaGovRef
+        )
+      );
+      expect(mediaRows[0].status).toBe('DELETED');
+
+      // Verificar despacho de purga
+      expect(govPurgeDispatches.length).toBe(1);
+      expect(govPurgeDispatches[0].mediaRef).toBe(mediaGovRef);
+
+      // Idempotencia: resolver de nuevo devuelve alreadyResolved: true sin doble purge
+      const replayResult = await govService.resolveCase({
+        caseId: reportCaseId,
+        caseType: 'REPORT',
+        resolutionType: 'REMOVED_PERMANENTLY',
+        justification: 'Intento repetido',
+        actorContext: adminContext,
+      });
+      expect(replayResult.alreadyResolved).toBe(true);
+      expect(replayResult.purgeDispatched).toBe(false);
+      expect(govPurgeDispatches.length).toBe(1); // Sigue en 1
+    });
+
+    it('EL-TK-120: Consulta cola sanitizada ordenada por severidad y detalle con historial y capacidades en PostgreSQL', async () => {
+      // 1. Clasificar removal request a NORMAL
+      await govService.classifyCase({
+        caseId: removalCaseId,
+        caseType: 'REMOVAL_REQUEST',
+        severity: 'NORMAL',
+        justification: 'Solicitud ordinaria de retiro',
+        actorContext: adminContext,
+      });
+
+      // 2. Consultar la cola
+      const queue = await govService.getCaseQueue({
+        actorContext: adminContext,
+      });
+
+      expect(queue.items.length).toBeGreaterThanOrEqual(2);
+      expect(queue.emptyReason).toBe('NONE');
+
+      // Verificar que no se expone previewUrl en ningún item de la cola
+      for (const item of queue.items) {
+        expect((item as any).previewUrl).toBeUndefined();
+      }
+
+      // 3. Probar filtro sin resultados (EMPTY_FILTER_RESULTS)
+      const emptyFilterResult = await govService.getCaseQueue({
+        status: 'STATUS_INEXISTENTE_XYZ',
+        actorContext: adminContext,
+      });
+      expect(emptyFilterResult.items.length).toBe(0);
+      expect(emptyFilterResult.emptyReason).toBe('EMPTY_FILTER_RESULTS');
+
+      // 4. Consultar detalle de caso resuelto
+      const detail = await govService.getCaseDetail({
+        caseId: reportCaseId,
+        caseType: 'REPORT',
+        actorContext: adminContext,
+      });
+
+      expect(detail.caseId).toBe(reportCaseId);
+      expect(detail.severity).toBe('CRITICAL');
+      expect(detail.resolutionType).toBe('REMOVED_PERMANENTLY');
+      expect(detail.history.length).toBeGreaterThanOrEqual(3);
+      // Al estar resuelto, las capacidades destructivas deben ser falsas
+      expect(detail.capabilities.canResolve).toBe(false);
+      expect(detail.capabilities.canClassify).toBe(false);
+      expect(detail.capabilities.canPreventiveHide).toBe(false);
+      expect((detail as any).previewUrl).toBeUndefined();
+    });
+  });
 });
+

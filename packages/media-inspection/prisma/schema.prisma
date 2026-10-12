@@ -443,35 +443,43 @@ model MediaVisibilityDenialAudit {
 }
 
 model MediaReportCase {
-  id              String   @id @db.Uuid
-  operationId     String   @map("operation_id")
-  mediaRef        String   @map("media_ref")
-  eventRef        String   @map("event_ref")
+  id              String    @id @db.Uuid
+  operationId     String    @map("operation_id")
+  mediaRef        String    @map("media_ref")
+  eventRef        String    @map("event_ref")
   reason          String
   description     String?
-  reporterContact String?  @map("reporter_contact")
-  severity        String   @default("UNCLASSIFIED")
-  status          String   @default("PENDING_REVIEW")
-  dedupKey        String   @unique @map("dedup_key")
-  createdAt       DateTime @map("created_at") @db.Timestamptz
+  reporterContact String?   @map("reporter_contact")
+  severity        String    @default("UNCLASSIFIED")
+  status          String    @default("PENDING_REVIEW")
+  resolvedAt      DateTime? @map("resolved_at") @db.Timestamptz
+  resolvedBy      String?   @map("resolved_by")
+  resolutionType  String?   @map("resolution_type")
+  resolutionNotes String?   @map("resolution_notes")
+  dedupKey        String    @unique @map("dedup_key")
+  createdAt       DateTime  @map("created_at") @db.Timestamptz
 
   @@map("media_report_case")
 }
 
 model MediaRemovalRequest {
-  id                  String   @id @db.Uuid
-  operationId         String   @map("operation_id")
-  mediaRef            String   @map("media_ref")
-  eventRef            String   @map("event_ref")
+  id                  String    @id @db.Uuid
+  operationId         String    @map("operation_id")
+  mediaRef            String    @map("media_ref")
+  eventRef            String    @map("event_ref")
   reason              String
   description         String?
-  contactEmail        String   @map("contact_email")
-  optionalName        String?  @map("optional_name")
-  declarationAccepted Boolean  @default(true) @map("declaration_accepted")
-  severity            String   @default("UNCLASSIFIED")
-  status              String   @default("PENDING_REVIEW")
-  dedupKey            String   @unique @map("dedup_key")
-  createdAt           DateTime @map("created_at") @db.Timestamptz
+  contactEmail        String    @map("contact_email")
+  optionalName        String?   @map("optional_name")
+  declarationAccepted Boolean   @default(true) @map("declaration_accepted")
+  severity            String    @default("UNCLASSIFIED")
+  status              String    @default("PENDING_REVIEW")
+  resolvedAt          DateTime? @map("resolved_at") @db.Timestamptz
+  resolvedBy          String?   @map("resolved_by")
+  resolutionType      String?   @map("resolution_type")
+  resolutionNotes     String?   @map("resolution_notes")
+  dedupKey            String    @unique @map("dedup_key")
+  createdAt           DateTime  @map("created_at") @db.Timestamptz
 
   @@map("media_removal_request")
 }
@@ -493,4 +501,31 @@ model MediaOwnRemovalRecord {
   createdAt             DateTime @map("created_at") @db.Timestamptz
 
   @@map("media_own_removal_record")
+}
+
+model MediaCaseHistory {
+  id            String   @id @db.Uuid
+  caseId        String   @map("case_id") @db.Uuid
+  caseType      String   @map("case_type")
+  actorId       String   @map("actor_id")
+  action        String
+  previousState Json?    @map("previous_state")
+  newState      Json?    @map("new_state")
+  justification String?
+  createdAt     DateTime @map("created_at") @db.Timestamptz
+
+  @@map("media_case_history")
+}
+
+model MediaCaseAccessGrant {
+  id            String   @id @db.Uuid
+  caseId        String   @map("case_id") @db.Uuid
+  adminId       String   @map("admin_id")
+  mediaRef      String   @map("media_ref")
+  token         String   @unique
+  justification String
+  expiresAt     DateTime @map("expires_at") @db.Timestamptz
+  createdAt     DateTime @map("created_at") @db.Timestamptz
+
+  @@map("media_case_access_grant")
 }

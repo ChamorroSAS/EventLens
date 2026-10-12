@@ -485,7 +485,13 @@ describeIntegration('EL-TK-112: Validación integral E2E de moderación, papeler
       const changeRes = await eventDraftService.setModerationMode({
         actorContext: {
           actorType: 'ORGANIZER_HUMAN',
-          accountId: organizerId
+          accountId: organizerId,
+          email: 'organizer@test.com',
+          sessionId: randomUUID(),
+          authTime: new Date(),
+          credentialRevision: 1n,
+          sessionWatermark: 1n,
+          recoveryEpoch: 1n,
         },
         eventId,
         moderationMode: 'MANUAL_REVIEW'
@@ -523,7 +529,13 @@ describeIntegration('EL-TK-112: Validación integral E2E de moderación, papeler
       const revertRes = await eventDraftService.setModerationMode({
         actorContext: {
           actorType: 'ORGANIZER_HUMAN',
-          accountId: organizerId
+          accountId: organizerId,
+          email: 'organizer@test.com',
+          sessionId: randomUUID(),
+          authTime: new Date(),
+          credentialRevision: 1n,
+          sessionWatermark: 1n,
+          recoveryEpoch: 1n,
         },
         eventId,
         moderationMode: 'AUTO_PUBLISH'

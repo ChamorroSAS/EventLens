@@ -4,7 +4,7 @@
 EL-EP-009
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** administración autorizada, **quiero** clasificar un caso y su severidad, **para** priorizar atención sin ocultar automáticamente por la sola denuncia.
@@ -68,3 +68,17 @@ Q-012, Q-013; DEC-016, DEC-088; EL-EP-009, EL-EP-014.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §5.26..27 y §12.11..15; sin componentes nuevos ni duplicación de flujos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Cierre de implementación — 2026-10-12
+
+- **Resultado:** APROBADO.
+- **Implementación:**
+  - Implementado método `classifyCase` en `MediaCaseGovernanceService` y `PostgresMediaCaseGovernanceRepository` en `@eventlens/media-inspection/src/media-report-and-removal.ts`.
+  - Persistencia de severidad (`CRITICAL` vs `NORMAL`) y trazabilidad inmutable en tabla `media_case_history` (migración `202610120051_media_case_governance`).
+  - Control de acceso estricto con `AdminActorContext` (`ADMIN_HUMAN`) y validación de justificación obligatoria.
+- **Criterios de aceptación verificados:**
+  - Escenario 1: Admin clasifica severidad de un caso abierto y queda registrado de forma auditable en `media_case_history` y `audit_event`.
+  - Escenario 2: La severidad `CRITICAL` emite señal prioritaria con SLA objetivo < 24h (vs < 72h para `NORMAL`), pero conforme a `DEC-088` **NUNCA cambia la visibilidad ni altera el estado en `media_catalog`** por sí sola.
+  - Escenario 3: Reclasificación conserva historial completo con actor, motivo y estados previo y nuevo.
+- **Pruebas:** 5 pruebas unitarias en `media-report-and-removal.unit.test.ts` y prueba de integración en `media-report-and-removal.integration.test.ts` contra PostgreSQL 16 real. Build limpio.
+

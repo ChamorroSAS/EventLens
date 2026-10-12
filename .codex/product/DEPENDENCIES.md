@@ -209,16 +209,16 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-113 (DONE) | contrato media visible EL-EP-007; contrato EL-EP-014 | 116,120,121,123 |
 | EL-TK-114 (DONE) | 078; contrato EL-EP-015 | 121,123 |
 | EL-TK-115 (DONE) | 082 | 116,120,121,123 |
-| EL-TK-116 | 113,115,044; contrato EL-EP-014 | 117,118,119,120,122,123 |
-| EL-TK-117 | 116,044,097; contrato EL-EP-014 | 118,119,122,123 |
-| EL-TK-118 | 116,117,101 | 119,122,123 |
-| EL-TK-119 | 116,117; contratos EL-EP-013/014/015 | 122,123 |
-| EL-TK-120 | 113,115,116 | 122,123 |
+| EL-TK-116 (DONE) | 113,115,044; contrato EL-EP-014 | 117,118,119,120,122,123 |
+| EL-TK-117 (DONE) | 116,044,097; contrato EL-EP-014 | 118,119,122,123 |
+| EL-TK-118 (DONE) | 116,117,101 | 119,122,123 |
+| EL-TK-119 (DONE) | 116,117; contratos EL-EP-013/014/015 | 122,123 |
+| EL-TK-120 (DONE) | 113,115,116 | 122,123 |
 | EL-TK-121 | 099,113,114,115 | 123 |
 | EL-TK-122 | 116..120; contrato EL-EP-012 | 123 |
 | EL-TK-123 | 113..122 | validación EL-EP-009 |
 
-3 activos COMPLETADOS (DONE) de 11 tickets en EL-EP-009 tras la entrega de la Ruta A: intake de reportes sin auto-ocultamiento (EL-TK-113, DEC-088), retiro propio inmediato e irreversible con sesión guest (EL-TK-114, DEC-089/097) e intake de retiro sin sesión previa conforme a la matriz DEC-103..105 (EL-TK-115). Restan tickets de clasificación, revisión y resolución administrativa (Ruta B) y superficies UI / validación E2E (Ruta C). Superficies UI reutilizadas del catálogo canónico (§5.26..27 y §12.11..15), sin componentes nuevos. Purga en EL-EP-015, auditoría en EL-EP-014 y consola administrativa en EL-EP-012.
+8 activos COMPLETADOS (DONE) de 11 tickets en EL-EP-009 tras la entrega de la Ruta A (EL-TK-113, 114, 115) y la Ruta B (EL-TK-116 a EL-TK-120): clasificación administrativa con alerta prioritaria sin auto-ocultamiento (EL-TK-116, DEC-088), autorización de acceso justificado temporal de 15 min strictly scoped sin exponer previewUrl en logs (EL-TK-117), ocultamiento preventivo explícito sin disparar purga (EL-TK-118), resolución formal con purga inmediata sin papelera de owner per DEC-089/DEC-097 e idempotencia ante repetición (EL-TK-119), y consulta de cola sanitizada y detalle con capacidades distinguiendo EMPTY_QUEUE de EMPTY_FILTER_RESULTS sin preview automático de media en lista (EL-TK-120). Restan tickets de integración UI (EL-TK-121, EL-TK-122) y validación E2E (EL-TK-123) (Ruta C). Superficies UI reutilizadas del catálogo canónico (§5.26..27 y §12.11..15), sin componentes nuevos. Purga en EL-EP-015, auditoría en EL-EP-014 y consola administrativa en EL-EP-012.
 
 ## Tickets vigentes — EL-EP-010 (quality gate APPROVED)
 

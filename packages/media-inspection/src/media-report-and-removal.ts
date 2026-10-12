@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { SqlTransaction, TransactionRunner } from '@eventlens/job-queue';
+import type { AdminActorContext } from '@eventlens/identity';
 import { addUtcCalendarDays, type PurgeDispatcherPort, type PurgeRequestPayload } from './media-moderation.js';
 
 // ============================================================================
@@ -84,6 +85,26 @@ export class RemovalRequestError extends Error {
   }
 }
 
+export type MediaCaseGovernanceErrorCode =
+  | 'UNAUTHORIZED_ACTOR'
+  | 'INVALID_ARGUMENT'
+  | 'CASE_NOT_FOUND'
+  | 'CASE_ALREADY_CLOSED'
+  | 'MISSING_JUSTIFICATION'
+  | 'MEDIA_NOT_AVAILABLE'
+  | 'CONCURRENCY_CONFLICT'
+  | 'INTERNAL_ERROR';
+
+export class MediaCaseGovernanceError extends Error {
+  constructor(
+    public readonly code: MediaCaseGovernanceErrorCode,
+    message?: string
+  ) {
+    super(message ?? `Media case governance error: ${code}`);
+    this.name = 'MediaCaseGovernanceError';
+  }
+}
+
 // ============================================================================
 // DATA MODELS & REPOSITORY INTERFACES
 // ============================================================================
@@ -98,6 +119,10 @@ export interface MediaReportRecord {
   reporterContact?: string;
   severity: ReportSeverity;
   status: ReportCaseStatus;
+  resolvedAt?: Date | null;
+  resolvedBy?: string | null;
+  resolutionType?: string | null;
+  resolutionNotes?: string | null;
   dedupKey: string;
   createdAt: Date;
 }
@@ -114,6 +139,10 @@ export interface MediaRemovalRequestRecord {
   declarationAccepted: boolean;
   severity: ReportSeverity;
   status: RemovalRequestStatus;
+  resolvedAt?: Date | null;
+  resolvedBy?: string | null;
+  resolutionType?: string | null;
+  resolutionNotes?: string | null;
   dedupKey: string;
   createdAt: Date;
 }
@@ -1143,5 +1172,1293 @@ export class PostgresGuestSessionResolver implements GuestSessionResolverPort {
       guestRef: s.id,
       eventRef: s.event_id,
     };
+  }
+}
+
+// ============================================================================
+// CASE GOVERNANCE TYPES & INTERFACES (EL-TK-116 .. EL-TK-120)
+// ============================================================================
+
+export interface ClassifyCaseCommand {
+  caseId: string;
+  caseType: 'REPORT' | 'REMOVAL_REQUEST';
+  severity: 'CRITICAL' | 'NORMAL';
+  justification: string;
+  actorContext: AdminActorContext;
+}
+
+export interface ClassifyCaseResult {
+  caseId: string;
+  caseType: 'REPORT' | 'REMOVAL_REQUEST';
+  previousSeverity: ReportSeverity;
+  newSeverity: 'CRITICAL' | 'NORMAL';
+  priorityAlert: boolean;
+  targetSlaHours: number;
+  updatedAt: Date;
+}
+
+export interface GrantMediaAccessCommand {
+  caseId: string;
+  caseType: 'REPORT' | 'REMOVAL_REQUEST';
+  justification: string;
+  actorContext: AdminActorContext;
+}
+
+export interface MediaAccessGrantResult {
+  grantId: string;
+  caseId: string;
+  adminId: string;
+  mediaRef: string;
+  token: string;
+  expiresAt: Date;
+  previewUrl: string;
+  createdAt: Date;
+}
+
+export interface ApplyPreventiveHideCommand {
+  caseId: string;
+  caseType: 'REPORT' | 'REMOVAL_REQUEST';
+  justification: string;
+  actorContext: AdminActorContext;
+}
+
+export interface PreventiveHideResult {
+  caseId: string;
+  mediaRef: string;
+  previousStatus: string;
+  newStatus: string;
+  idempotent: boolean;
+  appliedAt: Date;
+}
+
+export interface ResolveCaseCommand {
+  caseId: string;
+  caseType: 'REPORT' | 'REMOVAL_REQUEST';
+  resolutionType: 'DISMISSED' | 'REMOVED_PERMANENTLY' | 'HIDDEN_PERMANENTLY';
+  justification: string;
+  actorContext: AdminActorContext;
+}
+
+export interface ResolveCaseResult {
+  caseId: string;
+  caseType: 'REPORT' | 'REMOVAL_REQUEST';
+  resolutionType: 'DISMISSED' | 'REMOVED_PERMANENTLY' | 'HIDDEN_PERMANENTLY';
+  status: ReportCaseStatus | RemovalRequestStatus;
+  mediaRef: string;
+  mediaStatus: string;
+  alreadyResolved: boolean;
+  purgeDispatched: boolean;
+  resolvedAt: Date;
+  resolvedBy: string;
+}
+
+export interface GetCaseQueueQuery {
+  severity?: 'UNCLASSIFIED' | 'CRITICAL' | 'NORMAL';
+  status?: string;
+  caseType?: 'ALL' | 'REPORT' | 'REMOVAL_REQUEST';
+  limit?: number;
+  offset?: number;
+  actorContext: AdminActorContext;
+}
+
+export interface CaseQueueItem {
+  caseId: string;
+  caseType: 'REPORT' | 'REMOVAL_REQUEST';
+  mediaRef: string;
+  eventRef: string;
+  reason: string;
+  severity: ReportSeverity;
+  status: string;
+  createdAt: Date;
+  resolvedAt?: Date | null;
+  resolvedBy?: string | null;
+  resolutionType?: string | null;
+}
+
+export interface CaseQueueResult {
+  items: CaseQueueItem[];
+  totalCount: number;
+  emptyReason: 'NONE' | 'EMPTY_QUEUE' | 'EMPTY_FILTER_RESULTS';
+}
+
+export interface GetCaseDetailQuery {
+  caseId: string;
+  caseType: 'REPORT' | 'REMOVAL_REQUEST';
+  actorContext: AdminActorContext;
+}
+
+export interface CaseHistoryEntry {
+  id: string;
+  actorId: string;
+  action: string;
+  previousState?: unknown;
+  newState?: unknown;
+  justification?: string | null;
+  createdAt: Date;
+}
+
+export interface CaseDetailResult {
+  caseId: string;
+  caseType: 'REPORT' | 'REMOVAL_REQUEST';
+  mediaRef: string;
+  eventRef: string;
+  reason: string;
+  description?: string | null;
+  reporterContact?: string | null;
+  severity: ReportSeverity;
+  status: string;
+  createdAt: Date;
+  resolvedAt?: Date | null;
+  resolvedBy?: string | null;
+  resolutionType?: string | null;
+  resolutionNotes?: string | null;
+  history: CaseHistoryEntry[];
+  capabilities: {
+    canClassify: boolean;
+    canRequestAccess: boolean;
+    canPreventiveHide: boolean;
+    canResolve: boolean;
+  };
+  activeGrant?: {
+    grantId: string;
+    token: string;
+    expiresAt: Date;
+  } | null;
+}
+
+export interface MediaCaseGovernanceRepository {
+  findCase(
+    tx: SqlTransaction,
+    caseId: string,
+    caseType: 'REPORT' | 'REMOVAL_REQUEST'
+  ): Promise<{
+    id: string;
+    mediaRef: string;
+    eventRef: string;
+    reason: string;
+    description: string | null;
+    reporterContact: string | null;
+    severity: ReportSeverity;
+    status: string;
+    resolvedAt: Date | null;
+    resolvedBy: string | null;
+    resolutionType: string | null;
+    resolutionNotes: string | null;
+    createdAt: Date;
+  } | null>;
+
+  updateCaseClassification(
+    tx: SqlTransaction,
+    caseId: string,
+    caseType: 'REPORT' | 'REMOVAL_REQUEST',
+    severity: 'CRITICAL' | 'NORMAL'
+  ): Promise<void>;
+
+  findMediaCatalog(
+    tx: SqlTransaction,
+    mediaRef: string
+  ): Promise<{
+    mediaRef: string;
+    eventRef: string;
+    guestRef?: string;
+    status: string;
+    revision: bigint;
+    generation: bigint;
+  } | null>;
+
+  updateMediaStatusToHidden(
+    tx: SqlTransaction,
+    mediaRef: string,
+    expectedRevision: bigint
+  ): Promise<bigint>;
+
+  updateMediaStatusToDeleted(
+    tx: SqlTransaction,
+    mediaRef: string,
+    expectedRevision: bigint
+  ): Promise<bigint>;
+
+  saveCaseHistory(
+    tx: SqlTransaction,
+    entry: {
+      id: string;
+      caseId: string;
+      caseType: string;
+      actorId: string;
+      action: string;
+      previousState: unknown;
+      newState: unknown;
+      justification?: string | null;
+      createdAt: Date;
+    }
+  ): Promise<void>;
+
+  saveAccessGrant(
+    tx: SqlTransaction,
+    grant: {
+      id: string;
+      caseId: string;
+      adminId: string;
+      mediaRef: string;
+      token: string;
+      justification: string;
+      expiresAt: Date;
+      createdAt: Date;
+    }
+  ): Promise<void>;
+
+  findActiveAccessGrant(
+    tx: SqlTransaction,
+    caseId: string,
+    adminId: string
+  ): Promise<{
+    id: string;
+    token: string;
+    expiresAt: Date;
+  } | null>;
+
+  updateCaseStatus(
+    tx: SqlTransaction,
+    caseId: string,
+    caseType: 'REPORT' | 'REMOVAL_REQUEST',
+    status: string
+  ): Promise<void>;
+
+  updateCaseResolution(
+    tx: SqlTransaction,
+    caseId: string,
+    caseType: 'REPORT' | 'REMOVAL_REQUEST',
+    resolution: {
+      status: string;
+      resolutionType: string;
+      resolvedBy: string;
+      resolutionNotes: string;
+      resolvedAt: Date;
+    }
+  ): Promise<void>;
+
+  findCaseHistory(
+    tx: SqlTransaction,
+    caseId: string
+  ): Promise<CaseHistoryEntry[]>;
+
+  queryQueue(
+    tx: SqlTransaction,
+    params: {
+      severity?: 'UNCLASSIFIED' | 'CRITICAL' | 'NORMAL';
+      status?: string;
+      caseType?: 'ALL' | 'REPORT' | 'REMOVAL_REQUEST';
+      limit: number;
+      offset: number;
+    }
+  ): Promise<{
+    items: CaseQueueItem[];
+    filteredCount: number;
+    totalCount: number;
+  }>;
+
+  recordAudit(
+    tx: SqlTransaction,
+    params: {
+      action: string;
+      operationId: string;
+      mediaRef: string;
+      eventRef: string;
+      reason: string;
+      actorId: string;
+      metadata?: Record<string, unknown>;
+      timestamp: Date;
+    }
+  ): Promise<void>;
+}
+
+// ============================================================================
+// CASE GOVERNANCE SERVICE (EL-TK-116 .. EL-TK-120)
+// ============================================================================
+
+export class MediaCaseGovernanceService {
+  constructor(
+    private readonly transactions: TransactionRunner,
+    private readonly repository: MediaCaseGovernanceRepository,
+    private readonly purgeDispatcher: PurgeDispatcherPort
+  ) {}
+
+  private assertAdminActor(actorContext?: AdminActorContext): asserts actorContext is AdminActorContext {
+    if (!actorContext || actorContext.actorType !== 'ADMIN_HUMAN') {
+      throw new MediaCaseGovernanceError('UNAUTHORIZED_ACTOR', 'Se requiere AdminActorContext de tipo ADMIN_HUMAN');
+    }
+  }
+
+  /**
+   * EL-TK-116: Clasificar severidad y priorizar denuncias para revisión administrativa
+   * DEC-088: La denuncia grave alerta y prioriza, pero NUNCA auto-oculta el contenido.
+   */
+  async classifyCase(command: ClassifyCaseCommand): Promise<ClassifyCaseResult> {
+    this.assertAdminActor(command.actorContext);
+
+    if (!command.justification || !command.justification.trim()) {
+      throw new MediaCaseGovernanceError('MISSING_JUSTIFICATION', 'La justificación de la clasificación es obligatoria');
+    }
+
+    if (!['CRITICAL', 'NORMAL'].includes(command.severity)) {
+      throw new MediaCaseGovernanceError('INVALID_ARGUMENT', 'Severidad inválida: debe ser CRITICAL o NORMAL');
+    }
+
+    return this.transactions.run(async (tx) => {
+      const caseRecord = await this.repository.findCase(tx, command.caseId, command.caseType);
+      if (!caseRecord) {
+        throw new MediaCaseGovernanceError('CASE_NOT_FOUND', 'El caso especificado no existe');
+      }
+
+      if (caseRecord.resolvedAt !== null || ['ACTION_TAKEN', 'RESOLVED', 'DISMISSED'].includes(caseRecord.status)) {
+        throw new MediaCaseGovernanceError('CASE_ALREADY_CLOSED', 'El caso ya se encuentra resuelto y cerrado');
+      }
+
+      const previousSeverity = caseRecord.severity;
+      await this.repository.updateCaseClassification(tx, command.caseId, command.caseType, command.severity);
+
+      const now = new Date();
+      await this.repository.saveCaseHistory(tx, {
+        id: randomUUID(),
+        caseId: command.caseId,
+        caseType: command.caseType,
+        actorId: command.actorContext.principalId,
+        action: 'CLASSIFY',
+        previousState: { severity: previousSeverity },
+        newState: { severity: command.severity },
+        justification: command.justification.trim(),
+        createdAt: now,
+      });
+
+      await this.repository.recordAudit(tx, {
+        action: 'CLASSIFY_CASE',
+        operationId: randomUUID(),
+        mediaRef: caseRecord.mediaRef,
+        eventRef: caseRecord.eventRef,
+        reason: command.justification.trim(),
+        actorId: command.actorContext.principalId,
+        metadata: {
+          caseId: command.caseId,
+          previousSeverity,
+          newSeverity: command.severity,
+          priorityAlert: command.severity === 'CRITICAL',
+        },
+        timestamp: now,
+      });
+
+      return {
+        caseId: command.caseId,
+        caseType: command.caseType,
+        previousSeverity,
+        newSeverity: command.severity,
+        priorityAlert: command.severity === 'CRITICAL',
+        targetSlaHours: command.severity === 'CRITICAL' ? 24 : 72,
+        updatedAt: now,
+      };
+    });
+  }
+
+  /**
+   * EL-TK-117: Autorizar acceso administrativo justificado a la media de un caso
+   * Emite un token temporal (15 min) strictly scoped y audita la acción sin registrar la URL completa sensible.
+   */
+  async grantAdministrativeMediaAccess(command: GrantMediaAccessCommand): Promise<MediaAccessGrantResult> {
+    this.assertAdminActor(command.actorContext);
+
+    if (!command.justification || !command.justification.trim()) {
+      throw new MediaCaseGovernanceError('MISSING_JUSTIFICATION', 'Se requiere motivo obligatorio para autorizar el acceso');
+    }
+
+    return this.transactions.run(async (tx) => {
+      const caseRecord = await this.repository.findCase(tx, command.caseId, command.caseType);
+      if (!caseRecord) {
+        throw new MediaCaseGovernanceError('CASE_NOT_FOUND', 'El caso especificado no existe');
+      }
+
+      if (caseRecord.resolvedAt !== null || ['ACTION_TAKEN', 'RESOLVED', 'DISMISSED'].includes(caseRecord.status)) {
+        throw new MediaCaseGovernanceError('CASE_ALREADY_CLOSED', 'El caso ya se encuentra resuelto y cerrado');
+      }
+
+      const media = await this.repository.findMediaCatalog(tx, caseRecord.mediaRef);
+      if (!media || media.status === 'DELETED') {
+        throw new MediaCaseGovernanceError('MEDIA_NOT_AVAILABLE', 'La media no está disponible o ha sido eliminada');
+      }
+
+      const now = new Date();
+      const grantId = randomUUID();
+      const token = randomUUID();
+      const expiresAt = new Date(now.getTime() + 15 * 60 * 1000); // 15 minutos
+
+      await this.repository.saveAccessGrant(tx, {
+        id: grantId,
+        caseId: caseRecord.id,
+        adminId: command.actorContext.principalId,
+        mediaRef: caseRecord.mediaRef,
+        token,
+        justification: command.justification.trim(),
+        expiresAt,
+        createdAt: now,
+      });
+
+      await this.repository.saveCaseHistory(tx, {
+        id: randomUUID(),
+        caseId: command.caseId,
+        caseType: command.caseType,
+        actorId: command.actorContext.principalId,
+        action: 'GRANT_ACCESS',
+        previousState: null,
+        newState: { grantId, expiresAt: expiresAt.toISOString() },
+        justification: command.justification.trim(),
+        createdAt: now,
+      });
+
+      // Auditoría: Registrar quién, por qué, qué recurso y resultado; NUNCA loggear la URL completa.
+      await this.repository.recordAudit(tx, {
+        action: 'GRANT_MEDIA_ACCESS',
+        operationId: randomUUID(),
+        mediaRef: caseRecord.mediaRef,
+        eventRef: caseRecord.eventRef,
+        reason: command.justification.trim(),
+        actorId: command.actorContext.principalId,
+        metadata: {
+          caseId: command.caseId,
+          grantId,
+        },
+        timestamp: now,
+      });
+
+      const previewUrl = `/api/v1/admin/cases/${command.caseId}/media/${caseRecord.mediaRef}/preview?token=${token}`;
+
+      return {
+        grantId,
+        caseId: command.caseId,
+        adminId: command.actorContext.principalId,
+        mediaRef: caseRecord.mediaRef,
+        token,
+        expiresAt,
+        previewUrl,
+        createdAt: now,
+      };
+    });
+  }
+
+  /**
+   * EL-TK-118: Aplicar ocultamiento preventivo por decisión administrativa explícita
+   * Retira la media de nuevas consultas preservando el caso y sin disparar purga.
+   */
+  async applyPreventiveHide(command: ApplyPreventiveHideCommand): Promise<PreventiveHideResult> {
+    this.assertAdminActor(command.actorContext);
+
+    if (!command.justification || !command.justification.trim()) {
+      throw new MediaCaseGovernanceError('MISSING_JUSTIFICATION', 'Se requiere motivo obligatorio para el ocultamiento preventivo');
+    }
+
+    return this.transactions.run(async (tx) => {
+      const caseRecord = await this.repository.findCase(tx, command.caseId, command.caseType);
+      if (!caseRecord) {
+        throw new MediaCaseGovernanceError('CASE_NOT_FOUND', 'El caso especificado no existe');
+      }
+
+      if (caseRecord.resolvedAt !== null || ['ACTION_TAKEN', 'RESOLVED', 'DISMISSED'].includes(caseRecord.status)) {
+        throw new MediaCaseGovernanceError('CASE_ALREADY_CLOSED', 'El caso ya se encuentra resuelto y cerrado');
+      }
+
+      const media = await this.repository.findMediaCatalog(tx, caseRecord.mediaRef);
+      if (!media) {
+        throw new MediaCaseGovernanceError('MEDIA_NOT_AVAILABLE', 'La media no existe en el catálogo');
+      }
+
+      // Idempotencia: si ya está DELETED o TRASHED, responder consistente sin resucitarla
+      if (media.status === 'DELETED' || media.status === 'TRASHED') {
+        return {
+          caseId: command.caseId,
+          mediaRef: media.mediaRef,
+          previousStatus: media.status,
+          newStatus: media.status,
+          idempotent: true,
+          appliedAt: new Date(),
+        };
+      }
+
+      // Idempotencia: si ya está HIDDEN, responder no-op
+      if (media.status === 'HIDDEN') {
+        return {
+          caseId: command.caseId,
+          mediaRef: media.mediaRef,
+          previousStatus: 'HIDDEN',
+          newStatus: 'HIDDEN',
+          idempotent: true,
+          appliedAt: new Date(),
+        };
+      }
+
+      await this.repository.updateMediaStatusToHidden(tx, media.mediaRef, media.revision);
+
+      if (caseRecord.status === 'PENDING_REVIEW') {
+        await this.repository.updateCaseStatus(tx, command.caseId, command.caseType, 'UNDER_INVESTIGATION');
+      }
+
+      const now = new Date();
+      await this.repository.saveCaseHistory(tx, {
+        id: randomUUID(),
+        caseId: command.caseId,
+        caseType: command.caseType,
+        actorId: command.actorContext.principalId,
+        action: 'PREVENTIVE_HIDE',
+        previousState: { mediaStatus: media.status },
+        newState: { mediaStatus: 'HIDDEN' },
+        justification: command.justification.trim(),
+        createdAt: now,
+      });
+
+      await this.repository.recordAudit(tx, {
+        action: 'PREVENTIVE_HIDE',
+        operationId: randomUUID(),
+        mediaRef: media.mediaRef,
+        eventRef: media.eventRef,
+        reason: command.justification.trim(),
+        actorId: command.actorContext.principalId,
+        metadata: {
+          caseId: command.caseId,
+          previousMediaStatus: media.status,
+          newMediaStatus: 'HIDDEN',
+        },
+        timestamp: now,
+      });
+
+      return {
+        caseId: command.caseId,
+        mediaRef: media.mediaRef,
+        previousStatus: media.status,
+        newStatus: 'HIDDEN',
+        idempotent: false,
+        appliedAt: now,
+      };
+    });
+  }
+
+  /**
+   * EL-TK-119: Resolver un caso de reporte o retiro registrando la intervención
+   * Soporta DISMISSED, REMOVED_PERMANENTLY (con purga inmediata sin papelera DEC-089/DEC-097)
+   * o HIDDEN_PERMANENTLY con idempotencia ante resoluciones previas.
+   */
+  async resolveCase(command: ResolveCaseCommand): Promise<ResolveCaseResult> {
+    this.assertAdminActor(command.actorContext);
+
+    if (!command.justification || !command.justification.trim()) {
+      throw new MediaCaseGovernanceError('MISSING_JUSTIFICATION', 'Se requiere motivo obligatorio para resolver el caso');
+    }
+
+    if (!['DISMISSED', 'REMOVED_PERMANENTLY', 'HIDDEN_PERMANENTLY'].includes(command.resolutionType)) {
+      throw new MediaCaseGovernanceError('INVALID_ARGUMENT', 'Tipo de resolución inválido');
+    }
+
+    return this.transactions.run(async (tx) => {
+      const caseRecord = await this.repository.findCase(tx, command.caseId, command.caseType);
+      if (!caseRecord) {
+        throw new MediaCaseGovernanceError('CASE_NOT_FOUND', 'El caso especificado no existe');
+      }
+
+      // Idempotencia: si ya está resuelto, no duplicar acciones destructivas
+      if (caseRecord.resolvedAt !== null || ['ACTION_TAKEN', 'RESOLVED', 'DISMISSED'].includes(caseRecord.status)) {
+        return {
+          caseId: command.caseId,
+          caseType: command.caseType,
+          resolutionType: (caseRecord.resolutionType as any) ?? command.resolutionType,
+          status: caseRecord.status as any,
+          mediaRef: caseRecord.mediaRef,
+          mediaStatus: 'UNCHANGED',
+          alreadyResolved: true,
+          purgeDispatched: false,
+          resolvedAt: caseRecord.resolvedAt ?? caseRecord.createdAt,
+          resolvedBy: caseRecord.resolvedBy ?? 'UNKNOWN',
+        };
+      }
+
+      const media = await this.repository.findMediaCatalog(tx, caseRecord.mediaRef);
+      if (!media) {
+        throw new MediaCaseGovernanceError('MEDIA_NOT_AVAILABLE', 'La media no existe en el catálogo');
+      }
+
+      const now = new Date();
+      let targetCaseStatus: string;
+      let targetMediaStatus: string = media.status;
+      let purgeDispatched = false;
+
+      if (command.resolutionType === 'DISMISSED') {
+        targetCaseStatus = 'DISMISSED';
+      } else if (command.resolutionType === 'REMOVED_PERMANENTLY') {
+        targetCaseStatus = command.caseType === 'REPORT' ? 'ACTION_TAKEN' : 'RESOLVED';
+        if (media.status !== 'DELETED') {
+          await this.repository.updateMediaStatusToDeleted(tx, media.mediaRef, media.revision);
+          targetMediaStatus = 'DELETED';
+        }
+        // Purga inmediata sin papelera de owner per DEC-089 y DEC-097
+        const purgeStartedAt = now;
+        const mainPurgeDeadline = addUtcCalendarDays(now, 7);
+        const residualPurgeDeadline = addUtcCalendarDays(now, 30);
+        const purgeIntentId = randomUUID();
+        const operationId = randomUUID();
+        await this.purgeDispatcher.dispatchPurgeRequest({
+          purgeIntentId,
+          operationId,
+          mediaRef: media.mediaRef,
+          eventRef: media.eventRef,
+          organizerRef: 'ADMIN_REMOVAL',
+          generation: media.generation,
+          revision: media.revision,
+          purgeStartedAt,
+          mainPurgeDeadline,
+          residualPurgeDeadline,
+          policyRef: 'ADMIN_REMOVAL_CASE',
+          policyVersion: '1.0',
+        });
+        purgeDispatched = true;
+      } else if (command.resolutionType === 'HIDDEN_PERMANENTLY') {
+        targetCaseStatus = command.caseType === 'REPORT' ? 'ACTION_TAKEN' : 'RESOLVED';
+        if (media.status !== 'HIDDEN' && media.status !== 'DELETED') {
+          await this.repository.updateMediaStatusToHidden(tx, media.mediaRef, media.revision);
+          targetMediaStatus = 'HIDDEN';
+        }
+      } else {
+        throw new MediaCaseGovernanceError('INVALID_ARGUMENT', 'Tipo de resolución desconocido');
+      }
+
+      await this.repository.updateCaseResolution(tx, command.caseId, command.caseType, {
+        status: targetCaseStatus,
+        resolutionType: command.resolutionType,
+        resolvedBy: command.actorContext.principalId,
+        resolutionNotes: command.justification.trim(),
+        resolvedAt: now,
+      });
+
+      await this.repository.saveCaseHistory(tx, {
+        id: randomUUID(),
+        caseId: command.caseId,
+        caseType: command.caseType,
+        actorId: command.actorContext.principalId,
+        action: 'RESOLVE',
+        previousState: { status: caseRecord.status, severity: caseRecord.severity },
+        newState: { status: targetCaseStatus, resolutionType: command.resolutionType, mediaStatus: targetMediaStatus },
+        justification: command.justification.trim(),
+        createdAt: now,
+      });
+
+      await this.repository.recordAudit(tx, {
+        action: 'RESOLVE_CASE',
+        operationId: randomUUID(),
+        mediaRef: media.mediaRef,
+        eventRef: media.eventRef,
+        reason: command.justification.trim(),
+        actorId: command.actorContext.principalId,
+        metadata: {
+          caseId: command.caseId,
+          resolutionType: command.resolutionType,
+          purgeDispatched,
+        },
+        timestamp: now,
+      });
+
+      return {
+        caseId: command.caseId,
+        caseType: command.caseType,
+        resolutionType: command.resolutionType,
+        status: targetCaseStatus as any,
+        mediaRef: media.mediaRef,
+        mediaStatus: targetMediaStatus,
+        alreadyResolved: false,
+        purgeDispatched,
+        resolvedAt: now,
+        resolvedBy: command.actorContext.principalId,
+      };
+    });
+  }
+
+  /**
+   * EL-TK-120: Consultar la cola de casos para revisión administrativa
+   * Devuelve items sanitizados ordenados por severidad y fecha, sin previews de media.
+   * Distingue EMPTY_QUEUE de EMPTY_FILTER_RESULTS.
+   */
+  async getCaseQueue(query: GetCaseQueueQuery): Promise<CaseQueueResult> {
+    this.assertAdminActor(query.actorContext);
+
+    return this.transactions.run(async (tx) => {
+      const result = await this.repository.queryQueue(tx, {
+        severity: query.severity,
+        status: query.status,
+        caseType: query.caseType ?? 'ALL',
+        limit: query.limit ?? 50,
+        offset: query.offset ?? 0,
+      });
+
+      let emptyReason: 'NONE' | 'EMPTY_QUEUE' | 'EMPTY_FILTER_RESULTS' = 'NONE';
+      if (result.totalCount === 0) {
+        emptyReason = 'EMPTY_QUEUE';
+      } else if (result.items.length === 0) {
+        emptyReason = 'EMPTY_FILTER_RESULTS';
+      }
+
+      return {
+        items: result.items,
+        totalCount: result.filteredCount,
+        emptyReason,
+      };
+    });
+  }
+
+  /**
+   * EL-TK-120: Consultar el detalle de un caso para revisión administrativa
+   * Devuelve historial y capacidades sin preview automático de media.
+   */
+  async getCaseDetail(query: GetCaseDetailQuery): Promise<CaseDetailResult> {
+    this.assertAdminActor(query.actorContext);
+
+    return this.transactions.run(async (tx) => {
+      const caseRecord = await this.repository.findCase(tx, query.caseId, query.caseType);
+      if (!caseRecord) {
+        throw new MediaCaseGovernanceError('CASE_NOT_FOUND', 'El caso especificado no existe');
+      }
+
+      const history = await this.repository.findCaseHistory(tx, query.caseId);
+      const media = await this.repository.findMediaCatalog(tx, caseRecord.mediaRef);
+      const activeGrant = await this.repository.findActiveAccessGrant(tx, query.caseId, query.actorContext.principalId);
+
+      const isResolved = caseRecord.resolvedAt !== null || ['ACTION_TAKEN', 'RESOLVED', 'DISMISSED'].includes(caseRecord.status);
+      const mediaStatus = media?.status;
+
+      const capabilities = {
+        canClassify: !isResolved,
+        canRequestAccess: !isResolved && mediaStatus !== 'DELETED',
+        canPreventiveHide: !isResolved && mediaStatus !== 'HIDDEN' && mediaStatus !== 'DELETED',
+        canResolve: !isResolved,
+      };
+
+      return {
+        caseId: caseRecord.id,
+        caseType: query.caseType,
+        mediaRef: caseRecord.mediaRef,
+        eventRef: caseRecord.eventRef,
+        reason: caseRecord.reason,
+        description: caseRecord.description,
+        reporterContact: caseRecord.reporterContact,
+        severity: caseRecord.severity,
+        status: caseRecord.status,
+        createdAt: caseRecord.createdAt,
+        resolvedAt: caseRecord.resolvedAt,
+        resolvedBy: caseRecord.resolvedBy,
+        resolutionType: caseRecord.resolutionType,
+        resolutionNotes: caseRecord.resolutionNotes,
+        history,
+        capabilities,
+        activeGrant: activeGrant
+          ? {
+              grantId: activeGrant.id,
+              token: activeGrant.token,
+              expiresAt: activeGrant.expiresAt,
+            }
+          : null,
+      };
+    });
+  }
+}
+
+// ============================================================================
+// POSTGRES IMPLEMENTATION OF CASE GOVERNANCE REPOSITORY
+// ============================================================================
+
+export class PostgresMediaCaseGovernanceRepository implements MediaCaseGovernanceRepository {
+  async findCase(
+    tx: SqlTransaction,
+    caseId: string,
+    caseType: 'REPORT' | 'REMOVAL_REQUEST'
+  ): Promise<{
+    id: string;
+    mediaRef: string;
+    eventRef: string;
+    reason: string;
+    description: string | null;
+    reporterContact: string | null;
+    severity: ReportSeverity;
+    status: string;
+    resolvedAt: Date | null;
+    resolvedBy: string | null;
+    resolutionType: string | null;
+    resolutionNotes: string | null;
+    createdAt: Date;
+  } | null> {
+    if (caseType === 'REPORT') {
+      const rows = await tx.query<{
+        id: string;
+        media_ref: string;
+        event_ref: string;
+        reason: string;
+        description: string | null;
+        reporter_contact: string | null;
+        severity: string;
+        status: string;
+        resolved_at: Date | null;
+        resolved_by: string | null;
+        resolution_type: string | null;
+        resolution_notes: string | null;
+        created_at: Date;
+      }>(
+        `SELECT id, media_ref, event_ref, reason, description, reporter_contact, severity, status, resolved_at, resolved_by, resolution_type, resolution_notes, created_at
+         FROM media_report_case
+         WHERE id = $1::uuid`,
+        caseId
+      );
+      if (!rows.length) return null;
+      const r = rows[0];
+      return {
+        id: r.id,
+        mediaRef: r.media_ref,
+        eventRef: r.event_ref,
+        reason: r.reason,
+        description: r.description,
+        reporterContact: r.reporter_contact,
+        severity: r.severity as ReportSeverity,
+        status: r.status,
+        resolvedAt: r.resolved_at ? new Date(r.resolved_at) : null,
+        resolvedBy: r.resolved_by,
+        resolutionType: r.resolution_type,
+        resolutionNotes: r.resolution_notes,
+        createdAt: new Date(r.created_at),
+      };
+    } else {
+      const rows = await tx.query<{
+        id: string;
+        media_ref: string;
+        event_ref: string;
+        reason: string;
+        description: string | null;
+        contact_email: string;
+        severity: string;
+        status: string;
+        resolved_at: Date | null;
+        resolved_by: string | null;
+        resolution_type: string | null;
+        resolution_notes: string | null;
+        created_at: Date;
+      }>(
+        `SELECT id, media_ref, event_ref, reason, description, contact_email, severity, status, resolved_at, resolved_by, resolution_type, resolution_notes, created_at
+         FROM media_removal_request
+         WHERE id = $1::uuid`,
+        caseId
+      );
+      if (!rows.length) return null;
+      const r = rows[0];
+      return {
+        id: r.id,
+        mediaRef: r.media_ref,
+        eventRef: r.event_ref,
+        reason: r.reason,
+        description: r.description,
+        reporterContact: r.contact_email,
+        severity: r.severity as ReportSeverity,
+        status: r.status,
+        resolvedAt: r.resolved_at ? new Date(r.resolved_at) : null,
+        resolvedBy: r.resolved_by,
+        resolutionType: r.resolution_type,
+        resolutionNotes: r.resolution_notes,
+        createdAt: new Date(r.created_at),
+      };
+    }
+  }
+
+  async updateCaseClassification(
+    tx: SqlTransaction,
+    caseId: string,
+    caseType: 'REPORT' | 'REMOVAL_REQUEST',
+    severity: 'CRITICAL' | 'NORMAL'
+  ): Promise<void> {
+    const table = caseType === 'REPORT' ? 'media_report_case' : 'media_removal_request';
+    await tx.execute(
+      `UPDATE ${table} SET severity = $1 WHERE id = $2::uuid`,
+      severity,
+      caseId
+    );
+  }
+
+  async findMediaCatalog(
+    tx: SqlTransaction,
+    mediaRef: string
+  ): Promise<{
+    mediaRef: string;
+    eventRef: string;
+    guestRef?: string;
+    status: string;
+    revision: bigint;
+    generation: bigint;
+  } | null> {
+    const cleanMedia = mediaRef.replace(/^media:/, '');
+    const rows = await tx.query<{
+      media_ref: string;
+      event_ref: string;
+      guest_ref: string;
+      status: string;
+      revision: bigint | string | number;
+      generation: bigint | string | number;
+    }>(
+      `SELECT media_ref, event_ref, guest_ref, status, revision, generation
+       FROM media_catalog
+       WHERE media_ref = $1 OR media_ref = $2`,
+      cleanMedia,
+      `media:${cleanMedia}`
+    );
+    if (!rows.length) return null;
+    const r = rows[0];
+    return {
+      mediaRef: r.media_ref,
+      eventRef: r.event_ref,
+      guestRef: r.guest_ref,
+      status: r.status,
+      revision: BigInt(r.revision),
+      generation: BigInt(r.generation),
+    };
+  }
+
+  async updateMediaStatusToHidden(
+    tx: SqlTransaction,
+    mediaRef: string,
+    expectedRevision: bigint
+  ): Promise<bigint> {
+    const cleanMedia = mediaRef.replace(/^media:/, '');
+    const rows = await tx.query<{ revision: bigint | string | number }>(
+      `UPDATE media_catalog
+       SET status = 'HIDDEN', revision = revision + 1
+       WHERE (media_ref = $1 OR media_ref = $2) AND revision = $3::bigint
+       RETURNING revision`,
+      cleanMedia,
+      `media:${cleanMedia}`,
+      expectedRevision
+    );
+    if (!rows.length) {
+      throw new MediaCaseGovernanceError('CONCURRENCY_CONFLICT', 'Conflicto de concurrencia al ocultar media');
+    }
+    return BigInt(rows[0].revision);
+  }
+
+  async updateMediaStatusToDeleted(
+    tx: SqlTransaction,
+    mediaRef: string,
+    expectedRevision: bigint
+  ): Promise<bigint> {
+    const cleanMedia = mediaRef.replace(/^media:/, '');
+    const rows = await tx.query<{ revision: bigint | string | number }>(
+      `UPDATE media_catalog
+       SET status = 'DELETED', revision = revision + 1
+       WHERE (media_ref = $1 OR media_ref = $2) AND revision = $3::bigint
+       RETURNING revision`,
+      cleanMedia,
+      `media:${cleanMedia}`,
+      expectedRevision
+    );
+    if (!rows.length) {
+      throw new MediaCaseGovernanceError('CONCURRENCY_CONFLICT', 'Conflicto de concurrencia al eliminar media');
+    }
+    return BigInt(rows[0].revision);
+  }
+
+  async saveCaseHistory(
+    tx: SqlTransaction,
+    entry: {
+      id: string;
+      caseId: string;
+      caseType: string;
+      actorId: string;
+      action: string;
+      previousState: unknown;
+      newState: unknown;
+      justification?: string | null;
+      createdAt: Date;
+    }
+  ): Promise<void> {
+    await tx.execute(
+      `INSERT INTO media_case_history (
+         id, case_id, case_type, actor_id, action,
+         previous_state, new_state, justification, created_at
+       ) VALUES (
+         $1::uuid, $2::uuid, $3, $4, $5,
+         $6::jsonb, $7::jsonb, $8, $9
+       )`,
+      entry.id,
+      entry.caseId,
+      entry.caseType,
+      entry.actorId,
+      entry.action,
+      entry.previousState ? JSON.stringify(entry.previousState) : null,
+      entry.newState ? JSON.stringify(entry.newState) : null,
+      entry.justification ?? null,
+      entry.createdAt
+    );
+  }
+
+  async saveAccessGrant(
+    tx: SqlTransaction,
+    grant: {
+      id: string;
+      caseId: string;
+      adminId: string;
+      mediaRef: string;
+      token: string;
+      justification: string;
+      expiresAt: Date;
+      createdAt: Date;
+    }
+  ): Promise<void> {
+    await tx.execute(
+      `INSERT INTO media_case_access_grant (
+         id, case_id, admin_id, media_ref, token,
+         justification, expires_at, created_at
+       ) VALUES (
+         $1::uuid, $2::uuid, $3, $4, $5,
+         $6, $7, $8
+       )`,
+      grant.id,
+      grant.caseId,
+      grant.adminId,
+      grant.mediaRef,
+      grant.token,
+      grant.justification,
+      grant.expiresAt,
+      grant.createdAt
+    );
+  }
+
+  async findActiveAccessGrant(
+    tx: SqlTransaction,
+    caseId: string,
+    adminId: string
+  ): Promise<{ id: string; token: string; expiresAt: Date } | null> {
+    const rows = await tx.query<{ id: string; token: string; expires_at: Date }>(
+      `SELECT id, token, expires_at
+       FROM media_case_access_grant
+       WHERE case_id = $1::uuid AND admin_id = $2 AND expires_at > NOW()
+       ORDER BY expires_at DESC
+       LIMIT 1`,
+      caseId,
+      adminId
+    );
+    if (!rows.length) return null;
+    return {
+      id: rows[0].id,
+      token: rows[0].token,
+      expiresAt: new Date(rows[0].expires_at),
+    };
+  }
+
+  async updateCaseStatus(
+    tx: SqlTransaction,
+    caseId: string,
+    caseType: 'REPORT' | 'REMOVAL_REQUEST',
+    status: string
+  ): Promise<void> {
+    const table = caseType === 'REPORT' ? 'media_report_case' : 'media_removal_request';
+    await tx.execute(
+      `UPDATE ${table} SET status = $1 WHERE id = $2::uuid`,
+      status,
+      caseId
+    );
+  }
+
+  async updateCaseResolution(
+    tx: SqlTransaction,
+    caseId: string,
+    caseType: 'REPORT' | 'REMOVAL_REQUEST',
+    resolution: {
+      status: string;
+      resolutionType: string;
+      resolvedBy: string;
+      resolutionNotes: string;
+      resolvedAt: Date;
+    }
+  ): Promise<void> {
+    const table = caseType === 'REPORT' ? 'media_report_case' : 'media_removal_request';
+    await tx.execute(
+      `UPDATE ${table}
+       SET status = $1, resolution_type = $2, resolved_by = $3, resolution_notes = $4, resolved_at = $5
+       WHERE id = $6::uuid`,
+      resolution.status,
+      resolution.resolutionType,
+      resolution.resolvedBy,
+      resolution.resolutionNotes,
+      resolution.resolvedAt,
+      caseId
+    );
+  }
+
+  async findCaseHistory(tx: SqlTransaction, caseId: string): Promise<CaseHistoryEntry[]> {
+    const rows = await tx.query<{
+      id: string;
+      actor_id: string;
+      action: string;
+      previous_state: unknown;
+      new_state: unknown;
+      justification: string | null;
+      created_at: Date;
+    }>(
+      `SELECT id, actor_id, action, previous_state, new_state, justification, created_at
+       FROM media_case_history
+       WHERE case_id = $1::uuid
+       ORDER BY created_at ASC`,
+      caseId
+    );
+    return rows.map((r) => ({
+      id: r.id,
+      actorId: r.actor_id,
+      action: r.action,
+      previousState: r.previous_state,
+      newState: r.new_state,
+      justification: r.justification,
+      createdAt: new Date(r.created_at),
+    }));
+  }
+
+  async queryQueue(
+    tx: SqlTransaction,
+    params: {
+      severity?: 'UNCLASSIFIED' | 'CRITICAL' | 'NORMAL';
+      status?: string;
+      caseType?: 'ALL' | 'REPORT' | 'REMOVAL_REQUEST';
+      limit: number;
+      offset: number;
+    }
+  ): Promise<{
+    items: CaseQueueItem[];
+    filteredCount: number;
+    totalCount: number;
+  }> {
+    const totalCountRows = await tx.query<{ count: string | number }>(
+      `SELECT (
+         (SELECT COUNT(*) FROM media_report_case) +
+         (SELECT COUNT(*) FROM media_removal_request)
+       ) AS count`
+    );
+    const totalCount = Number(totalCountRows[0]?.count ?? 0);
+
+    const conditions: string[] = [];
+    const queryParams: unknown[] = [];
+    let paramIdx = 1;
+
+    if (params.severity) {
+      conditions.push(`severity = $${paramIdx++}`);
+      queryParams.push(params.severity);
+    }
+    if (params.status) {
+      conditions.push(`status = $${paramIdx++}`);
+      queryParams.push(params.status);
+    }
+
+    const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    let baseUnion: string;
+    if (params.caseType === 'REPORT') {
+      baseUnion = `
+        SELECT id, 'REPORT' AS case_type, media_ref, event_ref, reason, severity, status, created_at, resolved_at, resolved_by, resolution_type
+        FROM media_report_case
+      `;
+    } else if (params.caseType === 'REMOVAL_REQUEST') {
+      baseUnion = `
+        SELECT id, 'REMOVAL_REQUEST' AS case_type, media_ref, event_ref, reason, severity, status, created_at, resolved_at, resolved_by, resolution_type
+        FROM media_removal_request
+      `;
+    } else {
+      baseUnion = `
+        SELECT id, 'REPORT' AS case_type, media_ref, event_ref, reason, severity, status, created_at, resolved_at, resolved_by, resolution_type
+        FROM media_report_case
+        UNION ALL
+        SELECT id, 'REMOVAL_REQUEST' AS case_type, media_ref, event_ref, reason, severity, status, created_at, resolved_at, resolved_by, resolution_type
+        FROM media_removal_request
+      `;
+    }
+
+    const countQuery = `SELECT COUNT(*) AS count FROM (${baseUnion}) q ${whereClause}`;
+    const filteredCountRows = await tx.query<{ count: string | number }>(countQuery, ...queryParams);
+    const filteredCount = Number(filteredCountRows[0]?.count ?? 0);
+
+    const dataQuery = `
+      SELECT id, case_type, media_ref, event_ref, reason, severity, status, created_at, resolved_at, resolved_by, resolution_type
+      FROM (${baseUnion}) q
+      ${whereClause}
+      ORDER BY
+        CASE severity
+          WHEN 'CRITICAL' THEN 1
+          WHEN 'NORMAL' THEN 2
+          ELSE 3
+        END ASC,
+        created_at ASC
+      LIMIT $${paramIdx++} OFFSET $${paramIdx++}
+    `;
+    queryParams.push(params.limit, params.offset);
+
+    const rows = await tx.query<{
+      id: string;
+      case_type: 'REPORT' | 'REMOVAL_REQUEST';
+      media_ref: string;
+      event_ref: string;
+      reason: string;
+      severity: ReportSeverity;
+      status: string;
+      created_at: Date;
+      resolved_at: Date | null;
+      resolved_by: string | null;
+      resolution_type: string | null;
+    }>(dataQuery, ...queryParams);
+
+    const items: CaseQueueItem[] = rows.map((r) => ({
+      caseId: r.id,
+      caseType: r.case_type,
+      mediaRef: r.media_ref,
+      eventRef: r.event_ref,
+      reason: r.reason,
+      severity: r.severity,
+      status: r.status,
+      createdAt: new Date(r.created_at),
+      resolvedAt: r.resolved_at ? new Date(r.resolved_at) : null,
+      resolvedBy: r.resolved_by,
+      resolutionType: r.resolution_type,
+    }));
+
+    return { items, filteredCount, totalCount };
+  }
+
+  async recordAudit(
+    tx: SqlTransaction,
+    params: {
+      action: string;
+      operationId: string;
+      mediaRef: string;
+      eventRef: string;
+      reason: string;
+      actorId: string;
+      metadata?: Record<string, unknown>;
+      timestamp: Date;
+    }
+  ): Promise<void> {
+    try {
+      await tx.execute(
+        `INSERT INTO audit_event (
+           id, occurred_at, actor_type, actor_id, action, resource_type,
+           resource_id, result, reason, metadata, idempotency_key, created_at
+         ) VALUES (
+           $1::uuid, $2, 'ADMIN_HUMAN', $3, $4, 'MEDIA_CASE',
+           $5, 'SUCCESS', $6, $7::jsonb, $8, $2
+         )`,
+        randomUUID(),
+        params.timestamp,
+        params.actorId,
+        params.action,
+        params.mediaRef,
+        params.reason,
+        JSON.stringify({
+          eventRef: params.eventRef,
+          operationId: params.operationId,
+          ...(params.metadata ?? {}),
+        }),
+        params.operationId
+      );
+    } catch {
+      // Ignorar si audit_event no está disponible
+    }
   }
 }
