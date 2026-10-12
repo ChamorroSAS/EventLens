@@ -112,3 +112,20 @@ model PurgeReleaseReceipt {
   @@map("purge_release_receipt")
 }
 
+model CapacityThresholdState {
+  id              String    @id @db.Uuid
+  eventId         String    @map("event_id") @db.Uuid
+  thresholdType   String    @map("threshold_type")
+  status          String    @default("ARMED")
+  lastValuePct    Float     @map("last_value_pct")
+  lastTriggeredAt DateTime? @map("last_triggered_at") @db.Timestamptz
+  lastRearmedAt   DateTime? @map("last_rearmed_at") @db.Timestamptz
+  dedupKey        String?   @map("dedup_key")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@unique([eventId, thresholdType])
+  @@map("capacity_threshold_state")
+}
+
+

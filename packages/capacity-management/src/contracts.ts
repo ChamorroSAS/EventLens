@@ -300,4 +300,43 @@ export interface CommercialCapacityUsageSummary {
   snapshotAt: Date;
 }
 
+// ==========================================
+// EL-TK-138: Señales Deduplicadas de Uso al 80% y 100%
+// ==========================================
+
+export type CapacityThresholdType = 'USAGE_80' | 'USAGE_100';
+
+export interface UsageThresholdSignal {
+  readonly eventId: string;
+  readonly thresholdType: CapacityThresholdType;
+  readonly thresholdPercent: number;
+  readonly currentStoragePercent: number;
+  readonly currentFilesPercent: number;
+  readonly consumedBytes: bigint;
+  readonly limitBytes: bigint;
+  readonly consumedFiles: number;
+  readonly limitFiles: number;
+  readonly dedupKey: string;
+  readonly emittedAt: Date;
+}
+
+export interface EvaluateUsageThresholdsCommand {
+  readonly eventId: string;
+  readonly now?: Date;
+}
+
+export interface EvaluateUsageThresholdsResult {
+  readonly eventId: string;
+  readonly signalsEmitted: readonly UsageThresholdSignal[];
+  readonly thresholdStates: {
+    readonly usage80: 'ARMED' | 'TRIGGERED';
+    readonly usage100: 'ARMED' | 'TRIGGERED';
+  };
+}
+
+export interface CapacitySignalSink {
+  emitSignal(signal: UsageThresholdSignal): Promise<void>;
+}
+
+
 

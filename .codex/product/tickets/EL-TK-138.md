@@ -4,7 +4,7 @@
 EL-EP-011
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** sistema, **quiero** detectar cruces de umbral de capacidad, **para** avisar sin spam cuando el evento se acerca o alcanza su límite.
