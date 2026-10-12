@@ -178,8 +178,8 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-096 (DONE) | 074, 075, 072; EL-TK-037 | 099, 101, 102 |
 | EL-TK-097 (DONE) | 072, 074, 035, 037 | 099, 101, 102 |
 | EL-TK-098 (DONE) | 047, 053 | 100, 102 |
-| EL-TK-099 | 096, 097, 101 | 102; UI guest downstream |
 | EL-TK-099 (DONE) | 096, 097, 101 | 102; UI guest downstream |
+| EL-TK-100 (DONE) | 098, 053, 054 | 102; UI owner downstream |
 | EL-TK-101 (DONE) | 096, 097, 072, 074 | 099, 102 |
 | EL-TK-102 | 096..101 | validación integrada de EL-EP-007 |
 
