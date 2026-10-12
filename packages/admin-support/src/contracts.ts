@@ -260,6 +260,9 @@ export interface AdminEventDetailSnapshot {
   readonly lifecycle: AdminEventLifecycleSection;
   readonly capacity: AdminEventCapacitySection;
   readonly jobs: AdminEventJobsSection;
+  readonly invitations?: AdminEventInvitationsSection;
+  readonly capacityRequests?: AdminEventCapacityRequestsSection;
+  readonly reports?: AdminEventReportsSection;
   readonly capabilities: AdminEventCapabilities;
   readonly fetchedAt: string;
 }
@@ -270,6 +273,61 @@ export interface AdminCapacityPort {
 
 export interface AdminJobsPort {
   getEventJobsSummary(eventId: string): Promise<AdminEventJobsSection>;
+}
+
+// ==========================================
+// EL-TK-152: Reutilización de Flujos Propietarios (Invitaciones, Solicitudes, Reportes)
+// ==========================================
+
+export interface AdminEventInvitationsSection {
+  readonly availability: SectionAvailability;
+  readonly invitationCode?: string;
+  readonly status?: 'USED' | 'PENDING' | 'REVOKED' | 'EXPIRED';
+  readonly issuedAt?: string;
+  readonly usedAt?: string | null;
+  readonly unavailableReason?: string;
+}
+
+export interface AdminInvitationsPort {
+  getOrganizerInvitation(organizerId: string): Promise<AdminEventInvitationsSection>;
+}
+
+export interface AdminCapacityRequestItem {
+  readonly requestId: string;
+  readonly requestedPlan: string;
+  readonly status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  readonly requestedAt: string;
+  readonly justification: string;
+}
+
+export interface AdminEventCapacityRequestsSection {
+  readonly availability: SectionAvailability;
+  readonly requests?: readonly AdminCapacityRequestItem[];
+  readonly unavailableReason?: string;
+}
+
+export interface AdminCapacityRequestsPort {
+  getEventCapacityRequests(eventId: string): Promise<AdminEventCapacityRequestsSection>;
+}
+
+export interface AdminReportSummaryItem {
+  readonly reportId: string;
+  readonly reasonCategory: string;
+  readonly status: 'PENDING' | 'RESOLVED' | 'DISMISSED';
+  readonly createdAt: string;
+  readonly mediaRef?: string;
+}
+
+export interface AdminEventReportsSection {
+  readonly availability: SectionAvailability;
+  readonly totalReports?: number;
+  readonly pendingReports?: number;
+  readonly reports?: readonly AdminReportSummaryItem[];
+  readonly unavailableReason?: string;
+}
+
+export interface AdminReportsPort {
+  getEventReportsSummary(eventId: string): Promise<AdminEventReportsSection>;
 }
 
 // ==========================================

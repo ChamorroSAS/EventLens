@@ -2,14 +2,20 @@ import {
   AdminSupportError,
   type AdminActorContext,
   type AdminCapacityPort,
+  type AdminCapacityRequestsPort,
   type AdminEventCapabilities,
+  type AdminEventCapacityRequestsSection,
   type AdminEventCapacitySection,
   type AdminEventDetailQuery,
   type AdminEventDetailSnapshot,
+  type AdminEventInvitationsSection,
   type AdminEventJobsSection,
   type AdminEventLifecycleSection,
   type AdminEventOwnerSection,
+  type AdminEventReportsSection,
+  type AdminInvitationsPort,
   type AdminJobsPort,
+  type AdminReportsPort,
   type AdminSupportAuditSink,
   type SqlTransaction,
   type TransactionRunner
@@ -131,7 +137,10 @@ export class AdminEventDetailService {
     private readonly runner: TransactionRunner,
     private readonly capacityPort?: AdminCapacityPort,
     private readonly jobsPort?: AdminJobsPort,
-    private readonly auditSink?: AdminSupportAuditSink
+    private readonly auditSink?: AdminSupportAuditSink,
+    private readonly invitationsPort?: AdminInvitationsPort,
+    private readonly capacityRequestsPort?: AdminCapacityRequestsPort,
+    private readonly reportsPort?: AdminReportsPort
   ) {
     if (!runner) {
       throw new AdminSupportError('INVALID_ARGUMENT', 'TransactionRunner is required');
@@ -261,10 +270,52 @@ export class AdminEventDetailService {
       };
     }
 
+    let invitationsSection: AdminEventInvitationsSection | undefined;
+    if (this.invitationsPort) {
+      try {
+        invitationsSection = await this.invitationsPort.getOrganizerInvitation(row.organizer_id);
+      } catch (err) {
+        invitationsSection = {
+          availability: 'UNAVAILABLE',
+          unavailableReason: err instanceof Error ? err.message : 'Invitations service error'
+        };
+      }
+    }
+
+    let capacityRequestsSection: AdminEventCapacityRequestsSection | undefined;
+    if (this.capacityRequestsPort) {
+      try {
+        capacityRequestsSection = await this.capacityRequestsPort.getEventCapacityRequests(cleanEventId);
+      } catch (err) {
+        capacityRequestsSection = {
+          availability: 'UNAVAILABLE',
+          unavailableReason: err instanceof Error ? err.message : 'Capacity requests service error'
+        };
+      }
+    }
+
+    let reportsSection: AdminEventReportsSection | undefined;
+    if (this.reportsPort) {
+      try {
+        reportsSection = await this.reportsPort.getEventReportsSummary(cleanEventId);
+      } catch (err) {
+        reportsSection = {
+          availability: 'UNAVAILABLE',
+          unavailableReason: err instanceof Error ? err.message : 'Reports service error'
+        };
+      }
+    }
+
+    const sections = [
+      capacitySection.availability,
+      jobsSection.availability,
+      invitationsSection?.availability,
+      capacityRequestsSection?.availability,
+      reportsSection?.availability
+    ].filter(Boolean);
+
     const overallAvailability: 'COMPLETE' | 'PARTIAL' =
-      capacitySection.availability === 'AVAILABLE' && jobsSection.availability === 'AVAILABLE'
-        ? 'COMPLETE'
-        : 'PARTIAL';
+      sections.every((a) => a === 'AVAILABLE') ? 'COMPLETE' : 'PARTIAL';
 
     const snapshot: AdminEventDetailSnapshot = {
       eventId: cleanEventId,
@@ -274,6 +325,9 @@ export class AdminEventDetailService {
       lifecycle: lifecycleSection,
       capacity: capacitySection,
       jobs: jobsSection,
+      invitations: invitationsSection,
+      capacityRequests: capacityRequestsSection,
+      reports: reportsSection,
       capabilities,
       fetchedAt: new Date().toISOString()
     };

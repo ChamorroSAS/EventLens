@@ -4,7 +4,7 @@
 EL-EP-012
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** administración autorizada, **quiero** acceder desde un único detalle a flujos administrativos existentes, **para** operar sin crear módulos paralelos.
