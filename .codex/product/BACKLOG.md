@@ -12,7 +12,7 @@
 |---|---|---|---|---|
 | EL-EP-018 | Home público informativo, entrada y navegación a cuenta/eventos | Frontend transversal MOD-001/002/003 | DRAFT; sin tickets ni revisión de requisitos/UI | [EL-EP-018](epics/EL-EP-018.md) |
 
-**PROPUESTA 2026-10-12:** EP-018 no altera el inventario de 17 épicas confirmadas ni convierte en hechos la navegación aún no compuesta en Angular. La prioridad P0 propuesta se limita a acceso/roteo operativo de la Beta; contenido institucional P1. Pendiente validar producto, UI/UX, rutas y aspectos jurídicos antes de ticket writing. No abrir registro libre ni nueva cuenta guest.
+**PROPUESTA 2026-10-12 (actualizada):** EP-018 no altera el inventario de 17 épicas confirmadas. **CONFIRMED:** Home `/` sin redirección automática para visitantes y autenticados, más 12 elecciones editoriales (CTA Beta, 4 FAQ, cabecera equilibrada y footer minimalista), sin atribución personal. [Registro editorial y auditoría de rutas](sessions/2026-10-12-el-ep-018-editorial-and-routes.md). La redacción literal es propuesta para revisión; las URLs, `Mi cuenta`, QR, montaje Angular Router, UI/UX y revisión jurídica siguen PENDING. Prioridad P0 propuesta para ruta/entrada operativa de la Beta y P1 para contenido institucional. **Permanece DRAFT; sin tickets ni implementación.** No crear registro libre ni cuenta guest.
 
 ## Epics
 
