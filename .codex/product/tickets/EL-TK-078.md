@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** invitado con sesión vigente, **quiero** consultar únicamente mis propios aportes, **para** revisar lo que envié sin acceder al contenido de otras personas.
@@ -65,3 +65,15 @@ Q-005, Q-014; DEC-013, DEC-041, DEC-084; EL-EP-004, EL-EP-003.
 
 ## Readiness de implementación — 2026-10-10
 REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la consulta aislada de Mis aportes por sessionId, consumido por MyContributionsList y MyContributionItem conforme al handoff UI/UX de EL-EP-004, preservando la excepción de DEC-084 en CLOSED/GRACE_PERIOD o galería inactiva.
+
+## Implementation Evidence — 2026-10-11
+- **Branch:** `feature/EL-TK-078`
+- **Backend Architecture (`packages/event-management`):**
+  - Implementado `getGuestContributions(pool, query)` en `src/guest-session.ts` con aislamiento estricto por `sessionId`.
+  - Verificación de sesión no revocada y pertenencia de la sesión al evento.
+  - Excepción DEC-084: permite consultar aportes propios durante `ACTIVE`, `CLOSED` y `GRACE_PERIOD`, incluso si `guestGalleryEnabled = false` o `uploadsEnabled = false`. Rechaza estrictamente estados no autorizados (`DRAFT`, `SUSPENDED`, `PENDING_DELETION`, `DELETED`).
+  - Mapeo sanitizado a `GuestContributionItem` (oculta IDs internos ajenos, retiene tipo multimedia, tamaño, estado de procesamiento y timestamp).
+- **Test Coverage:**
+  - `test/guest-contributions.unit.test.ts` (7/7 tests unitarios PASS).
+  - `test/guest-access-lifecycle.integration.test.ts` (PASS contra PostgreSQL 16 real).
+  - Verificación de aislamiento estricto entre múltiples sesiones concurrentes.

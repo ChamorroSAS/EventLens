@@ -14,8 +14,8 @@
 |---|---|---|---|---|---|---|
 | EL-EP-001 | Incorporar y proteger organizadores de la beta privada | MOD-001 | READY | P0 | Ninguna predecesora dura | [EL-EP-001](epics/EL-EP-001.md) |
 | EL-EP-002 | Preparar y personalizar el espacio del evento | MOD-002 | READY | P0 | EL-EP-001 | [EL-EP-002](epics/EL-EP-002.md) |
-| EL-EP-003 | Abrir y cerrar el evento según su vigencia | MOD-002 | READY | P0 | EL-EP-002, EL-EP-011 | [EL-EP-003](epics/EL-EP-003.md) |
-| EL-EP-004 | Entrar por QR y participar con consentimiento sin cuenta | MOD-003 | READY | P0 | EL-EP-003 | [EL-EP-004](epics/EL-EP-004.md) |
+| EL-EP-003 | Abrir y cerrar el evento según su vigencia | MOD-002 | DONE | P0 | EL-EP-002, EL-EP-011 | [EL-EP-003](epics/EL-EP-003.md) |
+| EL-EP-004 | Entrar por QR y participar con consentimiento sin cuenta | MOD-003 | DONE | P0 | EL-EP-003 | [EL-EP-004](epics/EL-EP-004.md) |
 | EL-EP-005 | Cargar recuerdos con tolerancia a fallos móviles | MOD-003 | READY | P0 | EL-EP-004, EL-EP-011 | [EL-EP-005](epics/EL-EP-005.md) |
 | EL-EP-006 | Procesar multimedia preservando originales y aislando riesgos | MOD-003 | READY | P0 | EL-EP-005 | [EL-EP-006](epics/EL-EP-006.md) |
 | EL-EP-007 | Visualizar recuerdos en una galería privada móvil | MOD-004 | READY | P0 | EL-EP-004, EL-EP-006 | [EL-EP-007](epics/EL-EP-007.md) |
@@ -108,14 +108,14 @@
 | EL-TK-075 | Validar PIN opcional y establecer una sesión anónima guest | EL-EP-004 | DONE | P0 | EL-TK-027, EL-TK-074 | [EL-TK-075](tickets/EL-TK-075.md) |
 | EL-TK-076 | Registrar consentimiento versionado antes de la primera carga | EL-EP-004 | DONE | P0 | EL-TK-075 | [EL-TK-076](tickets/EL-TK-076.md) |
 | EL-TK-077 | Registrar nombre o apodo del aportante en la sesión guest | EL-EP-004 | DONE | P0 | EL-TK-075 | [EL-TK-077](tickets/EL-TK-077.md) |
-| EL-TK-078 | Consultar Mis aportes mediante la sesión guest | EL-EP-004 | READY | P0 | EL-TK-075, EL-TK-072 | [EL-TK-078](tickets/EL-TK-078.md) |
-| EL-TK-079 | Cambiar o desactivar el PIN de acceso y revocar sesiones guest existentes | EL-EP-004 | READY | P0 | EL-TK-027, EL-TK-075 | [EL-TK-079](tickets/EL-TK-079.md) |
-| EL-TK-080 | Regenerar la credencial pública y revocar el enlace anterior | EL-EP-004 | READY | P0 | EL-TK-074, EL-TK-075 | [EL-TK-080](tickets/EL-TK-080.md) |
-| EL-TK-081 | Consultar datos de compartir y QR del acceso vigente | EL-EP-004 | READY | P0 | EL-TK-074, EL-TK-084 | [EL-TK-081](tickets/EL-TK-081.md) |
-| EL-TK-082 | Derivar a solicitud de retiro cuando la sesión guest no está disponible | EL-EP-004 | READY | P0 | EL-TK-074; contrato EL-EP-009 | [EL-TK-082](tickets/EL-TK-082.md) |
-| EL-TK-083 | Integrar la experiencia guest de acceso, consentimiento y Mis aportes | EL-EP-004 | READY | P0 | EL-TK-074..078, EL-TK-082 | [EL-TK-083](tickets/EL-TK-083.md) |
+| EL-TK-078 | Consultar Mis aportes mediante la sesión guest | EL-EP-004 | DONE | P0 | EL-TK-075, EL-TK-072 | [EL-TK-078](tickets/EL-TK-078.md) |
+| EL-TK-079 | Cambiar o desactivar el PIN de acceso y revocar sesiones guest existentes | EL-EP-004 | DONE | P0 | EL-TK-027, EL-TK-075 | [EL-TK-079](tickets/EL-TK-079.md) |
+| EL-TK-080 | Regenerar la credencial pública y revocar el enlace anterior | EL-EP-004 | DONE | P0 | EL-TK-074, EL-TK-075 | [EL-TK-080](tickets/EL-TK-080.md) |
+| EL-TK-081 | Consultar datos de compartir y QR del acceso vigente | EL-EP-004 | DONE | P0 | EL-TK-074, EL-TK-084 | [EL-TK-081](tickets/EL-TK-081.md) |
+| EL-TK-082 | Derivar a solicitud de retiro cuando la sesión guest no está disponible | EL-EP-004 | DONE | P0 | EL-TK-074; contrato EL-EP-009 | [EL-TK-082](tickets/EL-TK-082.md) |
+| EL-TK-083 | Integrar la experiencia guest de acceso, consentimiento y Mis aportes | EL-EP-004 | DONE | P0 | EL-TK-074..078, EL-TK-082 | [EL-TK-083](tickets/EL-TK-083.md) |
 | EL-TK-084 | Emitir la credencial pública inicial y publicar el acceso de un evento | EL-EP-004 | DONE | P0 | EL-TK-020, EL-TK-027 | [EL-TK-084](tickets/EL-TK-084.md) |
-| EL-TK-085 | Integrar la gestión de acceso, PIN y compartir en la interfaz del organizador | EL-EP-004 | READY | P0 | EL-TK-079,080,081,084 | [EL-TK-085](tickets/EL-TK-085.md) |
+| EL-TK-085 | Integrar la gestión de acceso, PIN y compartir en la interfaz del organizador | EL-EP-004 | DONE | P0 | EL-TK-079,080,081,084 | [EL-TK-085](tickets/EL-TK-085.md) |
 | EL-TK-086 | Autorizar un intento de carga y reservar capacidad del evento | EL-EP-005 | DONE | P0 | EL-TK-075, EL-TK-076, EL-TK-077, EL-TK-072, contrato EL-EP-011 | [EL-TK-086](tickets/EL-TK-086.md) |
 | EL-TK-087 | Emitir una URL temporal para carga directa al object storage privado | EL-EP-005 | DONE | P0 | EL-TK-086 | [EL-TK-087](tickets/EL-TK-087.md) |
 | EL-TK-088 | Confirmar la existencia y pertenencia del original cargado | EL-EP-005 | DONE | P0 | EL-TK-087 | [EL-TK-088](tickets/EL-TK-088.md) |

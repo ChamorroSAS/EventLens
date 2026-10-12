@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** invitado, **quiero** completar el flujo de entrada, consentimiento, identificación y consulta de mis aportes desde móvil, **para** participar sin crear una cuenta.
@@ -72,3 +72,21 @@ REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la experiencia front
 - **Componentes reutilizados:** Catálogo guest de §5.6..10/18..19 sin mezclar la interfaz de configuración del organizador (cubierta en EL-TK-085) ni inventar componentes nuevos ni tokens ad-hoc.
 - **Copy contractual:** Textos aprobados para estados de evento, mensajes de revocación y derivación a retiro sin sesión donde recepción no equivale a eliminación.
 - **Accesibilidad y responsive:** WCAG 2.2 AA (foco visible, retorno de foco tras modales, PinAccessForm accesible sin NumberInput, ConsentSheet sin preselección, mobile-first con tap targets ≥ 44×44px).
+
+## Implementation Evidence — 2026-10-11
+- **Branch:** `feature/EL-TK-078`
+- **Frontend Architecture (`apps/web/src/app/guest/`):**
+  - `GuestContainerComponent`: Shell móvil que orquesta el ciclo de vida del invitado (`EventGuestPageShell`) con arquitectura reactiva Zoneless basada en `signal()`.
+  - `PinAccessFormComponent`: Formulario accesible con entrada numérica `inputmode="numeric"` para 6 dígitos, `autocomplete="one-time-code"`, validación accesible y anuncio de errores `aria-live`.
+  - `ConsentSheetComponent`: Modal accesible para aceptación de términos y licencia limitada de participación con versión explícita (`v1.0`), control de teclado (`Escape`) y confirmación no preseleccionada.
+  - `GuestIdentityFormComponent`: Formulario de nombre/apodo opcional (máx 60 caracteres) con contador de caracteres y foco visible.
+  - `MyContributionsListComponent`: Lista de recuerdos aportados por la sesión (`MyContributionsList`) con renderizado accesible, aislamiento estricto y botón de solicitud de retiro individual.
+  - `GuestService`: Servicio de frontend con almacenamiento de estado reactivo mediante señales (`signal`) para sesión activa, consentimientos e identidad.
+- **Accessibility & UX Invariants (WCAG 2.2 AA):**
+  - Tap targets ≥ 44×44px para dispositivos táctiles.
+  - Roles semánticos `role="main"`, `role="dialog"`, `role="region"`, `aria-labelledby`, `aria-describedby`.
+  - Modal de derivación a retiro sin sesión con disclaimer textual obligatorio («La recepción de esta solicitud no constituye una eliminación automática...»).
+- **Test Coverage:**
+  - `apps/web/src/app/guest/guest-container.component.spec.ts` (5/5 tests unitarios PASS).
+  - Typecheck (`ngc --noEmit`): 0 errores.
+  - Production build (`ng build`): 0 errores.

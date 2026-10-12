@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador, **quiero** consultar el enlace vigente y su representación QR, **para** compartir el acceso correcto con mis invitados.
@@ -62,3 +62,14 @@ Q-005; DEC-004, DEC-013; EL-EP-004.
 
 ## Readiness de implementación — 2026-10-10
 REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la consulta de enlace de compartir y payload QR basado en la credencial vigente, consumido por EventSharePanel, QRPreview y CopyEventLinkAction conforme al handoff UI/UX de EL-EP-004.
+
+## Implementation Evidence — 2026-10-11
+- **Branch:** `feature/EL-TK-078`
+- **Backend Architecture (`packages/event-management`):**
+  - Implementado generador QR autónomo en TypeScript sin dependencias externas (`src/qr-generator.ts`): genera matriz ISO/IEC 18004 con corrección de error M/L y renderiza SVG vectorial puro (`generateQrSvg`) con atributos de accesibilidad (`role="img"`, `aria-label`).
+  - Implementado `getShareAccessSnapshot(pool, query)` en `src/event-public-access.ts`: consulta la credencial pública activa de la generación más reciente, construye la URL canónica `/g/:lookupKey` y adjunta el SVG QR idéntico.
+  - Validación de autorización de organizador (`ORGANIZER_NOT_AUTHORIZED`) y verificación post-regeneración donde nunca se devuelve la credencial revocada.
+- **Test Coverage:**
+  - `test/qr-generator.unit.test.ts` (4/4 tests unitarios PASS).
+  - `test/event-access-management.unit.test.ts` (11/11 tests unitarios PASS).
+  - `test/guest-access-lifecycle.integration.test.ts` (PASS contra PostgreSQL 16 real).

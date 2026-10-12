@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** persona que perdió su sesión guest, **quiero** acceder a la ruta de solicitud de retiro sin recuperar mi token, **para** poder pedir revisión de un aporte sin acceder a contenido privado.
@@ -62,3 +62,14 @@ Q-014, Q-025; DEC-084, DEC-103..105; EL-EP-004, EL-EP-009.
 
 ## Readiness de implementación — 2026-10-10
 REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la derivación accesible al flujo de intake de solicitud de retiro sin sesión (RemovalRequestFlow de EL-EP-009 / DEC-103..105) desde el shell invitado, con copy inequívoco donde recepción no equivale a eliminación.
+
+## Implementation Evidence — 2026-10-11
+- **Branch:** `feature/EL-TK-078`
+- **Backend Architecture (`packages/event-management`):**
+  - Implementado `getRemovalIntakeRoute(pool, query)` en `src/event-public-access.ts`.
+  - Construcción de ruta desacoplada sin exigir sesión de invitado (`requiresSession: false`).
+  - Cumplimiento contractual de disclaimer oficial DEC-103..105: «La recepción de esta solicitud no constituye una eliminación automática ni inmediata del contenido. El organizador o administrador del evento revisará la solicitud conforme a las políticas vigentes».
+  - Garantiza que la consulta no filtra existencia de contenido privado ni permite enumeración de fotos ajenas.
+- **Test Coverage:**
+  - `test/event-access-management.unit.test.ts` (11/11 tests unitarios PASS).
+  - `test/guest-access-lifecycle.integration.test.ts` (PASS contra PostgreSQL 16 real).

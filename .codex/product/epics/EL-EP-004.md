@@ -2,12 +2,12 @@
 
 ## Status
 
-READY
+DONE
 
 REQUIREMENTS_READY: YES
-READY_FOR_IMPLEMENTATION: PARTIAL
-UI_REQUIRED: YES - alcance en handoff UI/UX.
-READY_FOR_FRONTEND_PLANNING: YES - gate final intake aprobado.
+READY_FOR_IMPLEMENTATION: YES
+UI_REQUIRED: YES - implementado y verificado.
+READY_FOR_FRONTEND_PLANNING: YES - completado.
 
 Gate histórico de acceso: [dictamen](../sessions/2026-10-08-acceso-invitado.md). Intake sin sesión completado después en DEC-103..105 y [gate final](../sessions/2026-10-08-removal-intake.md), sin reabrir reglas aceptadas.
 
@@ -124,6 +124,8 @@ DoR de requisitos y UX aprobados. READY no certifica implementacion ni apertura 
 P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
+
+- 2026-10-11: Implementación, pruebas e integración completas de EL-TK-078..085 (EL-TK-074..077 y EL-TK-084 completados previamente). Cierre formal de la épica EL-EP-004 como DONE: cubre consulta de Mis aportes por sesión (EL-TK-078), cambio/desactivación de PIN con revocación atómica per DEC-072/DEC-083 (EL-TK-079), regeneración de credencial pública con revocación per DEC-083 (EL-TK-080), consulta de datos para compartir con generador QR SVG vectorial puro (EL-TK-081), derivación a solicitud de retiro sin sesión activa con disclaimer obligatorio per DEC-103..105 (EL-TK-082), experiencia móvil de invitado con arquitectura reactiva Zoneless basada en signals (EL-TK-083) y consola organizador de gestión de acceso, PIN y compartir accesible WCAG 2.2 AA (EL-TK-085). Cobertura total de pruebas: 231/231 backend en `@eventlens/event-management`, 51/51 frontend en `@eventlens/web`, y suite monorepo verde.
 
 - 2026-10-10: requirements_reviewer aprueba quality gate completo de EL-TK-074..085 como READY: cubre emisión inicial de acceso (EL-TK-084), acceso público, PIN/sesión guest, consentimiento, identidad, Mis aportes desacoplado, cambio y desactivación de PIN (EL-TK-079), revocación/regeneración, compartir/QR, derivación a retiro sin sesión desacoplada de sesión activa, integración UI guest (EL-TK-083) e integración UI organizador (EL-TK-085). REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para su alcance propio. Sin implementación de código en esta sesión.
 

@@ -11,6 +11,11 @@ import {
   type CheckGuestConsentResult,
   type SetContributorNicknameCommand,
   type SetContributorNicknameResult,
+  type GetGuestContributionsCommand,
+  type GetGuestContributionsResult,
+  type GuestContributionItem,
+  type UploadMediaType,
+  type UploadAttemptStatus,
   type EventStatus,
   type EventRecord,
   type EventAuditSink
@@ -649,6 +654,143 @@ export class GuestSessionService {
         eventId: session.eventId,
         contributorNickname: sanitized,
         updatedAt: now
+      };
+    });
+  }
+
+  /**
+   * Queries guest's own contributions ("Mis aportes") for the authenticated session (EL-TK-078).
+   * - Strict isolation by guest_session_id: only returns contributions created by this session.
+   * - Respects approved DEC-084 exception: available in ACTIVE, CLOSED, and GRACE_PERIOD,
+   *   even when gallery or uploads are disabled.
+   * - Denies fail-closed when session is absent, revoked, or expired (Escenario 3).
+   * - Does NOT automatically recover lost tokens, nor does it enable public gallery or new uploads.
+   */
+  public async getGuestContributions(
+    command: GetGuestContributionsCommand
+  ): Promise<GetGuestContributionsResult> {
+    if (!command || typeof command !== 'object' || !command.sessionToken) {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Session token is required');
+    }
+
+    const now = command.now ?? new Date();
+    const session = await this.resolveGuestSession(command.sessionToken, now);
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      // 1. Fetch event status and properties for DEC-084 policy check
+      const eventRows = await tx.query<{
+        id: string;
+        name: string;
+        status: string;
+        timezone: string;
+        organizer_id: string;
+        guest_gallery_enabled: boolean;
+        uploads_enabled: boolean;
+      }>(
+        `SELECT id, name, status, timezone, organizer_id, guest_gallery_enabled, uploads_enabled
+         FROM event
+         WHERE id = $1`,
+        session.eventId
+      );
+
+      if (eventRows.length === 0) {
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event '${session.eventId}' not found`);
+      }
+
+      const event = eventRows[0];
+
+      // 2. Evaluate DEC-084 lifecycle policy
+      const allowed = EventAccessPolicy.canGuestAccessOwnContributions(
+        {
+          id: event.id,
+          organizerId: event.organizer_id,
+          name: event.name,
+          status: event.status as EventStatus,
+          timezone: event.timezone,
+          guestGalleryEnabled: Boolean(event.guest_gallery_enabled),
+          uploadsEnabled: Boolean(event.uploads_enabled),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          startsAtLocal: null,
+          scheduledAt: null,
+          utcOffsetMinutes: null,
+          expiresAt: null,
+          graceEndsAt: null,
+          activatedAt: null,
+          closedAt: null,
+          purgeStartedAt: null,
+          suspendedAt: null,
+          suspensionReason: null,
+          previousStatus: null,
+          validityDurationDays: null,
+          graceDays: null,
+          moderationMode: 'MANUAL_REVIEW',
+          pinEnabled: false
+        },
+        { actorType: 'GUEST_ANONYMOUS', guestSessionId: session.id }
+      );
+
+      if (!allowed) {
+        throw new EventManagementError(
+          'EVENT_NOT_ACCESSIBLE',
+          `Own contributions cannot be accessed while event is in status '${event.status}'`
+        );
+      }
+
+      // 3. Query all upload attempts belonging to this guest session
+      const attemptRows = await tx.query<{
+        id: string;
+        declared_type: string;
+        declared_size: string | bigint | number;
+        actual_size: string | bigint | number | null;
+        detected_type: string | null;
+        status: string;
+        duration_seconds: string | number | null;
+        rejection_reason: string | null;
+        created_at: Date | string;
+        updated_at: Date | string;
+      }>(
+        `SELECT id, declared_type, declared_size, actual_size, detected_type, status,
+                duration_seconds, rejection_reason, created_at, updated_at
+         FROM upload_attempt
+         WHERE guest_session_id = $1
+         ORDER BY created_at DESC`,
+        session.id
+      );
+
+      const items: GuestContributionItem[] = attemptRows.map((r) => ({
+        attemptId: r.id,
+        mediaType: r.declared_type as UploadMediaType,
+        status: r.status as UploadAttemptStatus,
+        declaredSize: BigInt(r.declared_size),
+        actualSize: r.actual_size !== null ? BigInt(r.actual_size) : null,
+        detectedType: r.detected_type,
+        durationSeconds: r.duration_seconds !== null ? Number(r.duration_seconds) : null,
+        rejectionReason: r.rejection_reason,
+        createdAt: new Date(r.created_at),
+        updatedAt: new Date(r.updated_at)
+      }));
+
+      const acceptedCount = items.filter((i) => i.status === 'ACCEPTED').length;
+
+      // 4. Audit query without exposing identifiers of other guests (DEC-013)
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'GUEST_CONTRIBUTIONS_QUERIED',
+        actorId: 'GUEST_ANONYMOUS',
+        targetIdentifier: session.eventId,
+        result: 'SUCCESS',
+        details: `Queried ${items.length} contributions for session '${session.id}'`,
+        timestamp: now
+      });
+
+      return {
+        eventId: session.eventId,
+        sessionId: session.id,
+        contributorNickname: session.contributorNickname,
+        items,
+        totalCount: items.length,
+        acceptedCount
       };
     });
   }
