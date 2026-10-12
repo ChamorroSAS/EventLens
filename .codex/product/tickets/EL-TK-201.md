@@ -4,13 +4,13 @@
 EL-EP-015
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** organizador, **quiero** solicitar o cancelar borrado de cuenta con contraseña vigente, **para** gestionar la ventana de siete días sin perder el control de su acceso restringido.
 
 ## Alcance funcional
-Reutilizar ConfirmDialog, LoginForm.REAUTH_ACCOUNT, SecurityNotice y consulta restringida; challenge→verify→comando; prueba temporal solo en memoria; seguimiento de estado/cancelUntil, ACK incierto, WAI/WCAG2.2AA.
+Reutilizar ConfirmDialog, LoginForm.REAUTH_ACCOUNT, SecurityNotice y consulta restringida; challenge→verify→comando; prueba temporal solo en memoria; seguimiento de estado/cancelUntil, ACK incierto, WAI/WCAG2.2AA. El [handoff aprobado](../../context/ui-deletion-flow.md) es normativo para estados, errores, mobile/tablet/desktop y accesibilidad; no se duplica la variante de identidad.
 
 ## Fuera de alcance
 No crear AccountDeletionDialog ni persistir contraseña/evidence en localStorage, no usar email/token de reset para reauth.
@@ -45,7 +45,7 @@ EL-TK-186, EL-TK-191, EL-TK-192, EL-TK-193.
 - **blocks:** ver [grafo EL-EP-015](../sessions/2026-10-12-el-ep-015-ticket-plan.md).
 
 ## Pruebas requeridas
-Playwright viewport/teclado/foco/lector, double click, expired evidence, restricted login y no disclosure.
+Playwright mobile/tablet/desktop, teclado/foco/semántica accesible, double click, expired evidence, restricted login y no disclosure; comprobación manual con lector de pantalla. Playwright por sí solo no acredita esa comprobación manual.
 
 ## Observabilidad / auditoría
 Telemetría sin password/proof; a11y feedback seguro.
@@ -63,7 +63,11 @@ DEC-107/108; ARCH-017/018; ui-deletion-flow.md; EL-EP-015
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER de producto
 
-## Gate de implementación propuesto
-REQUIREMENTS_READY: YES (contratos aceptados, pendiente revisión formal del ticket).
+## Gate de implementación aprobado — 2026-10-12
+REQUIREMENTS_READY: YES — dictámenes individuales architect y requirements_reviewer APPROVED.
 READY_FOR_IMPLEMENTATION: YES para alcance propio; la ejecución depende de los tickets anteriores y verificación de código existente.
-REVIEW_STATUS: PENDING — propuesta documental sin prueba ejecutada ni dictamen automatizado de requirements_reviewer.
+UI_REQUIRED: YES.
+READY_FOR_FRONTEND_PLANNING: YES — dictamen explícito ui_designer APPROVED.
+REVIEW_STATUS: APPROVED — [dictámenes formales y validación documental](../sessions/2026-10-12-el-ep-015-ticket-readiness.md).
+
+Histórico: DRAFT en la propuesta original; READY tras revisión individual del 2026-10-12. No acredita implementación, ejecución de pruebas ni PASS de validation gates.

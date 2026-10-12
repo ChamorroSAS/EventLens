@@ -4,7 +4,7 @@
 EL-EP-015
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** operador de recuperación, **quiero** demostrar que backups ordinarios no reactivan contenido purgado, **para** cerrar la obligación residual sin inventar acceso ni borrar autoridad.
@@ -48,7 +48,7 @@ EL-TK-197, EL-TK-198, EL-TK-172, EL-TK-174; almacenamiento y adapter de backup v
 Ejercicio PITR anterior a solicitud/cancel/claim, +7/+30 UTC, cierre false positive y corrupción/checkpoint.
 
 ## Observabilidad / auditoría
-Dashboard/métricas de incumplimiento, pruebas de recuperación, sin restos ni información personal adicional.
+Reportes, métricas y alertas de incumplimiento mediante los mecanismos operativos existentes de MOD-009 / EL-EP-014; sin nuevas pantallas ni dashboard en este ticket. Evidencia de recuperación sin restos ni información personal adicional.
 
 ## Prioridad / estimación
 P0 / L
@@ -63,7 +63,11 @@ DEC-045/062/092/097..110; ARCH-010/019; EL-EP-014/015
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER de producto
 
-## Gate de implementación propuesto
-REQUIREMENTS_READY: YES (contratos aceptados, pendiente revisión formal del ticket).
+## Gate de implementación aprobado — 2026-10-12
+REQUIREMENTS_READY: YES — dictámenes individuales architect y requirements_reviewer APPROVED.
 READY_FOR_IMPLEMENTATION: YES para alcance propio; la ejecución depende de los tickets anteriores y verificación de código existente.
-REVIEW_STATUS: PENDING — propuesta documental sin prueba ejecutada ni dictamen automatizado de requirements_reviewer.
+UI_REQUIRED: NO.
+READY_FOR_FRONTEND_PLANNING: NOT_REQUIRED — dictamen ui_designer; sin diseño de UI nueva.
+REVIEW_STATUS: APPROVED — [dictámenes formales y validación documental](../sessions/2026-10-12-el-ep-015-ticket-readiness.md).
+
+Histórico: DRAFT en la propuesta original; READY tras revisión individual del 2026-10-12. No acredita implementación, ejecución de pruebas ni PASS de validation gates.

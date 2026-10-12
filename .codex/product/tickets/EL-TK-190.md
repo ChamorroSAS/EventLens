@@ -4,7 +4,7 @@
 EL-EP-015
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** organizador, **quiero** cancelar una solicitud vigente de borrado de su evento, **para** recuperar únicamente capacidades todavía permitidas.
@@ -25,11 +25,14 @@ Dada cancelación a la hora exacta de fin de ventana o después de claim, cuando
 ### Escenario 3
 Dada respuesta UNKNOWN o retry concurrente, cuando consulta, entonces conserva estado seguro hasta recibo reconciliado.
 
+### Escenario 4
+Dado ADMIN_HUMAN con identidad vigente, grant MOD-007 para cancelar esta solicitud/recurso y motivo auditado, cuando cancela dentro de la misma ventana y antes del claim, entonces se aplica el mismo comando propietario y ACK causal. Sin grant, con grant ajeno/revocado, revisión/epoch/freshness inválidos o ventana/claim incompatibles, se deniega sin levantar barreras.
+
 ## Reglas de negocio
 Comparación estricta now < cancelUntil; otras barreras persisten; no ACTIVE ciego.
 
 ## Validaciones y permisos
-Owner legítimo, request exacta vigente, CAS y epoch.
+Owner legítimo, request exacta vigente, CAS y epoch. También se permite la cancelación administrativa ya aprobada en EL-EP-015: ADMIN_HUMAN de MOD-001 / ARCH-013, grant MOD-007 de operación/recurso exactos, motivo auditado y revalidación de revisión, revocación, freshness y recovery epoch. No se acepta una prueba de contraseña del organizador como identidad administrativa ni se amplía la ventana. EL-TK-151 sólo delega al propietario MOD-008; no concede permisos.
 
 ## Casos de error y estados vacíos
 Request ajena, cancelada, vencida, expiración simultánea, ACK perdido.
@@ -45,7 +48,7 @@ EL-TK-189, EL-TK-188; EL-TK-193 para propagación.
 - **blocks:** ver [grafo EL-EP-015](../sessions/2026-10-12-el-ep-015-ticket-plan.md).
 
 ## Pruebas requeridas
-Pruebas integración PostgreSQL + authority: cancel/claim simultáneos, boundary exacta, replays, rollback.
+Pruebas integración PostgreSQL + authority: cancel/claim simultáneos, boundary exacta, replays, rollback; admin autorizado, grant ausente/ajeno/revocado, freshness/revisión/epoch inválidos y motivo auditado.
 
 ## Observabilidad / auditoría
 Evidencia de cancelación y barreras restantes sin secretos.
@@ -63,7 +66,11 @@ DEC-043/091/092/098/099; ARCH-010; EL-EP-015
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER de producto
 
-## Gate de implementación propuesto
-REQUIREMENTS_READY: YES (contratos aceptados, pendiente revisión formal del ticket).
+## Gate de implementación aprobado — 2026-10-12
+REQUIREMENTS_READY: YES — dictámenes individuales architect y requirements_reviewer APPROVED.
 READY_FOR_IMPLEMENTATION: YES para alcance propio; la ejecución depende de los tickets anteriores y verificación de código existente.
-REVIEW_STATUS: PENDING — propuesta documental sin prueba ejecutada ni dictamen automatizado de requirements_reviewer.
+UI_REQUIRED: NO.
+READY_FOR_FRONTEND_PLANNING: NOT_REQUIRED — dictamen ui_designer; sin diseño de UI nueva.
+REVIEW_STATUS: APPROVED — [dictámenes formales y validación documental](../sessions/2026-10-12-el-ep-015-ticket-readiness.md).
+
+Histórico: DRAFT en la propuesta original; READY tras revisión individual del 2026-10-12. No acredita implementación, ejecución de pruebas ni PASS de validation gates.

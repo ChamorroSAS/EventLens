@@ -111,6 +111,8 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
+- 2026-10-12: correctivo EL-TK-187 READY tras [dictámenes propios](../sessions/2026-10-12-el-tk-185-187-readiness.md), REQUIREMENTS_READY y READY_FOR_IMPLEMENTATION YES por alcance backend. Disposición/guardia serializadas reutilizan DEC-109/110; no acredita purga ni cambia DONE históricos041/042.
+
 - 2026-10-07: CR-002 resuelve TC aplicables y sustituye restricciones CR-001; estado/bloqueantes de producto conservados.
 
 - 2026-10-07: Q-040/041 y DEC-075/076 precisan elegibilidad segura de descarga y ciclo manual de reintento, sin trasladar la entrega a esta épica.

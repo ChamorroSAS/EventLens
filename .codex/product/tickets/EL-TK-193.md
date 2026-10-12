@@ -4,7 +4,7 @@
 EL-EP-015
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** sistema, **quiero** propagar restricciones de solicitudes y cancelaciones a módulos propietarios, **para** evitar acceso, subida o descarga después de revocación.
@@ -63,7 +63,11 @@ DEC-013/063/090/091/092; ARCH-010/017; EL-EP-015
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER de producto
 
-## Gate de implementación propuesto
-REQUIREMENTS_READY: YES (contratos aceptados, pendiente revisión formal del ticket).
+## Gate de implementación aprobado — 2026-10-12
+REQUIREMENTS_READY: YES — dictámenes individuales architect y requirements_reviewer APPROVED.
 READY_FOR_IMPLEMENTATION: YES para alcance propio; la ejecución depende de los tickets anteriores y verificación de código existente.
-REVIEW_STATUS: PENDING — propuesta documental sin prueba ejecutada ni dictamen automatizado de requirements_reviewer.
+UI_REQUIRED: NO.
+READY_FOR_FRONTEND_PLANNING: NOT_REQUIRED — dictamen ui_designer; sin diseño de UI nueva.
+REVIEW_STATUS: APPROVED — [dictámenes formales y validación documental](../sessions/2026-10-12-el-ep-015-ticket-readiness.md).
+
+Histórico: DRAFT en la propuesta original; READY tras revisión individual del 2026-10-12. No acredita implementación, ejecución de pruebas ni PASS de validation gates.

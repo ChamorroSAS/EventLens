@@ -4,13 +4,13 @@
 EL-EP-015
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** organizador, **quiero** gestionar el borrado de evento desde su detalle, **para** ver consecuencias y fecha límite antes de confirmar.
 
 ## Alcance funcional
-Reutilizar EventDeleteRequestDialog, EventDeletionCountdown, EventLifecyclePanel, RetentionNotice; cliente Angular generado de OpenAPI; fechas exactas zona evento, mensajes pending/UNKNOWN, estados permitidos servidor, accesibilidad.
+Reutilizar EventDeleteRequestDialog, EventDeletionCountdown, EventLifecyclePanel, RetentionNotice; cliente Angular generado de OpenAPI; fechas exactas zona evento, mensajes pending/UNKNOWN, estados permitidos servidor, accesibilidad. El [handoff aprobado](../../context/ui-deletion-flow.md) es normativo para estados, errores, mobile/tablet/desktop y WCAG 2.2 AA; no se duplica el catálogo.
 
 ## Fuera de alcance
 No crear páginas de jobs ni permitir cancelar gracia/retirada irreversible.
@@ -45,7 +45,7 @@ EL-TK-189, EL-TK-190, EL-TK-193; handoff UI aprobado.
 - **blocks:** ver [grafo EL-EP-015](../sessions/2026-10-12-el-ep-015-ticket-plan.md).
 
 ## Pruebas requeridas
-Componentes y Playwright mobile/desktop, teclado/lector, conflicto/caducidad/UNKNOWN, mocks respuesta API.
+Componentes y Playwright mobile/tablet/desktop, teclado/foco/semántica accesible, conflicto/caducidad/UNKNOWN y mocks respuesta API; comprobación manual con lector de pantalla. Playwright por sí solo no acredita esa comprobación manual.
 
 ## Observabilidad / auditoría
 No guardar credenciales ni firmados; telemetría de interacción agregada.
@@ -63,7 +63,11 @@ DEC-043/091/092; ui-deletion-flow.md; EL-EP-015
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER de producto
 
-## Gate de implementación propuesto
-REQUIREMENTS_READY: YES (contratos aceptados, pendiente revisión formal del ticket).
+## Gate de implementación aprobado — 2026-10-12
+REQUIREMENTS_READY: YES — dictámenes individuales architect y requirements_reviewer APPROVED.
 READY_FOR_IMPLEMENTATION: YES para alcance propio; la ejecución depende de los tickets anteriores y verificación de código existente.
-REVIEW_STATUS: PENDING — propuesta documental sin prueba ejecutada ni dictamen automatizado de requirements_reviewer.
+UI_REQUIRED: YES.
+READY_FOR_FRONTEND_PLANNING: YES — dictamen explícito ui_designer APPROVED.
+REVIEW_STATUS: APPROVED — [dictámenes formales y validación documental](../sessions/2026-10-12-el-ep-015-ticket-readiness.md).
+
+Histórico: DRAFT en la propuesta original; READY tras revisión individual del 2026-10-12. No acredita implementación, ejecución de pruebas ni PASS de validation gates.

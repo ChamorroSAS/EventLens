@@ -4,7 +4,7 @@
 EL-EP-015
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** sistema, **quiero** recibir intenciones verificadas de causas no manuales, **para** aplicar una política única sin añadir ventanas indebidas.
@@ -38,10 +38,11 @@ Duplicado incompatible, receipt UNKNOWN, productor atrasado, registro legacy y c
 DeletionIntent intake, política DEC-109/110, lifecycle port, QuarantinePurgeIntent, TrashPurgeRequest.
 
 ## Dependencias técnicas y funcionales
-EL-TK-188, EL-TK-109, EL-TK-114, EL-TK-187; EL-TK-119 para disposición de casos cuando esté disponible.
+EL-TK-188, EL-TK-067, EL-TK-109, EL-TK-114, EL-TK-187; EL-TK-119 antes de integrar la disposición de casos. Para acreditar papelera y la carrera restauración-vencimiento se requiere el correctivo vigente de EL-TK-108: reloj servidor bajo la misma serialización y restauración sólo con now < restoreDeadline. Su DONE histórico no acredita ese correctivo posterior. No se reimplementan productores ni se declara cobertura de una causa cuyo productor aún no está integrado.
 
 ## Dependencias de tickets
-- **depends_on:** EL-TK-188, EL-TK-109, EL-TK-114, EL-TK-187; EL-TK-119 para disposición de casos cuando esté disponible.
+- **depends_on:** EL-TK-188, EL-TK-067, EL-TK-109, EL-TK-114, EL-TK-187.
+- **integration_requires:** EL-TK-119 para disposición de casos; correctivo vigente EL-TK-108 para la frontera de restauración de papelera, según la sección anterior.
 - **blocks:** ver [grafo EL-EP-015](../sessions/2026-10-12-el-ep-015-ticket-plan.md).
 
 ## Pruebas requeridas
@@ -63,7 +64,11 @@ DEC-089/091/092/097..110; ARCH-019; EL-EP-003/006/008/009/015
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER de producto
 
-## Gate de implementación propuesto
-REQUIREMENTS_READY: YES (contratos aceptados, pendiente revisión formal del ticket).
+## Gate de implementación aprobado — 2026-10-12
+REQUIREMENTS_READY: YES — dictámenes individuales architect y requirements_reviewer APPROVED.
 READY_FOR_IMPLEMENTATION: YES para alcance propio; la ejecución depende de los tickets anteriores y verificación de código existente.
-REVIEW_STATUS: PENDING — propuesta documental sin prueba ejecutada ni dictamen automatizado de requirements_reviewer.
+UI_REQUIRED: NO.
+READY_FOR_FRONTEND_PLANNING: NOT_REQUIRED — dictamen ui_designer; sin diseño de UI nueva.
+REVIEW_STATUS: APPROVED — [dictámenes formales y validación documental](../sessions/2026-10-12-el-ep-015-ticket-readiness.md).
+
+Histórico: DRAFT en la propuesta original; READY tras revisión individual del 2026-10-12. No acredita implementación, ejecución de pruebas ni PASS de validation gates.

@@ -4,7 +4,7 @@
 EL-EP-015
 
 ## Status
-DRAFT
+READY
 
 ## User story
 **Como** equipo de calidad, **quiero** probar solicitud, cancelación, purga y recuperación entre módulos, **para** determinar si la capacidad está realmente lista para una Beta segura.
@@ -45,7 +45,7 @@ EL-TK-194, EL-TK-196, EL-TK-198, EL-TK-199, EL-TK-200, EL-TK-201; productor EL-T
 - **blocks:** ver [grafo EL-EP-015](../sessions/2026-10-12-el-ep-015-ticket-plan.md).
 
 ## Pruebas requeridas
-Vitest/PG16 real y ObjectStorage real, Playwright Angular, carrera/lease, fault-PITR, accesibilidad, gate de recuperación y costos.
+Vitest/PG16 real y ObjectStorage real, Playwright Angular, carrera/lease, fault-PITR, accesibilidad, gate de recuperación y costos. Reutilizar la matriz de EL-TK-200/201 y el [handoff aprobado](../../context/ui-deletion-flow.md); automatizar semántica/teclado/foco y registrar revisión manual con lector, sin considerar Playwright una certificación de lector real.
 
 ## Observabilidad / auditoría
 Reporte auditado PASS/FAIL por contrato con PR/commit/casos, sin datos privados.
@@ -63,7 +63,11 @@ DEC-091..110; ARCH-002/005/006/010/017..019; EL-EP-015/017
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER de producto
 
-## Gate de implementación propuesto
-REQUIREMENTS_READY: YES (contratos aceptados, pendiente revisión formal del ticket).
+## Gate de implementación aprobado — 2026-10-12
+REQUIREMENTS_READY: YES — dictámenes individuales architect y requirements_reviewer APPROVED.
 READY_FOR_IMPLEMENTATION: YES para alcance propio; la ejecución depende de los tickets anteriores y verificación de código existente.
-REVIEW_STATUS: PENDING — propuesta documental sin prueba ejecutada ni dictamen automatizado de requirements_reviewer.
+UI_REQUIRED: NO.
+READY_FOR_FRONTEND_PLANNING: NOT_REQUIRED — dictamen ui_designer; sin diseño de UI nueva.
+REVIEW_STATUS: APPROVED — [dictámenes formales y validación documental](../sessions/2026-10-12-el-ep-015-ticket-readiness.md).
+
+Histórico: DRAFT en la propuesta original; READY tras revisión individual del 2026-10-12. No acredita implementación, ejecución de pruebas ni PASS de validation gates.

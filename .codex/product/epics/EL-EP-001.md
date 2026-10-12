@@ -115,6 +115,8 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
+- 2026-10-12: correctivos EL-TK-185/186 READY tras [dictámenes propios](../sessions/2026-10-12-el-tk-185-187-readiness.md), REQUIREMENTS_READY y READY_FOR_IMPLEMENTATION YES por alcance backend, sin UI nueva. No acredita su implementación ni reemplaza el cierre histórico de los tickets originales o gates globales de la épica.
+
 - 2026-10-07: creación por product_planner con trazabilidad Q-014, Q-024; DEC-030, DEC-040; estado inicial READY; sin tickets.
 - 2026-10-07: ticket_writer creó EL-TK-001 a EL-TK-004; pendientes de requirements_reviewer.
 - 2026-10-07: CR-003 incorporó DEC-065..068 y Q-030..033 para aclarar duplicados y vigencia; EL-TK-001/002 requieren revisión de requirements_reviewer antes de cambiar su estado DRAFT.

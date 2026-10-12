@@ -1,5 +1,7 @@
 # EL-EP-015 — propuesta de ticketización y revisión estructural — 2026-10-12
 
+**NOTA DE VIGENCIA:** Este documento conserva la propuesta DRAFT y su dictamen estructural históricos. La [revisión015 posterior](2026-10-12-el-ep-015-ticket-readiness.md) aprueba188..202 READY; una [revisión específica posterior](2026-10-12-el-tk-185-187-readiness.md) aprueba185..187. Los tickets reales y DEPENDENCIES contienen el grafo vigente. No interpretar las afirmaciones de revisión pendiente siguientes como estado actual.
+
 ## Alcance y estado
 Propuesta DOCUMENTAL para PR contra `stage`, creada a partir de `main` y `stage` idénticas (a72c337). Epica EL-EP-015: REQUIREMENTS_READY YES, READY_FOR_IMPLEMENTATION YES para alcance propio, READY_FOR_FRONTEND_PLANNING YES, READY_FOR_TICKET_WRITING YES. **Ningún ticket está implementado ni recibió el dictamen formal de requirements_reviewer por este PR**. Se presentan como DRAFT para revisión del usuario, architect, requirements_reviewer y ui_designer (este último sólo confirma congruencia con handoff UI ya aprobado).
 
