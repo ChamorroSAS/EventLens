@@ -4,7 +4,7 @@
 EL-EP-008
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador propietario, **quiero** rechazar una media pendiente, **para** evitar que se publique sin eliminar necesariamente el original.
@@ -68,3 +68,15 @@ Q-006, Q-019; DEC-005, DEC-039, DEC-096; EL-EP-008.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §8.5..9; sin componentes nuevos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Cierre de implementación — 2026-10-12
+
+- **Resultado:** APROBADO.
+- **Implementación:** Implementado comando `rejectMedia` en [`MediaModerationService`](file:///c:/Users/geren/Documents/GitHub/EventLens/packages/media-inspection/src/media-moderation.ts) y [`PostgresMediaModerationRepository`](file:///c:/Users/geren/Documents/GitHub/EventLens/packages/media-inspection/src/media-moderation.ts) en `@eventlens/media-inspection`.
+- **Criterios de aceptación verificados:**
+  - Escenario 1: Media en `PENDING_REVIEW` propia pasa a `REJECTED` incrementando revisión atómicamente y registrando evento de auditoría `MEDIA_REJECTED`. No se expone en la galería guest (`media-gallery` revalidador filtra no publicados).
+  - Escenario 2: Si la media ya no está pendiente: si ya es `REJECTED`, devuelve resultado idempotente; si está en otro estado (`PUBLISHED`, `TRASHED`, `PURGED`), rechaza con código `INVALID_STATE` sin sobrescribir el estado actual. Si `expectedRevision` difiere, rechaza con `CONCURRENCY_CONFLICT`.
+  - Escenario 3: Conforme a DEC-005, DEC-039 y DEC-096, el archivo original en almacenamiento y su registro de consumo en `media_consumption_ledger` permanecen intactos (el rechazo no elimina físicamente ni purga la cuota del ledger).
+- **Aislamiento y permisos:** Validación estricta de tenencia (`organizerRef` debe poseer el `eventRef`); accesos cruzados o no autorizados devuelven `ACCESS_DENIED`. Media inexistente devuelve `NOT_FOUND`.
+- **Pruebas:** 14/14 pruebas unitarias pasando en `packages/media-inspection/test/media-moderation.unit.test.ts`. Build de `@eventlens/media-inspection` y typecheck limpios con 0 errores.
+- **Observabilidad:** Registro de auditoría canónico en `audit_event` con payload metadata sanitizado (`previousStatus`, `newStatus`, `reason`, `revision`) sin almacenar binarios.
