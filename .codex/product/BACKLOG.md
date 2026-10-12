@@ -129,7 +129,7 @@
 | EL-TK-096 | Consultar la galería guest de media publicada y autorizada | EL-EP-007 | DONE | P0 | EL-TK-074, EL-TK-075, EL-TK-072, EL-TK-037 | [EL-TK-096](tickets/EL-TK-096.md) |
 | EL-TK-097 | Autorizar visualización temporal de un derivado privado | EL-EP-007 | DONE | P0 | EL-TK-072, EL-TK-074, EL-TK-035, EL-TK-037 | [EL-TK-097](tickets/EL-TK-097.md) |
 | EL-TK-098 | Consultar la biblioteca de media del organizador | EL-EP-007 | READY | P0 | EL-TK-047, EL-TK-053 | [EL-TK-098](tickets/EL-TK-098.md) |
-| EL-TK-099 | Integrar la galería y viewer privados en la experiencia guest | EL-EP-007 | READY | P0 | EL-TK-096, EL-TK-097, EL-TK-101 | [EL-TK-099](tickets/EL-TK-099.md) |
+| EL-TK-099 | Integrar la galería y viewer privados en la experiencia guest | EL-EP-007 | DONE | P0 | EL-TK-096, EL-TK-097, EL-TK-101 | [EL-TK-099](tickets/EL-TK-099.md) |
 | EL-TK-100 | Integrar la biblioteca de media en la interfaz del organizador | EL-EP-007 | READY | P0 | EL-TK-098, EL-TK-053, EL-TK-054 | [EL-TK-100](tickets/EL-TK-100.md) |
 | EL-TK-101 | Revalidar visibilidad cuando cambia el acceso o la media | EL-EP-007 | DONE | P0 | EL-TK-096, EL-TK-097, EL-TK-072, EL-TK-074 | [EL-TK-101](tickets/EL-TK-101.md) |
 | EL-TK-102 | Validar privacidad y experiencia móvil de galería y biblioteca | EL-EP-007 | READY | P0 | EL-TK-096..101 | [EL-TK-102](tickets/EL-TK-102.md) |
