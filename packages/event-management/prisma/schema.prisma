@@ -99,6 +99,11 @@ model UploadAttempt {
   declaredType        String    @map("declared_type")
   contributorNickname String    @map("contributor_nickname")
   status              String    @default("AUTHORIZED")
+  objectKey           String?   @map("object_key")
+  actualSize          BigInt?   @map("actual_size")
+  detectedType        String?   @map("detected_type")
+  durationSeconds     Decimal?  @map("duration_seconds")
+  rejectionReason     String?   @map("rejection_reason")
   createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz
   expiresAt           DateTime  @map("expires_at") @db.Timestamptz
   updatedAt           DateTime  @default(now()) @map("updated_at") @db.Timestamptz

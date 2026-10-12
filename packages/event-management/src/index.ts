@@ -58,6 +58,25 @@ export {
   type AuthorizeUploadAttemptCommand,
   type UploadAttemptRecord,
   type AuthorizeUploadAttemptResult,
+  type DirectUploadGrant,
+  type DirectUploadStoragePort,
+  type CreateDirectUploadUrlCommand,
+  type CreateDirectUploadUrlResult,
+  type ConfirmUploadCommand,
+  type ConfirmUploadResult,
+  type MediaLimitsConfig,
+  type ValidateUploadCommand,
+  type ValidateUploadResult,
+  type MediaAcceptancePort,
+  type AcceptUploadCommand,
+  type AcceptUploadResult,
+  type RenewUploadGrantCommand,
+  type RenewUploadGrantResult,
+  type ReconcilePolicyCancellationsCommand,
+  type ReconcilePolicyCancellationsResult,
+  type GetUploadBatchSnapshotCommand,
+  type UploadBatchItem,
+  type UploadBatchSnapshot,
   type EventAuditRecord,
   type EventAuditSink
 } from './contracts.js';
@@ -68,6 +87,8 @@ export { EventLifecycleService } from './event-lifecycle.js';
 export { EventPublicAccessService } from './event-public-access.js';
 export { GuestSessionService } from './guest-session.js';
 export { UploadAuthorizationService } from './upload-authorization.js';
+export { UploadLifecycleService } from './upload-lifecycle.js';
+export { UploadMediaValidator } from './upload-media-validator.js';
 export { resolveScheduleLocalTime, type ResolvedLocalSchedule } from './timezone.js';
 export {
   calculateEventLifecycleTimeline,

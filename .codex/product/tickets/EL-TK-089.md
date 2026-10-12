@@ -4,10 +4,7 @@
 EL-EP-005
 
 ## Status
-READY
-
-REQUIREMENTS_READY: YES
-READY_FOR_IMPLEMENTATION: PARTIAL
+DONE
 
 ## User story
 **Como** sistema, **quiero** validar el archivo transferido con sus datos reales, **para** impedir aceptar formatos, tamaños o duraciones fuera del contrato del evento.
@@ -66,5 +63,12 @@ Q-008, Q-009, Q-011; DEC-009, DEC-010, DEC-011; EL-EP-005, EL-EP-011.
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
 
-## Readiness de implementación — 2026-10-10
-REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: PARTIAL. Las reglas de negocio, límites de formato y aislamiento por archivo están completamente definidos. La implementación conserva un gate técnico localizado pendiente: definir la frontera técnica segura para inspeccionar tipo real (magic bytes) y duración de contenedores de video en archivos no confiables transferidos al ObjectStorage, evitando ejecutar parsers complejos no aislados directamente dentro del proceso principal de la API antes del pipeline de inspección supervisada de EL-EP-006 (EL-TK-056 / EL-TK-034).
+## Evidencia de Implementación y Verificación — 2026-10-11
+- **Implementación:**
+  - `packages/event-management/src/upload-media-validator.ts`: implementación segura sin parsers nativos inseguros ni ejecución de código arbitrario (ARCH-015). Inspecciona magic bytes para JPEG, PNG, WebP, HEIC/HEIF, MP4, QuickTime (MOV) y WebM leyendo los primeros 128 KB del archivo. Para video MP4/MOV, extrae la duración analizando de forma lineal y acotada los átomos ISO `moov` / `mvhd` sin ejecutar ffmpeg en el proceso de API.
+  - Rechazo localizado por archivo: si un archivo falla por tamaño, duración (>300 s) o tipo no soportado, se marca como `REJECTED`, se registra la razón en PostgreSQL y se libera su reserva de capacidad (`CapacityReservationPort.releaseReservation`) sin afectar al resto del lote.
+- **Verificación:**
+  - `packages/event-management/test/upload-lifecycle.unit.test.ts` (15/15 PASS).
+  - `packages/event-management/test/upload-lifecycle.integration.test.ts` (7/7 PASS).
+  - `packages/event-management/test/upload-e2e-flow.integration.test.ts` (4/4 PASS).
+

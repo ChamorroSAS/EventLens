@@ -82,7 +82,18 @@ export type EventManagementErrorCode =
   | 'INSUFFICIENT_FILE_CAPACITY'
   | 'FILE_SIZE_EXCEEDS_LIMIT'
   | 'INVALID_MEDIA_TYPE'
-  | 'INVALID_FILE_SIZE';
+  | 'INVALID_FILE_SIZE'
+  | 'UPLOAD_ATTEMPT_NOT_FOUND'
+  | 'UPLOAD_ATTEMPT_CANCELLED'
+  | 'UPLOAD_ATTEMPT_ALREADY_ACCEPTED'
+  | 'UPLOAD_ATTEMPT_EXPIRED'
+  | 'UPLOAD_ATTEMPT_NOT_CONFIRMED'
+  | 'UPLOAD_ATTEMPT_NOT_VALIDATED'
+  | 'OBJECT_NOT_FOUND'
+  | 'SIZE_MISMATCH'
+  | 'UNSUPPORTED_MEDIA_TYPE'
+  | 'DURATION_EXCEEDS_LIMIT'
+  | 'CORRUPTED_OR_UNREADABLE_FILE';
 
 export class EventManagementError extends Error {
   constructor(
@@ -466,7 +477,15 @@ export interface SetContributorNicknameResult {
 }
 
 export type UploadMediaType = 'PHOTO' | 'VIDEO';
-export type UploadAttemptStatus = 'AUTHORIZED' | 'COMPLETED' | 'CANCELLED' | 'EXPIRED';
+export type UploadAttemptStatus =
+  | 'AUTHORIZED'
+  | 'UPLOADING'
+  | 'CONFIRMING'
+  | 'VALIDATED'
+  | 'ACCEPTED'
+  | 'REJECTED'
+  | 'CANCELLED'
+  | 'EXPIRED';
 
 export interface CapacityReservationPort {
   reserveCapacity(command: {
@@ -479,6 +498,17 @@ export interface CapacityReservationPort {
     reservation: { id: string; bytes: bigint; fileSlots: number; status: string };
     isExisting: boolean;
   }>;
+  releaseReservation?(command: {
+    eventId: string;
+    reservationId?: string;
+    idempotencyKey?: string;
+    reason?: string;
+  }): Promise<void>;
+  commitReservation?(command: {
+    eventId: string;
+    reservationId?: string;
+    idempotencyKey?: string;
+  }): Promise<void>;
 }
 
 export interface AuthorizeUploadAttemptCommand {
@@ -499,6 +529,11 @@ export interface UploadAttemptRecord {
   readonly declaredType: UploadMediaType;
   readonly contributorNickname: string;
   readonly status: UploadAttemptStatus;
+  readonly objectKey?: string | null;
+  readonly actualSize?: bigint | null;
+  readonly detectedType?: string | null;
+  readonly durationSeconds?: number | null;
+  readonly rejectionReason?: string | null;
   readonly createdAt: Date;
   readonly expiresAt: Date;
   readonly updatedAt: Date;
@@ -507,6 +542,172 @@ export interface UploadAttemptRecord {
 export interface AuthorizeUploadAttemptResult {
   readonly attempt: UploadAttemptRecord;
   readonly outcome: 'AUTHORIZED' | 'IDEMPOTENT_REPLAY';
+}
+
+export interface DirectUploadGrant {
+  readonly attemptId: string;
+  readonly objectKey: string;
+  readonly uploadUrl: string;
+  readonly method: 'PUT' | 'POST';
+  readonly headers?: Record<string, string>;
+  readonly expiresAt: Date;
+}
+
+export interface DirectUploadStoragePort {
+  createUploadUrl(params: {
+    readonly objectKey: string;
+    readonly declaredSize: bigint | number;
+    readonly declaredType: string;
+    readonly ttlSeconds: number;
+  }): Promise<{
+    readonly uploadUrl: string;
+    readonly method: 'PUT' | 'POST';
+    readonly headers?: Record<string, string>;
+    readonly expiresAt: Date;
+  }>;
+  getObjectMetadata(objectKey: string): Promise<{
+    readonly objectKey: string;
+    readonly sizeBytes: bigint;
+    readonly contentType?: string;
+    readonly etag?: string;
+    readonly lastModified?: Date;
+  } | null>;
+  readBytesRange?(objectKey: string, start: number, end: number): Promise<Buffer | Uint8Array>;
+  abortOrDeleteObject(objectKey: string): Promise<void>;
+}
+
+export interface CreateDirectUploadUrlCommand {
+  readonly sessionToken: string;
+  readonly attemptId: string;
+  readonly now?: Date;
+}
+
+export interface CreateDirectUploadUrlResult {
+  readonly grant: DirectUploadGrant;
+  readonly outcome: 'ISSUED' | 'IDEMPOTENT_REPLAY';
+}
+
+export interface ConfirmUploadCommand {
+  readonly sessionToken: string;
+  readonly attemptId: string;
+  readonly now?: Date;
+}
+
+export interface ConfirmUploadResult {
+  readonly attempt: UploadAttemptRecord;
+  readonly outcome: 'CONFIRMED' | 'IDEMPOTENT_REPLAY';
+}
+
+export interface MediaLimitsConfig {
+  readonly maxPhotoBytes: bigint;
+  readonly maxVideoBytes: bigint;
+  readonly maxVideoDurationSeconds: number;
+}
+
+export interface ValidateUploadCommand {
+  readonly sessionToken: string;
+  readonly attemptId: string;
+  readonly headerBytes?: Buffer | Uint8Array;
+  readonly limits?: MediaLimitsConfig;
+  readonly now?: Date;
+}
+
+export interface ValidateUploadResult {
+  readonly attempt: UploadAttemptRecord;
+  readonly valid: boolean;
+  readonly detectedType?: string;
+  readonly durationSeconds?: number;
+  readonly rejectionReason?: string;
+  readonly outcome: 'VALIDATED' | 'REJECTED' | 'IDEMPOTENT_REPLAY';
+}
+
+export interface MediaAcceptancePort {
+  acceptOriginal(command: {
+    readonly intentId: string;
+    readonly mediaRef: string;
+    readonly eventRef: string;
+    readonly guestRef: string;
+    readonly generation: bigint;
+    readonly expectedRevision: bigint;
+    readonly original: {
+      readonly namespace: string;
+      readonly key: string;
+      readonly version: string;
+      readonly sha256: string;
+      readonly bytes: bigint;
+    };
+  }): Promise<{
+    readonly mediaRef: string;
+    readonly jobId: string;
+    readonly acceptedAt: Date;
+  }>;
+}
+
+export interface AcceptUploadCommand {
+  readonly sessionToken: string;
+  readonly attemptId: string;
+  readonly sha256?: string;
+  readonly now?: Date;
+}
+
+export interface AcceptUploadResult {
+  readonly attempt: UploadAttemptRecord;
+  readonly mediaRef: string;
+  readonly outcome: 'ACCEPTED' | 'IDEMPOTENT_REPLAY';
+}
+
+export interface RenewUploadGrantCommand {
+  readonly sessionToken: string;
+  readonly attemptId: string;
+  readonly reason?: string;
+  readonly now?: Date;
+}
+
+export interface RenewUploadGrantResult {
+  readonly grant: DirectUploadGrant;
+  readonly outcome: 'RENEWED';
+}
+
+export interface ReconcilePolicyCancellationsCommand {
+  readonly eventId: string;
+  readonly guestSessionId?: string;
+  readonly reason: string;
+  readonly now?: Date;
+}
+
+export interface ReconcilePolicyCancellationsResult {
+  readonly cancelledAttemptIds: string[];
+  readonly releasedReservationIds: string[];
+  readonly preservedAcceptedCount: number;
+}
+
+export interface GetUploadBatchSnapshotCommand {
+  readonly sessionToken: string;
+  readonly now?: Date;
+}
+
+export interface UploadBatchItem {
+  readonly attemptId: string;
+  readonly declaredType: UploadMediaType;
+  readonly declaredSize: bigint;
+  readonly actualSize: bigint | null;
+  readonly status: UploadAttemptStatus;
+  readonly contributorNickname: string;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+  readonly rejectionReason: string | null;
+  readonly canRetry: boolean;
+}
+
+export interface UploadBatchSnapshot {
+  readonly eventId: string;
+  readonly guestSessionId: string;
+  readonly items: UploadBatchItem[];
+  readonly totalFiles: number;
+  readonly receivedCount: number;
+  readonly inProgressCount: number;
+  readonly actionRequiredCount: number;
+  readonly rejectedCount: number;
 }
 
 export interface EventAuditRecord {
@@ -529,7 +730,13 @@ export interface EventAuditRecord {
     | 'GUEST_PIN_VALIDATION_FAILED'
     | 'GUEST_CONSENT_RECORDED'
     | 'GUEST_NICKNAME_SET'
-    | 'UPLOAD_ATTEMPT_AUTHORIZED';
+    | 'UPLOAD_ATTEMPT_AUTHORIZED'
+    | 'UPLOAD_URL_ISSUED'
+    | 'UPLOAD_CONFIRMED'
+    | 'UPLOAD_VALIDATED'
+    | 'UPLOAD_ACCEPTED'
+    | 'UPLOAD_GRANT_RENEWED'
+    | 'UPLOAD_POLICY_CANCELLED';
   readonly actorId: string;
   readonly targetIdentifier: string;
   readonly result:
@@ -541,6 +748,10 @@ export interface EventAuditRecord {
     | 'SUSPENDED_PRESERVED'
     | 'NO_OP'
     | 'IDEMPOTENT_REPLAY'
+    | 'VALIDATED'
+    | 'ACCEPTED'
+    | 'CANCELLED'
+    | 'RENEWED'
     | 'REJECTED_INVALID_NAME'
     | 'REJECTED_UNAUTHORIZED'
     | 'REJECTED_DST_GAP'
@@ -562,7 +773,17 @@ export interface EventAuditRecord {
     | 'REJECTED_EVENT_NOT_EXTENDABLE'
     | 'REJECTED_PIN_ALREADY_CONFIGURED'
     | 'REJECTED_INVALID_PIN_FORMAT'
-    | 'IDEMPOTENT_REPLAY';
+    | 'REJECTED_SIZE_MISMATCH'
+    | 'REJECTED_UNSUPPORTED_TYPE'
+    | 'REJECTED_DURATION_EXCEEDED'
+    | 'REJECTED_FILE_CORRUPTED'
+    | 'REJECTED_OBJECT_NOT_FOUND'
+    | 'REJECTED_ATTEMPT_NOT_FOUND'
+    | 'REJECTED_ATTEMPT_EXPIRED'
+    | 'REJECTED_ATTEMPT_CANCELLED'
+    | 'REJECTED_ATTEMPT_NOT_RETRYABLE'
+    | 'CONCURRENCY_CONFLICT'
+    | 'FAILURE';
   readonly details?: string;
   readonly timestamp: Date;
 }

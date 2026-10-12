@@ -56,6 +56,11 @@ interface RawUploadAttemptRow {
   declared_type: string;
   contributor_nickname: string;
   status: string;
+  object_key?: string | null;
+  actual_size?: string | bigint | null;
+  detected_type?: string | null;
+  duration_seconds?: string | number | null;
+  rejection_reason?: string | null;
   created_at: Date | string;
   expires_at: Date | string;
   updated_at: Date | string;
@@ -72,6 +77,11 @@ function mapRowToAttempt(row: RawUploadAttemptRow): UploadAttemptRecord {
     declaredType: row.declared_type as UploadMediaType,
     contributorNickname: row.contributor_nickname,
     status: row.status as UploadAttemptStatus,
+    objectKey: row.object_key ?? null,
+    actualSize: row.actual_size !== undefined && row.actual_size !== null ? BigInt(row.actual_size) : null,
+    detectedType: row.detected_type ?? null,
+    durationSeconds: row.duration_seconds !== undefined && row.duration_seconds !== null ? Number(row.duration_seconds) : null,
+    rejectionReason: row.rejection_reason ?? null,
     createdAt: new Date(row.created_at),
     expiresAt: new Date(row.expires_at),
     updatedAt: new Date(row.updated_at)

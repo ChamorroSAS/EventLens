@@ -4,7 +4,7 @@
 EL-EP-005
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** sistema, **quiero** aceptar de forma atómica un original validado, **para** conservarlo y entregarlo una sola vez al procesamiento asíncrono.
@@ -63,5 +63,12 @@ Q-008, Q-011; DEC-009, DEC-011, DEC-063, DEC-080, DEC-085; EL-EP-005, EL-EP-006,
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
 
-## Readiness de implementación — 2026-10-10
-REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el comando atómico de aceptación de original y consolidación de cuota, emitiendo el contrato downstream consumido por el handler transaccional ya implementado en EL-TK-032 (DONE) para encolar el procesamiento en JobQueue PostgreSQL.
+## Evidencia de Implementación y Verificación — 2026-10-11
+- **Implementación:**
+  - `packages/event-management/src/upload-lifecycle.ts`: método `acceptUpload` implementando aceptación atómica en PostgreSQL 16 con bloqueo de fila `FOR UPDATE`, revalidación de policy antes del commit, actualización a `ACCEPTED`, consolidación de reserva a consumo real con `CapacityReservationPort.commitReservation` y entrega exactamente una vez a `MediaAcceptancePort.acceptOriginal` (EL-TK-032).
+  - Tratamiento idempotente: replays de aceptación retornan `outcome: 'IDEMPOTENT_REPLAY'` sin duplicar consumo ni trabajos de procesamiento.
+- **Verificación:**
+  - `packages/event-management/test/upload-lifecycle.unit.test.ts` (15/15 PASS).
+  - `packages/event-management/test/upload-lifecycle.integration.test.ts` (7/7 PASS contra PostgreSQL 16).
+  - `packages/event-management/test/upload-e2e-flow.integration.test.ts` (4/4 PASS).
+

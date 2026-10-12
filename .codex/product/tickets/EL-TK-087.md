@@ -4,7 +4,7 @@
 EL-EP-005
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** invitado con un intento autorizado, **quiero** obtener una URL temporal de carga, **para** transferir el original directamente al almacenamiento privado sin pasar los bytes por la aplicación.
@@ -63,5 +63,12 @@ Q-008, Q-014; DEC-013, DEC-063, DEC-080, DEC-085; EL-EP-005.
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
 
-## Readiness de implementación — 2026-10-10
-REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la emisión de URLs firmadas temporales delegadas al contrato neutral ObjectStorage (DEC-063), permitiendo transferencia directa sin pasar bytes por la aplicación.
+## Evidencia de Implementación y Verificación — 2026-10-11
+- **Implementación:**
+  - `packages/event-management/src/upload-lifecycle.ts`: método `createDirectUploadUrl` implementando emisión pre-firmada delegada a `DirectUploadStoragePort`, asignación determinista de `objectKey`, actualización de estado a `UPLOADING` en PostgreSQL 16 y sanitización estricta de auditoría (DEC-013).
+  - Migración `202610110039_guest_access_and_upload/migration.sql` aplicada en PostgreSQL 16 con campos `object_key`, `actual_size`, `detected_type`, `duration_seconds`, `rejection_reason`.
+- **Verificación:**
+  - `packages/event-management/test/upload-lifecycle.unit.test.ts` (15/15 PASS).
+  - `packages/event-management/test/upload-lifecycle.integration.test.ts` (7/7 PASS contra PostgreSQL real).
+  - Verificación de auditoría: `UPLOAD_URL_ISSUED` no registra credenciales ni querystrings firmadas.
+

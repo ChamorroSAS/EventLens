@@ -4,7 +4,7 @@
 EL-EP-005
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** sistema, **quiero** cancelar intentos no confirmados cuando dejan de estar autorizados o vencen, **para** impedir confirmaciones tardías y recuperar capacidad reservada.
@@ -63,5 +63,12 @@ Q-009, Q-011; DEC-080, DEC-083, DEC-085; EL-EP-005, EL-EP-003, EL-EP-004.
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
 
-## Readiness de implementación — 2026-10-10
-REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el reconciliador de cancelación por policy (DEC-085) que cancela intentos pendientes, libera reservas atómicamente y preserva intactos los originales confirmados previamente.
+## Evidencia de Implementación y Verificación — 2026-10-11
+- **Implementación:**
+  - `packages/event-management/src/upload-lifecycle.ts`: método `reconcilePolicyCancellations` aplicando estrictamente la invariante de preservación de DEC-085. Selecciona con bloqueo `FOR UPDATE` solo intentos en `('AUTHORIZED', 'UPLOADING', 'CONFIRMING')`, actualiza a `CANCELLED`, asigna la razón en `rejection_reason`, libera cada reserva en `CapacityReservationPort.releaseReservation` y solicita abort/delete de objetos huérfanos.
+  - Invariante DEC-085: los intentos en `ACCEPTED` quedan intocados y preservados de forma irrevocable.
+- **Verificación:**
+  - `packages/event-management/test/upload-lifecycle.unit.test.ts` (15/15 PASS).
+  - `packages/event-management/test/upload-lifecycle.integration.test.ts` (7/7 PASS contra PostgreSQL 16).
+  - `packages/event-management/test/upload-e2e-flow.integration.test.ts` (4/4 PASS: verificación estricta de preservación de ACCEPTED y cancelación de en-vuelo ante cierre).
+

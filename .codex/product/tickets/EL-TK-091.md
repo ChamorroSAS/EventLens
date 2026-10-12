@@ -4,7 +4,7 @@
 EL-EP-005
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** invitado con una carga interrumpida, **quiero** reintentar ese archivo sin duplicar su reserva, **para** recuperarme de fallos temporales de red sin perder el resto del lote.
@@ -63,5 +63,12 @@ Q-009; DEC-063, DEC-080, DEC-085; EL-EP-005.
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
 
-## Readiness de implementación — 2026-10-10
-REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la renovación de autorización temporal de transferencia ligada a la acción UploadRetryAction, permitiendo recuperación por archivo sin duplicar reservas de capacidad.
+## Evidencia de Implementación y Verificación — 2026-10-11
+- **Implementación:**
+  - `packages/event-management/src/upload-lifecycle.ts`: método `renewUploadGrant` permitiendo renovación de URL pre-firmada para fallos temporales de red sin invocar nuevamente `reserveCapacity` (reserva única preservada).
+  - Verificación de permisos y estado: rechaza intentos cancelados, expirados o de sesiones revocadas.
+- **Verificación:**
+  - `packages/event-management/test/upload-lifecycle.unit.test.ts` (15/15 PASS).
+  - `packages/event-management/test/upload-lifecycle.integration.test.ts` (7/7 PASS).
+  - `packages/event-management/test/upload-e2e-flow.integration.test.ts` (4/4 PASS: verificación estricta de que la reserva solo se crea 1 vez y se preserva el resto del lote).
+

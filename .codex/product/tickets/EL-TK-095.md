@@ -4,7 +4,7 @@
 EL-EP-005
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** equipo de producto, **quiero** validar el flujo de carga de extremo a extremo bajo fallos y concurrencia, **para** comprobar que el MVP preserva confirmados y recupera archivos elegibles sin perder el lote.
@@ -66,5 +66,14 @@ Q-008, Q-009, Q-011; DEC-009, DEC-010, DEC-011, DEC-063, DEC-079, DEC-080, DEC-0
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
 
-## Readiness de implementación — 2026-10-10
-REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la suite de validación integrada de flujo completo móvil, concurrencia, tolerancia a fallos por archivo y resultado parcial, verificando que los confirmados se conservan ante cancelación de lotes en vuelo.
+## Evidencia de Implementación y Verificación — 2026-10-11
+- **Implementación y Suite de Validación:**
+  - `packages/event-management/test/upload-e2e-flow.integration.test.ts`: suite integrada que cubre:
+    - Escenario 1: Lote mixto válido (fotos JPEG + video MP4 con átomos `ftyp`/`isom`), transferencia directa, confirmación, validación, aceptación atómica y handoff exacto al pipeline downstream (`MediaAcceptancePort.acceptOriginal` / EL-TK-032).
+    - Escenario 2: Fallo temporal de red con recuperación mediante retry por archivo sin duplicar reservas ni afectar otros archivos del lote.
+    - Escenario 3: Concurrencia cerca de cuota, rechazando solicitudes que excedan la capacidad restante y protegiendo los archivos ya aceptados.
+    - Escenario 4: Cierre del evento durante transferencia en vuelo, cancelando items pendientes, liberando reservas y preservando de manera irrevocable los aceptados (invariante DEC-085).
+- **Verificación:**
+  - `packages/event-management/test/upload-e2e-flow.integration.test.ts` (4/4 PASS contra PostgreSQL 16 real).
+  - Suite completa del monorepo (`node scripts/workspace.mjs test`: 100% PASS en `@eventlens/database`, `@eventlens/api`, `@eventlens/web`, `@eventlens/event-management`).
+
