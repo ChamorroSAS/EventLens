@@ -4,7 +4,7 @@
 EL-EP-009
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** persona sin sesión guest válida, **quiero** solicitar revisión para retirar contenido identificado, **para** tener una vía de protección sin recuperar ni asumir una identidad anónima previa.
@@ -68,3 +68,17 @@ DEC-103, DEC-104, DEC-105; EL-EP-009, EL-EP-004.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §5.26..27 y §12.11..15; sin componentes nuevos ni duplicación de flujos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Cierre de implementación — 2026-10-12
+
+- **Resultado:** APROBADO.
+- **Implementación:**
+  - Implementado servicio `RemovalRequestService` y repositorio `PostgresRemovalRequestRepository` en `@eventlens/media-inspection/src/media-report-and-removal.ts`.
+  - Creada tabla canónica y modelo `media_removal_request` (migración `202610120050_media_reports_and_removal`) con índice único en `dedup_key`.
+  - Matriz de validación per DEC-103..105: declaración de buena fe obligatoria (`declarationAccepted = true`), correo de contacto validado sintácticamente, y descripción condicional obligatoria si `reason === 'OTHER'`.
+- **Criterios de aceptación verificados:**
+  - Escenario 1: Al completar los campos obligatorios y la declaración, la solicitud se registra formalmente en `media_removal_request` para revisión administrativa con status `PENDING_REVIEW` y severidad `UNCLASSIFIED`, respondiendo neutralmente "Solicitud recibida para revisión".
+  - Escenario 2: Si el motivo es `OTHER` y falta la descripción, se rechaza con `VALIDATION_FAILED` preservando los demás campos. Si se reintenta una solicitud idéntica por timeout, devuelve el registro existente sin duplicados.
+  - Escenario 3: Neutralidad pública estricta: la respuesta nunca confirma existencia ni titularidad si el contenido es privado o ajeno.
+- **Pruebas:** 5 pruebas unitarias en `media-report-and-removal.unit.test.ts` y 3 pruebas de integración en `media-report-and-removal.integration.test.ts` contra PostgreSQL 16. Build limpio.
+

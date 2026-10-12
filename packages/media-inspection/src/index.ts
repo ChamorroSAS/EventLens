@@ -17,5 +17,6 @@ export * from './pipeline-validation.js';
 export * from './organizer-library.js';
 export * from './media-moderation.js';
 export * from './media-visibility.js';
+export * from './media-report-and-removal.js';
 
 

@@ -441,3 +441,56 @@ model MediaVisibilityDenialAudit {
 
   @@map("media_visibility_denial_audit")
 }
+
+model MediaReportCase {
+  id              String   @id @db.Uuid
+  operationId     String   @map("operation_id")
+  mediaRef        String   @map("media_ref")
+  eventRef        String   @map("event_ref")
+  reason          String
+  description     String?
+  reporterContact String?  @map("reporter_contact")
+  severity        String   @default("UNCLASSIFIED")
+  status          String   @default("PENDING_REVIEW")
+  dedupKey        String   @unique @map("dedup_key")
+  createdAt       DateTime @map("created_at") @db.Timestamptz
+
+  @@map("media_report_case")
+}
+
+model MediaRemovalRequest {
+  id                  String   @id @db.Uuid
+  operationId         String   @map("operation_id")
+  mediaRef            String   @map("media_ref")
+  eventRef            String   @map("event_ref")
+  reason              String
+  description         String?
+  contactEmail        String   @map("contact_email")
+  optionalName        String?  @map("optional_name")
+  declarationAccepted Boolean  @default(true) @map("declaration_accepted")
+  severity            String   @default("UNCLASSIFIED")
+  status              String   @default("PENDING_REVIEW")
+  dedupKey            String   @unique @map("dedup_key")
+  createdAt           DateTime @map("created_at") @db.Timestamptz
+
+  @@map("media_removal_request")
+}
+
+model MediaOwnRemovalRecord {
+  id                    String   @id @db.Uuid
+  operationId           String   @map("operation_id")
+  mediaRef              String   @map("media_ref")
+  eventRef              String   @map("event_ref")
+  guestRef              String   @map("guest_ref")
+  generation            BigInt
+  previousRevision      BigInt   @map("previous_revision")
+  newRevision           BigInt   @map("new_revision")
+  purgeStartedAt        DateTime @map("purge_started_at") @db.Timestamptz
+  mainPurgeDeadline     DateTime @map("main_purge_deadline") @db.Timestamptz
+  residualPurgeDeadline DateTime @map("residual_purge_deadline") @db.Timestamptz
+  status                String   @default("CONFIRMED")
+  dedupKey              String   @unique @map("dedup_key")
+  createdAt             DateTime @map("created_at") @db.Timestamptz
+
+  @@map("media_own_removal_record")
+}

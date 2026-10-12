@@ -206,9 +206,9 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
-| EL-TK-113 | contrato media visible EL-EP-007; contrato EL-EP-014 | 116,120,121,123 |
-| EL-TK-114 | 078; contrato EL-EP-015 | 121,123 |
-| EL-TK-115 | 082 | 116,120,121,123 |
+| EL-TK-113 (DONE) | contrato media visible EL-EP-007; contrato EL-EP-014 | 116,120,121,123 |
+| EL-TK-114 (DONE) | 078; contrato EL-EP-015 | 121,123 |
+| EL-TK-115 (DONE) | 082 | 116,120,121,123 |
 | EL-TK-116 | 113,115,044; contrato EL-EP-014 | 117,118,119,120,122,123 |
 | EL-TK-117 | 116,044,097; contrato EL-EP-014 | 118,119,122,123 |
 | EL-TK-118 | 116,117,101 | 119,122,123 |
@@ -218,7 +218,7 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-122 | 116..120; contrato EL-EP-012 | 123 |
 | EL-TK-123 | 113..122 | validación EL-EP-009 |
 
-11 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de reportes (sin auto-ocultamiento, DEC-088), retiro propio inmediato e irreversible con sesión guest (DEC-089, DEC-097), intake sin sesión con campos mínimos requeridos (DEC-103..105), clasificación de severidad y prioridad, acceso administrativo justificado a media de casos, ocultamiento preventivo administrativo y resolución formal con trazabilidad. Superficies UI reutilizadas del catálogo canónico (§5.26..27 y §12.11..15), sin componentes nuevos. Purga en EL-EP-015, auditoría en EL-EP-014 y consola administrativa en EL-EP-012.
+3 activos COMPLETADOS (DONE) de 11 tickets en EL-EP-009 tras la entrega de la Ruta A: intake de reportes sin auto-ocultamiento (EL-TK-113, DEC-088), retiro propio inmediato e irreversible con sesión guest (EL-TK-114, DEC-089/097) e intake de retiro sin sesión previa conforme a la matriz DEC-103..105 (EL-TK-115). Restan tickets de clasificación, revisión y resolución administrativa (Ruta B) y superficies UI / validación E2E (Ruta C). Superficies UI reutilizadas del catálogo canónico (§5.26..27 y §12.11..15), sin componentes nuevos. Purga en EL-EP-015, auditoría en EL-EP-014 y consola administrativa en EL-EP-012.
 
 ## Tickets vigentes — EL-EP-010 (quality gate APPROVED)
 

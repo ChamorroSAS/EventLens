@@ -4,7 +4,7 @@
 EL-EP-009
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** invitado con sesión válida, **quiero** retirar definitivamente uno de mis aportes, **para** sacar de visibilidad mi contenido sin aprobación del organizador.
@@ -68,3 +68,17 @@ Q-012, Q-019; DEC-084, DEC-089, DEC-097, DEC-098; EL-EP-009, EL-EP-015.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §5.26..27 y §12.11..15; sin componentes nuevos ni duplicación de flujos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Cierre de implementación — 2026-10-12
+
+- **Resultado:** APROBADO.
+- **Implementación:**
+  - Implementado servicio `OwnMediaRemovalService`, repositorio `PostgresOwnRemovalRepository` y `PostgresGuestSessionResolver` en `@eventlens/media-inspection/src/media-report-and-removal.ts`.
+  - Creada tabla canónica y modelo `media_own_removal_record` (migración `202610120050_media_reports_and_removal`) con deduplicación por clave única `own-removal:${mediaRef}`.
+  - Integrado con `PurgeDispatcherPort` fijando ancla inmutable en el instante de confirmación: `purgeStartedAt = now` con plazos `mainPurgeDeadline = +7 días UTC` y `residualPurgeDeadline = +30 días UTC` (DEC-089, DEC-097, DEC-098).
+- **Criterios de aceptación verificados:**
+  - Escenario 1: Al confirmar el retiro con sesión guest válida, la media se retira inmediatamente de visibilidad pasando a `status = 'DELETED'` con incremento de revisión, sin papelera ni ventana cancelable, emitiendo la solicitud a purga sin requerir aprobación ni admitir veto del organizador.
+  - Escenario 2: Si la media pertenece a otro aportante (`guestRef` distinto), se deniega con `NOT_OWNER` sin revelar metadatos del dueño real.
+  - Escenario 3: Reintentos de confirmación son idempotentes: retornan `outcome = 'ALREADY_REMOVED'` conservando el `purgeStartedAt` original inmutable sin duplicar emisiones a purga.
+- **Pruebas:** 5 pruebas unitarias en `media-report-and-removal.unit.test.ts` y 3 pruebas de integración en `media-report-and-removal.integration.test.ts` contra PostgreSQL 16. Build limpio.
+

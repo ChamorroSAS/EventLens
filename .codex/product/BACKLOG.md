@@ -147,9 +147,9 @@
 | EL-TK-110 | Cambiar el modo de moderación sin reescribir contenido existente | EL-EP-008 | DONE | P0 | 028,037 | [EL-TK-110](tickets/EL-TK-110.md) |
 | EL-TK-111 | Integrar acciones de moderación y papelera en la biblioteca del organizador | EL-EP-008 | READY | P0 | 100,103..108,110 | [EL-TK-111](tickets/EL-TK-111.md) |
 | EL-TK-112 | Validar moderación, papelera y restauración de extremo a extremo | EL-EP-008 | DONE | P0 | 103..111 | [EL-TK-112](tickets/EL-TK-112.md) |
-| EL-TK-113 | Registrar una denuncia sobre contenido visible | EL-EP-009 | READY | P0 | contrato media visible EL-EP-007; contrato EL-EP-014 | [EL-TK-113](tickets/EL-TK-113.md) |
-| EL-TK-114 | Retirar irreversiblemente un aporte propio con sesión guest válida | EL-EP-009 | READY | P0 | 078; contrato EL-EP-015 | [EL-TK-114](tickets/EL-TK-114.md) |
-| EL-TK-115 | Registrar una solicitud de retiro sin sesión válida | EL-EP-009 | READY | P0 | 082 | [EL-TK-115](tickets/EL-TK-115.md) |
+| EL-TK-113 | Registrar una denuncia sobre contenido visible | EL-EP-009 | DONE | P0 | contrato media visible EL-EP-007; contrato EL-EP-014 | [EL-TK-113](tickets/EL-TK-113.md) |
+| EL-TK-114 | Retirar irreversiblemente un aporte propio con sesión guest válida | EL-EP-009 | DONE | P0 | 078; contrato EL-EP-015 | [EL-TK-114](tickets/EL-TK-114.md) |
+| EL-TK-115 | Registrar una solicitud de retiro sin sesión válida | EL-EP-009 | DONE | P0 | 082 | [EL-TK-115](tickets/EL-TK-115.md) |
 | EL-TK-116 | Clasificar severidad y priorizar denuncias para revisión administrativa | EL-EP-009 | READY | P0 | 113, 115, 044; contrato EL-EP-014 | [EL-TK-116](tickets/EL-TK-116.md) |
 | EL-TK-117 | Autorizar acceso administrativo justificado a la media de un caso | EL-EP-009 | READY | P0 | 116,044,097; contrato EL-EP-014 | [EL-TK-117](tickets/EL-TK-117.md) |
 | EL-TK-118 | Aplicar ocultamiento preventivo por decisión administrativa | EL-EP-009 | READY | P0 | 116,117,101 | [EL-TK-118](tickets/EL-TK-118.md) |

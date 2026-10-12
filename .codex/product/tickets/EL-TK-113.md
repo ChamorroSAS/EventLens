@@ -4,7 +4,7 @@
 EL-EP-009
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** invitado o reportante, **quiero** reportar una media visible con un motivo, **para** informar un posible problema sin crear una cuenta.
@@ -68,3 +68,17 @@ Q-012, Q-013; DEC-016, DEC-088; EL-EP-009.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §5.26..27 y §12.11..15; sin componentes nuevos ni duplicación de flujos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Cierre de implementación — 2026-10-12
+
+- **Resultado:** APROBADO.
+- **Implementación:**
+  - Implementado servicio `MediaReportService` y repositorio `PostgresMediaReportRepository` en `@eventlens/media-inspection/src/media-report-and-removal.ts`.
+  - Creada tabla canónica y modelo `media_report_case` (migración `202610120050_media_reports_and_removal`) con índice único en `dedup_key`.
+  - Catálogo formal de motivos: `INAPPROPRIATE_CONTENT`, `PRIVACY_VIOLATION`, `INTIMACY_VIOLATION`, `COPYRIGHT_INFRINGEMENT`, `OTHER`.
+- **Criterios de aceptación verificados:**
+  - Escenario 1: Medios visibles (`PUBLISHED`) con motivo válido se registran en `media_report_case` con status `PENDING_REVIEW` y severidad `UNCLASSIFIED`, confirmando recepción sin afirmar resolución ni auto-ocultar (DEC-088).
+  - Escenario 2: Reintentos o timeouts con la misma clave de idempotencia devuelven el caso existente sin duplicar registros.
+  - Escenario 3: Neutralidad pública estricta: ante medios inexistentes o no visibles, la respuesta pública es idéntica y neutral ("Reporte recibido para revisión") sin filtrar la existencia de contenido privado.
+- **Pruebas:** 4 pruebas unitarias en `media-report-and-removal.unit.test.ts` y 3 pruebas de integración en `media-report-and-removal.integration.test.ts` contra PostgreSQL 16. Build limpio.
+
