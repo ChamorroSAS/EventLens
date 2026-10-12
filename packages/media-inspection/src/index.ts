@@ -15,5 +15,6 @@ export * from './quarantine-delete.js';
 export * from './attempt-cleanup.js';
 export * from './pipeline-validation.js';
 export * from './organizer-library.js';
+export * from './media-moderation.js';
 
 

@@ -4,7 +4,7 @@
 EL-EP-008
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador propietario, **quiero** aprobar una media pendiente, **para** publicarla cuando no exista un bloqueo vigente.
@@ -68,3 +68,15 @@ Q-006, Q-019; DEC-005, DEC-087, DEC-096; EL-EP-008.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §8.5..9; sin componentes nuevos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Cierre de implementación — 2026-10-12
+
+- **Resultado:** APROBADO.
+- **Implementación:** Implementado [`MediaModerationService`](file:///c:/Users/geren/Documents/GitHub/EventLens/packages/media-inspection/src/media-moderation.ts) y [`PostgresMediaModerationRepository`](file:///c:/Users/geren/Documents/GitHub/EventLens/packages/media-inspection/src/media-moderation.ts) en `@eventlens/media-inspection`.
+- **Criterios de aceptación verificados:**
+  - Escenario 1: Media en `PENDING_REVIEW` propia y sin bloqueos pasa a `PUBLISHED` incrementando revisión atómicamente y registrando auditoría.
+  - Escenario 2: Bloqueo de seguridad (`outcome: 'DENIED'` o `'INCONCLUSIVE'`) rechaza con `SAFETY_BLOCKED` sin modificar estado. Bloqueo de retiro vigente rechaza con `REMOVAL_BLOCKED`.
+  - Escenario 3: Si la media ya está en `PUBLISHED`, se devuelve resultado idempotente; si cambió a otro estado incompatible, devuelve `INVALID_STATE`; si `expectedRevision` no coincide, devuelve `CONCURRENCY_CONFLICT`.
+- **Aislamiento y permisos:** Validación de ownership del organizador sobre el evento y rechazo de accesos no autorizados o cross-event (`ACCESS_DENIED`).
+- **Pruebas:** 10/10 pruebas unitarias PASS en `packages/media-inspection/test/media-moderation.unit.test.ts` y suite de integración PostgreSQL 16 preparada. Build y typecheck limpios con 0 errores.
+- **Observabilidad:** Registro de auditoría sanitizado en `audit_event` sin almacenar binarios ni datos sensibles.
