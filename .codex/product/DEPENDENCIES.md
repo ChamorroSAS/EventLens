@@ -434,3 +434,5 @@ TB-01/TB-02 dejan de bloquear.033/035/036/041/042/056 YES propio;058 NO ejecuci�
 
 **CONFIRMED — EL-TK-140 DONE, 2026-10-11:** dependencia EL-TK-139 satisfecha; respuesta textual dentro de la misma solicitud en `INFORMATION_REQUESTED` y retorno a `PENDING_REVIEW` implementada en `@eventlens/capacity-management` (`ExtensionRequestService.respondToInfoRequest`). 50 pruebas PASS, typecheck y build limpios. Desbloquea downstream EL-TK-141 y EL-TK-145. Véase el [cierre](tickets/EL-TK-140.md).
 
+**CONFIRMED — EL-TK-141 DONE, 2026-10-11:** dependencias EL-TK-139 y EL-TK-044 satisfechas; revisión administrativa de solicitudes (APPROVE/REJECT/REQUEST_INFO) con integración de override, historial y permisos `ADMIN_HUMAN` implementada en `@eventlens/capacity-management` (`ExtensionRequestService.reviewRequest`). 56 pruebas PASS, typecheck y build limpios. Desbloquea downstream EL-TK-142, EL-TK-144 y EL-TK-145. Véase el [cierre](tickets/EL-TK-141.md).
+

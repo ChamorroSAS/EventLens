@@ -93,13 +93,36 @@ describe('ExtensionRequestService (Unit - EL-TK-139)', () => {
           return 1;
         }
         if (sql.includes('UPDATE extension_request')) {
-          const [updatedAt, id] = params;
-          const req = mockStorage.get(id);
-          if (req) {
-            req.status = 'PENDING_REVIEW';
-            req.updated_at = updatedAt;
-            mockStorage.set(id, req);
-            return 1;
+          if (sql.includes("status = 'APPROVED'") || sql.includes("status = 'REJECTED'")) {
+            const [now, adminId, decisionReason, id] = params;
+            const req = mockStorage.get(id);
+            if (req) {
+              req.status = sql.includes("status = 'APPROVED'") ? 'APPROVED' : 'REJECTED';
+              req.resolved_at = now;
+              req.resolved_by = adminId;
+              req.decision_reason = decisionReason;
+              req.updated_at = now;
+              mockStorage.set(id, req);
+              return 1;
+            }
+          } else if (sql.includes("status = 'INFORMATION_REQUESTED'")) {
+            const [now, id] = params;
+            const req = mockStorage.get(id);
+            if (req) {
+              req.status = 'INFORMATION_REQUESTED';
+              req.updated_at = now;
+              mockStorage.set(id, req);
+              return 1;
+            }
+          } else {
+            const [updatedAt, id] = params;
+            const req = mockStorage.get(id);
+            if (req) {
+              req.status = 'PENDING_REVIEW';
+              req.updated_at = updatedAt;
+              mockStorage.set(id, req);
+              return 1;
+            }
           }
           return 0;
         }
@@ -411,6 +434,172 @@ describe('ExtensionRequestService (Unit - EL-TK-139)', () => {
             response: '   ',
           })
         ).rejects.toThrow('A valid response text is required');
+      });
+    });
+  });
+
+  describe('EL-TK-141: Revisar y decidir solicitudes de ampliación', () => {
+    let requestId: string;
+    let overrideCalls: any[];
+    let serviceWithAdmin: ExtensionRequestService;
+
+    const adminActor: CapacityActorContext = {
+      actorType: 'ADMIN_HUMAN',
+      principalId: 'admin-principal-1',
+    };
+
+    beforeEach(async () => {
+      overrideCalls = [];
+      const mockPlanService = {
+        resolveEffectiveLimits: async () => ({
+          eventId,
+          planCode: 'BETA_DEFAULT',
+          planName: 'Beta',
+          storageBytes: 10737418240n, // 10 GB
+          maxFiles: 500,
+          maxPhotoBytes: 52428800n,
+          maxVideoBytes: 524288000n,
+          maxVideoDurationSeconds: 120,
+          retentionDays: 30,
+          isOverrideActive: false,
+          activeOverrideId: null,
+          resolvedAt: new Date(),
+        }),
+        applyOverride: async (cmd: any) => {
+          overrideCalls.push(cmd);
+          return { override: {} as any, effectiveLimits: {} as any };
+        },
+      } as any;
+
+      serviceWithAdmin = new ExtensionRequestService(transactionRunner, undefined, mockPlanService);
+
+      const created = await serviceWithAdmin.createRequest({
+        eventId,
+        actorContext: ownerActor,
+        requestType: 'BOTH',
+        additionalGb: 5,
+        additionalDays: 15,
+        reason: 'Solicitud para ampliación de evento festival',
+      });
+      requestId = created.id;
+    });
+
+    describe('Escenario 1: Solicitud PENDING_REVIEW válida, admin aprueba y aplica override', () => {
+      it('registra decisión APPROVED, agrega mensaje y aplica override mediante contrato', async () => {
+        const result = await serviceWithAdmin.reviewRequest({
+          requestId,
+          actorContext: adminActor,
+          decision: 'APPROVE',
+          decisionReason: 'Aprobado según justificación y capacidad de infraestructura',
+        });
+
+        expect(result.id).toBe(requestId);
+        expect(result.status).toBe('APPROVED');
+        expect(result.resolvedBy).toBe('admin-principal-1');
+        expect(result.resolvedAt).toBeInstanceOf(Date);
+        expect(result.decisionReason).toBe('Aprobado según justificación y capacidad de infraestructura');
+
+        const lastMsg = result.messages![result.messages!.length - 1];
+        expect(lastMsg.authorRole).toBe('ADMIN');
+        expect(lastMsg.authorId).toBe('admin-principal-1');
+        expect(lastMsg.messageType).toBe('APPROVED');
+        expect(lastMsg.content).toBe('Aprobado según justificación y capacidad de infraestructura');
+
+        // Verificar que se invocó applyOverride con storage y retención incrementados
+        expect(overrideCalls).toHaveLength(1);
+        expect(overrideCalls[0].eventId).toBe(eventId);
+        expect(overrideCalls[0].retentionDays).toBe(45); // 30 + 15
+        expect(overrideCalls[0].storageBytes).toBe(10737418240n + BigInt(5 * 1024 * 1024 * 1024));
+      });
+    });
+
+    describe('Escenario 2: Admin requiere aclaración y pasa a INFORMATION_REQUESTED', () => {
+      it('cambia estado a INFORMATION_REQUESTED sin cerrar la solicitud y registra mensaje', async () => {
+        const result = await serviceWithAdmin.reviewRequest({
+          requestId,
+          actorContext: adminActor,
+          decision: 'REQUEST_INFO',
+          decisionReason: 'Indicar distribución esperada de fotos vs videos',
+        });
+
+        expect(result.id).toBe(requestId);
+        expect(result.status).toBe('INFORMATION_REQUESTED');
+        expect(result.resolvedAt).toBeNull(); // No está cerrada
+
+        const lastMsg = result.messages![result.messages!.length - 1];
+        expect(lastMsg.authorRole).toBe('ADMIN');
+        expect(lastMsg.messageType).toBe('INFORMATION_REQUESTED');
+        expect(lastMsg.content).toBe('Indicar distribución esperada de fotos vs videos');
+
+        // No se aplica ningún override
+        expect(overrideCalls).toHaveLength(0);
+      });
+    });
+
+    describe('Escenario 3: Admin rechaza la solicitud', () => {
+      it('cierra la solicitud como REJECTED sin alterar límites', async () => {
+        const result = await serviceWithAdmin.reviewRequest({
+          requestId,
+          actorContext: adminActor,
+          decision: 'REJECT',
+          decisionReason: 'Excede cuotas permitidas para beta',
+        });
+
+        expect(result.id).toBe(requestId);
+        expect(result.status).toBe('REJECTED');
+        expect(result.resolvedBy).toBe('admin-principal-1');
+        expect(result.resolvedAt).toBeInstanceOf(Date);
+
+        const lastMsg = result.messages![result.messages!.length - 1];
+        expect(lastMsg.messageType).toBe('REJECTED');
+        expect(lastMsg.content).toBe('Excede cuotas permitidas para beta');
+
+        // No se aplica ningún override
+        expect(overrideCalls).toHaveLength(0);
+      });
+    });
+
+    describe('Validaciones y permisos de administración', () => {
+      it('deniega si el actor no es un administrador autorizado', async () => {
+        await expect(
+          serviceWithAdmin.reviewRequest({
+            requestId,
+            actorContext: ownerActor,
+            decision: 'APPROVE',
+            decisionReason: 'Intento ilegítimo',
+          })
+        ).rejects.toThrow('Only authorized administrators can review extension requests');
+      });
+
+      it('rechaza si el motivo de decisión está en blanco', async () => {
+        await expect(
+          serviceWithAdmin.reviewRequest({
+            requestId,
+            actorContext: adminActor,
+            decision: 'APPROVE',
+            decisionReason: '   ',
+          })
+        ).rejects.toThrow('Mandatory decisionReason is required');
+      });
+
+      it('rechaza si la solicitud ya fue resuelta (no está en PENDING_REVIEW)', async () => {
+        // Resolver primera vez
+        await serviceWithAdmin.reviewRequest({
+          requestId,
+          actorContext: adminActor,
+          decision: 'REJECT',
+          decisionReason: 'Rechazo inicial',
+        });
+
+        // Intentar decidir nuevamente
+        await expect(
+          serviceWithAdmin.reviewRequest({
+            requestId,
+            actorContext: adminActor,
+            decision: 'APPROVE',
+            decisionReason: 'Segundo intento',
+          })
+        ).rejects.toThrow("is in status 'REJECTED' and cannot be reviewed");
       });
     });
   });

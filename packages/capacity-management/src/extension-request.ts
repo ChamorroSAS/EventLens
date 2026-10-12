@@ -12,6 +12,7 @@ import {
   ReviewExtensionRequestCommand,
 } from './contracts.js';
 import type { EventOwnershipVerifier } from './capacity-query.js';
+import type { CapacityPlanService } from './capacity-plan.js';
 
 interface RawExtensionRequestRow {
   id: string;
@@ -42,7 +43,8 @@ interface RawMessageRow {
 export class ExtensionRequestService {
   constructor(
     private readonly transactions: TransactionRunner,
-    private readonly ownershipVerifier?: EventOwnershipVerifier
+    private readonly ownershipVerifier?: EventOwnershipVerifier,
+    private readonly planService?: CapacityPlanService
   ) {
     if (!transactions) {
       throw new CapacityError('INVALID_ARGUMENT', 'TransactionRunner is required');
@@ -392,6 +394,161 @@ export class ExtensionRequestService {
 
       reqRow.status = 'PENDING_REVIEW';
       reqRow.updated_at = now;
+
+      return this.hydrateRequestWithMessages(tx, reqRow);
+    });
+  }
+
+  /**
+   * Revisa y decide sobre una solicitud de ampliación (EL-TK-141).
+   * Soporta APPROVE (aplica override si corresponde), REJECT y REQUEST_INFO.
+   */
+  public async reviewRequest(command: ReviewExtensionRequestCommand): Promise<ExtensionRequest> {
+    if (!command.requestId || typeof command.requestId !== 'string' || !command.requestId.trim()) {
+      throw new CapacityError('INVALID_ARGUMENT', 'Valid requestId is required');
+    }
+
+    if (!command.decisionReason || typeof command.decisionReason !== 'string' || !command.decisionReason.trim()) {
+      throw new CapacityError('INVALID_ARGUMENT', 'Mandatory decisionReason is required');
+    }
+
+    if (!['APPROVE', 'REJECT', 'REQUEST_INFO'].includes(command.decision)) {
+      throw new CapacityError('INVALID_ARGUMENT', `Invalid decision '${command.decision}'`);
+    }
+
+    const actor = command.actorContext;
+    if (!actor || actor.actorType !== 'ADMIN_HUMAN' || !(actor as { principalId?: string }).principalId) {
+      throw new CapacityError('FORBIDDEN', 'Only authorized administrators can review extension requests');
+    }
+
+    const adminId = (actor as { principalId: string }).principalId;
+
+    return this.transactions.run(async (tx: SqlTransaction) => {
+      const rows = await tx.query<RawExtensionRequestRow>(
+        `SELECT id, event_id, requested_by, request_type, additional_gb, additional_days,
+                reason, status, resolved_at, resolved_by, decision_reason, created_at, updated_at
+         FROM extension_request
+         WHERE id = $1
+         LIMIT 1
+         FOR UPDATE`,
+        [command.requestId]
+      );
+
+      if (rows.length === 0) {
+        throw new CapacityError('EXTENSION_REQUEST_NOT_FOUND', `Extension request '${command.requestId}' not found`);
+      }
+
+      const reqRow = rows[0];
+
+      if (reqRow.status !== 'PENDING_REVIEW') {
+        const error = new CapacityError(
+          'EXTENSION_REQUEST_INVALID_STATE',
+          `Extension request '${command.requestId}' is in status '${reqRow.status}' and cannot be reviewed`
+        );
+        (error as unknown as { currentStatus: string }).currentStatus = reqRow.status;
+        throw error;
+      }
+
+      const now = new Date();
+      const messageId = randomUUID();
+      const decisionReason = command.decisionReason.trim();
+
+      if (command.decision === 'REQUEST_INFO') {
+        // Escenario 2: Admin solicita información aclaratoria
+        await tx.execute(
+          `INSERT INTO extension_request_message (
+            id, request_id, author_role, author_id, message_type, content, created_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          [messageId, command.requestId, 'ADMIN', adminId, 'INFORMATION_REQUESTED', decisionReason, now]
+        );
+
+        await tx.execute(
+          `UPDATE extension_request
+           SET status = 'INFORMATION_REQUESTED', updated_at = $1
+           WHERE id = $2`,
+          [now, command.requestId]
+        );
+
+        reqRow.status = 'INFORMATION_REQUESTED';
+        reqRow.updated_at = now;
+      } else if (command.decision === 'REJECT') {
+        // Escenario 3: Admin rechaza la solicitud
+        await tx.execute(
+          `INSERT INTO extension_request_message (
+            id, request_id, author_role, author_id, message_type, content, created_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          [messageId, command.requestId, 'ADMIN', adminId, 'REJECTED', decisionReason, now]
+        );
+
+        await tx.execute(
+          `UPDATE extension_request
+           SET status = 'REJECTED', resolved_at = $1, resolved_by = $2, decision_reason = $3, updated_at = $1
+           WHERE id = $4`,
+          [now, adminId, decisionReason, command.requestId]
+        );
+
+        reqRow.status = 'REJECTED';
+        reqRow.resolved_at = now;
+        reqRow.resolved_by = adminId;
+        reqRow.decision_reason = decisionReason;
+        reqRow.updated_at = now;
+      } else if (command.decision === 'APPROVE') {
+        // Escenario 1: Admin aprueba y aplica override si procede
+        if (this.planService) {
+          const currentLimits = await this.planService.resolveEffectiveLimits({
+            eventId: reqRow.event_id,
+            actorContext: actor,
+          });
+
+          let newStorageBytes: bigint | undefined = undefined;
+          let newRetentionDays: number | undefined = undefined;
+
+          if (reqRow.request_type === 'STORAGE' || reqRow.request_type === 'BOTH') {
+            const gb = command.approvedGb !== undefined ? command.approvedGb : Number(reqRow.additional_gb);
+            if (gb > 0) {
+              const additionalBytes = BigInt(Math.round(gb * 1024 * 1024 * 1024));
+              newStorageBytes = currentLimits.storageBytes + additionalBytes;
+            }
+          }
+
+          if (reqRow.request_type === 'DURATION' || reqRow.request_type === 'BOTH') {
+            const days = command.approvedDays !== undefined ? command.approvedDays : Number(reqRow.additional_days);
+            if (days > 0) {
+              newRetentionDays = currentLimits.retentionDays + days;
+            }
+          }
+
+          if (newStorageBytes !== undefined || newRetentionDays !== undefined) {
+            await this.planService.applyOverride({
+              eventId: reqRow.event_id,
+              actorContext: actor as any,
+              storageBytes: newStorageBytes,
+              retentionDays: newRetentionDays,
+              reason: `Approved extension request ${command.requestId}: ${decisionReason}`,
+            });
+          }
+        }
+
+        await tx.execute(
+          `INSERT INTO extension_request_message (
+            id, request_id, author_role, author_id, message_type, content, created_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          [messageId, command.requestId, 'ADMIN', adminId, 'APPROVED', decisionReason, now]
+        );
+
+        await tx.execute(
+          `UPDATE extension_request
+           SET status = 'APPROVED', resolved_at = $1, resolved_by = $2, decision_reason = $3, updated_at = $1
+           WHERE id = $4`,
+          [now, adminId, decisionReason, command.requestId]
+        );
+
+        reqRow.status = 'APPROVED';
+        reqRow.resolved_at = now;
+        reqRow.resolved_by = adminId;
+        reqRow.decision_reason = decisionReason;
+        reqRow.updated_at = now;
+      }
 
       return this.hydrateRequestWithMessages(tx, reqRow);
     });

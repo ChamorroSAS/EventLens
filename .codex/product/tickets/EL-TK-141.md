@@ -4,7 +4,7 @@
 EL-EP-011
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** administración autorizada, **quiero** aprobar, rechazar o pedir información sobre una solicitud, **para** gestionar excepciones con trazabilidad sin alterar reglas de dominio.
