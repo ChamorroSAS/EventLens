@@ -18,6 +18,10 @@
 
 ## Epics
 
+### Gate legal de EL-EP-018 para salida pública
+
+[Evaluación jurídica](sessions/2026-10-12-el-ep-018-legal-ticket-gate.md): PASS_WITH_CONDITIONS para redacción de tickets; EL-TK-205..214 ya READY mediante gates propios, sin implementación inferida. EL-EP-017/Q-029 bloquea **lanzamiento** del servicio, no escritura/validación de tickets. Formulario público Beta condicionado a identidad y canal real del responsable natural, aviso/política, autorización/evidencia y conservación. [Expediente](../../docs/legal/README.md); [naming pendiente](../../docs/branding/NAMING-RISK-2026-10-12.md). Sin nuevos módulos, dependencias retroactivas ni cambios DEC/TC/ARCH.
+
 ### Extensión visual CR-004
 
 EL-TK-203 → EL-TK-204;204 reutiliza también componente de048.203 no depende de routing/auth/API ni de una nueva feature.204 depende de salidas203 validadas, no de completar toda integración funcional de048. Piloto Angular real test-only; ninguna prueba de fixture acredita permiso/contrato de producción. Sin ciclo ni bloqueos retroactivos de tickets DONE. Las migraciones futuras guest/admin/biblioteca mantienen sus tickets propietarios; no se crea motor de temas. [Contrato](../context/brand-integration-contract.md) / [UI](../context/ui-brand-foundation.md) / [gates](sessions/2026-10-12-brand-planning-gates.md).

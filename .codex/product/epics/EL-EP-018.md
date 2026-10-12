@@ -5,6 +5,7 @@ READY — requisitos APPROVED, contrato técnico APPROVED y gate UI YES, ratific
 
 REQUIREMENTS_READY: YES — Gate1 y revalidación aprobados; tres MAJOR de composición, matriz de integración y logout cerrados por contratos incorporados.
 READY_FOR_TICKET_WRITING: YES — arquitectura/UI/requisitos completos para descomponer sólo los gaps demostrados, no por aprobación editorial aislada.
+LEGAL_SCOPE_FOR_TICKET_WRITING: PASS_WITH_CONDITIONS — [gate legal](../sessions/2026-10-12-el-ep-018-legal-ticket-gate.md): cumplimiento/release son independientes de los gates técnicos ya aprobados y los tickets EL-TK-205..214 READY; no habilita captación pública de datos.
 UI_REQUIRED: YES
 READY_FOR_FRONTEND_PLANNING: YES — ratificación UI tras contrato técnico y revalidación requisitos. [UI](../../context/ui-public-entry.md), [contrato](../../context/public-entry-contract.md).
 READY_FOR_IMPLEMENTATION: PARTIAL — EL-TK-205..214 formalizados READY tras Gate 2; dependencias de integración por ejecutar; no se implementa durante esta revisión.
@@ -117,7 +118,20 @@ MOD-001 (login/logout/cuenta/Beta EL-TK-008); MOD-002 (Mis eventos/dashboard); M
 ## Dependencies
 - Para **ticket writing**: aprobación de alcance del Home y menú, auditoría de rutas de frontend, revisión `requirements_reviewer`, `ui_designer` y `architect` si modifica composición/bootstrap.
 - Para implementación y E2E: auth y destinos reales integrados en runtime, request Beta, navegación owner, deep link guest; evidencia de permisos/no enumeración. Los módulos de dominio ya existentes se reutilizan, no se reabren sus tickets DONE.
-- **No dependencia dura** de concluir toda EL-EP-017 para *planificar* la página; publicación pública de contenido legal/servicio mantiene sus gates.
+- **No dependencia dura** de concluir EL-EP-017 para la ticketización y los gates técnicos aprobados. [Gate legal acotado](../sessions/2026-10-12-el-ep-018-legal-ticket-gate.md): bloqueos **para release** de claims, fotografías/uso promocional, política/aviso/autorización Beta, contacto del responsable natural y privacidad; la apertura pública sigue bloqueada por EL-EP-017/Q-029. No confundir auditoría técnica de EL-TK-008 con prueba de autorización legal.
+
+**Operador de datos — CONFIRMED 2026-10-12:** EventLens operará inicialmente como **persona natural**, no se puede presumir que una SAS sea el responsable legal. Nombre/domicilio/dirección/email/teléfono concretos PENDING; roles responsable/encargado según tratamiento del organizador PENDING. [Expediente jurídico inicial](../../../docs/legal/README.md). No modifica DEC-031 ni gates globales.
+
+## Criterios jurídicos transversales para tickets DRAFT
+
+**Gate acotado:** [2026-10-12 — LEGAL_SCOPE_FOR_TICKET_WRITING PASS_WITH_CONDITIONS](../sessions/2026-10-12-el-ep-018-legal-ticket-gate.md). Aplica en los tickets que diseñen o integren Home, CTAs, solicitud de Beta, cuenta, imágenes y footer.
+
+- Claims publicitarios de disponibilidad, privacidad, QR, galería y descarga deben corresponder al alcance real y estar revisados antes de publicar; no afirmar seguridad absoluta, registro libre ni aprobación Beta automática (Ley 1480 de 2011, arts. 29-30).
+- Captura de emails para Beta: implementar en owner de MOD-001 aviso/finalidad, política de datos accesible antes de recogida, responsable identificado y contacto, mecanismo válido de autorización/evidencia (cuando aplique), derechos y procedimientos. No confundir un enlace a política con prueba suficiente; no introducir checkbox premarcado ni consentimiento de marketing implícito (Ley 1581 de 2012; Decreto 1074 de 2015). Recogida pública sigue bloqueada hasta verificación profesional/operativa.
+- Imágenes para Home: procedencia/licencia/autorización aplicable; no reutilizar media privada guest para publicidad. Revisión reforzada para imágenes identificables y menores.
+- Footer minimalista conserva links jurídicos reales y versionados cuando estén aprobados; **no** recolectar datos ocultando la ausencia de política. No trackers/cookies no esenciales nuevos por defecto sin evaluación.
+- Mantener `LEGAL_RELEASE_BLOCKER` por superficie hasta que haya evidencia de aprobación/publicación; `EL-EP-017` sigue NOT_READY; la política concreta, responsable legal, plazos de retención y Q-029 no se resuelven en esta épica.
+- La redacción de tickets DRAFT puede avanzar; sus estados `READY`, implementación y release requieren gates **independientes** de requisitos, UI/arquitectura y legal según alcance.
 
 ## Relevant non-functional requirements
 WCAG 2.2 AA, mobile-first y últimas versiones de navegadores soportados; español inicial/i18n-ready; TLS, privacidad/no-index de eventos privados, CSP y navegación segura, no open redirects, tamaño de assets razonable, sin dependencia de health API para renderizar textos estáticos. Sin analítica de tokens/cuentas.
@@ -167,6 +181,7 @@ Secciones: Header/hero, Beneficios, Cómo funciona, Privacidad, FAQ, cierre con 
 P0 **propuesta** para entrada/roteo funcional de la Beta (sin navegación no existe app usable desde `/`); contenido institucional/FAQ y SEO fino P1 y pueden entregarse sin desplazar seguridad, galería, exportaciones o purga. La priorización no cambia el roadmap aprobado sin evaluación.
 
 ## Change history
+- 2026-10-12: integrado expediente legal y gate acotado **sin revertir** gates independientes de arquitectura/UI/requisitos ni tickets EL-TK-205..214 READY; release público sigue condicionado. [Registro](../sessions/2026-10-12-el-ep-018-legal-ticket-gate.md).
 - 2026-10-12: requisitos/architect/UI ratificados; contratos y handoff incorporados, precedencia vigente sobre PENDING históricos. READY de requisitos/frontend planning YES/ticket writing YES; implementación PARTIAL por montaje/correctivo/proveedores de ejecución. Sin código ni tickets aún.
 - 2026-10-12: confirmadas reglas A/B/C de navegación: alcance de `/mi-cuenta` (datos básicos/seguridad/sesiones/eliminación sin duplicación), `/mi-cuenta` → `/ingresar` → retorno interno autorizado, cuenta con eliminación pendiente restringida y QR guest directo sin Home/login organizador. Contratos de ruta aún requieren integración técnica; gates sin cambios.
 - 2026-10-12: confirmadas las 12 decisiones de dirección editorial, incluida navegación equilibrada, FAQ de cuatro preguntas, CTA Beta discreto y footer minimalista. Actualizados alcance, copy propuesto y auditoría de rutas de `stage`; gates y rutas definitivas siguen pendientes. [Registro](../sessions/2026-10-12-el-ep-018-editorial-and-routes.md).
