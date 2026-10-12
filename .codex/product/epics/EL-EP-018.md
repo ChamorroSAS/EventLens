@@ -115,6 +115,8 @@ MOD-001 (login/logout/cuenta/Beta EL-TK-008); MOD-002 (Mis eventos/dashboard); M
 - Para implementación y E2E: auth y destinos reales integrados en runtime, request Beta, navegación owner, deep link guest; evidencia de permisos/no enumeración. Los módulos de dominio ya existentes se reutilizan, no se reabren sus tickets DONE.
 - **No dependencia dura** de concluir toda EL-EP-017 para **redactar tickets DRAFT**: LEGAL_SCOPE_FOR_TICKET_WRITING PASS_WITH_CONDITIONS, según [dictamen acotado](../sessions/2026-10-12-el-ep-018-legal-ticket-gate.md). **Bloqueos de salida**: revisión de copy y veracidad, licencia/autorizaciones de fotos del Home, política/aviso y evidencia de autorización del formulario Beta (correo personal), identidad del responsable/canal de derechos, evaluación de cookies/analytics y EL-EP-017/Q-029 para apertura pública. No presuponer que EL-TK-008 ya acredita autorización legal por almacenar email y auditoría.
 
+**Operador de datos — CONFIRMED 2026-10-12:** EventLens operará inicialmente como **persona natural**, no se puede presumir que una SAS sea el responsable legal. Nombre/domicilio/dirección/email/teléfono concretos PENDING; roles responsable/encargado según tratamiento del organizador PENDING. [Expediente jurídico inicial](../../../docs/legal/README.md). No modifica DEC-031 ni gates globales.
+
 ## Criterios jurídicos transversales para tickets DRAFT
 
 **Gate acotado:** [2026-10-12 — LEGAL_SCOPE_FOR_TICKET_WRITING PASS_WITH_CONDITIONS](../sessions/2026-10-12-el-ep-018-legal-ticket-gate.md). Aplica en los tickets que diseñen o integren Home, CTAs, solicitud de Beta, cuenta, imágenes y footer.
