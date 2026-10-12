@@ -23,6 +23,8 @@
 
 **Decisiones funcionales confirmadas (2026-10-12):** organizadores naturales y organizaciones; galería privada con controles de publicación vigentes; reportes/retiro sin cuenta. [Análisis de producto](../../.codex/product/sessions/2026-10-12-el-ep-017-organizers-gallery-and-reports.md). LEG-02, LEG-07/08 mantienen aprobación jurídica y evidencia operativa PENDING. Ningún control legal se da por implementado por esta confirmación.
 
+**LEG-06 — canal y trámite funcional confirmados (2026-10-12):** correo de privacidad + funciones existentes, atención manual y trazabilidad mínima; [procedimiento preparatorio](../../.codex/product/sessions/2026-10-12-el-ep-017-data-subject-rights-manual-procedure.md). No equivale a buzón operativo, verificación de identidad/representación, calendario de plazos ni cumplimiento jurídico comprobados. Retención de expedientes PENDING; 6 meses confirmados solo para solicitudes Beta sin invitación, no para derechos de titulares.
+
 ## Gates no intercambiables
 
 | Gate | Estado |
