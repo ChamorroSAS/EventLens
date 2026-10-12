@@ -8,6 +8,7 @@ import {
   computeCredentialDigest
 } from '../src/contracts.js';
 import { OrganizerRegistrationService } from '../src/registration.js';
+import { PasswordVerifier } from '../src/password-verifier.js';
 
 interface InMemoryDb {
   invitations: Map<string, any>;
@@ -200,13 +201,14 @@ describe('EL-TK-010: OrganizerRegistrationService (Unit Tests)', () => {
     const savedAccount = [...db.accounts.values()][0];
     expect(savedAccount.status).toBe('PENDING_VERIFICATION');
 
-    // Verificamos credencial con digest seguro
+    // Verificamos credencial con envelope Argon2id seguro (DEC-108 / EL-TK-185)
     expect(db.credentials.size).toBe(1);
     const savedCredential = [...db.credentials.values()][0];
     expect(savedCredential.purpose).toBe('ORGANIZER_AUTHENTICATION');
-    expect(savedCredential.secret_digest).toBe(
-      computeCredentialDigest('ORGANIZER_AUTHENTICATION', savedAccount.id, 'StrongPassword123!')
-    );
+    expect(savedCredential.secret_digest.startsWith('$argon2id$v=19$m=19456,t=2,p=1$')).toBe(true);
+    const verifier = new PasswordVerifier();
+    const matches = await verifier.verifyPassword(savedCredential.secret_digest, 'StrongPassword123!');
+    expect(matches).toBe(true);
 
     // Verificamos token de verificación en base de datos
     expect(db.verificationIntents.size).toBe(1);

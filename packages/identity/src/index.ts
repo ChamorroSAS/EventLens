@@ -128,5 +128,25 @@ export {
   type PasswordResetServiceOptions
 } from './password-reset.js';
 
-
-
+export {
+  PasswordVerifier,
+  PasswordVerifierError,
+  DefaultArgon2Engine,
+  type Argon2Engine,
+  type Argon2DerivationParams,
+  type PasswordVerifierOptions,
+  MOD001_ENVELOPE_KIND,
+  MOD001_ARGON2ID_ALGORITHM,
+  MOD001_INPUT_PROFILE,
+  MOD001_PROFILE_NAME,
+  MOD001_ARGON2_VERSION,
+  MOD001_ARGON2_MEMORY_KIB,
+  MOD001_ARGON2_TIME_PASSES,
+  MOD001_ARGON2_PARALLELISM,
+  MOD001_SALT_BYTES,
+  MOD001_TAG_BYTES,
+  parseArgon2idPhc,
+  serializeArgon2idPhc,
+  toBase64NoPadding,
+  fromBase64NoPadding
+} from './password-verifier.js';

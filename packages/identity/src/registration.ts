@@ -33,12 +33,19 @@ interface AccountRow {
   updated_at: Date;
 }
 
+import { PasswordVerifier } from './password-verifier.js';
+
 export class OrganizerRegistrationService {
+  private readonly passwordVerifier: PasswordVerifier;
+
   constructor(
     private readonly runner: TransactionRunner,
     private readonly auditSink?: AuditSink,
-    private readonly notificationPort?: EmailVerificationNotificationPort
-  ) {}
+    private readonly notificationPort?: EmailVerificationNotificationPort,
+    passwordVerifier?: PasswordVerifier
+  ) {
+    this.passwordVerifier = passwordVerifier ?? new PasswordVerifier();
+  }
 
   async registerOrganizer(command: RegisterOrganizerCommand): Promise<RegisterOrganizerResult> {
     // 1. Validar metadata contra intentos de auto-elevación (AQR-003, TB-03)
@@ -180,13 +187,9 @@ export class OrganizerRegistrationService {
         now
       );
 
-      // Registrar credencial con digest protegido y dominio aislado (TB-03)
+      // Registrar credencial con envelope Argon2id canónico (MOD-001, DEC-108, EL-TK-185)
       const credentialId = randomUUID();
-      const secretDigest = computeCredentialDigest(
-        'ORGANIZER_AUTHENTICATION',
-        accountId,
-        command.password
-      );
+      const secretDigest = await this.passwordVerifier.hashPassword(command.password);
 
       await tx.execute(
         `INSERT INTO organizer_credential (

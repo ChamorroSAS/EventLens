@@ -7,6 +7,7 @@ import {
   type AuditSink,
   type AuditEventRecord,
   type RecoveryAuthorityPort,
+  type RecoveryPreparedReceipt,
   type OrganizerAccountRecord,
   type OrganizerActorContext,
   type OrganizerSessionCookieSpec,
@@ -24,6 +25,7 @@ import {
   type RevokeOtherSessionsCommand,
   type RevokeOtherSessionsResult
 } from './contracts.js';
+import { PasswordVerifier } from './password-verifier.js';
 
 interface OrganizerAccountRow {
   id: string;
@@ -68,16 +70,18 @@ interface OrganizerSessionRow {
 export interface OrganizerAuthOptions {
   maxFailedAttempts?: number;
   rateLimitWindowMs?: number;
+  passwordVerifier?: PasswordVerifier;
 }
 
 /**
- * Implements organizer authentication and session emission for EL-TK-013.
- * Guarantees constant-time verification, neutral unauthenticated errors without user enumeration,
+ * Implements organizer authentication and session emission for EL-TK-013 and EL-TK-185.
+ * Guarantees Argon2id verification with transitional legacy migration, neutral unauthenticated errors,
  * strict rejection of pending/unverified accounts, recovery authority validation, and rate limiting.
  */
 export class OrganizerAuthenticationService {
   private readonly maxFailedAttempts: number;
   private readonly rateLimitWindowMs: number;
+  private readonly passwordVerifier: PasswordVerifier;
   private readonly failedAttempts = new Map<string, { count: number; firstAttemptAt: number }>();
 
   constructor(
@@ -88,6 +92,7 @@ export class OrganizerAuthenticationService {
   ) {
     this.maxFailedAttempts = options?.maxFailedAttempts ?? 5;
     this.rateLimitWindowMs = options?.rateLimitWindowMs ?? 15 * 60 * 1000; // 15 minutos
+    this.passwordVerifier = options?.passwordVerifier ?? new PasswordVerifier();
   }
 
   /**
@@ -165,7 +170,7 @@ export class OrganizerAuthenticationService {
 
       // Si la cuenta no existe -> tiempo constante con dummy digest y error uniforme
       if (!accountRows.length) {
-        computeDummyCredentialDigest('ORGANIZER_AUTHENTICATION', password);
+        await this.passwordVerifier.verifyDummy(password);
         this.recordFailedAttempt(emailNormalized);
 
         await this.auditSink.record({
@@ -183,9 +188,9 @@ export class OrganizerAuthenticationService {
 
       const account = accountRows[0];
 
-      // 2. Si la cuenta no está activa (por ejemplo, PENDING_VERIFICATION) -> rechazo neutro uniforme sin enumerar
-      if (account.status !== 'ACTIVE') {
-        computeDummyCredentialDigest('ORGANIZER_AUTHENTICATION', password);
+      // 2. Si la cuenta no está activa ni en pending_deletion -> rechazo neutro uniforme sin enumerar
+      if (account.status !== 'ACTIVE' && account.status !== 'PENDING_DELETION') {
+        await this.passwordVerifier.verifyDummy(password);
         this.recordFailedAttempt(emailNormalized);
 
         await this.auditSink.record({
@@ -214,7 +219,7 @@ export class OrganizerAuthenticationService {
       );
 
       if (!credRows.length) {
-        computeDummyCredentialDigest('ORGANIZER_AUTHENTICATION', password);
+        await this.passwordVerifier.verifyDummy(password);
         this.recordFailedAttempt(emailNormalized);
 
         await this.auditSink.record({
@@ -232,13 +237,15 @@ export class OrganizerAuthenticationService {
       }
 
       const credential = credRows[0];
+      const isLegacy = this.passwordVerifier.isLegacyShaDigest(credential.secret_digest);
 
-      // 4. Calcular digest real con aislamiento de propósito y comparar en tiempo constante
-      const computedDigest = computeCredentialDigest('ORGANIZER_AUTHENTICATION', account.id, password);
-      const digestA = Buffer.from(computedDigest, 'hex');
-      const digestB = Buffer.from(credential.secret_digest, 'hex');
-
-      const isPasswordValid = digestA.length === digestB.length && timingSafeEqual(digestA, digestB);
+      // 4. Verificar credencial (Argon2id o legacy SHA con separación de propósito y subject)
+      let isPasswordValid = false;
+      if (isLegacy) {
+        isPasswordValid = this.passwordVerifier.verifyLegacyDigest(credential.secret_digest, account.id, password);
+      } else {
+        isPasswordValid = await this.passwordVerifier.verifyPassword(credential.secret_digest, password);
+      }
 
       if (!isPasswordValid) {
         this.recordFailedAttempt(emailNormalized);
@@ -257,13 +264,13 @@ export class OrganizerAuthenticationService {
         throw new AuthenticationError('UNAUTHENTICATED', 'Invalid credentials');
       }
 
-      // 5. Validar con RecoveryAuthorityPort (AQR-001, EL-TK-046)
+      // 5. Validar con RecoveryAuthorityPort (AQR-001, EL-TK-046, DEC-108)
+      // Exige concordancia exacta con la autoridad y falla cerrado si es null o no coincide.
       const epoch = await this.recoveryAuthority.getRecoveryEpoch();
       const currentRevision = await this.recoveryAuthority.getCredentialRevision(account.id);
-      const credRevBigInt = BigInt(credential.revision);
+      let credRevBigInt = BigInt(credential.revision);
 
-      if (currentRevision !== null && currentRevision > credRevBigInt) {
-        // Credencial restaurada previa a PITR o inconsistente con hechos externos
+      if (currentRevision === null || currentRevision !== credRevBigInt) {
         this.recordFailedAttempt(emailNormalized);
 
         await this.auditSink.record({
@@ -273,16 +280,100 @@ export class OrganizerAuthenticationService {
           targetIdentifier: account.email_normalized,
           targetPrincipalId: account.id,
           result: 'REJECTED_UNAUTHENTICATED',
-          details: 'Authentication rejected: credential revision outdated relative to recovery authority',
+          details: 'Authentication rejected: credential revision mismatch with recovery authority',
           timestamp: now
         });
 
         throw new AuthenticationError('UNAUTHENTICATED', 'Invalid credentials');
       }
 
-      const watermark = await this.recoveryAuthority.getAdminAuthWatermark(account.id).catch(() => 1n);
+      // 6. Migración inline transicional con CAS y PREPARE-SQL-ACK si es legacy digest
+      let watermark: bigint;
+      if (isLegacy) {
+        const nextRevision = credRevBigInt + 1n;
+        const newSecretDigest = await this.passwordVerifier.hashPassword(password);
 
-      // 6. Éxito: limpiar intentos fallidos y emitir tokens de sesión opacos de 256 bits
+        let preparedReceipt: RecoveryPreparedReceipt | undefined;
+        if (this.recoveryAuthority.prepare) {
+          try {
+            preparedReceipt = await this.recoveryAuthority.prepare({
+              operationId: randomUUID(),
+              subjectRef: account.id,
+              fact: {
+                type: 'CREDENTIAL_ROTATED',
+                data: {
+                  subjectKind: 'ORGANIZER',
+                  accountId: account.id,
+                  cause: 'PASSWORD_VERIFIER_UPGRADE',
+                  credentialId: credential.id,
+                  previousRevision: credRevBigInt,
+                  newRevision: nextRevision
+                }
+              }
+            });
+          } catch (prepErr) {
+            this.recordFailedAttempt(emailNormalized);
+            throw new AuthenticationError('UNAUTHENTICATED', `Recovery authority prepare failed: ${(prepErr as Error).message}`);
+          }
+        }
+
+        const updatedRows = await tx.execute(
+          `UPDATE organizer_credential
+           SET secret_digest = $1, revision = $2, updated_at = $3
+           WHERE id = $4 AND secret_digest = $5 AND revision = $6 AND status = 'ACTIVE'`,
+          newSecretDigest,
+          nextRevision,
+          now,
+          credential.id,
+          credential.secret_digest,
+          credRevBigInt
+        );
+
+        if (updatedRows === 0) {
+          if (preparedReceipt && this.recoveryAuthority.resolveAbort) {
+            try {
+              await this.recoveryAuthority.resolveAbort(preparedReceipt.preparedReceipt, 'CAS conflict during transitional upgrade');
+            } catch {
+              // Ignore secondary abort error
+            }
+          }
+          this.recordFailedAttempt(emailNormalized);
+          throw new AuthenticationError('UNAUTHENTICATED', 'Concurrent credential modification detected');
+        }
+
+        // Invalidar sesiones activas anteriores per DEC-108
+        await tx.execute(
+          `UPDATE organizer_session
+           SET revoked_at = $1, revocation_reason = 'CREDENTIAL_ROTATED'
+           WHERE account_id = $2 AND revoked_at IS NULL`,
+          now,
+          account.id
+        );
+
+        if (preparedReceipt) {
+          if (!this.recoveryAuthority.ackCommit) {
+            throw new AuthenticationError('UNAUTHENTICATED', 'Recovery authority does not support mandatory ACK commit');
+          }
+          try {
+            await this.recoveryAuthority.ackCommit(preparedReceipt.preparedReceipt, nextRevision);
+          } catch (ackErr) {
+            this.recordFailedAttempt(emailNormalized);
+            throw new AuthenticationError('UNAUTHENTICATED', `Failed to ACK committed operation: ${(ackErr as Error).message}`);
+          }
+        }
+
+        credRevBigInt = nextRevision;
+        watermark = nextRevision;
+      } else {
+        const authWatermark = await this.recoveryAuthority.getAdminAuthWatermark(account.id);
+        if (authWatermark === null || authWatermark === undefined) {
+          this.recordFailedAttempt(emailNormalized);
+          throw new AuthenticationError('UNAUTHENTICATED', 'Recovery authority watermark unavailable');
+        }
+        watermark = authWatermark;
+      }
+
+      // 7. Éxito: limpiar intentos fallidos y emitir tokens de sesión opacos de 256 bits
       this.clearFailedAttempts(emailNormalized);
 
       const rawSessionToken = randomBytes(32).toString('hex');
@@ -310,7 +401,7 @@ export class OrganizerAuthenticationService {
         expiresAt,
         authTime,
         idleExpiresAt,
-        watermark ?? 1n
+        watermark
       );
 
       // Registrar auditoría append-only sin tokens
@@ -342,7 +433,7 @@ export class OrganizerAuthenticationService {
         sessionId,
         authTime,
         credentialRevision: credRevBigInt,
-        sessionWatermark: watermark ?? 1n,
+        sessionWatermark: watermark,
         recoveryEpoch: epoch
       };
 
@@ -370,7 +461,7 @@ export class OrganizerAuthenticationService {
   }
 
   /**
-   * Validates an existing organizer session and enforces idle/absolute timeouts (EL-TK-013).
+   * Validates an existing organizer session and enforces idle/absolute timeouts and credential watermark (EL-TK-013, EL-TK-185).
    */
   public async validateSession(
     command: ValidateOrganizerSessionCommand
@@ -416,8 +507,33 @@ export class OrganizerAuthenticationService {
         throw new AuthenticationError('SESSION_EXPIRED', 'Session expired due to inactivity');
       }
 
-      if (session.account_status !== 'ACTIVE') {
+      if (session.account_status !== 'ACTIVE' && session.account_status !== 'PENDING_DELETION') {
         throw new AuthenticationError('UNAUTHENTICATED', 'Organizer account is inactive');
+      }
+
+      const sessionWatermark = BigInt(session.session_watermark);
+
+      // Invalidate if credential has been rotated post-session issuance
+      const credRows = await tx.query<OrganizerCredentialRow>(
+        `SELECT id, account_id, purpose, secret_digest, revision, status
+         FROM organizer_credential
+         WHERE account_id = $1 AND purpose = 'ORGANIZER_AUTHENTICATION' AND status = 'ACTIVE'
+         ORDER BY revision DESC
+         LIMIT 1`,
+        session.account_id
+      );
+
+      let currentCredRev = sessionWatermark;
+      if (credRows.length > 0) {
+        currentCredRev = BigInt(credRows[0].revision);
+        if (currentCredRev > sessionWatermark) {
+          throw new AuthenticationError('SESSION_REVOKED', 'Session invalidated due to subsequent credential rotation');
+        }
+      }
+
+      const authRev = await this.recoveryAuthority.getCredentialRevision(session.account_id);
+      if (authRev !== null && authRev > sessionWatermark) {
+        throw new AuthenticationError('SESSION_REVOKED', 'Session invalidated due to recovery authority credential revision');
       }
 
       const epoch = await this.recoveryAuthority.getRecoveryEpoch();
@@ -439,8 +555,8 @@ export class OrganizerAuthenticationService {
         email: session.email,
         sessionId: session.id,
         authTime: new Date(session.auth_time),
-        credentialRevision: 1n,
-        sessionWatermark: BigInt(session.session_watermark),
+        credentialRevision: currentCredRev,
+        sessionWatermark: sessionWatermark,
         recoveryEpoch: epoch
       };
 

@@ -90,15 +90,20 @@ export class Mod001RecoveryCoordinator {
       throw sqlError;
     }
 
-    if (this.authority.ackCommit) {
-      try {
-        await this.authority.ackCommit(receipt.preparedReceipt, opOutcome.revision);
-      } catch (ackError) {
-        throw new RecoveryError(
-          'AUTHORITY_UNAVAILABLE',
-          `Failed to ACK committed operation with recovery authority: ${(ackError as Error).message}`
-        );
-      }
+    if (!this.authority.ackCommit) {
+      throw new RecoveryError(
+        'AUTHORITY_UNAVAILABLE',
+        'Recovery authority does not support mandatory ACK commit protocol'
+      );
+    }
+
+    try {
+      await this.authority.ackCommit(receipt.preparedReceipt, opOutcome.revision);
+    } catch (ackError) {
+      throw new RecoveryError(
+        'AUTHORITY_UNAVAILABLE',
+        `Failed to ACK committed operation with recovery authority: ${(ackError as Error).message}`
+      );
     }
 
     return opOutcome.result;
@@ -155,28 +160,53 @@ export class Mod001RecoveryCoordinator {
 
           case 'CREDENTIAL_ROTATED': {
             // Ensure restored credential does not authorize if its revision is older than the fact
-            const updated = await tx.execute(
-              `UPDATE admin_credential SET status = 'REVOKED', updated_at = NOW() WHERE principal_id = $1 AND revision < $2 AND status = 'ACTIVE'`,
-              fact.subjectRef,
-              fact.revision.toString()
-            );
-            if (updated > 0) {
-              restrictionsApplied += updated;
+            const isOrganizer = fact.facts?.subjectKind === 'ORGANIZER' || fact.facts?.kind === 'ORGANIZER';
+            if (isOrganizer) {
+              const updated = await tx.execute(
+                `UPDATE organizer_credential SET status = 'REVOKED', updated_at = NOW() WHERE account_id = $1 AND revision < $2 AND status = 'ACTIVE'`,
+                fact.subjectRef,
+                fact.revision.toString()
+              );
+              if (updated > 0) {
+                restrictionsApplied += updated;
+              }
+            } else {
+              const updated = await tx.execute(
+                `UPDATE admin_credential SET status = 'REVOKED', updated_at = NOW() WHERE principal_id = $1 AND revision < $2 AND status = 'ACTIVE'`,
+                fact.subjectRef,
+                fact.revision.toString()
+              );
+              if (updated > 0) {
+                restrictionsApplied += updated;
+              }
             }
             break;
           }
 
           case 'SESSION_REVOKED': {
             // Revoke matching session or any session with older watermark
+            const isOrganizer = fact.facts?.subjectKind === 'ORGANIZER' || fact.facts?.kind === 'ORGANIZER';
             const watermark = fact.facts?.watermark ? String(fact.facts.watermark) : '0';
-            const updated = await tx.execute(
-              `UPDATE admin_session SET revoked_at = NOW(), revocation_reason = 'RECOVERY_RECONCILIATION' WHERE (id = $1 OR (principal_id = $2 AND session_watermark < $3)) AND revoked_at IS NULL`,
-              fact.subjectRef,
-              fact.facts?.principalId ? String(fact.facts.principalId) : fact.subjectRef,
-              watermark
-            );
-            if (updated > 0) {
-              restrictionsApplied += updated;
+            if (isOrganizer) {
+              const updated = await tx.execute(
+                `UPDATE organizer_session SET revoked_at = NOW(), revocation_reason = 'RECOVERY_RECONCILIATION' WHERE (id = $1 OR (account_id = $2 AND session_watermark < $3)) AND revoked_at IS NULL`,
+                fact.subjectRef,
+                fact.facts?.accountId ? String(fact.facts.accountId) : fact.subjectRef,
+                watermark
+              );
+              if (updated > 0) {
+                restrictionsApplied += updated;
+              }
+            } else {
+              const updated = await tx.execute(
+                `UPDATE admin_session SET revoked_at = NOW(), revocation_reason = 'RECOVERY_RECONCILIATION' WHERE (id = $1 OR (principal_id = $2 AND session_watermark < $3)) AND revoked_at IS NULL`,
+                fact.subjectRef,
+                fact.facts?.principalId ? String(fact.facts.principalId) : fact.subjectRef,
+                watermark
+              );
+              if (updated > 0) {
+                restrictionsApplied += updated;
+              }
             }
             break;
           }
