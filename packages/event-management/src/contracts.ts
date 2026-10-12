@@ -60,6 +60,7 @@ export type EventManagementErrorCode =
   | 'EVENT_ALREADY_EXPIRED'
   | 'EVENT_TERMINAL'
   | 'SUSPENSION_REASON_REQUIRED'
+  | 'JUSTIFICATION_REQUIRED'
   | 'EVENT_NOT_SUSPENDED'
   | 'INVALID_PREVIOUS_STATUS'
   | 'EXTENSION_REASON_REQUIRED'
@@ -197,6 +198,74 @@ export interface SetEventGuestGalleryCommand {
 export interface SetEventGuestGalleryResult {
   readonly event: EventRecord;
   readonly outcome: 'UPDATED' | 'IDEMPOTENT_REPLAY';
+}
+
+// ==========================================
+// EL-TK-024: Change Prepared Event Timezone Contracts
+// ==========================================
+
+export interface ChangePreparedEventTimezoneCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly eventId: string;
+  readonly timezone: string;
+  readonly utcOffsetMinutes?: number;
+  readonly idempotencyKey?: string;
+}
+
+export interface ChangePreparedEventTimezoneResult {
+  readonly event: EventRecord;
+  readonly previousTimezone: string;
+  readonly warning?: 'RECALCULATED_SCHEDULE' | null;
+  readonly outcome: 'TIMEZONE_CHANGED' | 'IDEMPOTENT_REPLAY';
+}
+
+// ==========================================
+// EL-TK-025: Admin Correct Event Timezone Contracts
+// ==========================================
+
+export interface AdminCorrectEventTimezoneCommand {
+  readonly actorContext: AdminActorContext;
+  readonly eventId: string;
+  readonly timezone: string;
+  readonly justification: string;
+  readonly utcOffsetMinutes?: number;
+  readonly idempotencyKey?: string;
+}
+
+export interface AdminCorrectEventTimezoneResult {
+  readonly event: EventRecord;
+  readonly previousTimezone: string;
+  readonly outcome: 'TIMEZONE_CORRECTED' | 'IDEMPOTENT_REPLAY';
+}
+
+// ==========================================
+// EL-TK-031: Preview Draft As Guest Contracts
+// ==========================================
+
+export interface EventSnapshot {
+  readonly eventId: string;
+  readonly name: string;
+  readonly status: EventStatus;
+  readonly timezone: string;
+  readonly startsAtLocal: string | null;
+  readonly scheduledAt: Date | null;
+  readonly utcOffsetMinutes: number | null;
+  readonly welcomeMessage: string | null;
+  readonly coverPreviewUrl: string | null;
+  readonly uploadsEnabled: boolean;
+  readonly guestGalleryEnabled: boolean;
+  readonly moderationMode: ModerationMode;
+  readonly pinEnabled: boolean;
+  readonly isPreview: true;
+}
+
+export interface PreviewDraftAsGuestCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly eventId: string;
+}
+
+export interface PreviewDraftAsGuestResult {
+  readonly snapshot: EventSnapshot;
 }
 
 export interface SetEventScheduleCommand {
@@ -889,6 +958,9 @@ export interface EventAuditRecord {
     | 'EVENT_GUEST_UPLOADS_CONFIGURED'
     | 'EVENT_GUEST_GALLERY_CONFIGURED'
     | 'EVENT_SCHEDULE_SET'
+    | 'EVENT_TIMEZONE_CHANGED'
+    | 'ADMIN_EVENT_TIMEZONE_CORRECTED'
+    | 'EVENT_DRAFT_PREVIEWED'
     | 'EVENT_SCHEDULED'
     | 'EVENT_ACTIVATED'
     | 'EVENT_CLOSED'
@@ -921,6 +993,9 @@ export interface EventAuditRecord {
   readonly result:
     | 'SUCCESS'
     | 'UPDATED'
+    | 'RECALCULATED_SCHEDULE'
+    | 'TIMEZONE_CHANGED'
+    | 'TIMEZONE_CORRECTED'
     | 'EXTENDED'
     | 'REACTIVATED'
     | 'REGENERATED'
@@ -965,6 +1040,7 @@ export interface EventAuditRecord {
     | 'REJECTED_ATTEMPT_EXPIRED'
     | 'REJECTED_ATTEMPT_CANCELLED'
     | 'REJECTED_ATTEMPT_NOT_RETRYABLE'
+    | 'REJECTED_TIMEZONE_INVALID'
     | 'CONCURRENCY_CONFLICT'
     | 'FAILURE';
   readonly details?: string;

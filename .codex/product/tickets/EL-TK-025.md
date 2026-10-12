@@ -6,9 +6,9 @@ EL-EP-002
 
 ## Status
 
-READY
+DONE
 
-**HISTÓRICO CONFIRMED — 2026-10-07:** requirements_reviewer declaró este ticket implementable, sin hallazgos pendientes. Se conservan sus dependencias de ejecución. Véase [dictamen](../sessions/2026-10-07-el-ep-002-ticket-review.md).
+**COMPLETADO — 2026-10-12:** Implementado en `EventDraftService.adminCorrectTimezone` en `@eventlens/event-management`. Exige autenticación de actor administrativo (`AdminActorContext`), justificación no vacía obligatoria (`JUSTIFICATION_REQUIRED`), restringe la corrección a eventos que hayan alcanzado estado ACTIVE o posterior (`ACTIVE`, `CLOSED`, `GRACE_PERIOD`, `SUSPENDED`, bloqueando DRAFT, SCHEDULED y terminales), valida zona IANA, conserva la fecha y hora local (`starts_at_local`), recalcula el instante UTC (`scheduled_at`), rechaza DST gaps sin modificar el evento, preserva estrictamente fechas de ciclo de vida (`expires_at`, `grace_ends_at`, `purge_started_at` no se alteran), soporte de idempotencia transaccional y auditoría inmutable (`ADMIN_EVENT_TIMEZONE_CORRECTED`). Verificado con pruebas unitarias y de integración contra PostgreSQL 16 real.
 
 ## User story
 

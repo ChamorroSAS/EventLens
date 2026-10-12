@@ -26,9 +26,17 @@ import {
   type SetEventGuestUploadsCommand,
   type SetEventGuestUploadsResult,
   type SetEventGuestGalleryCommand,
-  type SetEventGuestGalleryResult
+  type SetEventGuestGalleryResult,
+  type ChangePreparedEventTimezoneCommand,
+  type ChangePreparedEventTimezoneResult,
+  type AdminCorrectEventTimezoneCommand,
+  type AdminCorrectEventTimezoneResult,
+  type EventSnapshot,
+  type PreviewDraftAsGuestCommand,
+  type PreviewDraftAsGuestResult
 } from './contracts.js';
 import { resolveScheduleLocalTime } from './timezone.js';
+import { validateIanaTimezone } from './timeline.js';
 
 interface EventRow {
   id: string;
@@ -139,7 +147,8 @@ function resolveCapabilities(status: EventStatus): EventConfigurationCapabilitie
 export class EventDraftService {
   constructor(
     private readonly runner: TransactionRunner,
-    private readonly auditSink?: EventAuditSink
+    private readonly auditSink?: EventAuditSink,
+    private readonly coverAssetResolver?: (eventId: string) => Promise<string | null>
   ) {}
 
   /**
@@ -1533,6 +1542,549 @@ export class EventDraftService {
         revision,
         capabilities
       };
+    });
+  }
+
+  /**
+   * Changes the IANA timezone of an event in DRAFT or SCHEDULED status (EL-TK-024).
+   * - Authorizes only the creating organizer owner.
+   * - Rejects events that have reached ACTIVE status or later.
+   * - Validates target IANA timezone; rejects invalid timezones without modifying the event.
+   * - Preserves local date/time (startsAtLocal).
+   * - If startsAtLocal is set:
+   *   - Recalculates UTC scheduledAt using resolveScheduleLocalTime.
+   *   - Rejects DST gap times (DST_GAP_TIME) without modifying the event.
+   *   - Demands explicit utcOffsetMinutes on ambiguous fallback times (AMBIGUOUS_LOCAL_TIME / INVALID_OFFSET).
+   *   - For SCHEDULED events, returns warning: 'RECALCULATED_SCHEDULE'.
+   * - If startsAtLocal is null (draft without date):
+   *   - Updates timezone only without computing scheduledAt.
+   * - Idempotency key and hash prevent conflicting replays.
+   * - Audited via EVENT_TIMEZONE_CHANGED.
+   */
+  public async changeTimezone(command: ChangePreparedEventTimezoneCommand): Promise<ChangePreparedEventTimezoneResult> {
+    if (!command || typeof command !== 'object') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Command is required');
+    }
+
+    const { actorContext, eventId, timezone, utcOffsetMinutes, idempotencyKey } = command;
+
+    if (
+      !actorContext ||
+      actorContext.actorType !== 'ORGANIZER_HUMAN' ||
+      !actorContext.accountId ||
+      typeof actorContext.accountId !== 'string'
+    ) {
+      throw new EventManagementError('UNAUTHORIZED', 'Authenticated organizer context is required');
+    }
+
+    if (!eventId || typeof eventId !== 'string') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Valid eventId is required');
+    }
+
+    if (!timezone || typeof timezone !== 'string') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Valid timezone string is required');
+    }
+
+    const trimmedTimezone = timezone.trim();
+    try {
+      validateIanaTimezone(trimmedTimezone);
+    } catch (err) {
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_TIMEZONE_CHANGED',
+        actorId: actorContext.accountId,
+        targetIdentifier: eventId,
+        result: 'REJECTED_TIMEZONE_INVALID',
+        details: err instanceof Error ? err.message : String(err),
+        timestamp: new Date()
+      });
+      throw err;
+    }
+
+    const payloadHash = idempotencyKey
+      ? createHash('sha256')
+          .update(
+            JSON.stringify({
+              eventId,
+              timezone: trimmedTimezone,
+              utcOffsetMinutes: utcOffsetMinutes ?? null
+            })
+          )
+          .digest('hex')
+      : null;
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      const rows = await tx.query<EventRow>(
+        `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
+                expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
+                suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
+                guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
+                idempotency_key, idempotency_payload_hash, created_at, updated_at
+         FROM event
+         WHERE id = $1
+         FOR UPDATE`,
+        eventId
+      );
+
+      if (!rows.length) {
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event with ID ${eventId} not found`);
+      }
+
+      const current = rows[0];
+
+      if (current.organizer_id !== actorContext.accountId) {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_TIMEZONE_CHANGED',
+          actorId: actorContext.accountId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_UNAUTHORIZED',
+          details: 'Actor attempted to change timezone of an event owned by another organizer',
+          timestamp: new Date()
+        });
+        throw new EventManagementError('UNAUTHORIZED', 'Actor is not authorized to edit this event draft');
+      }
+
+      if (current.status !== 'DRAFT' && current.status !== 'SCHEDULED') {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'EVENT_TIMEZONE_CHANGED',
+          actorId: actorContext.accountId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_INVALID_STATE',
+          details: `Attempted to change timezone on event in '${current.status}' status (must be DRAFT or SCHEDULED)`,
+          timestamp: new Date()
+        });
+        throw new EventManagementError(
+          'INVALID_STATE',
+          `Timezone can only be changed for events in DRAFT or SCHEDULED status, current is '${current.status}'`
+        );
+      }
+
+      if (idempotencyKey && current.idempotency_key === idempotencyKey) {
+        if (current.idempotency_payload_hash === payloadHash) {
+          return {
+            event: mapRowToRecord(current),
+            previousTimezone: current.timezone,
+            warning: current.status === 'SCHEDULED' ? 'RECALCULATED_SCHEDULE' : null,
+            outcome: 'IDEMPOTENT_REPLAY'
+          };
+        }
+        throw new EventManagementError(
+          'IDEMPOTENCY_CONFLICT',
+          'Idempotency key has already been used with different parameters'
+        );
+      }
+
+      let newStartsAtLocal: string | null = null;
+      let newScheduledAt: Date | null = null;
+      let newUtcOffsetMinutes: number | null = null;
+      let warning: 'RECALCULATED_SCHEDULE' | null = null;
+
+      if (current.starts_at_local) {
+        try {
+          const resolved = resolveScheduleLocalTime(trimmedTimezone, current.starts_at_local, utcOffsetMinutes);
+          newStartsAtLocal = resolved.startsAtLocal;
+          newScheduledAt = resolved.scheduledAt;
+          newUtcOffsetMinutes = resolved.utcOffsetMinutes;
+          if (current.status === 'SCHEDULED') {
+            warning = 'RECALCULATED_SCHEDULE';
+          }
+        } catch (err) {
+          if (err instanceof EventManagementError) {
+            const auditResult =
+              err.code === 'DST_GAP_TIME'
+                ? 'REJECTED_DST_GAP'
+                : err.code === 'AMBIGUOUS_LOCAL_TIME'
+                ? 'REJECTED_AMBIGUOUS_TIME'
+                : err.code === 'INVALID_OFFSET'
+                ? 'REJECTED_INVALID_OFFSET'
+                : 'FAILURE';
+
+            await this.auditSink?.record({
+              id: randomUUID(),
+              procedure: 'EVENT_TIMEZONE_CHANGED',
+              actorId: actorContext.accountId,
+              targetIdentifier: eventId,
+              result: auditResult,
+              details: err.message,
+              timestamp: new Date()
+            });
+          }
+          throw err;
+        }
+      }
+
+      const now = new Date();
+      const updatedRows = await tx.query<EventRow>(
+        `UPDATE event
+         SET timezone = $1,
+             starts_at_local = $2,
+             scheduled_at = $3,
+             utc_offset_minutes = $4,
+             idempotency_key = $5,
+             idempotency_payload_hash = $6,
+             updated_at = $7
+         WHERE id = $8
+         RETURNING id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
+                   expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
+                   suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
+                   guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
+                   idempotency_key, idempotency_payload_hash, created_at, updated_at`,
+        trimmedTimezone,
+        newStartsAtLocal,
+        newScheduledAt,
+        newUtcOffsetMinutes,
+        idempotencyKey ?? null,
+        payloadHash,
+        now,
+        eventId
+      );
+
+      const updated = updatedRows[0];
+
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_TIMEZONE_CHANGED',
+        actorId: actorContext.accountId,
+        targetIdentifier: eventId,
+        result: warning ? 'RECALCULATED_SCHEDULE' : 'TIMEZONE_CHANGED',
+        details: `Timezone updated from '${current.timezone}' to '${trimmedTimezone}'${warning ? ' (recalculated schedule)' : ''}`,
+        timestamp: now
+      });
+
+      return {
+        event: mapRowToRecord(updated),
+        previousTimezone: current.timezone,
+        warning,
+        outcome: 'TIMEZONE_CHANGED'
+      };
+    });
+  }
+
+  /**
+   * Administratively corrects the timezone of an event that has reached ACTIVE status (EL-TK-025).
+   * - Authorized administrative actor only (AdminActorContext with ADMIN_HUMAN).
+   * - Mandatory non-empty justification string.
+   * - Event must not be deleted/terminal and must have reached ACTIVE status
+   *   (ACTIVE, CLOSED, GRACE_PERIOD, SUSPENDED). Events in DRAFT or SCHEDULED must use EL-TK-024.
+   * - Preserves local date/time (startsAtLocal) and recalculates UTC scheduledAt.
+   * - Rejects DST gaps or ambiguous times without explicit offset.
+   * - Does NOT alter lifecycle expiration, grace ends, or deletion deadlines.
+   * - Immutable audit log via ADMIN_EVENT_TIMEZONE_CORRECTED with justification.
+   */
+  public async adminCorrectTimezone(command: AdminCorrectEventTimezoneCommand): Promise<AdminCorrectEventTimezoneResult> {
+    if (!command || typeof command !== 'object') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Command is required');
+    }
+
+    const { actorContext, eventId, timezone, justification, utcOffsetMinutes, idempotencyKey } = command;
+
+    if (
+      !actorContext ||
+      actorContext.actorType !== 'ADMIN_HUMAN' ||
+      !actorContext.principalId
+    ) {
+      throw new EventManagementError('UNAUTHORIZED', 'Authorized administrative actor context (ADMIN_HUMAN) is required');
+    }
+
+    if (!eventId || typeof eventId !== 'string') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Valid eventId is required');
+    }
+
+    const trimmedJustification = typeof justification === 'string' ? justification.trim() : '';
+    if (!trimmedJustification) {
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'ADMIN_EVENT_TIMEZONE_CORRECTED',
+        actorId: actorContext.principalId,
+        targetIdentifier: eventId,
+        result: 'REJECTED_REASON_REQUIRED',
+        details: 'Administrative timezone correction rejected: justification is required',
+        timestamp: new Date()
+      });
+      throw new EventManagementError(
+        'JUSTIFICATION_REQUIRED',
+        'Justification is required for administrative timezone correction'
+      );
+    }
+
+    if (!timezone || typeof timezone !== 'string') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Valid timezone string is required');
+    }
+
+    const trimmedTimezone = timezone.trim();
+    try {
+      validateIanaTimezone(trimmedTimezone);
+    } catch (err) {
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'ADMIN_EVENT_TIMEZONE_CORRECTED',
+        actorId: actorContext.principalId,
+        targetIdentifier: eventId,
+        result: 'REJECTED_TIMEZONE_INVALID',
+        details: err instanceof Error ? err.message : String(err),
+        timestamp: new Date()
+      });
+      throw err;
+    }
+
+    const payloadHash = idempotencyKey
+      ? createHash('sha256')
+          .update(
+            JSON.stringify({
+              eventId,
+              timezone: trimmedTimezone,
+              justification: trimmedJustification,
+              utcOffsetMinutes: utcOffsetMinutes ?? null
+            })
+          )
+          .digest('hex')
+      : null;
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      const rows = await tx.query<EventRow>(
+        `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
+                expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
+                suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
+                guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
+                idempotency_key, idempotency_payload_hash, created_at, updated_at
+         FROM event
+         WHERE id = $1
+         FOR UPDATE`,
+        eventId
+      );
+
+      if (!rows.length) {
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event with ID ${eventId} not found`);
+      }
+
+      const current = rows[0];
+
+      if (current.status === 'DRAFT' || current.status === 'SCHEDULED') {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'ADMIN_EVENT_TIMEZONE_CORRECTED',
+          actorId: actorContext.principalId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_INVALID_STATE',
+          details: `Administrative timezone correction only applies to events that reached ACTIVE; current is '${current.status}'`,
+          timestamp: new Date()
+        });
+        throw new EventManagementError(
+          'INVALID_STATE',
+          `Administrative timezone correction only applies to events that reached ACTIVE status; current is '${current.status}'`
+        );
+      }
+
+      if (current.status === 'PENDING_DELETION' || current.status === 'ARCHIVED') {
+        await this.auditSink?.record({
+          id: randomUUID(),
+          procedure: 'ADMIN_EVENT_TIMEZONE_CORRECTED',
+          actorId: actorContext.principalId,
+          targetIdentifier: eventId,
+          result: 'REJECTED_EVENT_TERMINAL',
+          details: `Cannot correct timezone of deleted or terminal event in '${current.status}' status`,
+          timestamp: new Date()
+        });
+        throw new EventManagementError(
+          'EVENT_TERMINAL',
+          `Cannot correct timezone of terminal or pending deletion event in status '${current.status}'`
+        );
+      }
+
+      if (idempotencyKey && current.idempotency_key === idempotencyKey) {
+        if (current.idempotency_payload_hash === payloadHash) {
+          return {
+            event: mapRowToRecord(current),
+            previousTimezone: current.timezone,
+            outcome: 'IDEMPOTENT_REPLAY'
+          };
+        }
+        throw new EventManagementError(
+          'IDEMPOTENCY_CONFLICT',
+          'Idempotency key has already been used with different parameters'
+        );
+      }
+
+      let newStartsAtLocal: string | null = null;
+      let newScheduledAt: Date | null = null;
+      let newUtcOffsetMinutes: number | null = null;
+
+      if (current.starts_at_local) {
+        try {
+          const resolved = resolveScheduleLocalTime(trimmedTimezone, current.starts_at_local, utcOffsetMinutes);
+          newStartsAtLocal = resolved.startsAtLocal;
+          newScheduledAt = resolved.scheduledAt;
+          newUtcOffsetMinutes = resolved.utcOffsetMinutes;
+        } catch (err) {
+          if (err instanceof EventManagementError) {
+            const auditResult =
+              err.code === 'DST_GAP_TIME'
+                ? 'REJECTED_DST_GAP'
+                : err.code === 'AMBIGUOUS_LOCAL_TIME'
+                ? 'REJECTED_AMBIGUOUS_TIME'
+                : err.code === 'INVALID_OFFSET'
+                ? 'REJECTED_INVALID_OFFSET'
+                : 'FAILURE';
+
+            await this.auditSink?.record({
+              id: randomUUID(),
+              procedure: 'ADMIN_EVENT_TIMEZONE_CORRECTED',
+              actorId: actorContext.principalId,
+              targetIdentifier: eventId,
+              result: auditResult,
+              details: err.message,
+              timestamp: new Date()
+            });
+          }
+          throw err;
+        }
+      }
+
+      const now = new Date();
+      const updatedRows = await tx.query<EventRow>(
+        `UPDATE event
+         SET timezone = $1,
+             starts_at_local = $2,
+             scheduled_at = $3,
+             utc_offset_minutes = $4,
+             idempotency_key = $5,
+             idempotency_payload_hash = $6,
+             updated_at = $7
+         WHERE id = $8
+         RETURNING id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
+                   expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
+                   suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
+                   guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
+                   idempotency_key, idempotency_payload_hash, created_at, updated_at`,
+        trimmedTimezone,
+        newStartsAtLocal,
+        newScheduledAt,
+        newUtcOffsetMinutes,
+        idempotencyKey ?? null,
+        payloadHash,
+        now,
+        eventId
+      );
+
+      const updated = updatedRows[0];
+
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'ADMIN_EVENT_TIMEZONE_CORRECTED',
+        actorId: actorContext.principalId,
+        targetIdentifier: eventId,
+        result: 'TIMEZONE_CORRECTED',
+        details: `Timezone corrected from '${current.timezone}' to '${trimmedTimezone}'. Justification: "${trimmedJustification}"`,
+        timestamp: now
+      });
+
+      return {
+        event: mapRowToRecord(updated),
+        previousTimezone: current.timezone,
+        outcome: 'TIMEZONE_CORRECTED'
+      };
+    });
+  }
+
+  /**
+   * Previews an event draft as a guest (EL-TK-031).
+   * - Authorizes only the creating organizer owner.
+   * - Enforces multi-tenant isolation and anti-enumeration: non-owners receive EVENT_NOT_FOUND.
+   * - Event must be in DRAFT status.
+   * - Returns private EventSnapshot with current configuration, DEC-069 defaults,
+   *   pin_enabled boolean (zero secret disclosure), and coverPreviewUrl (or null).
+   * - Does not publish, activate, mutate the event, create sessions, or generate public credentials/QR.
+   * - Audited via EVENT_DRAFT_PREVIEWED.
+   */
+  public async previewDraftAsGuest(command: PreviewDraftAsGuestCommand): Promise<PreviewDraftAsGuestResult> {
+    if (!command || typeof command !== 'object') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Command is required');
+    }
+
+    const { actorContext, eventId } = command;
+
+    if (
+      !actorContext ||
+      actorContext.actorType !== 'ORGANIZER_HUMAN' ||
+      !actorContext.accountId ||
+      typeof actorContext.accountId !== 'string'
+    ) {
+      throw new EventManagementError('UNAUTHORIZED', 'Authenticated organizer context is required');
+    }
+
+    if (!eventId || typeof eventId !== 'string') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Valid eventId is required');
+    }
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      const rows = await tx.query<EventRow>(
+        `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
+                expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
+                suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
+                guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
+                created_at, updated_at
+         FROM event
+         WHERE id = $1`,
+        eventId
+      );
+
+      if (!rows.length) {
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event with ID ${eventId} not found`);
+      }
+
+      const current = rows[0];
+
+      if (current.organizer_id !== actorContext.accountId) {
+        // Anti-enumeration: do not leak existence of other organizers' events
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event with ID ${eventId} not found`);
+      }
+
+      if (current.status !== 'DRAFT') {
+        throw new EventManagementError(
+          'EVENT_NOT_IN_DRAFT',
+          `Preview is only available for events in DRAFT status, current is '${current.status}'`
+        );
+      }
+
+      let coverPreviewUrl: string | null = null;
+      if (this.coverAssetResolver) {
+        try {
+          coverPreviewUrl = await this.coverAssetResolver(eventId);
+        } catch {
+          coverPreviewUrl = null;
+        }
+      }
+
+      const snapshot: EventSnapshot = {
+        eventId: current.id,
+        name: current.name,
+        status: current.status as EventStatus,
+        timezone: current.timezone,
+        startsAtLocal: current.starts_at_local ?? null,
+        scheduledAt: current.scheduled_at ? new Date(current.scheduled_at) : null,
+        utcOffsetMinutes: current.utc_offset_minutes !== null && current.utc_offset_minutes !== undefined ? Number(current.utc_offset_minutes) : null,
+        welcomeMessage: current.welcome_message ?? null,
+        coverPreviewUrl,
+        uploadsEnabled: Boolean(current.uploads_enabled),
+        guestGalleryEnabled: Boolean(current.guest_gallery_enabled),
+        moderationMode: current.moderation_mode as ModerationMode,
+        pinEnabled: Boolean(current.pin_enabled),
+        isPreview: true
+      };
+
+      await this.auditSink?.record({
+        id: randomUUID(),
+        procedure: 'EVENT_DRAFT_PREVIEWED',
+        actorId: actorContext.accountId,
+        targetIdentifier: eventId,
+        result: 'SUCCESS',
+        details: 'Draft preview snapshot generated for owner',
+        timestamp: new Date()
+      });
+
+      return { snapshot };
     });
   }
 }

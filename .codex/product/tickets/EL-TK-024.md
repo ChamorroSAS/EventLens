@@ -6,9 +6,9 @@ EL-EP-002
 
 ## Status
 
-READY
+DONE
 
-**HISTÓRICO CONFIRMED — 2026-10-07:** requirements_reviewer declaró este ticket implementable, sin hallazgos pendientes. Se conservan sus dependencias de ejecución. Véase [dictamen](../sessions/2026-10-07-el-ep-002-ticket-review.md).
+**COMPLETADO — 2026-10-12:** Implementado en `EventDraftService.changeTimezone` en `@eventlens/event-management`. Valida propiedad exclusiva del organizador, estados DRAFT y SCHEDULED (bloquea eventos que ya alcanzaron ACTIVE), validación de zona IANA, conservación estricta de hora local (`starts_at_local`), recálculo determinista de UTC (`scheduled_at`), rechazo de horas inexistentes por DST (`DST_GAP_TIME`) sin mutar el evento, exigencia de offset explícito en solapamiento ambiguo (`AMBIGUOUS_LOCAL_TIME`), emisión de advertencia `warning: 'RECALCULATED_SCHEDULE'` en SCHEDULED, idempotencia transaccional y auditoría inmutable (`EVENT_TIMEZONE_CHANGED`). Verificado con pruebas unitarias y de integración contra PostgreSQL 16 real.
 
 ## User story
 

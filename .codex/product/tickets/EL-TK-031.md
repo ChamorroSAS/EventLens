@@ -6,9 +6,9 @@ EL-EP-002
 
 ## Status
 
-READY
+DONE
 
-**HISTÓRICO CONFIRMED — 2026-10-07:** requirements_reviewer declaró este ticket implementable, sin hallazgos pendientes. Se conservan sus dependencias de ejecución. Véase [dictamen](../sessions/2026-10-07-el-ep-002-ticket-review.md).
+**COMPLETADO — 2026-10-12:** Implementado en `EventDraftService.previewDraftAsGuest` en `@eventlens/event-management`. Emite el snapshot privado `EventSnapshot` para eventos DRAFT propios del organizador, reflejando valores y ausencias según DEC-069, `pinEnabled` boolean sin revelar hashes ni sales, `coverPreviewUrl` (o null si ausente), `isPreview: true`, garantizando aislamiento multi-inquilino estricto con anti-enumeración (`EVENT_NOT_FOUND` para no propietarios), sin mutar el evento, sin crear sesiones de invitado ni emitir QR o URLs públicas, y auditando la consulta bajo `EVENT_DRAFT_PREVIEWED`. Verificado con pruebas unitarias y de integración contra PostgreSQL 16 real.
 
 ## User story
 
