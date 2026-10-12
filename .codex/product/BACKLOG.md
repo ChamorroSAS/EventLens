@@ -150,11 +150,11 @@
 | EL-TK-113 | Registrar una denuncia sobre contenido visible | EL-EP-009 | DONE | P0 | contrato media visible EL-EP-007; contrato EL-EP-014 | [EL-TK-113](tickets/EL-TK-113.md) |
 | EL-TK-114 | Retirar irreversiblemente un aporte propio con sesión guest válida | EL-EP-009 | DONE | P0 | 078; contrato EL-EP-015 | [EL-TK-114](tickets/EL-TK-114.md) |
 | EL-TK-115 | Registrar una solicitud de retiro sin sesión válida | EL-EP-009 | DONE | P0 | 082 | [EL-TK-115](tickets/EL-TK-115.md) |
-| EL-TK-116 | Clasificar severidad y priorizar denuncias para revisión administrativa | EL-EP-009 | READY | P0 | 113, 115, 044; contrato EL-EP-014 | [EL-TK-116](tickets/EL-TK-116.md) |
-| EL-TK-117 | Autorizar acceso administrativo justificado a la media de un caso | EL-EP-009 | READY | P0 | 116,044,097; contrato EL-EP-014 | [EL-TK-117](tickets/EL-TK-117.md) |
-| EL-TK-118 | Aplicar ocultamiento preventivo por decisión administrativa | EL-EP-009 | READY | P0 | 116,117,101 | [EL-TK-118](tickets/EL-TK-118.md) |
-| EL-TK-119 | Resolver un caso de reporte o retiro registrando la intervención | EL-EP-009 | READY | P0 | 116,117; contratos EL-EP-013/014/015 | [EL-TK-119](tickets/EL-TK-119.md) |
-| EL-TK-120 | Consultar la cola y detalle de casos para revisión administrativa | EL-EP-009 | READY | P0 | 113,115,116 | [EL-TK-120](tickets/EL-TK-120.md) |
+| EL-TK-116 | Clasificar severidad y priorizar denuncias para revisión administrativa | EL-EP-009 | DONE | P0 | 113, 115, 044; contrato EL-EP-014 | [EL-TK-116](tickets/EL-TK-116.md) |
+| EL-TK-117 | Autorizar acceso administrativo justificado a la media de un caso | EL-EP-009 | DONE | P0 | 116,044,097; contrato EL-EP-014 | [EL-TK-117](tickets/EL-TK-117.md) |
+| EL-TK-118 | Aplicar ocultamiento preventivo por decisión administrativa | EL-EP-009 | DONE | P0 | 116,117,101 | [EL-TK-118](tickets/EL-TK-118.md) |
+| EL-TK-119 | Resolver un caso de reporte o retiro registrando la intervención | EL-EP-009 | DONE | P0 | 116,117; contratos EL-EP-013/014/015 | [EL-TK-119](tickets/EL-TK-119.md) |
+| EL-TK-120 | Consultar la cola y detalle de casos para revisión administrativa | EL-EP-009 | DONE | P0 | 113,115,116 | [EL-TK-120](tickets/EL-TK-120.md) |
 | EL-TK-121 | Integrar reporte y retiro en la experiencia pública/guest | EL-EP-009 | READY | P0 | 099, 113, 114, 115 | [EL-TK-121](tickets/EL-TK-121.md) |
 | EL-TK-122 | Integrar cola y resolución de casos en la consola administrativa | EL-EP-009 | READY | P0 | 116..120; contrato EL-EP-012 | [EL-TK-122](tickets/EL-TK-122.md) |
 | EL-TK-123 | Validar privacidad y resolución de reportes/retiros de extremo a extremo | EL-EP-009 | READY | P0 | 113..122 | [EL-TK-123](tickets/EL-TK-123.md) |

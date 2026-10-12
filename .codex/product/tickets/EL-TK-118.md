@@ -4,7 +4,7 @@
 EL-EP-009
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** administración autorizada, **quiero** ocultar preventivamente una media tras revisar un caso, **para** reducir exposición cuando el riesgo lo justifica sin confundirlo con eliminación definitiva.
@@ -68,3 +68,17 @@ DEC-023, DEC-088; EL-EP-009, EL-EP-008.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §5.26..27 y §12.11..15; sin componentes nuevos ni duplicación de flujos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Cierre de implementación — 2026-10-12
+
+- **Resultado:** APROBADO.
+- **Implementación:**
+  - Implementado método `applyPreventiveHide` en `MediaCaseGovernanceService` y `PostgresMediaCaseGovernanceRepository` en `@eventlens/media-inspection/src/media-report-and-removal.ts`.
+  - Transición atómica de `media_catalog.status` a `'HIDDEN'` con incremento optimista de `revision`.
+  - Actualización del caso a `'UNDER_INVESTIGATION'` y registro inmutable en `media_case_history` con acción `'PREVENTIVE_HIDE'`.
+- **Criterios de aceptación verificados:**
+  - Escenario 1: Decisión administrativa explícita y motivada retira la media de nuevas consultas pasando su estado a `'HIDDEN'` en el catálogo y `'UNDER_INVESTIGATION'` en el caso, preservando el caso y **sin disparar purga**.
+  - Escenario 2: La sola presencia de denuncia grave alerta pero **NUNCA auto-oculta** la media (conforme a `DEC-088`). El ocultamiento requiere esta decisión administrativa separada.
+  - Escenario 3: Idempotencia consistente: si la media ya fue retirada/purgada (`DELETED` o `TRASHED`) o ya está en `HIDDEN`, responde con éxito idempotente sin resucitarla.
+- **Pruebas:** 3 pruebas unitarias en `media-report-and-removal.unit.test.ts` y prueba de integración en `media-report-and-removal.integration.test.ts` contra PostgreSQL 16 real. Build limpio.
+
