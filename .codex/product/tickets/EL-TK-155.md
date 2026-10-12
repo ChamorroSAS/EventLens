@@ -4,7 +4,16 @@
 EL-EP-012
 
 ## Status
-READY
+DONE
+
+## Implementation Evidence — 2026-10-12
+- Implementada suite E2E en `packages/admin-support/test/admin-support-epic-e2e.test.ts`.
+- Validados los 4 escenarios canónicos:
+  1. Denegación estricta de acceso multimedia sin justificación válida / sin actor administrativo humano y emisión firmada con auditoría `ADMIN_MEDIA_ACCESS_GRANTED`.
+  2. Ejecución de intervenciones delegando en el dominio dueño (`SUSPEND_EVENT`), replay idempotente (`IDEMPOTENT_REPLAY`) y acciones controladas sobre jobs (`RETRY`) con auditoría `ADMIN_JOB_ACTION_EXECUTED`.
+  3. Tolerancia a fallos en detalle agregado (`overallAvailability: 'PARTIAL'`) ante fallos de secciones propietarias sin ofrecer acciones falsas, y deshabilitación estricta de capacidades en estado cerrado (`CLOSED`) y terminal (`DELETED`).
+  4. Búsqueda administrativa con mínimo privilegio y auditoría `ADMIN_SEARCH_PERFORMED`.
+- Verificaciones ejecutadas: 11/11 tests E2E pasando, 90 tests unitarios/servicios en verde en `packages/admin-support`, y `pnpm typecheck` = 0.
 
 ## User story
 **Como** equipo de producto, **quiero** validar la consola administrativa y sus límites, **para** comprobar mínimo privilegio, trazabilidad y no bypass de dominios.
