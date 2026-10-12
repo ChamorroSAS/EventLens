@@ -260,3 +260,44 @@ export interface MediaConsumptionRecord {
   purgedAt: Date | null;
 }
 
+// ==========================================
+// EL-TK-135: Consulta de Consumo Comercial y Capacidad
+// ==========================================
+
+export interface QueryCommercialCapacityCommand {
+  eventId: string;
+  actorContext?: CapacityActorContext;
+}
+
+export interface CapacityResourceQuantity {
+  bytes: bigint;
+  megabytes: number;
+  gigabytes: number;
+  files: number;
+}
+
+export interface CapacityUsagePercentages {
+  storagePercent: number;
+  filesPercent: number;
+}
+
+export interface CapacityUsageFlags {
+  isZeroUsage: boolean;
+  isOverStorageQuota: boolean;
+  isOverFilesQuota: boolean;
+  isNearStorageLimit: boolean;
+  isNearFilesLimit: boolean;
+}
+
+export interface CommercialCapacityUsageSummary {
+  eventId: string;
+  effectiveLimits: EffectiveLimits;
+  consumedStorage: CapacityResourceQuantity;
+  activeReservations: CapacityResourceQuantity;
+  available: CapacityResourceQuantity;
+  usagePercentage: CapacityUsagePercentages;
+  flags: CapacityUsageFlags;
+  snapshotAt: Date;
+}
+
+

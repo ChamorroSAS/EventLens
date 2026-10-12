@@ -4,7 +4,7 @@
 EL-EP-011
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador propietario, **quiero** consultar uso, reservas y límites efectivos, **para** entender cuánta capacidad queda sin confundir consumo con almacenamiento operacional.
