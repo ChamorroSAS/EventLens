@@ -301,7 +301,25 @@ export class CapacityPlanService {
     }
 
     return this.transactions.run(async (tx) => {
-      const now = new Date();
+      const now = command.now || new Date();
+
+      // DEC-102: Después de ACTIVE se bloquean reducciones de vigencia que dejen el vencimiento en el pasado
+      if (
+        command.retentionDays !== undefined &&
+        command.eventStatus === 'ACTIVE' &&
+        command.eventAnchorDate instanceof Date &&
+        !isNaN(command.eventAnchorDate.getTime())
+      ) {
+        const resultingExpiration = new Date(
+          command.eventAnchorDate.getTime() + command.retentionDays * ONE_DAY_MS
+        );
+        if (resultingExpiration.getTime() < now.getTime()) {
+          throw new CapacityError(
+            'CANNOT_REDUCE_BELOW_PAST_EXPIRATION',
+            `Cannot apply retention override: resulting expiration (${resultingExpiration.toISOString()}) would be in the past (now: ${now.toISOString()})`
+          );
+        }
+      }
 
       // Ensure base plan assignment exists
       let assignmentRows = await tx.query<RawAssignmentRow>(

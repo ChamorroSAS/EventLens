@@ -104,6 +104,9 @@ export interface ApplyPlanOverrideCommand {
   storageBytes?: bigint;
   maxFiles?: number;
   retentionDays?: number;
+  eventStatus?: string;
+  eventAnchorDate?: Date;
+  now?: Date;
   reason: string;
 }
 

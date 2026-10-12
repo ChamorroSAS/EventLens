@@ -4,7 +4,7 @@
 EL-EP-011
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** administración autorizada, **quiero** modificar límites efectivos o volver al plan base con motivo, **para** ajustar capacidad de forma controlada y reversible.
