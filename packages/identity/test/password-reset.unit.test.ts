@@ -4,6 +4,7 @@ import type { SqlTransaction, TransactionRunner } from '@eventlens/database';
 import {
   PasswordResetService,
   PasswordResetError,
+  PasswordVerifier,
   computeCredentialDigest,
   type AuditEventRecord,
   type AuditSink,
@@ -390,11 +391,13 @@ describe('PasswordResetService (EL-TK-018 & EL-TK-019)', () => {
       expect(db.sessions.get(sess1)?.revocation_reason).toBe('PASSWORD_RESET');
       expect(db.sessions.get(sess2)?.revocation_reason).toBe('PASSWORD_RESET');
 
-      // Verify credential was updated with new digest and revision 2
+      // Verify credential was updated with new Argon2id envelope and revision 2
       const updatedCred = db.credentials.get(credId);
       expect(updatedCred?.revision).toBe(2n);
-      const expectedDigest = computeCredentialDigest('ORGANIZER_AUTHENTICATION', accountId, 'BrandNewSecurePassword2026!');
-      expect(updatedCred?.secret_digest).toBe(expectedDigest);
+      expect(updatedCred?.secret_digest.startsWith('$argon2id$v=19$m=19456,t=2,p=1$')).toBe(true);
+      const verifier = new PasswordVerifier();
+      const matches = await verifier.verifyPassword(updatedCred!.secret_digest, 'BrandNewSecurePassword2026!');
+      expect(matches).toBe(true);
 
       // Verify intent is CONSUMED
       const intent = [...db.resetIntents.values()][0];

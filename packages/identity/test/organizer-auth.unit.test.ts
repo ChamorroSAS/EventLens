@@ -157,6 +157,43 @@ function createInMemoryRunner(db: InMemoryDb): TransactionRunner {
             return count;
           }
 
+          // UPDATE organizer_credential SET secret_digest = $1, revision = $2, updated_at = $3 WHERE id = $4 AND secret_digest = $5 AND revision = $6 AND status = 'ACTIVE'
+          if (normalized.includes('UPDATE organizer_credential')) {
+            const [newDigest, newRevision, updatedAt, id, oldDigest, oldRevision] = params;
+            for (const cred of db.credentials.values()) {
+              if (
+                cred.id === id &&
+                cred.secret_digest === oldDigest &&
+                BigInt(cred.revision) === BigInt(oldRevision as string | number | bigint) &&
+                cred.status === 'ACTIVE'
+              ) {
+                cred.secret_digest = newDigest;
+                cred.revision = newRevision;
+                cred.updated_at = updatedAt;
+                return 1;
+              }
+            }
+            return 0;
+          }
+
+          // UPDATE organizer_session SET revoked_at = $1, revocation_reason = 'CREDENTIAL_ROTATED' WHERE account_id = $2 AND revoked_at IS NULL
+          if (
+            normalized.includes('UPDATE organizer_session') &&
+            normalized.includes('account_id = $2') &&
+            normalized.includes('revoked_at IS NULL')
+          ) {
+            const [revoked_at, account_id] = params as [Date, string];
+            let count = 0;
+            for (const session of db.sessions.values()) {
+              if (session.account_id === account_id && session.revoked_at === null) {
+                session.revoked_at = revoked_at;
+                session.revocation_reason = 'CREDENTIAL_ROTATED';
+                count++;
+              }
+            }
+            return count;
+          }
+
           // UPDATE organizer_session SET revoked_at = $1, revocation_reason = ... WHERE id = ...
           if (normalized.includes('UPDATE organizer_session') && normalized.includes('revoked_at = $1')) {
             let revoked_at: Date;
@@ -196,6 +233,8 @@ describe('EL-TK-013: OrganizerAuthenticationService (Unit Tests)', () => {
   let auditSink: AuditSink;
   let recoveryAuthority: RecoveryAuthorityPort;
   let service: OrganizerAuthenticationService;
+  let authorityRevisions: Map<string, bigint>;
+  let receiptToAccount: Map<string, string>;
 
   beforeEach(() => {
     db = {
@@ -211,10 +250,29 @@ describe('EL-TK-013: OrganizerAuthenticationService (Unit Tests)', () => {
       })
     };
 
+    authorityRevisions = new Map<string, bigint>();
+    receiptToAccount = new Map<string, string>();
+
     recoveryAuthority = {
       getRecoveryEpoch: vi.fn().mockResolvedValue(1n),
-      getCredentialRevision: vi.fn().mockResolvedValue(1n),
-      getAdminAuthWatermark: vi.fn().mockResolvedValue(1n)
+      getCredentialRevision: vi.fn().mockImplementation(async (id: string) => authorityRevisions.get(id) ?? 1n),
+      getAdminAuthWatermark: vi.fn().mockImplementation(async (id: string) => authorityRevisions.get(id) ?? 1n),
+      prepare: vi.fn().mockImplementation(async (cmd) => {
+        const rcpt = `rcpt-${randomUUID()}`;
+        receiptToAccount.set(rcpt, cmd.subjectRef);
+        return {
+          preparedReceipt: rcpt,
+          sequence: 1n,
+          operationId: cmd.operationId,
+          subjectRef: cmd.subjectRef
+        };
+      }),
+      ackCommit: vi.fn().mockImplementation(async (receipt: string, rev: bigint) => {
+        const accountId = receiptToAccount.get(receipt);
+        if (accountId) {
+          authorityRevisions.set(accountId, rev);
+        }
+      })
     };
 
     service = new OrganizerAuthenticationService(
@@ -237,6 +295,11 @@ describe('EL-TK-013: OrganizerAuthenticationService (Unit Tests)', () => {
     const status = options.status ?? 'ACTIVE';
     const password = options.password ?? 'ValidSecurePassword123!';
     const credRevision = options.credRevision ?? 1n;
+
+    authorityRevisions.set(accountId, credRevision);
+    (recoveryAuthority as any).getCredentialRevision.mockImplementation(async (id: string) => {
+      return authorityRevisions.get(id) ?? 1n;
+    });
 
     const secretDigest = computeCredentialDigest('ORGANIZER_AUTHENTICATION', accountId, password);
 
@@ -649,6 +712,94 @@ describe('EL-TK-013: OrganizerAuthenticationService (Unit Tests)', () => {
       // La sesión actual sigue activa
       const valid = await service.validateSession({ sessionToken: soloSession.sessionToken });
       expect(valid.actorContext.sessionId).toBe(soloSession.actorContext.sessionId);
+    });
+  });
+
+  describe('EL-TK-185: Argon2id Verification and Transitional Credential Migration', () => {
+    it('Escenario 2: login de transición verifica legacy digest, migra a Argon2id con PREPARE-SQL-ACK, avanza revisión y emite nueva sesión', async () => {
+      const fixture = seedOrganizerFixture({
+        status: 'ACTIVE',
+        password: 'TransitionalPassword123!',
+        credRevision: 1n
+      });
+
+      // Verify that stored credential starts as legacy SHA-256
+      const credBefore = [...db.credentials.values()].find((c) => c.account_id === fixture.accountId);
+      expect(credBefore.secret_digest).toHaveLength(64);
+      expect(credBefore.revision).toBe(1n);
+
+      // Perform transitional login
+      const loginResult = await service.login({
+        email: fixture.email,
+        password: fixture.password
+      });
+
+      expect(loginResult.sessionToken).toBeDefined();
+      expect(loginResult.actorContext.credentialRevision).toBe(2n);
+      expect(loginResult.actorContext.sessionWatermark).toBe(2n);
+
+      // Verify PREPARE and ACK were called
+      expect(recoveryAuthority.prepare).toHaveBeenCalledTimes(1);
+      expect(recoveryAuthority.ackCommit).toHaveBeenCalledWith(expect.any(String), 2n);
+
+      // Verify credential was updated to canonical Argon2id envelope
+      const credAfter = [...db.credentials.values()].find((c) => c.account_id === fixture.accountId);
+      expect(credAfter.secret_digest.startsWith('$argon2id$v=19$m=19456,t=2,p=1$')).toBe(true);
+      expect(credAfter.revision).toBe(2n);
+
+      // Verify subsequent login uses modern Argon2id directly
+      const secondLogin = await service.login({
+        email: fixture.email,
+        password: fixture.password
+      });
+      expect(secondLogin.actorContext.credentialRevision).toBe(2n);
+    });
+
+    it('Escenario 3: sesión previa queda revocada al validar si la credencial avanzó de revisión', async () => {
+      const fixture = seedOrganizerFixture({
+        status: 'ACTIVE',
+        password: 'SessionWatermarkPassword123!',
+        credRevision: 1n
+      });
+
+      // Primer login migra a revisión 2n
+      const login1 = await service.login({
+        email: fixture.email,
+        password: fixture.password
+      });
+      expect(login1.actorContext.sessionWatermark).toBe(2n);
+
+      // Sesión 1 es válida
+      const val1 = await service.validateSession({ sessionToken: login1.sessionToken });
+      expect(val1.actorContext.sessionId).toBe(login1.actorContext.sessionId);
+
+      // Ahora simulamos otra rotación a revisión 3n (por ejemplo, por reset o rotación externa)
+      const cred = [...db.credentials.values()].find((c) => c.account_id === fixture.accountId);
+      cred.revision = 3n;
+      authorityRevisions.set(fixture.accountId, 3n);
+
+      // Al validar la sesión 1 (que tiene watermark 2n < 3n), debe ser rechazada con SESSION_REVOKED
+      await expect(
+        service.validateSession({ sessionToken: login1.sessionToken })
+      ).rejects.toMatchObject({ code: 'SESSION_REVOKED' });
+    });
+
+    it('Escenario 2: si el ACK obligatorio de recovery falla, el login falla cerrado y no emite sesión', async () => {
+      const fixture = seedOrganizerFixture({
+        status: 'ACTIVE',
+        password: 'AckFailurePassword123!',
+        credRevision: 1n
+      });
+
+      // Mock ACK failure
+      (recoveryAuthority.ackCommit as any).mockRejectedValueOnce(new Error('ACK connection lost'));
+
+      await expect(
+        service.login({
+          email: fixture.email,
+          password: fixture.password
+        })
+      ).rejects.toMatchObject({ code: 'UNAUTHENTICATED' });
     });
   });
 });
