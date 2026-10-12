@@ -1,10 +1,10 @@
 # EL-TK-195 — Construir inventario verificable y detener escritores antes de purgar
 
-## Parent epic
+##Parent epic
 EL-EP-015
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** sistema, **quiero** congelar el inventario físico y drenar escrituras activas, **para** evitar recreación o eliminación incompleta de objetos.
@@ -70,4 +70,9 @@ UI_REQUIRED: NO.
 READY_FOR_FRONTEND_PLANNING: NOT_REQUIRED — dictamen ui_designer; sin diseño de UI nueva.
 REVIEW_STATUS: APPROVED — [dictámenes formales y validación documental](../sessions/2026-10-12-el-ep-015-ticket-readiness.md).
 
-Histórico: DRAFT en la propuesta original; READY tras revisión individual del 2026-10-12. No acredita implementación, ejecución de pruebas ni PASS de validation gates.
+Histórico: DRAFT en la propuesta original; READY tras revisión individual del 2026-10-12.
+
+## Evidencia de cierre — 2026-10-12
+- **Implementación:** `packages/event-management/src/deletion-purge-execution.ts` (`DeletionPurgeExecutionService.prepareVerifiableManifestAndDrainWriters`), tabla `deletion_inventory_manifest` en `packages/event-management/prisma/migrations/202610120055_deletion_purge_and_tombstones/migration.sql`.
+- **Verificación:** `test/deletion-purge-and-residual.unit.test.ts` y `test/deletion-purge-and-residual.integration.test.ts` (PASS en PostgreSQL 16 real) + `pnpm --filter @eventlens/event-management build` (0 errores).
+

@@ -115,3 +115,184 @@ model UploadAttempt {
   @@map("upload_attempt")
 }
 
+model DeletionRequest {
+  id                    String    @id @db.Uuid
+  sourceOperationId     String    @map("source_operation_id")
+  cause                 String
+  scopeType             String    @map("scope_type")
+  scopeRef              String    @map("scope_ref")
+  parentRequestId       String?   @map("parent_request_id") @db.Uuid
+  ownerModule           String    @map("owner_module")
+  expectedGeneration    BigInt    @default(1) @map("expected_generation")
+  expectedRevision      BigInt    @default(1) @map("expected_revision")
+  currentRevision       BigInt    @default(1) @map("current_revision")
+  policyRef             String    @map("policy_ref")
+  policyVersion         String    @default("1.0") @map("policy_version")
+  anchorTimestamp       DateTime  @map("anchor_timestamp") @db.Timestamptz
+  cancelUntil           DateTime? @map("cancel_until") @db.Timestamptz
+  purgeStartedAt        DateTime  @map("purge_started_at") @db.Timestamptz
+  mainPurgeDeadline     DateTime  @map("main_purge_deadline") @db.Timestamptz
+  residualPurgeDeadline DateTime  @map("residual_purge_deadline") @db.Timestamptz
+  status                String    @default("PREPARED")
+  recoveryEpoch         BigInt    @default(1) @map("recovery_epoch")
+  dedupKey              String    @unique @map("dedup_key")
+  payloadHash           String    @map("payload_hash")
+  relatedResourcesJson  String    @default("[]") @map("related_resources_json")
+  cancelledAt           DateTime? @map("cancelled_at") @db.Timestamptz
+  cancelledBy           String?   @map("cancelled_by")
+  cancelReason          String?   @map("cancel_reason")
+  claimedAt             DateTime? @map("claimed_at") @db.Timestamptz
+  claimedByWorker       String?   @map("claimed_by_worker")
+  mainPurgedAt          DateTime? @map("main_purged_at") @db.Timestamptz
+  completedAt           DateTime? @map("completed_at") @db.Timestamptz
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@index([scopeType, scopeRef, status])
+  @@index([status, purgeStartedAt])
+  @@index([parentRequestId])
+  @@map("deletion_request")
+}
+
+model DeletionReceipt {
+  id                    String   @id @db.Uuid
+  requestId             String   @map("request_id") @db.Uuid
+  operationType         String   @map("operation_type")
+  sourceOperationId     String   @map("source_operation_id")
+  cause                 String
+  scopeType             String   @map("scope_type")
+  scopeRef              String   @map("scope_ref")
+  actorId               String   @map("actor_id")
+  previousStatus        String?  @map("previous_status")
+  newStatus             String   @map("new_status")
+  revision              BigInt   @default(1)
+  recoveryEpoch         BigInt   @default(1) @map("recovery_epoch")
+  anchorTimestamp       DateTime @map("anchor_timestamp") @db.Timestamptz
+  purgeStartedAt        DateTime @map("purge_started_at") @db.Timestamptz
+  mainPurgeDeadline     DateTime @map("main_purge_deadline") @db.Timestamptz
+  residualPurgeDeadline DateTime @map("residual_purge_deadline") @db.Timestamptz
+  detailsJson           String?  @map("details_json")
+  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([requestId, createdAt])
+  @@index([scopeType, scopeRef])
+  @@map("deletion_receipt")
+}
+
+model DeletionAccessBarrier {
+  id                          String    @id @db.Uuid
+  requestId                   String    @map("request_id") @db.Uuid
+  cause                       String
+  scopeType                   String    @map("scope_type")
+  scopeRef                    String    @map("scope_ref")
+  targetScopeType             String    @map("target_scope_type")
+  targetScopeRef              String    @map("target_scope_ref")
+  barrierState                String    @default("PREPARED") @map("barrier_state")
+  eventSnapshotStatus         String?   @map("event_snapshot_status")
+  eventSnapshotPreviousStatus String?   @map("event_snapshot_previous_status")
+  inFlightWritersCount        Int       @default(0) @map("in_flight_writers_count")
+  revokedGrantsCount          Int       @default(0) @map("revoked_grants_count")
+  invalidatedExportsCount     Int       @default(0) @map("invalidated_exports_count")
+  deniedAccessCount           Int       @default(0) @map("denied_access_count")
+  exportPartsInventoryJson    String    @default("[]") @map("export_parts_inventory_json")
+  preparedAt                  DateTime  @default(now()) @map("prepared_at") @db.Timestamptz
+  confirmedAt                 DateTime? @map("confirmed_at") @db.Timestamptz
+  releasedAt                  DateTime? @map("released_at") @db.Timestamptz
+  releasedBy                  String?   @map("released_by")
+  createdAt                   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                   DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@unique([requestId, targetScopeType, targetScopeRef])
+  @@index([targetScopeType, targetScopeRef, barrierState])
+  @@index([requestId, barrierState])
+  @@map("deletion_access_barrier")
+}
+
+model DeletionAuthorityTombstone {
+  id                    String    @id @db.Uuid
+  requestId             String    @map("request_id") @db.Uuid
+  scopeType             String    @map("scope_type")
+  scopeRef              String    @map("scope_ref")
+  generation            BigInt    @default(1)
+  cause                 String
+  tombstoneState        String    @map("tombstone_state")
+  authoritySequence     BigInt    @map("authority_sequence")
+  recoveryEpoch         BigInt    @map("recovery_epoch")
+  checkpointIntact      Boolean   @default(true) @map("checkpoint_intact")
+  anchorTimestamp       DateTime  @map("anchor_timestamp") @db.Timestamptz
+  purgeStartedAt        DateTime  @map("purge_started_at") @db.Timestamptz
+  mainPurgeDeadline     DateTime  @map("main_purge_deadline") @db.Timestamptz
+  residualPurgeDeadline DateTime  @map("residual_purge_deadline") @db.Timestamptz
+  mainPurgedAt          DateTime? @map("main_purged_at") @db.Timestamptz
+  residualVerifiedAt    DateTime? @map("residual_verified_at") @db.Timestamptz
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@unique([scopeType, scopeRef, generation, requestId])
+  @@index([scopeType, scopeRef, tombstoneState])
+  @@index([requestId])
+  @@map("deletion_authority_tombstone")
+}
+
+model DeletionInventoryManifest {
+  id                           String    @id @db.Uuid
+  requestId                    String    @map("request_id") @db.Uuid
+  scopeType                    String    @map("scope_type")
+  scopeRef                     String    @map("scope_ref")
+  manifestRevision             BigInt    @default(1) @map("manifest_revision")
+  recoveryEpoch                BigInt    @map("recovery_epoch")
+  workerLeaseToken             String    @map("worker_lease_token")
+  workerFence                  BigInt    @map("worker_fence")
+  writerDrainState             String    @map("writer_drain_state")
+  activeSignedGrantsCount      Int       @default(0) @map("active_signed_grants_count")
+  activeInFlightTransfersCount Int       @default(0) @map("active_in_flight_transfers_count")
+  itemsJson                    String    @default("[]") @map("items_json")
+  manifestHash                 String    @map("manifest_hash")
+  preparedAt                   DateTime  @default(now()) @map("prepared_at") @db.Timestamptz
+  quietVerifiedAt              DateTime? @map("quiet_verified_at") @db.Timestamptz
+  createdAt                    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                    DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@unique([requestId, manifestRevision])
+  @@index([scopeType, scopeRef])
+  @@map("deletion_inventory_manifest")
+}
+
+model DeletionPurgeEvidence {
+  id                       String    @id @db.Uuid
+  requestId                String    @unique @map("request_id") @db.Uuid
+  scopeType                String    @map("scope_type")
+  scopeRef                 String    @map("scope_ref")
+  cause                    String
+  manifestId               String    @map("manifest_id") @db.Uuid
+  manifestRevision         BigInt    @map("manifest_revision")
+  mainPurgeStatus          String    @map("main_purge_status")
+  residualPurgeStatus      String    @map("residual_purge_status")
+  attemptCount             Int       @default(0) @map("attempt_count")
+  verifiedMissingCount     Int       @default(0) @map("verified_missing_count")
+  totalManifestItemsCount  Int       @default(0) @map("total_manifest_items_count")
+  unknownOrPresentCount    Int       @default(0) @map("unknown_or_present_count")
+  ownerStateFinalized      Boolean   @default(false) @map("owner_state_finalized")
+  quotaSettled             Boolean   @default(false) @map("quota_settled")
+  quotaSettlementReceiptId String?   @map("quota_settlement_receipt_id")
+  bytesReleased            BigInt    @default(0) @map("bytes_released")
+  notificationEmitted      Boolean   @default(false) @map("notification_emitted")
+  notificationIntentId     String?   @map("notification_intent_id")
+  purgeStartedAt           DateTime  @map("purge_started_at") @db.Timestamptz
+  mainPurgeDeadline        DateTime  @map("main_purge_deadline") @db.Timestamptz
+  residualPurgeDeadline    DateTime  @map("residual_purge_deadline") @db.Timestamptz
+  mainPurgedAt             DateTime? @map("main_purged_at") @db.Timestamptz
+  residualVerifiedAt       DateTime? @map("residual_verified_at") @db.Timestamptz
+  residualEvidenceJson     String    @default("{}") @map("residual_evidence_json")
+  createdAt                DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@index([scopeType, scopeRef])
+  @@index([mainPurgeStatus, mainPurgeDeadline])
+  @@index([residualPurgeStatus, residualPurgeDeadline])
+  @@map("deletion_purge_evidence")
+}
+
+
+
+
