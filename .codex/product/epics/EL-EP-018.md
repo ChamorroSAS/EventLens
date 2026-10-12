@@ -3,8 +3,8 @@
 ## Status
 DRAFT — propuesta de producto para revisión; no aprobada por requirements_reviewer, ui_designer ni architect. No genera tickets ni modifica decisiones aceptadas.
 
-REQUIREMENTS_READY: PARTIAL — el objetivo y las fronteras se sustentan en el producto vigente; las elecciones del Home se recomiendan, no están aprobadas.
-READY_FOR_TICKET_WRITING: NO — completar discovery localizado, dictamen de requisitos y handoff UI.
+REQUIREMENTS_READY: PARTIAL — las doce elecciones editoriales y el comportamiento de `/` están confirmados; falta aprobar literal de copy, rutas/owners, revisión UX y requisitos.
+READY_FOR_TICKET_WRITING: NO — completar dictamen de requisitos, contratos de rutas y handoff UI; no generar tickets por aprobación editorial.
 UI_REQUIRED: YES
 READY_FOR_FRONTEND_PLANNING: NO — pendiente evaluación de navegación pública y autenticada.
 READY_FOR_IMPLEMENTATION: NO — no hay autorización por crear este documento.
@@ -26,31 +26,33 @@ La raíz Angular actual (`apps/web/src/app/app.component.ts`) presenta una vista
 
 ## Scope
 
-### 1. Home de entrada (propuesta)
+### 1. Home de entrada (dirección editorial confirmada; copy propuesto)
 - Ruta conceptual `/`: página pública de presentación, ligera y responsive. Ruta final/estrategia de Angular Router se valida contra contratos frontend existentes, no se presupone implementada.
 - Cabecera corporativa con logo primario oficial, navegación por secciones del Home y CTA principal según contexto de sesión.
-- Hero sugerido: **«Los mejores recuerdos de tu evento, en un solo lugar»** y subtítulo factual: «Comparte un enlace o QR para que tus invitados aporten fotos y videos desde el navegador, sin crear una cuenta».
-- Sección «Cómo funciona» (4 pasos): crear/configurar evento con cuenta invitada → compartir enlace/QR → invitados aportan y la galería depende de configuración/moderación → organizador consulta y puede recuperar sus originales según permisos/vigencia. Los pasos informan; no conceden capacidades.
-- Sección «Lo que puedes hacer»: fotos/video, carga móvil, galería privada opcional, control del organizador, descargas de originales para dueño cuando estén disponibles y sujetas a seguridad. Evitar prometer prestaciones aún no operativas y diferenciar Beta de funcionalidades futuras.
-- Sección «Privacidad y control»: enlaces/QR revocables, eventos no descubiertos desde buscador público, contenido/objetos privados y control de accesos. Evitar afirmar certificaciones legales o técnicas no verificadas.
-- Bloque de Beta privada: organizadores solo mediante invitación y correo verificado; sin pagos/registro público. CTA «Solicitar acceso a la Beta» consume la capacidad EL-TK-008, sin emitir invitación ni dar acceso inmediato; si no hay UI de solicitud implementada, su owner debe entregarla.
-- FAQ esencial: ¿necesito cuenta para subir? (invitado no); ¿cómo accedo a un evento? (enlace/QR recibido y PIN opcional); ¿pueden todos ver mis fotos? (depende del evento/autoridad); ¿cómo participo como organizador? (invitación Beta). Evitar FAQs de precio, plazos legales o features no cerradas.
-- Footer con copyright, enlaces legales **solo cuando existan destinos/documentos válidos y aprobados** y vía de soporte/contacto únicamente si hay canal publicado/acordado. Sin enlaces muertos, consentimiento legal nuevo ni política redactada por inferencia.
+- **Enfoque editorial confirmado:** emoción del evento como eje, para organizadores, tono emotivo/cercano/claro. **H1 literal propuesto:** «Tu evento termina. Sus recuerdos continúan». Subtítulo y copy final: [consolidación editorial y rutas](../sessions/2026-10-12-el-ep-018-editorial-and-routes.md#b-copy-propuesto-para-el-home), sujetos a revisión UX.
+- «Cómo funciona»: cuatro pasos prácticos enlazados a una historia emocional: preparar evento → compartir QR/enlace → invitados suben fotos/video sin cuenta → consultar y revivir recuerdos disponibles. Los pasos informan; no conceden permisos ni prometen galería/exportaciones siempre disponibles.
+- «Beneficios»: combinar en ese orden participación colectiva («Cada mirada cuenta»), facilidad mediante QR/navegador y recuerdos reunidos en el espacio privado del evento. Mencionar descargas únicamente según permisos, estado y disponibilidad real. Evitar prometer prestaciones aún no operativas o futuras.
+- «Privacidad y control»: combinar privacidad y control del organizador; texto marco propuesto «Tus recuerdos, tu espacio, tus decisiones». QR/enlace revocables, no directorio público de eventos, contenido privado y políticas efectivas aplicadas por servidor. Evitar afirmar certificaciones o protección absoluta.
+- Beta **discreta**: sin sección promocional extensa. CTA principal confirmado «Solicitar acceso a la Beta» en hero y cierre, aclaración breve «Acceso disponible mediante invitación». Se consume EL-TK-008; no emite invitación ni da acceso inmediato, no hay pago/registro público libre. Si falta UI, owner de identidad/integración la entrega.
+- FAQ de **exactamente cuatro preguntas confirmadas**: (1) ¿Qué es EventLens? (2) ¿Cómo funciona el código QR? (3) ¿Mis invitados necesitan crear una cuenta? (4) ¿Cómo puedo solicitar acceso a la Beta? Respuestas breves en [copy propuesto](../sessions/2026-10-12-el-ep-018-editorial-and-routes.md#faq--cuatro-esenciales); no añadir FAQs de precio, plazos legales o features no cerradas.
+- **Cierre emocional confirmado:** «Cada celebración tiene una historia» como título propuesto y llamado a participar; CTA repetido «Solicitar acceso a la Beta» con microcopy discreto. **Footer minimalista**: logotipo, frase breve, copyright, enlaces legales **solo cuando existan destinos/documentos válidos y aprobados**. No añadir navegación grande, redes ni contacto no acordado. Sin enlaces muertos ni políticas inventadas.
 
 ### 2. Navegación por estado de acceso
 | Contexto | Cabecera/acciones de entrada | Destino propietario |
 |---|---|---|
-| Visitante sin sesión | Inicio, Cómo funciona, Características, Privacidad; **Iniciar sesión** y **Solicitar acceso a la Beta** | Login y solicitud Beta existentes de MOD-001; el Home no construye credenciales |
-| Organizador con sesión activa | Inicio, Cómo funciona (opcional), **Mis eventos**, **Mi cuenta**, **Cerrar sesión** | EL-EP-001 (cuenta/sesiones) y EL-EP-002 (eventos); autorización backend por recurso |
+| Visitante sin sesión | **Cómo funciona, Beneficios, Privacidad, Preguntas frecuentes**; **Iniciar sesión** y **Solicitar acceso a la Beta** | Login y solicitud Beta de MOD-001; el Home no construye credenciales |
+| Organizador con sesión activa | Menú editorial equilibrado según responsive; **Mis eventos**, **Mi cuenta**, **Cerrar sesión**; permanece en `/` sin redirect | EL-EP-001 (cuenta/sesiones) y EL-EP-002 (eventos); autorización backend por recurso |
 | Sesión pendiente/restringida por eliminación | Acceso a consulta/cancelación de solicitud según contrato MOD-001/MOD-008, **sin** Mis eventos ni poderes normales | EL-EP-015 / EL-TK-186,191,192,201; no elevar sesión restringida |
 | Sesión expirada/revocada | Acceso público y **Iniciar sesión**; no presentar nombres/recursos privados | MOD-001, mensaje accesible neutro, return target seguro si aplica |
 | Invitado de evento | Sigue el deep link/QR privado y, si corresponde, PIN; enlace de regreso al Home solo si no altera sesión | EL-EP-004; no buscador/listado/código de evento inventado |
 | Admin | Acceso a su consola solo mediante contrato/sesión administrativa previa | EL-EP-012/EL-TK-044, nunca enlace que sirva de autorización |
 
 ### 3. Rutas y arquitectura (nombres tentativos, NO contratos aceptados)
+
+**Auditoría de snapshot de `stage`:** `main.ts` sólo inicia `AppComponent`; no se observó configuración de Angular Router ni rutas productivas; la raíz presenta health técnico. Los módulos existentes no demuestran URLs montadas. [Evidencia y matriz de decisiones](../sessions/2026-10-12-el-ep-018-editorial-and-routes.md#c-auditoría-técnica-acotada-de-rutas-en-el-snapshot-de-stage).
 | Intención | Ruta candidata | Condición |
 |---|---|---|
-| Home | `/` | Pública, contenido estático de producto |
+| Home | `/` | CONFIRMED: pública con/sin sesión, sin redirección automática |
 | Iniciar sesión | `/ingresar` | Reutilizar auth owner existente; URL definitiva según router |
 | Solicitar acceso Beta | `/solicitar-acceso` | Reutilizar EL-TK-008; mensaje neutro sin enumeración |
 | Mis eventos | `/mis-eventos` | Sesión/autoridad organizador; componer shell actual |
@@ -58,6 +60,8 @@ La raíz Angular actual (`apps/web/src/app/app.component.ts`) presenta una vista
 | Evento recibido por QR | Ruta de credencial pública ya establecida por EL-EP-004 | **No renombrar** ni publicar el token en Home/analytics |
 
 Estas rutas son **propuestas de navegación** sujetas a auditoría del Router y enlaces actuales. No crean nuevas APIs ni endpoint de directorio de eventos. Resolver deep links/direct refresh sin `404` de servidor, sin convertir urls de media privada en páginas públicas.
+
+Las anclas candidatas de secciones son `/#como-funciona`, `/#beneficios`, `/#privacidad` y `/#preguntas-frecuentes`, no rutas independientes. Guest conserva el path real que emite el dominio; no inventar `/evento/:id`. Al navegar a un destino protegido, validar sesión y `returnUrl` interno; no redirigir desde Home. Elegir comportamiento post-logout, paths definitivos, modalidad de `Mi cuenta`, SPA fallback y la URL QR real en el gate técnico.
 
 ### 4. Composición frontend y diseño
 - Integrar Angular Router/entrada productiva en `AppComponent` usando shells existentes; la comprobación de health queda interna/operativa y no ocupa el Home de usuarios.
@@ -76,7 +80,7 @@ Estas rutas son **propuestas de navegación** sujetas a auditoría del Router y 
 - **CONFIRMED desde producto vigente:** BETA por invitación, cuenta de organizador con correo verificado, acceso guest sin cuenta mediante enlace/QR, contenido privado y autorización por servidor. EL-TK-008 acepta solicitud Beta sin activación ni revelación de cuenta existente.
 - **CONFIRMED — aprobación explícita 2026-10-12:** Home `/` accesible con o sin sesión. No hay redirección automática del organizador autenticado; se muestran enlaces `Mis eventos` y `Mi cuenta` según permisos y tipo de sesión. La navegación no sustituye autorización server-side.
 - Las acciones de navegación nunca reemplazan guards/server policies, no infieren `canView` por estado visual, no registran secretos ni tokens en analítica; deep links autorizan según dominio propietario.
-- **RECOMMENDED:** copiar solo beneficios realmente disponibles en la fase publicada; no afirmar aprobación legal, ausencia absoluta de fallos ni tiempos/planes comerciales no aceptados.
+- **CONFIRMED 2026-10-12 — dirección editorial:** doce elecciones registradas en [sesión de consolidación](../sessions/2026-10-12-el-ep-018-editorial-and-routes.md#a-doce-decisiones-editoriales-confirmadas), sin atribución personal. H1/subtítulos/FAQ/cierre literales son **copy propuesto** sujeto a aprobación final de UX/copy. No afirmar aprobación legal, ausencia de fallos o tiempos comerciales no aceptados.
 
 ## Main scenarios
 1. Visitante entra a Home, entiende EventLens, consulta cómo funciona y navega a `Iniciar sesión`.
@@ -123,18 +127,22 @@ WCAG 2.2 AA, mobile-first y últimas versiones de navegadores soportados; españ
 ## Risks
 Scope creep de página marketing; cambio inadvertido de políticas de autenticación; hacer parecer completado un backend sin APIs conectadas al runtime; loops de redirect; home indexable que filtre rutas privadas; incumplimiento jurídico al publicar enlaces/textos no revisados; duplicación de shell/estilos; aparente capacidad habilitada por cliente.
 
-## Open questions — decisiones locales pendientes (no alterar DEC existentes)
-1. **PRODUCT — CONFIRMED 2026-10-12:** Home informativo en `/` para visitantes y autenticados, sin redirección automática; accesos `Mis eventos` y `Mi cuenta` para organizador autorizado. Decisión cerrada por el usuario, sin modificar DEC/TC/ARCH.
-2. **PRODUCT — RECOMMENDED:** navegación mínima de Home con Inicio / Cómo funciona / Características / Privacidad, CTA Iniciar sesión + Solicitar acceso Beta; con sesión, Mis eventos / Mi cuenta / Cerrar sesión. El soporte/contacto y FAQs solo con contenido oficial.
-3. **PRODUCT — PENDING:** aprobación editorial de hero, textos, claims y FAQ; enlaces legales solo al existir documentos revisados.
-4. **TECH/UX — PENDING:** rutas finales existentes, ownership de página de `Mi cuenta`, composición Angular Router y variante pública AppHeader; confirmar sin reimplementación.
-5. **RELEASE — PENDING:** política de indexación/dominio de marketing y revisión jurídica previa a despliegue público, distinta de operación privada de invitados.
+## Decisiones editoriales confirmadas y preguntas restantes
+
+**CONFIRMED — 2026-10-12:** 12 decisiones de dirección editorial y Home `/` con/sin sesión, sin redirección automática; se documentan sin atribución personal en [consolidación](../sessions/2026-10-12-el-ep-018-editorial-and-routes.md). Cabecera equilibrada: «Cómo funciona», «Beneficios», «Privacidad», «Preguntas frecuentes»; CTA principal «Solicitar acceso a la Beta»; footer minimalista. No incorporar una sección Beta extensa. El literal de textos redactados es **PROPOSED**, aún no aprobado por UX/copy.
+
+**PENDING — sin bloquear la propuesta documental:**
+1. **COPY/UX:** validar redacción final (hero, subtítulo, beneficios, FAQ, privacidad, cierre, footer), imágenes reales y disposición responsive; no añadir datos/claims no fundamentados.
+2. **ARCH/FRONTEND:** confirmar URLs de `/ingresar`, `/solicitar-acceso`, `/mis-eventos`, `/mi-cuenta`, propietarios, Angular Router, guards y retorno a destino interno seguro. Montaje de Mi cuenta sin duplicar identidad/EL-TK-201.
+3. **INTEGRACIÓN GUEST:** identificar formato de URL real emitido por EL-EP-004 y conservar acceso por credencial revocable, PIN y privacidad.
+4. **NAV UX:** salida tras logout y disposición exacta del menú autenticado/móvil; manejar estados sesión pendiente/expirada/restringida.
+5. **OPS/RELEASE:** Nginx SPA fallback/base href, política de indexación de Home y revisión legal antes de lanzamiento público conforme EL-EP-017/Q-029.
 
 ## UI/UX handoff propuesto
 UI_REQUIRED: YES.
 READY_FOR_FRONTEND_PLANNING: NO — necesita dictamen `ui_designer` y catálogo de componentes.
 READY_FOR_TICKET_WRITING: NO — requisitos/producto por confirmar.
-Secciones: Header/hero, Cómo funciona, Capacidades, Privacidad, Beta/CTA, FAQ y LegalFooter. Variantes: visitante, owner logueado, sesión desconocida/expirada/restringida y deep-link guest sin Home intermedio. No diseñar pantalla de cuenta nueva aquí.
+Secciones: Header/hero, Beneficios, Cómo funciona, Privacidad, FAQ, cierre con CTA y footer **minimalista**, sin bloque Beta largo. Variantes: visitante, organizer autenticado, sesión desconocida/expirada/restringida y deep-link guest sin Home intermedio. No diseñar segunda pantalla de cuenta; usar owner de identidad. Véase [copy propuesto y auditoría de rutas](../sessions/2026-10-12-el-ep-018-editorial-and-routes.md).
 
 ## Definition of Ready
 - [x] Objetivo y actores propuestos identificados.
@@ -142,7 +150,8 @@ Secciones: Header/hero, Cómo funciona, Capacidades, Privacidad, Beta/CTA, FAQ y
 - [x] Contratos de acceso privado y Beta vigente documentados.
 - [x] Escenarios y criterios de aceptación comprobables propuestos.
 - [x] Comportamiento de `/` con y sin sesión aprobado por el usuario (sin redirección automática).
-- [ ] Menú y copy aprobados por product_owner.
+- [x] Doce elecciones editoriales y estructura de menú/footer aprobadas por el usuario.
+- [ ] Copy literal, ilustraciones y tratamiento UX revisados formalmente.
 - [ ] Rutas y ownership auditados por architect/frontend.
 - [ ] Handoff `ui_designer` aprobado.
 - [ ] `requirements_reviewer` sin BLOCKER.
@@ -152,5 +161,6 @@ Secciones: Header/hero, Cómo funciona, Capacidades, Privacidad, Beta/CTA, FAQ y
 P0 **propuesta** para entrada/roteo funcional de la Beta (sin navegación no existe app usable desde `/`); contenido institucional/FAQ y SEO fino P1 y pueden entregarse sin desplazar seguridad, galería, exportaciones o purga. La priorización no cambia el roadmap aprobado sin evaluación.
 
 ## Change history
+- 2026-10-12: confirmadas las 12 decisiones de dirección editorial, incluida navegación equilibrada, FAQ de cuatro preguntas, CTA Beta discreto y footer minimalista. Actualizados alcance, copy propuesto y auditoría de rutas de `stage`; gates y rutas definitivas siguen pendientes. [Registro](../sessions/2026-10-12-el-ep-018-editorial-and-routes.md).
 - 2026-10-12: confirmado comportamiento Home `/` accesible con y sin sesión, con atajos al organizador y sin redirección automática; copy, menú y rutas siguen pendientes de aprobación/auditoría.
 - 2026-10-12: propuesta de épica nueva a solicitud del proyecto; revisión documental de root actual, EL-EP-001/002/004, manual de marca CR-004 y EL-TK-203/204. Sin tickets, código, contratos nuevos ni aprobación de gates.
