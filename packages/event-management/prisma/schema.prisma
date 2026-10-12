@@ -7,6 +7,13 @@ model Event {
   organizerId            String   @map("organizer_id") @db.Uuid
   name                   String
   status                 String   @default("DRAFT")
+  previousStatus         String?  @map("previous_status")
+  suspensionReason       String?  @map("suspension_reason")
+  suspendedAt            DateTime? @map("suspended_at") @db.Timestamptz
+  scheduledAt            DateTime? @map("scheduled_at") @db.Timestamptz
+  expiresAt              DateTime? @map("expires_at") @db.Timestamptz
+  graceEndsAt            DateTime? @map("grace_ends_at") @db.Timestamptz
+  revision               BigInt   @default(1)
   timezone               String   @default("America/Bogota")
   uploadsEnabled         Boolean  @default(false) @map("uploads_enabled")
   guestGalleryEnabled    Boolean  @default(false) @map("guest_gallery_enabled")

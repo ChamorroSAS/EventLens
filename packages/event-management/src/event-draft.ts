@@ -15,6 +15,13 @@ interface EventRow {
   organizer_id: string;
   name: string;
   status: string;
+  previous_status?: string | null;
+  suspension_reason?: string | null;
+  suspended_at?: Date | string | null;
+  scheduled_at?: Date | string | null;
+  expires_at?: Date | string | null;
+  grace_ends_at?: Date | string | null;
+  revision?: bigint | number | string | null;
   timezone: string;
   uploads_enabled: boolean;
   guest_gallery_enabled: boolean;
@@ -32,6 +39,13 @@ function mapRowToRecord(row: EventRow): EventRecord {
     organizerId: row.organizer_id,
     name: row.name,
     status: row.status as EventStatus,
+    previousStatus: (row.previous_status as EventStatus) ?? null,
+    suspensionReason: row.suspension_reason ?? null,
+    suspendedAt: row.suspended_at ? new Date(row.suspended_at) : null,
+    scheduledAt: row.scheduled_at ? new Date(row.scheduled_at) : null,
+    expiresAt: row.expires_at ? new Date(row.expires_at) : null,
+    graceEndsAt: row.grace_ends_at ? new Date(row.grace_ends_at) : null,
+    revision: BigInt(row.revision ?? 1),
     timezone: row.timezone,
     uploadsEnabled: Boolean(row.uploads_enabled),
     guestGalleryEnabled: Boolean(row.guest_gallery_enabled),
@@ -190,9 +204,10 @@ export class EventDraftService {
       // Si hubo carrera de idempotencia y otra transacción ganó la inserción
       if (idempotencyKey && insertedCount === 0) {
         const raceRows = await tx.query<EventRow>(
-          `SELECT id, organizer_id, name, status, timezone, uploads_enabled,
-                  guest_gallery_enabled, moderation_mode, pin_enabled,
-                  idempotency_key, idempotency_payload_hash, created_at, updated_at
+          `SELECT id, organizer_id, name, status, previous_status, suspension_reason,
+                  suspended_at, scheduled_at, expires_at, grace_ends_at, revision,
+                  timezone, uploads_enabled, guest_gallery_enabled, moderation_mode,
+                  pin_enabled, idempotency_key, idempotency_payload_hash, created_at, updated_at
            FROM event
            WHERE idempotency_key = $1`,
           idempotencyKey
@@ -222,6 +237,13 @@ export class EventDraftService {
         organizerId: actorContext.accountId,
         name: trimmedName,
         status,
+        previousStatus: null,
+        suspensionReason: null,
+        suspendedAt: null,
+        scheduledAt: null,
+        expiresAt: null,
+        graceEndsAt: null,
+        revision: 1n,
         timezone,
         uploadsEnabled,
         guestGalleryEnabled,
@@ -259,9 +281,10 @@ export class EventDraftService {
 
     return this.runner.run(async (tx: SqlTransaction) => {
       const rows = await tx.query<EventRow>(
-        `SELECT id, organizer_id, name, status, timezone, uploads_enabled,
-                guest_gallery_enabled, moderation_mode, pin_enabled,
-                created_at, updated_at
+        `SELECT id, organizer_id, name, status, previous_status, suspension_reason,
+                suspended_at, scheduled_at, expires_at, grace_ends_at, revision,
+                timezone, uploads_enabled, guest_gallery_enabled, moderation_mode,
+                pin_enabled, created_at, updated_at
          FROM event
          WHERE id = $1`,
         eventId
