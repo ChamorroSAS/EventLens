@@ -47,7 +47,7 @@ La raíz Angular actual (`apps/web/src/app/app.component.ts`) presenta una vista
 | Invitado de evento | Sigue el deep link/QR privado y, si corresponde, PIN; enlace de regreso al Home solo si no altera sesión | EL-EP-004; no buscador/listado/código de evento inventado |
 | Admin | Acceso a su consola solo mediante contrato/sesión administrativa previa | EL-EP-012/EL-TK-044, nunca enlace que sirva de autorización |
 
-### 3. Rutas y arquitectura (nombres tentativos, NO contratos aceptados)
+### 3. Rutas y arquitectura (destinos de producto confirmados y paths restantes candidatos; sin rutas Angular implementadas)
 
 **Auditoría de snapshot de `stage`:** `main.ts` sólo inicia `AppComponent`; no se observó configuración de Angular Router ni rutas productivas; la raíz presenta health técnico. Los módulos existentes no demuestran URLs montadas. [Evidencia y matriz de decisiones](../sessions/2026-10-12-el-ep-018-editorial-and-routes.md#c-auditoría-técnica-acotada-de-rutas-en-el-snapshot-de-stage).
 | Intención | Ruta candidata | Condición |
