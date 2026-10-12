@@ -52,6 +52,12 @@ export {
   type CheckGuestConsentResult,
   type SetContributorNicknameCommand,
   type SetContributorNicknameResult,
+  type UploadMediaType,
+  type UploadAttemptStatus,
+  type CapacityReservationPort,
+  type AuthorizeUploadAttemptCommand,
+  type UploadAttemptRecord,
+  type AuthorizeUploadAttemptResult,
   type EventAuditRecord,
   type EventAuditSink
 } from './contracts.js';
@@ -61,6 +67,7 @@ export { EventDraftService } from './event-draft.js';
 export { EventLifecycleService } from './event-lifecycle.js';
 export { EventPublicAccessService } from './event-public-access.js';
 export { GuestSessionService } from './guest-session.js';
+export { UploadAuthorizationService } from './upload-authorization.js';
 export { resolveScheduleLocalTime, type ResolvedLocalSchedule } from './timezone.js';
 export {
   calculateEventLifecycleTimeline,

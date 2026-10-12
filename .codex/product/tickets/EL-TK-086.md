@@ -4,7 +4,7 @@
 EL-EP-005
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** invitado autorizado, **quiero** iniciar una carga reservando capacidad para mi archivo, **para** evitar competir de forma insegura con otras cargas simultáneas.

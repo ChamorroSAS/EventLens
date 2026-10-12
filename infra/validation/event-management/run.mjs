@@ -46,22 +46,23 @@ try {
     typeof eventExports.calculateEventLifecycleTimeline !== 'function' ||
     typeof eventExports.EventLifecycleService !== 'function' ||
     typeof eventExports.EventPublicAccessService !== 'function' ||
-    typeof eventExports.GuestSessionService !== 'function'
+    typeof eventExports.GuestSessionService !== 'function' ||
+    typeof eventExports.UploadAuthorizationService !== 'function'
   ) {
     throw Error('PUBLIC_IMPORT_FAILED');
   }
   const exitCode = run(['--filter', '@eventlens/event-management', 'exec', 'vitest', 'run', '--no-file-parallelism', '--reporter=default', '--reporter=json', '--outputFile=/evidence/tests.json'], true);
   const tests = JSON.parse(readFileSync('/evidence/tests.json', 'utf8'));
   writeFileSync('/evidence/result.json', JSON.stringify({
-    ticket: 'EL-TK-077',
-    precedingTicket: 'EL-TK-076',
+    ticket: 'EL-TK-086',
+    precedingTicket: 'EL-TK-077',
     runId: database,
     testedAt: new Date().toISOString(),
     result: tests.success && exitCode === 0 ? 'PASS' : 'FAIL',
     tests: tests.numTotalTests,
     passed: tests.numPassedTests,
     postgresql: '16 real isolated laboratory database',
-    contributorNickname: 'Contributor nickname/display name registration for guest session (DEC-013, DEC-041, EL-TK-077)',
+    uploadAttempt: 'Authorize upload attempt and reserve event capacity atomically (DEC-080, DEC-085, EL-TK-086)',
     gates: {
       'MEDIA-001': 'NOT_EVALUATED',
       'CAP-001': 'NOT_EVALUATED',

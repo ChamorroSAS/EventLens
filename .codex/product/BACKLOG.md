@@ -116,7 +116,7 @@
 | EL-TK-083 | Integrar la experiencia guest de acceso, consentimiento y Mis aportes | EL-EP-004 | READY | P0 | EL-TK-074..078, EL-TK-082 | [EL-TK-083](tickets/EL-TK-083.md) |
 | EL-TK-084 | Emitir la credencial pública inicial y publicar el acceso de un evento | EL-EP-004 | DONE | P0 | EL-TK-020, EL-TK-027 | [EL-TK-084](tickets/EL-TK-084.md) |
 | EL-TK-085 | Integrar la gestión de acceso, PIN y compartir en la interfaz del organizador | EL-EP-004 | READY | P0 | EL-TK-079,080,081,084 | [EL-TK-085](tickets/EL-TK-085.md) |
-| EL-TK-086 | Autorizar un intento de carga y reservar capacidad del evento | EL-EP-005 | READY | P0 | EL-TK-075, EL-TK-076, EL-TK-077, EL-TK-072, contrato EL-EP-011 | [EL-TK-086](tickets/EL-TK-086.md) |
+| EL-TK-086 | Autorizar un intento de carga y reservar capacidad del evento | EL-EP-005 | DONE | P0 | EL-TK-075, EL-TK-076, EL-TK-077, EL-TK-072, contrato EL-EP-011 | [EL-TK-086](tickets/EL-TK-086.md) |
 | EL-TK-087 | Emitir una URL temporal para carga directa al object storage privado | EL-EP-005 | READY | P0 | EL-TK-086 | [EL-TK-087](tickets/EL-TK-087.md) |
 | EL-TK-088 | Confirmar la existencia y pertenencia del original cargado | EL-EP-005 | READY | P0 | EL-TK-087 | [EL-TK-088](tickets/EL-TK-088.md) |
 | EL-TK-089 | Validar restricciones reales del archivo antes de aceptar el original | EL-EP-005 | READY | P0 | EL-TK-088, contrato EL-EP-011 | [EL-TK-089](tickets/EL-TK-089.md) |

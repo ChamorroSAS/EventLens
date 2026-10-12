@@ -76,7 +76,13 @@ export type EventManagementErrorCode =
   | 'CONSENT_REQUIRED'
   | 'INVALID_CONSENT_VERSION'
   | 'CONSENT_REJECTED'
-  | 'INVALID_CONTRIBUTOR_NICKNAME';
+  | 'INVALID_CONTRIBUTOR_NICKNAME'
+  | 'UPLOADS_DISABLED'
+  | 'INSUFFICIENT_STORAGE_CAPACITY'
+  | 'INSUFFICIENT_FILE_CAPACITY'
+  | 'FILE_SIZE_EXCEEDS_LIMIT'
+  | 'INVALID_MEDIA_TYPE'
+  | 'INVALID_FILE_SIZE';
 
 export class EventManagementError extends Error {
   constructor(
@@ -459,6 +465,50 @@ export interface SetContributorNicknameResult {
   readonly updatedAt: Date;
 }
 
+export type UploadMediaType = 'PHOTO' | 'VIDEO';
+export type UploadAttemptStatus = 'AUTHORIZED' | 'COMPLETED' | 'CANCELLED' | 'EXPIRED';
+
+export interface CapacityReservationPort {
+  reserveCapacity(command: {
+    eventId: string;
+    bytes: bigint | number;
+    fileSlots?: number;
+    mediaType?: 'PHOTO' | 'VIDEO';
+    idempotencyKey: string;
+  }): Promise<{
+    reservation: { id: string; bytes: bigint; fileSlots: number; status: string };
+    isExisting: boolean;
+  }>;
+}
+
+export interface AuthorizeUploadAttemptCommand {
+  readonly sessionToken: string;
+  readonly declaredSize: bigint | number;
+  readonly declaredType: UploadMediaType;
+  readonly idempotencyKey: string;
+  readonly now?: Date;
+}
+
+export interface UploadAttemptRecord {
+  readonly id: string;
+  readonly eventId: string;
+  readonly guestSessionId: string;
+  readonly reservationId: string;
+  readonly idempotencyKey: string;
+  readonly declaredSize: bigint;
+  readonly declaredType: UploadMediaType;
+  readonly contributorNickname: string;
+  readonly status: UploadAttemptStatus;
+  readonly createdAt: Date;
+  readonly expiresAt: Date;
+  readonly updatedAt: Date;
+}
+
+export interface AuthorizeUploadAttemptResult {
+  readonly attempt: UploadAttemptRecord;
+  readonly outcome: 'AUTHORIZED' | 'IDEMPOTENT_REPLAY';
+}
+
 export interface EventAuditRecord {
   readonly id: string;
   readonly procedure:
@@ -478,7 +528,8 @@ export interface EventAuditRecord {
     | 'GUEST_SESSION_CREATED'
     | 'GUEST_PIN_VALIDATION_FAILED'
     | 'GUEST_CONSENT_RECORDED'
-    | 'GUEST_NICKNAME_SET';
+    | 'GUEST_NICKNAME_SET'
+    | 'UPLOAD_ATTEMPT_AUTHORIZED';
   readonly actorId: string;
   readonly targetIdentifier: string;
   readonly result:
