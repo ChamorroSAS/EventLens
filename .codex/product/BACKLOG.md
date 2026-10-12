@@ -58,10 +58,10 @@
 | EL-TK-020 | Crear un borrador de evento | EL-EP-002 | DONE | P0 | EL-TK-013 | [EL-TK-020](tickets/EL-TK-020.md) |
 | EL-TK-021 | Cambiar el nombre de un borrador | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-021](tickets/EL-TK-021.md) |
 | EL-TK-022 | Definir la bienvenida de un borrador | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-022](tickets/EL-TK-022.md) |
-| EL-TK-023 | Definir la fecha y hora local de un borrador | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-023](tickets/EL-TK-023.md) |
+| EL-TK-023 | Definir la fecha y hora local de un borrador | EL-EP-002 | DONE | P0 | EL-TK-020 | [EL-TK-023](tickets/EL-TK-023.md) |
 | EL-TK-024 | Cambiar la zona horaria de un evento preparado | EL-EP-002 | READY | P0 | EL-TK-020, EL-TK-023 | [EL-TK-024](tickets/EL-TK-024.md) |
 | EL-TK-025 | Corregir la zona horaria de un evento que alcanzó ACTIVE | EL-EP-002 | READY | P0 | EL-TK-020, EL-TK-023, EL-TK-044 | [EL-TK-025](tickets/EL-TK-025.md) |
-| EL-TK-027 | Establecer el PIN inicial de un borrador | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-027](tickets/EL-TK-027.md) |
+| EL-TK-027 | Establecer el PIN inicial de un borrador | EL-EP-002 | DONE | P0 | EL-TK-020 | [EL-TK-027](tickets/EL-TK-027.md) |
 | EL-TK-028 | Elegir el modo de moderación de un borrador | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-028](tickets/EL-TK-028.md) |
 | EL-TK-029 | Configurar la carga de invitados en un borrador | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-029](tickets/EL-TK-029.md) |
 | EL-TK-030 | Configurar la galería invitada en un borrador | EL-EP-002 | READY | P0 | EL-TK-020 | [EL-TK-030](tickets/EL-TK-030.md) |
@@ -92,31 +92,31 @@
 | EL-TK-059 | Habilitar el entorno mínimo real requerido para spikes técnicos | EL-EP-006 | DONE | P0 | — | [EL-TK-059](tickets/EL-TK-059.md) |
 | EL-TK-060 | Evaluar aislamiento efectivo y quiescencia mediante spike controlado | EL-EP-006 | DONE | P0 | EL-TK-059 | [EL-TK-060](tickets/EL-TK-060.md) |
 | EL-TK-061 | Evaluar inspección y rendiciones con corpus móvil mediante spike | EL-EP-006 | DONE | P0 | EL-TK-059, EL-TK-060 | [EL-TK-061](tickets/EL-TK-061.md) |
-| EL-TK-062 | Calcular la línea temporal canónica del lifecycle de un evento | EL-EP-003 | READY | P0 | EL-TK-023, contrato EL-EP-011 | [EL-TK-062](tickets/EL-TK-062.md) |
-| EL-TK-063 | Programar un evento DRAFT para apertura futura | EL-EP-003 | READY | P0 | EL-TK-020, EL-TK-023, EL-TK-062 | [EL-TK-063](tickets/EL-TK-063.md) |
-| EL-TK-064 | Activar un evento SCHEDULED manual o automáticamente | EL-EP-003 | READY | P0 | EL-TK-063, EL-TK-062, EL-TK-055 | [EL-TK-064](tickets/EL-TK-064.md) |
-| EL-TK-065 | Cerrar manualmente un evento ACTIVE | EL-EP-003 | READY | P0 | EL-TK-064 | [EL-TK-065](tickets/EL-TK-065.md) |
-| EL-TK-066 | Reabrir un evento CLOSED antes de vencer | EL-EP-003 | READY | P0 | EL-TK-065, EL-TK-062 | [EL-TK-066](tickets/EL-TK-066.md) |
-| EL-TK-067 | Avanzar automáticamente por vencimiento y fin de gracia | EL-EP-003 | READY | P0 | EL-TK-062,064,065,055; contrato EL-EP-015 | [EL-TK-067](tickets/EL-TK-067.md) |
-| EL-TK-068 | Suspender administrativamente un evento conservando su estado previo | EL-EP-003 | READY | P0 | EL-TK-044 | [EL-TK-068](tickets/EL-TK-068.md) |
-| EL-TK-069 | Reactivar un evento SUSPENDED recalculando su estado vigente | EL-EP-003 | READY | P0 | EL-TK-062,067,068,044 | [EL-TK-069](tickets/EL-TK-069.md) |
-| EL-TK-070 | Extender la vigencia autorizada de un evento | EL-EP-003 | READY | P0 | EL-TK-062, contrato EL-EP-011 | [EL-TK-070](tickets/EL-TK-070.md) |
-| EL-TK-071 | Consultar lifecycle y capacidades vigentes de un evento | EL-EP-003 | READY | P0 | EL-TK-063..070 | [EL-TK-071](tickets/EL-TK-071.md) |
-| EL-TK-072 | Aplicar restricciones de acceso según el lifecycle vigente | EL-EP-003 | READY | P0 | EL-TK-064,065,067,068,069,071 | [EL-TK-072](tickets/EL-TK-072.md) |
+| EL-TK-062 | Calcular la línea temporal canónica del lifecycle de un evento | EL-EP-003 | DONE | P0 | EL-TK-023, contrato EL-EP-011 | [EL-TK-062](tickets/EL-TK-062.md) |
+| EL-TK-063 | Programar un evento DRAFT para apertura futura | EL-EP-003 | DONE | P0 | EL-TK-020, EL-TK-023, EL-TK-062 | [EL-TK-063](tickets/EL-TK-063.md) |
+| EL-TK-064 | Activar un evento SCHEDULED manual o automáticamente | EL-EP-003 | DONE | P0 | EL-TK-063, EL-TK-062, EL-TK-055 | [EL-TK-064](tickets/EL-TK-064.md) |
+| EL-TK-065 | Cerrar manualmente un evento ACTIVE | EL-EP-003 | DONE | P0 | EL-TK-064 | [EL-TK-065](tickets/EL-TK-065.md) |
+| EL-TK-066 | Reabrir un evento CLOSED antes de vencer | EL-EP-003 | DONE | P0 | EL-TK-065, EL-TK-062 | [EL-TK-066](tickets/EL-TK-066.md) |
+| EL-TK-067 | Avanzar automáticamente por vencimiento y fin de gracia | EL-EP-003 | DONE | P0 | EL-TK-062,064,065,055; contrato EL-EP-015 | [EL-TK-067](tickets/EL-TK-067.md) |
+| EL-TK-068 | Suspender administrativamente un evento conservando su estado previo | EL-EP-003 | DONE | P0 | EL-TK-044 | [EL-TK-068](tickets/EL-TK-068.md) |
+| EL-TK-069 | Reactivar un evento SUSPENDED recalculando su estado vigente | EL-EP-003 | DONE | P0 | EL-TK-062,067,068,044 | [EL-TK-069](tickets/EL-TK-069.md) |
+| EL-TK-070 | Extender la vigencia autorizada de un evento | EL-EP-003 | DONE | P0 | EL-TK-062, contrato EL-EP-011 | [EL-TK-070](tickets/EL-TK-070.md) |
+| EL-TK-071 | Consultar lifecycle y capacidades vigentes de un evento | EL-EP-003 | DONE | P0 | EL-TK-063..070 | [EL-TK-071](tickets/EL-TK-071.md) |
+| EL-TK-072 | Aplicar restricciones de acceso según el lifecycle vigente | EL-EP-003 | DONE | P0 | EL-TK-064,065,067,068,069,071 | [EL-TK-072](tickets/EL-TK-072.md) |
 | EL-TK-073 | Integrar el lifecycle en la interfaz de organizador e invitado | EL-EP-003 | READY | P0 | EL-TK-071, EL-TK-072 | [EL-TK-073](tickets/EL-TK-073.md) |
-| EL-TK-074 | Resolver acceso público a un evento mediante credencial no adivinable | EL-EP-004 | READY | P0 | EL-TK-020, EL-TK-072, EL-TK-084 | [EL-TK-074](tickets/EL-TK-074.md) |
-| EL-TK-075 | Validar PIN opcional y establecer una sesión anónima guest | EL-EP-004 | READY | P0 | EL-TK-027, EL-TK-074 | [EL-TK-075](tickets/EL-TK-075.md) |
-| EL-TK-076 | Registrar consentimiento versionado antes de la primera carga | EL-EP-004 | READY | P0 | EL-TK-075 | [EL-TK-076](tickets/EL-TK-076.md) |
-| EL-TK-077 | Registrar nombre o apodo del aportante en la sesión guest | EL-EP-004 | READY | P0 | EL-TK-075 | [EL-TK-077](tickets/EL-TK-077.md) |
+| EL-TK-074 | Resolver acceso público a un evento mediante credencial no adivinable | EL-EP-004 | DONE | P0 | EL-TK-020, EL-TK-072, EL-TK-084 | [EL-TK-074](tickets/EL-TK-074.md) |
+| EL-TK-075 | Validar PIN opcional y establecer una sesión anónima guest | EL-EP-004 | DONE | P0 | EL-TK-027, EL-TK-074 | [EL-TK-075](tickets/EL-TK-075.md) |
+| EL-TK-076 | Registrar consentimiento versionado antes de la primera carga | EL-EP-004 | DONE | P0 | EL-TK-075 | [EL-TK-076](tickets/EL-TK-076.md) |
+| EL-TK-077 | Registrar nombre o apodo del aportante en la sesión guest | EL-EP-004 | DONE | P0 | EL-TK-075 | [EL-TK-077](tickets/EL-TK-077.md) |
 | EL-TK-078 | Consultar Mis aportes mediante la sesión guest | EL-EP-004 | READY | P0 | EL-TK-075, EL-TK-072 | [EL-TK-078](tickets/EL-TK-078.md) |
 | EL-TK-079 | Cambiar o desactivar el PIN de acceso y revocar sesiones guest existentes | EL-EP-004 | READY | P0 | EL-TK-027, EL-TK-075 | [EL-TK-079](tickets/EL-TK-079.md) |
 | EL-TK-080 | Regenerar la credencial pública y revocar el enlace anterior | EL-EP-004 | READY | P0 | EL-TK-074, EL-TK-075 | [EL-TK-080](tickets/EL-TK-080.md) |
 | EL-TK-081 | Consultar datos de compartir y QR del acceso vigente | EL-EP-004 | READY | P0 | EL-TK-074, EL-TK-084 | [EL-TK-081](tickets/EL-TK-081.md) |
 | EL-TK-082 | Derivar a solicitud de retiro cuando la sesión guest no está disponible | EL-EP-004 | READY | P0 | EL-TK-074; contrato EL-EP-009 | [EL-TK-082](tickets/EL-TK-082.md) |
 | EL-TK-083 | Integrar la experiencia guest de acceso, consentimiento y Mis aportes | EL-EP-004 | READY | P0 | EL-TK-074..078, EL-TK-082 | [EL-TK-083](tickets/EL-TK-083.md) |
-| EL-TK-084 | Emitir la credencial pública inicial y publicar el acceso de un evento | EL-EP-004 | READY | P0 | EL-TK-020, EL-TK-027 | [EL-TK-084](tickets/EL-TK-084.md) |
+| EL-TK-084 | Emitir la credencial pública inicial y publicar el acceso de un evento | EL-EP-004 | DONE | P0 | EL-TK-020, EL-TK-027 | [EL-TK-084](tickets/EL-TK-084.md) |
 | EL-TK-085 | Integrar la gestión de acceso, PIN y compartir en la interfaz del organizador | EL-EP-004 | READY | P0 | EL-TK-079,080,081,084 | [EL-TK-085](tickets/EL-TK-085.md) |
-| EL-TK-086 | Autorizar un intento de carga y reservar capacidad del evento | EL-EP-005 | READY | P0 | EL-TK-075, EL-TK-076, EL-TK-077, EL-TK-072, contrato EL-EP-011 | [EL-TK-086](tickets/EL-TK-086.md) |
+| EL-TK-086 | Autorizar un intento de carga y reservar capacidad del evento | EL-EP-005 | DONE | P0 | EL-TK-075, EL-TK-076, EL-TK-077, EL-TK-072, contrato EL-EP-011 | [EL-TK-086](tickets/EL-TK-086.md) |
 | EL-TK-087 | Emitir una URL temporal para carga directa al object storage privado | EL-EP-005 | READY | P0 | EL-TK-086 | [EL-TK-087](tickets/EL-TK-087.md) |
 | EL-TK-088 | Confirmar la existencia y pertenencia del original cargado | EL-EP-005 | READY | P0 | EL-TK-087 | [EL-TK-088](tickets/EL-TK-088.md) |
 | EL-TK-089 | Validar restricciones reales del archivo antes de aceptar el original | EL-EP-005 | READY | P0 | EL-TK-088, contrato EL-EP-011 | [EL-TK-089](tickets/EL-TK-089.md) |
@@ -299,7 +299,15 @@ EL-TK-001..004 — SUPERSEDED por EL-TK-005..019; se preservan como historial. E
 **CONFIRMED — EL-TK-158 DONE, 2026-10-11:** proyección de avisos contextuales vigentes para el panel del organizador completada y validada en `@eventlens/notifications` (`NoticeProjectionService`) (42/42 pruebas PASS: 12 unitarias y 3 de integración contra PostgreSQL 16 real de proyección, sumadas a las 27 pruebas de intención y email; 0 errores de typecheck/build). Proyecta intenciones vigentes en contratos estructurados `InAppNotice` (`id`, `intentId`, `notificationType`, `title`, `fact`, `date`, `validUntil`, `consequence`, `action` con label y destination, `severity`, `resourceRef`, `recipientRef`) sin exigir un NotificationCenter obligatorio ni nuevos componentes (reutiliza catálogo canónico `ui-mvp-epic-review.md §EL-EP-013`). Filtra de forma atómica en PostgreSQL avisos no vigentes: excluye estados `SUPERSEDED` y `CANCELLED`, avisos con ventana de expiración vencida (`expires_at <= asOf`) y hechos futuros aún no vigentes (`effective_at > asOf`). Garantiza aislamiento estricto por cuenta/destinatario (`recipient_ref`) y filtrado opcional por evento (`resource_ref`). Deduplica de forma determinista para proyectar únicamente el aviso más reciente y relevante ante eventos reiterados (`notificationType:resourceRef`). Maneja estados vacíos de manera limpia (`hasActiveNotices: false`, `notices: []`), permitiendo al panel no renderizar banners o EmptyStates invasivos. Preserva la regla canónica de seguridad: los enlaces hacia destinos propietarios se reautorizan al navegar sin que el aviso conceda permisos de acceso. Desbloquea downstream EL-TK-164 y EL-TK-165. Véase el [cierre](tickets/EL-TK-158.md).
 
 **CONFIRMED — EL-TK-162 DONE, 2026-10-11:** generación de avisos de cuenta, seguridad y cambios del evento completada y validada en `@eventlens/notifications` (`AccountEventNoticeService`) (54/54 pruebas PASS: 9 unitarias y 3 de integración contra PostgreSQL 16 real de generación de avisos de cuenta/evento, sumadas a las 42 pruebas de intención, email y proyección; 0 errores de typecheck/build). Integra hechos confirmados de dominios propietarios de cuenta/seguridad (EL-EP-001) y lifecycle/evento (EL-EP-003). Sanitiza rigurosamente los metadatos y copys de seguridad (`NEW_LOGIN`, `PASSWORD_CHANGED`, `SESSION_REVOKED`, `RECOVERY_REQUESTED`, `CREDENTIAL_UPDATED`), garantizando la ausencia total de contraseñas, tokens y secretos en los payloads emitidos. Maneja suspensiones administrativas de eventos sin exponer detalles de investigaciones confidenciales (`isRestrictedReason: true`), asignando motivos neutros seguros, y respeta la supresión de avisos por orden legal o de seguridad (`suppressNotice: true`) sin registrar razones sensibles en logs públicos. Ejecuta supersession atómica en PostgreSQL ante reactivaciones (`EVENT_REACTIVATED`), invalidando y marcando `SUPERSEDED` los avisos previos de suspensión para que únicamente la comunicación vigente se proyecte al organizador. Programa ventanas exactas de notificación para eventos próximos (`EVENT_UPCOMING`, efectivo 24h antes del inicio) y cambios autorizados de configuración con destinos hacia dominios propietarios. Desbloquea downstream EL-TK-164 y EL-TK-165. Véase el [cierre](tickets/EL-TK-162.md).
-
-
-
+**CONFIRMED — EL-TK-023..070 (Event Management & Lifecycle Route) DONE, 2026-10-11:**
+- **EL-TK-023 DONE:** Definir fecha y hora local de un borrador con resolución determinista IANA, detección de gaps/overlaps DST conforme a DEC-070.
+- **EL-TK-062 DONE:** Cálculo del timeline canónico del lifecycle con duración física estricta $N \times 24\text{h}$ y periodo de gracia de 7 días conforme a DEC-077 y DEC-082.
+- **EL-TK-063 DONE:** Programación de borrador DRAFT a SCHEDULED con bloqueo pesimista `FOR UPDATE` e idempotencia determinista.
+- **EL-TK-064 DONE:** Activación de evento SCHEDULED a ACTIVE (manual temprana o automática) sin desplazar la fecha canónica de expiración (DEC-077).
+- **EL-TK-065 DONE:** Cierre manual de evento ACTIVE a CLOSED fijando `closed_at` y preservando el vencimiento canónico.
+- **EL-TK-066 DONE:** Reapertura manual de evento CLOSED a ACTIVE antes del vencimiento, limpiando `closed_at`.
+- **EL-TK-067 DONE:** Avance automático por vencimiento a GRACE_PERIOD y fin de gracia a PENDING_DELETION fijando `purge_started_at` (DEC-092), preservando barrera administrativa en SUSPENDED.
+- **EL-TK-068 DONE:** Suspensión administrativa de un evento conservando `previous_status` y motivo conforme a DEC-078.
+- **EL-TK-069 DONE:** Reactivación administrativa de un evento SUSPENDED recalculando el estado temporal vigente según DEC-081, DEC-078 y DEC-082.
+- **EL-TK-070 DONE:** Extensión administrativa autorizada de la vigencia de un evento con recálculo canónico desde el ancla, reconciliación de GRACE_PERIOD a ACTIVE/CLOSED y bloqueo DEC-102. Suite total de pruebas en Docker PostgreSQL 16 real: 91/91 PASS.
 

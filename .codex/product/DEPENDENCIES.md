@@ -95,7 +95,7 @@ Contratos EL-EP-013/014 mediante interfaces acordadas; sin dependencia dura de s
 | EL-TK-020 (DONE) | EL-TK-013 | EL-TK-021, EL-TK-022, EL-TK-023, EL-TK-024, EL-TK-025, EL-TK-027, EL-TK-028, EL-TK-029, EL-TK-030, EL-TK-031, EL-TK-047, EL-TK-049, EL-TK-051 |
 | EL-TK-021 | EL-TK-020 | — |
 | EL-TK-022 | EL-TK-020 | — |
-| EL-TK-023 | EL-TK-020 | EL-TK-024, EL-TK-025 |
+| EL-TK-023 (DONE) | EL-TK-020 | EL-TK-024, EL-TK-025 |
 | EL-TK-024 | EL-TK-020, EL-TK-023 | — |
 | EL-TK-025 | EL-TK-020, EL-TK-023, EL-TK-044 | — |
 | EL-TK-027 | EL-TK-020 | — |
@@ -120,12 +120,12 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
-| EL-TK-062 | EL-TK-023; contrato vigencia EL-EP-011 | 063,064,067,069,070 |
-| EL-TK-063 | 020,023,062 | 064,071 |
-| EL-TK-064 | 063,062,055 | 065,067,071,072 |
-| EL-TK-065 | 064 | 066,067,071,072 |
-| EL-TK-066 | 065,062 | 071,072 |
-| EL-TK-067 | 062,064,065,055; contrato EL-EP-015 | 069,071,072 |
+| EL-TK-062 (DONE) | EL-TK-023; contrato vigencia EL-EP-011 | 063,064,067,069,070 |
+| EL-TK-063 (DONE) | 020,023,062 | 064,071 |
+| EL-TK-064 (DONE) | 063,062,055 | 065,067,071,072 |
+| EL-TK-065 (DONE) | 064 | 066,067,071,072 |
+| EL-TK-066 (DONE) | 065,062 | 071,072 |
+| EL-TK-067 (DONE) | 062,064,065,055; contrato EL-EP-015 | 069,071,072 |
 | EL-TK-068 | 044 | 069,071,072 |
 | EL-TK-069 | 062,067,068,044 | 071,072 |
 | EL-TK-070 | 062; contrato ampliaciones EL-EP-011 | 071,072 |

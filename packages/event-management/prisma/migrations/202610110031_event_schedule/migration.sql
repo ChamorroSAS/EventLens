@@ -1,0 +1,4 @@
+ALTER TABLE event
+  ADD COLUMN IF NOT EXISTS starts_at_local TEXT,
+  ADD COLUMN IF NOT EXISTS scheduled_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS utc_offset_minutes INTEGER;

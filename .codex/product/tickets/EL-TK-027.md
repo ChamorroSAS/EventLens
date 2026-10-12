@@ -6,7 +6,7 @@ EL-EP-002
 
 ## Status
 
-READY
+DONE (2026-10-11)
 
 
 **HISTÓRICO CONFIRMED — 2026-10-07:** requirements_reviewer aprobó este ticket sin hallazgos pendientes. Véase [dictamen final](../sessions/2026-10-07-el-ep-002-ticket-final-review.md). READY conserva las dependencias de ejecución.
@@ -79,3 +79,15 @@ MOD-002 integra su cambio de revisión/policy de PIN con el puerto `RecoveryAuth
 
 ### Gates para nueva revisión
 REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES. [Dictamen final](../sessions/2026-10-08-el-ep-002-ticket-remediation-review.md). YES limitado al alcance contractual propio neutral; conserva predecesoras y no certifica integración Beta ni adapters. EL-TK-013 PENDING no bloquea automáticamente capacidades independientes de MOD-002.
+
+## Implementación y Verificación — 2026-10-11
+- Implementado método `EventDraftService.setInitialPin(command: SetInitialPinCommand)` en `@eventlens/event-management`.
+- Reglas verificadas:
+  - Formato estricto per DEC-073: exactamente 6 dígitos numéricos (`^[0-9]{6}$`), preservando ceros a la izquierda (`"001234"`). Cualquier otro carácter, espacio o longitud se rechaza con `INVALID_PIN_FORMAT`.
+  - Cero exposición per DEC-004: hasheo criptográfico con salt mediante `scryptSync`, sin exponer PIN ni hash en auditoría, logs ni en el `EventRecord` retornado.
+  - Aislamiento de propietario: solo el organizador creador puede configurar el PIN (`UNAUTHORIZED` si es ajeno).
+  - Estado: restringido estrictamente a `DRAFT` (`EVENT_NOT_IN_DRAFT`).
+  - Límite per DEC-072: intentos de modificar o cambiar un PIN inicial ya configurado se rechazan con `PIN_ALREADY_CONFIGURED` (la gestión posterior corresponde a EL-EP-004).
+  - Concurrencia e idempotencia: serialización pesimista bajo `SELECT ... FOR UPDATE`, ganador único ante carreras concurrentes y replay limpio para llamadas idénticas.
+- Validación en contenedor Docker oficial (`infra/validation/event-management/run.mjs`) con PostgreSQL 16: 115 tests PASS.
+

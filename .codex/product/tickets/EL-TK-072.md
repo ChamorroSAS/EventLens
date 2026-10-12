@@ -4,7 +4,7 @@
 EL-EP-003
 
 ## Status
-READY
+DONE (2026-10-11)
 
 ## User story
 **Como** sistema, **quiero** aplicar una política única de acceso basada en el lifecycle vigente, **para** impedir cargas o acceso general cuando el evento no lo permite.
@@ -65,3 +65,14 @@ Q-015; DEC-017, DEC-018, DEC-078, DEC-084; EL-EP-003, EL-EP-004.
 
 ## Readiness de implementación — 2026-10-10
 REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la policy central de autorización fail-closed que aplica permisos según lifecycle y preserva la excepción de Mis aportes de DEC-084, alineada con las capacidades expuestas en los componentes UI de EL-EP-003.
+
+## Implementación y Verificación — 2026-10-11
+- Implementado `EventAccessPolicy.evaluate(params: EvaluateAccessParams): AccessDecision` unificado en `@eventlens/event-management`.
+- Cubre todos los estados del lifecycle: `DRAFT`, `SCHEDULED`, `ACTIVE`, `CLOSED`, `GRACE_PERIOD`, `PENDING_DELETION`, `SUSPENDED`, `ARCHIVED`, `DELETED`.
+- Reglas comprobadas:
+  - Escenario 1 (`SCHEDULED`): invitado puede ver landing page / notice (`GUEST_VIEW_LANDING: ALLOWED`), pero cargas y galería abierta bloqueadas (`UPLOADS_DISABLED`, `GALLERY_DISABLED`).
+  - Escenario 2 (`CLOSED` / `GRACE_PERIOD`): cargas bloqueadas, galería general permitida solo si está habilitada, y preservación estricta de la excepción DEC-084 para ver propios aportes (`GUEST_VIEW_OWN_CONTRIBUTIONS`) o solicitar retiro (`GUEST_REQUEST_OWN_REMOVAL`) con sesión de invitado válida.
+  - Escenario 3 (`SUSPENDED` / `PENDING_DELETION` / `DELETED`): falla cerrado estricto (`EVENT_SUSPENDED`, `EVENT_TERMINAL`).
+  - Casos de error: Estados no reconocidos o eventos nulos retornan `FAIL_CLOSED`. No-enumeración de `DRAFT` para invitados (`EVENT_NOT_FOUND`).
+- Validación en Docker oficial (`infra/validation/event-management/run.mjs`) con PostgreSQL 16: 106 tests PASS.
+

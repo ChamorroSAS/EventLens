@@ -4,7 +4,22 @@
 EL-EP-003
 
 ## Status
-READY
+DONE
+
+## Implementation & Verification Evidence
+- **Method:** `EventLifecycleService.suspendEvent(command: SuspendEventCommand)`
+- **Schema & Migration:** `packages/event-management/prisma/migrations/202610110036_event_suspension/migration.sql` (`suspended_at TIMESTAMPTZ`, `suspension_reason TEXT`, `previous_status TEXT`).
+- **DEC-078 Business Rules:**
+  - Preserva `previous_status` del evento al momento de suspender.
+  - Guarda `suspension_reason` (requerido, trim) y `suspended_at`.
+  - La suspensión NO altera ni pausa `expires_at` ni `grace_ends_at`.
+  - Rechaza suspensión si el evento se encuentra en estado terminal (`PENDING_DELETION` o `ARCHIVED`) con `EVENT_TERMINAL`.
+  - Exige autorización de administrador humano (`ADMIN_HUMAN`); rechaza organizadores u otros actores con `UNAUTHORIZED`.
+  - Idempotencia determinista: repetición idéntica retorna `IDEMPOTENT_REPLAY` y audita evento sin alterar `previous_status`.
+- **Tests & Evidence:**
+  - 5 tests unitarios en `test/event-lifecycle.unit.test.ts`.
+  - 2 tests de integración en PostgreSQL 16 real en `test/event-lifecycle.integration.test.ts`.
+  - Suite de validación en Docker: 74/74 tests PASS.
 
 ## User story
 **Como** administrador autorizado, **quiero** suspender un evento con motivo justificado, **para** bloquear su operación sin perder el estado previo necesario para una revisión posterior.

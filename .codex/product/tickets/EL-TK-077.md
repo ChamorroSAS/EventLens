@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** invitado, **quiero** indicar un nombre o apodo para mis aportes, **para** identificarlos dentro del evento sin crear una cuenta.

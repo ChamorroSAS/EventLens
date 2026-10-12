@@ -4,7 +4,10 @@
 EL-EP-003
 
 ## Status
-READY
+DONE
+
+## Resolution
+Implementado el cierre manual `ACTIVE -> CLOSED` con preservación canónica de `expiresAt` y `graceEndsAt` bajo DEC-077 y DEC-082. Implementado rechazo si ya expiró (`EVENT_ALREADY_EXPIRED`), aislamiento por propietario (`UNAUTHORIZED`), serialización bajo `FOR UPDATE` con replay idempotente y auditoría `EVENT_CLOSED`. Validado con 52 pruebas (100% PASS) en laboratorio PostgreSQL 16 aislado y typecheck global en verde.
 
 ## User story
 **Como** organizador, **quiero** cerrar un evento ACTIVE, **para** detener la participación general sin pausar su vigencia.

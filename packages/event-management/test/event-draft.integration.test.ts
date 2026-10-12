@@ -52,6 +52,13 @@ describeIntegration('EventDraftService (Real PostgreSQL Integration Tests — EL
         details TEXT,
         timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
+
+      ALTER TABLE admin_audit_event
+        ADD COLUMN IF NOT EXISTS target_principal_id UUID;
+
+      ALTER TABLE event
+        ADD COLUMN IF NOT EXISTS pin_hash TEXT,
+        ADD COLUMN IF NOT EXISTS pin_salt TEXT;
     `);
   });
 
@@ -189,5 +196,140 @@ describeIntegration('EventDraftService (Real PostgreSQL Integration Tests — EL
 
     const totalEvents = await query<{ count: number }>('SELECT count(*)::int as count FROM event');
     expect(totalEvents[0].count).toBe(1);
+  });
+
+  it('EL-TK-027: persiste PIN inicial en PostgreSQL 16 con hash y salt, pin_enabled = true y cero exposición en el retorno', async () => {
+    const auditEvents: EventAuditRecord[] = [];
+    const service = createService(auditEvents);
+    const actor = createMockActor();
+
+    const draft = await service.createDraft({
+      actorContext: actor,
+      name: 'Evento Boda Real con PIN'
+    });
+
+    const pinResult = await service.setInitialPin({
+      actorContext: actor,
+      eventId: draft.event.id,
+      pin: '007890'
+    });
+
+    expect(pinResult.outcome).toBe('PIN_SET');
+    expect(pinResult.event.pinEnabled).toBe(true);
+
+    // Consultar directamente en PostgreSQL
+    const rows = await query<{
+      pin_enabled: boolean;
+      pin_hash: string | null;
+      pin_salt: string | null;
+    }>('SELECT pin_enabled, pin_hash, pin_salt FROM event WHERE id = $1', draft.event.id);
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0].pin_enabled).toBe(true);
+    expect(rows[0].pin_hash).toBeTruthy();
+    expect(rows[0].pin_salt).toBeTruthy();
+    // Cero exposición del PIN plano
+    expect(rows[0].pin_hash).not.toBe('007890');
+    expect(rows[0].pin_salt).not.toBe('007890');
+
+    // Auditoría en PostgreSQL
+    const auditRows = await query<{ procedure: string; result: string; details: string }>(
+      `SELECT procedure, result, details FROM admin_audit_event
+       WHERE target_identifier = $1 AND procedure = 'EVENT_INITIAL_PIN_SET'`,
+      draft.event.id
+    );
+    expect(auditRows).toHaveLength(1);
+    expect(auditRows[0].result).toBe('SUCCESS');
+    expect(auditRows[0].details).not.toContain('007890');
+  });
+
+  it('EL-TK-027: rechaza en PostgreSQL actor ajeno, estado distinto a DRAFT o intento de cambiar PIN existente', async () => {
+    const auditEvents: EventAuditRecord[] = [];
+    const service = createService(auditEvents);
+    const actor = createMockActor();
+
+    const draft = await service.createDraft({
+      actorContext: actor,
+      name: 'Evento Rechazos PIN SQL'
+    });
+
+    // 1. Actor ajeno
+    const otherActor = createMockActor();
+    await expect(
+      service.setInitialPin({
+        actorContext: otherActor,
+        eventId: draft.event.id,
+        pin: '123456'
+      })
+    ).rejects.toMatchObject({ code: 'UNAUTHORIZED' });
+
+    // 2. Establecer PIN inicial correctamente
+    await service.setInitialPin({
+      actorContext: actor,
+      eventId: draft.event.id,
+      pin: '123456'
+    });
+
+    // 3. Intento de reconfigurar o cambiar PIN existente -> PIN_ALREADY_CONFIGURED
+    await expect(
+      service.setInitialPin({
+        actorContext: actor,
+        eventId: draft.event.id,
+        pin: '654321'
+      })
+    ).rejects.toMatchObject({ code: 'PIN_ALREADY_CONFIGURED' });
+
+    // 4. Intento cuando el evento no está en DRAFT
+    const draft2 = await service.createDraft({
+      actorContext: actor,
+      name: 'Evento Draft2 SQL'
+    });
+    await sql(`UPDATE event SET status = 'ACTIVE' WHERE id = $1`, draft2.event.id);
+
+    await expect(
+      service.setInitialPin({
+        actorContext: actor,
+        eventId: draft2.event.id,
+        pin: '334455'
+      })
+    ).rejects.toMatchObject({ code: 'EVENT_NOT_IN_DRAFT' });
+  });
+
+  it('EL-TK-027: serializa escrituras concurrentes compitiendo por establecer PIN inicial bajo FOR UPDATE', async () => {
+    const auditEvents: EventAuditRecord[] = [];
+    const service = createService(auditEvents);
+    const actor = createMockActor();
+
+    const draft = await service.createDraft({
+      actorContext: actor,
+      name: 'Evento Concurrencia PIN SQL'
+    });
+
+    const key = 'pin-concurrent-idem-key';
+
+    // Dos llamadas concurrentes con la misma clave de idempotencia
+    const [res1, res2] = await Promise.all([
+      service.setInitialPin({
+        actorContext: actor,
+        eventId: draft.event.id,
+        pin: '889900',
+        idempotencyKey: key
+      }),
+      service.setInitialPin({
+        actorContext: actor,
+        eventId: draft.event.id,
+        pin: '889900',
+        idempotencyKey: key
+      })
+    ]);
+
+    const outcomes = [res1.outcome, res2.outcome].sort();
+    expect(outcomes).toEqual(['IDEMPOTENT_REPLAY', 'PIN_SET']);
+
+    const rows = await query<{ pin_enabled: boolean }>(
+      'SELECT pin_enabled FROM event WHERE id = $1',
+      draft.event.id
+    );
+    expect(rows[0].pin_enabled).toBe(true);
   });
 });

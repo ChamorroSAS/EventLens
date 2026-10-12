@@ -4,7 +4,7 @@
 EL-EP-003
 
 ## Status
-READY
+DONE (2026-10-11)
 
 ## User story
 **Como** organizador, administrador o invitado autorizado, **quiero** consultar el estado temporal efectivo del evento, **para** saber qué acciones están realmente permitidas.
@@ -65,3 +65,13 @@ Q-015; DEC-017, DEC-077, DEC-078, DEC-081, DEC-082; EL-EP-003.
 
 ## Readiness de implementación — 2026-10-10
 REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el endpoint y contrato API de LifecycleSnapshot y capabilities que alimenta EventLifecyclePanel y EventAccessStatus en el organizador y pantallas de invitado según el handoff UI/UX de EL-EP-003.
+
+## Implementación y Verificación — 2026-10-11
+- Implementado método `EventLifecycleService.getLifecycleSnapshot(command: GetLifecycleSnapshotCommand)` exponiendo `LifecycleSnapshot` y `LifecycleCapabilities`.
+- Proyección diferenciada por actor:
+  - `ADMIN_HUMAN`: snapshot completo con auditorías y secops (`suspendedAt`, `suspensionReason`, `purgeStartedAt`) y capacidades administrativas (`canSuspend`, `canReactivate`, `canExtendValidity`).
+  - `ORGANIZER_HUMAN` (propietario): visibilidad de gestión y capacidades operativas (`canClose`, `canReopen`, `canUpload`). Aislamiento multi-tenant estricto: organizadores ajenos reciben `EVENT_NOT_FOUND` sin revelar existencia (AQR-003).
+  - `GUEST_ANONYMOUS`: visibilidad pública mínima. Borradores o eventos terminales (`PENDING_DELETION`, `ARCHIVED`) devuelven `EVENT_NOT_FOUND` para evitar enumeración.
+- Validación ejecutada en contenedor Docker oficial (`infra/validation/event-management/run.mjs`) con PostgreSQL 16:
+  - 99 tests superados (50 unitarios lifecycle, 20 integración real PostgreSQL lifecycle, 11 timeline, 9 schedule, 9 draft).
+

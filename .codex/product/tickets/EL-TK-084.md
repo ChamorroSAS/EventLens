@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador propietario, **quiero** emitir la credencial pública inicial de mi evento al publicarlo o preparar su acceso, **para** que los invitados cuenten con un enlace y QR difícil de adivinar sin exponer el identificador interno ni PII.
