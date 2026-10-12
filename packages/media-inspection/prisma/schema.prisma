@@ -294,14 +294,20 @@ model QuarantineDeleteDenialAudit {
 }
 
 model QuarantinePurgeIntent {
-  id          String   @id @db.Uuid
-  operationId String   @map("operation_id")
-  mediaRef    String   @map("media_ref")
-  eventRef    String   @map("event_ref")
-  generation  BigInt
-  status      String
-  dedupKey    String   @unique @map("dedup_key")
-  createdAt   DateTime @map("created_at") @db.Timestamptz
+  id                     String    @id @db.Uuid
+  operationId            String    @map("operation_id")
+  mediaRef               String    @map("media_ref")
+  eventRef               String    @map("event_ref")
+  generation             BigInt
+  status                 String
+  dedupKey               String    @unique @map("dedup_key")
+  policyRef              String    @default("MOD-008-TRASH-QUARANTINE-PURGE-POLICY-V1") @map("policy_ref")
+  dispositionConfirmedAt DateTime? @map("disposition_confirmed_at") @db.Timestamptz
+  purgeStartedAt         DateTime? @map("purge_started_at") @db.Timestamptz
+  mainPurgeDeadline      DateTime? @map("main_purge_deadline") @db.Timestamptz
+  residualPurgeDeadline  DateTime? @map("residual_purge_deadline") @db.Timestamptz
+  expectedRevision       BigInt?   @map("expected_revision")
+  createdAt              DateTime  @map("created_at") @db.Timestamptz
 
   @@map("media_quarantine_purge_intent")
 }

@@ -14,6 +14,7 @@ export type QuarantineReleaseDenialCode =
   | 'MISSING_JUSTIFICATION'
   | 'MEDIA_NOT_FOUND'
   | 'MEDIA_NOT_QUARANTINED'
+  | 'DISPOSITION_BARRED'
   | 'AUTHORITY_BARRED'
   | 'IDEMPOTENCY_CONFLICT'
   | 'INVALID_ARGUMENT';
@@ -132,7 +133,7 @@ interface ActiveCycleRow {
 
 /**
  * Service governing quarantine release under authorized administrative intervention
- * or authorized security automation (EL-TK-041, DEC-038, DEC-064, ARCH-013, AQR-001).
+ * or authorized security automation (EL-TK-041, DEC-038, DEC-064, ARCH-013, AQR-001, EL-TK-187).
  *
  * Enforces:
  * 1. Organizers are strictly forbidden from releasing media in quarantine (ORGANIZER_DENIED).
@@ -140,10 +141,10 @@ interface ActiveCycleRow {
  *    MOD-007 intervention grant matching principal, mediaRef, and action.
  * 3. Security automation uses explicit service identity and authorized scope; no human session.
  * 4. Must provide non-empty justification for audited release.
- * 5. Media must be currently in QUARANTINED status.
+ * 5. Media must be currently in QUARANTINED status and have NO active purge disposition (DISPOSITION_BARRED).
  * 6. Creates a new audited generation (generation + 1) preserving inspection history, advances revision,
  *    and enqueues MEDIA_INSPECTION job for re-examination (does not mark media PUBLISHED/safe).
- * 7. Idempotent replay by operationId returns existing receipt without duplicating jobs.
+ * 7. Idempotent replay by operationId returns existing receipt without duplicating jobs (unless disposition barred).
  * 8. Records secret-free and media-free audit records, and durable NotificationIntent for EL-EP-013.
  */
 export class QuarantineReleaseService {
@@ -276,7 +277,45 @@ export class QuarantineReleaseService {
       const { actorType, actorId, grantId } = this.extractActorInfo(command.actor);
 
       return await this.transactions.run(async (tx) => {
-        // 1. Check idempotency by operation_id
+        // 1. Lock media catalog row and check status under lock
+        const mediaRows = await tx.query<MediaCatalogRow>(
+          `SELECT media_ref, event_ref, guest_ref, generation, revision, status, original, job_id
+           FROM media_catalog
+           WHERE media_ref = $1
+           FOR UPDATE`,
+          command.mediaRef
+        );
+
+        if (mediaRows.length === 0) {
+          throw new QuarantineReleaseDeniedError('MEDIA_NOT_FOUND', 'Media not found');
+        }
+
+        const media = mediaRows[0];
+
+        // 2. Enforce disposition barrier (EL-TK-187 / DEC-109/110 / ARCH-006):
+        // Active purge disposition strictly bars release, replay, and re-processing.
+        const purgeIntents = await tx.query<{ id: string; status: string }>(
+          `SELECT id, status
+           FROM media_quarantine_purge_intent
+           WHERE media_ref = $1 AND status IN ('PENDING', 'CONFIRMED')`,
+          command.mediaRef
+        );
+
+        if (purgeIntents.length > 0) {
+          throw new QuarantineReleaseDeniedError(
+            'DISPOSITION_BARRED',
+            `Media '${command.mediaRef}' has an active quarantine purge disposition and cannot be released or replayed`
+          );
+        }
+
+        if (media.status !== 'QUARANTINED') {
+          throw new QuarantineReleaseDeniedError(
+            'MEDIA_NOT_QUARANTINED',
+            `Media status is ${media.status}; only QUARANTINED media can be released`
+          );
+        }
+
+        // 3. Check idempotency by operation_id
         const existingReceipts = await tx.query<ReceiptRow>(
           `SELECT operation_id, media_ref, previous_generation, new_generation,
                   previous_revision, new_revision, job_id, cycle_id, actor_type,
@@ -309,29 +348,7 @@ export class QuarantineReleaseService {
           };
         }
 
-        // 2. Lock media catalog row and check status
-        const mediaRows = await tx.query<MediaCatalogRow>(
-          `SELECT media_ref, event_ref, guest_ref, generation, revision, status, original, job_id
-           FROM media_catalog
-           WHERE media_ref = $1
-           FOR UPDATE`,
-          command.mediaRef
-        );
-
-        if (mediaRows.length === 0) {
-          throw new QuarantineReleaseDeniedError('MEDIA_NOT_FOUND', 'Media not found');
-        }
-
-        const media = mediaRows[0];
-
-        if (media.status !== 'QUARANTINED') {
-          throw new QuarantineReleaseDeniedError(
-            'MEDIA_NOT_QUARANTINED',
-            `Media status is ${media.status}; only QUARANTINED media can be released`
-          );
-        }
-
-        // 3. Check for existing active processing cycle
+        // 4. Check for existing active processing cycle
         const activeCycles = await tx.query<ActiveCycleRow>(
           `SELECT cycle_id, job_id
            FROM media_processing_cycle
@@ -378,13 +395,13 @@ export class QuarantineReleaseService {
           }
         }
 
-        // 4. Advance generation and revision monotonically
+        // 5. Advance generation and revision monotonically
         const prevGen = BigInt(media.generation);
         const prevRev = BigInt(media.revision);
         const newGen = prevGen + 1n;
         const newRev = prevRev + 1n;
 
-        // 5. Enqueue MEDIA_INSPECTION job for new generation (re-inspection is mandatory)
+        // 6. Enqueue MEDIA_INSPECTION job for new generation (re-inspection is mandatory)
         const cycleId = 'cycle:' + randomUUID();
         const queueName = command.queueName ?? 'media-inspection';
 
@@ -400,7 +417,7 @@ export class QuarantineReleaseService {
           availableAt: new Date(0)
         });
 
-        // 6. Update media_catalog: status set to 'UPLOADED' so worker transitions to 'PROCESSING'
+        // 7. Update media_catalog: status set to 'UPLOADED' so worker transitions to 'PROCESSING'
         await tx.execute(
           `UPDATE media_catalog
            SET status = 'UPLOADED', generation = $1, revision = $2, job_id = $3::uuid
@@ -411,7 +428,7 @@ export class QuarantineReleaseService {
           command.mediaRef
         );
 
-        // 7. Terminate any prior active cycle for this media
+        // 8. Terminate any prior active cycle for this media
         await tx.execute(
           `UPDATE media_processing_cycle
            SET status = 'TERMINATED'
@@ -419,7 +436,7 @@ export class QuarantineReleaseService {
           command.mediaRef
         );
 
-        // 8. Create new media_processing_cycle
+        // 9. Create new media_processing_cycle
         const cycleNumRows = await tx.query<{ next_num: number }>(
           `SELECT COALESCE(MAX(cycle_number), 0) + 1 AS next_num
            FROM media_processing_cycle
@@ -442,7 +459,7 @@ export class QuarantineReleaseService {
           command.operationId
         );
 
-        // 9. Record cycle audit
+        // 10. Record cycle audit
         await tx.execute(
           `INSERT INTO media_cycle_audit (
              id, operation_id, cycle_id, media_ref, cycle_number, event_ref,
@@ -459,7 +476,7 @@ export class QuarantineReleaseService {
           actorId
         );
 
-        // 10. Persist quarantine release receipt
+        // 11. Persist quarantine release receipt
         const now = new Date();
         await tx.execute(
           `INSERT INTO media_quarantine_release_receipt (
@@ -482,7 +499,7 @@ export class QuarantineReleaseService {
           now
         );
 
-        // 11. Persist quarantine release audit
+        // 12. Persist quarantine release audit
         await tx.execute(
           `INSERT INTO media_quarantine_release_audit (
              id, operation_id, media_ref, generation, actor_type, actor_id,
@@ -499,7 +516,7 @@ export class QuarantineReleaseService {
           now
         );
 
-        // 12. Record durable NotificationIntent for EL-EP-013
+        // 13. Record durable NotificationIntent for EL-EP-013
         const intentId = randomUUID();
         const dedupKey = `notification:quarantine-release:${command.mediaRef}:${newGen.toString()}`;
         await tx.execute(
