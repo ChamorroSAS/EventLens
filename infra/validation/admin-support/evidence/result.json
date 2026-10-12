@@ -1,0 +1,17 @@
+{
+  "ticket": "EL-TK-146",
+  "precedingTicket": "EL-TK-044",
+  "runId": "admin_supp_1d3c1fee48154facbf61862ff857dcab",
+  "testedAt": "2026-10-12T00:41:02.189Z",
+  "result": "PASS",
+  "tests": 19,
+  "passed": 19,
+  "postgresql": "16 real isolated laboratory database",
+  "adminSearch": "Sanitized administrative search by authorized identifiers and pagination (DEC-019, DEC-020, EL-TK-146)",
+  "gates": {
+    "MEDIA-001": "NOT_EVALUATED",
+    "CAP-001": "NOT_EVALUATED",
+    "DR-001": "NOT_EVALUATED",
+    "EXPORT-001": "NOT_EVALUATED"
+  }
+}

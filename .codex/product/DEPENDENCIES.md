@@ -260,7 +260,7 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
-| EL-TK-146 | 044; contrato EL-EP-002 | 147,154,155 |
+| EL-TK-146 (DONE) | 044; contrato EL-EP-002 | 147,154,155 |
 | EL-TK-147 | 146; contratos propietarios | 148,150,151,152,153,154,155 |
 | EL-TK-148 | 147; contrato JobQueue | 149,153,154,155 |
 | EL-TK-149 | 148,044; contrato JobQueue | 153,154,155 |

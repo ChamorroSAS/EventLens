@@ -176,7 +176,7 @@
 | EL-TK-143 | Integrar capacidad y solicitudes de ampliación en la experiencia del organizador | EL-EP-011 | READY | P0 | 135,139,140 | [EL-TK-143](tickets/EL-TK-143.md) |
 | EL-TK-144 | Integrar revisión y overrides de capacidad en la consola administrativa | EL-EP-011 | READY | P0 | 141,142; contrato EL-EP-012 | [EL-TK-144](tickets/EL-TK-144.md) |
 | EL-TK-145 | Validar capacidad, ampliaciones y overrides de extremo a extremo | EL-EP-011 | READY | P0 | 134..144 | [EL-TK-145](tickets/EL-TK-145.md) |
-| EL-TK-146 | Buscar eventos y organizadores desde la consola administrativa | EL-EP-012 | READY | P0 | 044; contrato EL-EP-002 | [EL-TK-146](tickets/EL-TK-146.md) |
+| EL-TK-146 | Buscar eventos y organizadores desde la consola administrativa | EL-EP-012 | DONE | P0 | 044; contrato EL-EP-002 | [EL-TK-146](tickets/EL-TK-146.md) |
 | EL-TK-147 | Consultar un detalle administrativo agregado sin preview de media | EL-EP-012 | READY | P0 | 146; contratos propietarios vigentes | [EL-TK-147](tickets/EL-TK-147.md) |
 | EL-TK-148 | Consultar jobs y errores técnicos sanitizados desde soporte | EL-EP-012 | READY | P0 | 147; contrato JobQueue | [EL-TK-148](tickets/EL-TK-148.md) |
 | EL-TK-149 | Ejecutar acciones administrativas autorizadas sobre jobs | EL-EP-012 | READY | P0 | 148,044; contrato JobQueue | [EL-TK-149](tickets/EL-TK-149.md) |
