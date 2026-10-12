@@ -8,6 +8,10 @@ export type AdminSearchEntityType = 'ALL' | 'EVENT' | 'ORGANIZER';
 export type AdminSupportErrorCode =
   | 'UNAUTHORIZED'
   | 'INVALID_ARGUMENT'
+  | 'NOT_FOUND'
+  | 'INCOMPATIBLE_JOB_STATUS'
+  | 'JOB_LOCKED_OR_PROCESSING'
+  | 'IDEMPOTENCY_CONFLICT'
   | 'RATE_LIMITED'
   | 'INTERNAL_ERROR';
 
@@ -70,7 +74,8 @@ export interface AdminSupportAuditEvent {
     | 'ADMIN_SEARCH_PERFORMED'
     | 'ADMIN_EVENT_DETAIL_VIEWED'
     | 'ADMIN_JOB_LIST_VIEWED'
-    | 'ADMIN_JOB_DETAIL_VIEWED';
+    | 'ADMIN_JOB_DETAIL_VIEWED'
+    | 'ADMIN_JOB_ACTION_EXECUTED';
   readonly principalId: string;
   readonly details: string;
   readonly timestamp: Date;
@@ -152,6 +157,29 @@ export interface AdminQueryJobsResult {
 export interface AdminGetJobDetailQuery {
   readonly actorContext: AdminActorContext;
   readonly jobId: string;
+}
+
+// ==========================================
+// EL-TK-149: Acciones Administrativas sobre Jobs
+// ==========================================
+
+export type AdminJobAction = 'RETRY' | 'CANCEL' | 'MARK_DEAD';
+
+export interface ExecuteJobActionCommand {
+  readonly actorContext: AdminActorContext;
+  readonly jobId: string;
+  readonly action: AdminJobAction;
+  readonly reason: string;
+  readonly idempotencyKey: string;
+}
+
+export interface ExecuteJobActionResult {
+  readonly outcome: 'EXECUTED' | 'IDEMPOTENT_REPLAY';
+  readonly jobId: string;
+  readonly action: AdminJobAction;
+  readonly previousStatus: AdminJobStatus;
+  readonly newStatus: AdminJobStatus;
+  readonly executedAt: string;
 }
 
 // ==========================================

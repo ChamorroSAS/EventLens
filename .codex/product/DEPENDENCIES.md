@@ -263,7 +263,7 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-146 (DONE) | 044; contrato EL-EP-002 | 147,154,155 |
 | EL-TK-147 (DONE) | 146; contratos propietarios | 148,150,151,152,153,154,155 |
 | EL-TK-148 (DONE) | 147; contrato JobQueue | 149,153,154,155 |
-| EL-TK-149 | 148,044; contrato JobQueue | 153,154,155 |
+| EL-TK-149 (DONE) | 148,044; contrato JobQueue | 153,154,155 |
 | EL-TK-150 | 147, 044, contrato MediaViewGrant (097); contrato EL-EP-014 | 154,155 |
 | EL-TK-151 | 147; contratos propietarios | 154,155 |
 | EL-TK-152 | 147; contratos EL-EP-001/009/011 | 154,155 |

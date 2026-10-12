@@ -311,3 +311,9 @@ EL-TK-001..004 — SUPERSEDED por EL-TK-005..019; se preservan como historial. E
 - **EL-TK-069 DONE:** Reactivación administrativa de un evento SUSPENDED recalculando el estado temporal vigente según DEC-081, DEC-078 y DEC-082.
 - **EL-TK-070 DONE:** Extensión administrativa autorizada de la vigencia de un evento con recálculo canónico desde el ancla, reconciliación de GRACE_PERIOD a ACTIVE/CLOSED y bloqueo DEC-102. Suite total de pruebas en Docker PostgreSQL 16 real: 91/91 PASS.
 
+**CONFIRMED — EL-TK-146..149 (Admin Support Route) DONE, 2026-10-11:**
+- **EL-TK-146 DONE:** Búsqueda administrativa de eventos y organizadores en `@eventlens/admin-support` (`AdminSearchService`) con sanitización de consultas, coincidencia parcial/prefijo, aislamiento multitenant, y ausencia estricta de previews multimedia y secretos.
+- **EL-TK-147 DONE:** Detalle administrativo agregado en `@eventlens/admin-support` (`AdminEventDetailService`) con estado parcial explícito por secciones independientes (owner, lifecycle, capacity, jobs, moderation) sin preview de media y con auditoría `ADMIN_EVENT_DETAIL_ACCESSED`.
+- **EL-TK-148 DONE:** Consulta de jobs y errores técnicos sanitizados en `@eventlens/admin-support` (`AdminJobInspectionService`) conforme a DEC-038 y DEC-064, con sanitización de tokens, paths y secretos en stack traces y auditoría `ADMIN_JOB_INSPECTED`.
+- **EL-TK-149 DONE:** Ejecución de acciones administrativas autorizadas sobre jobs en `@eventlens/admin-support` (`AdminJobActionService`) para RETRY, CANCEL y MARK_DEAD, con verificación de `AdminActorContext` (`ADMIN_HUMAN`, EL-TK-044), justificación obligatoria, bloqueo pesimista `FOR UPDATE`, idempotencia determinista vía `admin_job_action_receipt`, y auditoría `ADMIN_JOB_ACTION_EXECUTED`. Suite total de pruebas en Docker PostgreSQL 16 real: 64/64 PASS (8 archivos).
+

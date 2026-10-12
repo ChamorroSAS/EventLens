@@ -45,6 +45,7 @@ try {
     typeof adminExports.AdminSearchService !== 'function' ||
     typeof adminExports.AdminEventDetailService !== 'function' ||
     typeof adminExports.AdminJobInspectionService !== 'function' ||
+    typeof adminExports.AdminJobActionService !== 'function' ||
     typeof adminExports.AdminSupportError !== 'function'
   ) {
     throw Error('PUBLIC_IMPORT_FAILED');
@@ -52,8 +53,8 @@ try {
   const exitCode = run(['--filter', '@eventlens/admin-support', 'exec', 'vitest', 'run', '--no-file-parallelism', '--reporter=default', '--reporter=json', '--outputFile=/evidence/tests.json'], true);
   const tests = JSON.parse(readFileSync('/evidence/tests.json', 'utf8'));
   writeFileSync('/evidence/result.json', JSON.stringify({
-    ticket: 'EL-TK-148',
-    precedingTicket: 'EL-TK-147',
+    ticket: 'EL-TK-149',
+    precedingTicket: 'EL-TK-148',
     runId: database,
     testedAt: new Date().toISOString(),
     result: tests.success && exitCode === 0 ? 'PASS' : 'FAIL',
