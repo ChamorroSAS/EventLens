@@ -11,9 +11,11 @@ Fecha: 2026-10-12 · Colombia · Estado: **SCOPED LEGAL PLANNING ASSESSMENT**, n
 | `LEGAL_BETA_FORM_PRODUCTION` | `BLOCKED` | No habilitar captación real de correo de solicitantes sin política/aviso, autorización o fundamento válido, evidencias, identidad del responsable, derechos y canal de contacto conformes. |
 | `LEGAL_PUBLIC_HOME_RELEASE` | `BLOCKED_PENDING_REVIEW` | No publicar publicidad/claims e imágenes sin validar veracidad y licencias/autorizaciones correspondientes. Un Home solo informativo y sin captación se evalúa por separado, no se presume autorizado. |
 | `LEGAL_PUBLIC_SERVICE_OPENING` | `BLOCKED_EL_EP_017_Q_029` | La revisión legal profesional completa de privacidad, menores, imágenes, licencias, derechos, plazos y procedimientos sigue en EL-EP-017. |
-| `READY_FOR_TICKET_WRITING` global EL-EP-018 | `NO` hasta gates de arquitectura, UX y requirements_reviewer | **No elevar este gate global** por un análisis jurídico acotado; la conclusión legal elimina únicamente la dependencia equivocada de cerrar Q-029 *antes de redactar tickets*. |
+| `READY_FOR_TICKET_WRITING` global EL-EP-018 | `YES` según gates independientes posteriores de arquitectura, UX y requisitos | **Stage vigente:** EL-TK-205..214 fueron creados y aprobados READY. El gate legal no otorgó ni revoca ese estado; publicación sigue bloqueada. |
 
-**Conclusión acotada:** Jurídicamente se pueden definir tickets y pruebas desde ahora. **No** se acredita conformidad legal de la plataforma, tratamiento real de datos, autorización para producción o un dictamen profesional. Los tickets resultantes requieren revisión de requisitos y de diseño antes de pasar a READY/ejecución conforme al workflow vigente.
+**Reconciliación posterior con stage:** los dictámenes independientes de EL-EP-018 aprobaron arquitectura, UX y requisitos, y EL-TK-205..214 figuran READY con predecesoras pendientes. La revisión jurídica de publicación no cambia esos estados.
+
+**Conclusión acotada:** Jurídicamente se pueden definir tickets y pruebas desde ahora. **No** se acredita conformidad legal de la plataforma, tratamiento real de datos, autorización para producción o un dictamen profesional. EL-TK-205..214 ya tienen dictámenes independientes APPROVED de requisitos, arquitectura y UI aplicable, con READY de alcance (no implementación): [gates vigentes](2026-10-12-el-ep-018-review-gates.md).
 
 ## 2. Fundamento normativo y fuentes oficiales verificadas
 
@@ -64,7 +66,7 @@ Cada ticket de Home/rutas/CTA/formulario/footers que toque estas superficies deb
 | Cookies y terceros de navegación/analytics | `PENDING INVENTORY` | Arquitectura/seguridad/privacidad verifican antes de publicar |
 | Aprobación de claims publicados y FAQ | `PENDING FINAL COPY REVIEW` | Product/copy/UX, legal cuando afirmación lo amerita |
 | Q-029 completo y proceso de apertura del servicio | `BLOCKED` | Sigue en EL-EP-017; no se modifica ni se da por revisado |
-| Paths/Router/owners, gate UX y revisión de requisitos de EL-EP-018 | `PENDING NON-LEGAL` | architect + ui_designer + requirements_reviewer; ningún gate READY global cambia automáticamente |
+| Paths/Router/owners, gate UX y revisión de requisitos de EL-EP-018 | `APPROVED NON-LEGAL` en stage | [Gates](2026-10-12-el-ep-018-review-gates.md) y [contrato](../../context/public-entry-contract.md) aprobados; implementación y E2E pendientes |
 
 ## Expediente jurídico preliminar asociado — 2026-10-12
 
@@ -83,10 +85,10 @@ beta_form_public_collection_allowed: NO
 public_home_release_allowed: NO
 public_service_release_allowed: NO
 el_ep_017_q_029: UNCHANGED_BLOCKED
-requirements_ready: PARTIAL
-ready_for_ticket_writing: NO
-ready_for_frontend_planning: NO
-ready_for_implementation: NO
+requirements_ready: YES
+ready_for_ticket_writing: YES
+ready_for_frontend_planning: YES
+ready_for_implementation: PARTIAL
 ```
 
 Conclusión: **el componente jurídico no exige esperar a EL-EP-017 para escribir tickets DRAFT de EL-EP-018**, pero cada ticket debe incorporar los contratos y bloqueos anteriores; los gates generales de requisitos/arquitectura/UI y los gates de publicación no se dan por aprobados. Este análisis sirve para planificar y preparar un checklist para revisión jurídica profesional posterior; no equivale a dictamen profesional.

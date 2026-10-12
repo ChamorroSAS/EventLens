@@ -1120,7 +1120,6 @@ export class MediaModerationService {
     }
 
     const operationId = command.operationId ?? randomUUID();
-    const now = command.now ?? new Date();
 
     return await this.transactions.run(async (tx) => {
       // 1. Authorize organizer ownership on event
@@ -1136,8 +1135,9 @@ export class MediaModerationService {
         throw err;
       }
 
-      // 2. Lock and retrieve media row
+      // 2. Lock and retrieve media row; evaluate server clock inside the serialized lock boundary (ARCH-019)
       const media = await this.repository.lockAndGetMedia(tx, mediaRef.trim());
+      const now = command.now ?? new Date();
       if (!media) {
         throw new MediaModerationError('MEDIA_NOT_FOUND', `Media '${mediaRef}' not found`);
       }

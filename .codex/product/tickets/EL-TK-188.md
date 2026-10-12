@@ -4,7 +4,7 @@
 EL-EP-015
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** sistema, **quiero** registrar solicitudes, causas y plazos sin ambigüedades, **para** coordinar purgas idempotentes con evidencia consistente.
@@ -70,4 +70,12 @@ UI_REQUIRED: NO.
 READY_FOR_FRONTEND_PLANNING: NOT_REQUIRED — dictamen ui_designer; sin diseño de UI nueva.
 REVIEW_STATUS: APPROVED — [dictámenes formales y validación documental](../sessions/2026-10-12-el-ep-015-ticket-readiness.md).
 
-Histórico: DRAFT en la propuesta original; READY tras revisión individual del 2026-10-12. No acredita implementación, ejecución de pruebas ni PASS de validation gates.
+## Evidencia de Cierre — 2026-10-12
+- **Esquema y Migración PostgreSQL 16:** Modelos `DeletionRequest` (`deletion_request`) y `DeletionReceipt` (`deletion_receipt`) en `packages/event-management/prisma/schema.prisma` y migración `202610120053_deletion_coordination` con restricciones DDL (`chk_deletion_request_cause`, `chk_deletion_request_scope_type`, `chk_deletion_request_status`, `chk_deletion_request_cancel_window`) e índices compuestos.
+- **Dominio y Persistencia (`packages/event-management/src/deletion-coordination.ts`):**
+  - Aritmética de calendario UTC (`addUtcCalendarDays`, `addUtcHours`, `computeDeletionDeadlines`) inmune a cambios DST, años bisiestos y retrasos del worker (`+7` y `+30` días calendario UTC desde `purgeStartedAt`).
+  - `DeletionCoordinationService` y `PostgresDeletionCoordinationRepository` con soporte para las 7 causas canónicas, bloqueo de `LEGAL_OR_SECURITY_HOLD`, prohibición de extensión de obligaciones (`OBLIGATION_EXTENSION_FORBIDDEN`), idempotencia determinista (`IDEMPOTENT_REPLAY` vs `DELETION_INTENT_PAYLOAD_CONFLICT`), protocolo `PREPARED -> UNKNOWN -> RECONCILED -> CONFIRMED` con CAS y `recoveryEpoch`, y proyección OpenAPI `getDeletionProjection`.
+- **Verificación:**
+  - `packages/event-management/test/deletion-coordination.unit.test.ts` (12/12 PASS).
+  - `packages/event-management/test/deletion-coordination.integration.test.ts` (3/3 PASS en PostgreSQL 16 real).
+

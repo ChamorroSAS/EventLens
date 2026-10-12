@@ -8,7 +8,7 @@
 - Tickets: `EL-TK-{NNN}`, con tres dígitos; archivo `tickets/EL-TK-{NNN}.md`.
 - La numeración existente se conserva exactamente; el prefijo identifica el mismo artefacto, no uno nuevo.
 - Nunca reutilizar un ID ni su número dentro de su serie, incluidos artefactos SUPERSEDED, DEPRECATED, CANCELLED e históricos.
-- **PROPUESTA — 2026-10-12:** `EL-EP-018` reservado documentalmente para Home público y navegación de entrada; estado `DRAFT`, no es una nueva decisión aceptada ni una épica READY. Ningún `EL-TK` nuevo asignado. [Documento](epics/EL-EP-018.md).
+- **CONFIRMED — 2026-10-12:** `EL-EP-018` conserva el ID reservado para Home público/navegación y pasa DRAFT→READY de requisitos tras architect/requirements/UI; ticket writing habilitado, no implementación ni Beta. [Documento](epics/EL-EP-018.md) / [gates](sessions/2026-10-12-el-ep-018-review-gates.md). No se reutilizan IDs; serie de tickets hasta204 antes de esta descomposición.
 - **CONFIRMED — 2026-10-08:** EL-TK-001..046 están ocupados; EL-TK-043..046 fueron asignados para la remediación aprobada de EL-EP-001.
 - **CONFIRMED — 2026-10-08, remediación EL-EP-002:** EL-TK-047..052 asignados a consulta/navegación y reemplazos de portada; serie ocupada EL-TK-001..052. EL-TK-026 permanece SUPERSEDED histórico por 049..052, nunca se reutiliza.
 - **CONFIRMED — 2026-10-08, remediación EL-EP-006:** EL-TK-053..058 asignados únicamente a estado API, integración UI, lease JobQueue, ejecutor aislado, cleanup media y validación integrada. Serie ocupada EL-TK-001..058; ningún ID histórico reutilizado.
@@ -81,3 +81,5 @@ EL-TK-001..004 conservan SUPERSEDED; EL-TK-005..019 conservan READY. La migraci�
 Cambio exclusivamente documental; no requiere una nueva change request conforme a las instrucciones de backlog_manager. Los registros CR-001..003 y las decisiones de producto permanecen válidos. Clasificación: Correction documental de identificadores; disposición CHANGE_READY.
 
 Se actualizaron referencias tanto actuales como históricas al identificador canónico, manteniendo intactos sus hechos y estados en cada momento. El mapa anterior y el inventario de rutas en la [sesión de migración](sessions/2026-10-07-identifier-convention.md) son las únicas excepciones históricas; no deben utilizarse como rutas vigentes.
+
+**CONFIRMED — 2026-10-12, EL-EP-018:** EL-TK-205..214 asignados definitivamente tras búsqueda dirigida sin IDs previos. Serie001..214 ocupada; no reutilizar ni renumerar históricos. Diez tickets READY tras Gate 2, no IMPLEMENTED. [Dictámenes](sessions/2026-10-12-el-ep-018-review-gates.md).

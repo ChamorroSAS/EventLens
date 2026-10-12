@@ -6,17 +6,15 @@
 
 **RECOMMENDED:** primera descomposición funcional; prioridad P0 = necesaria para beta operativa segura; P1 = evaluación beta o preparación pública. Estado READY significa DoR de épica, no autorización de lanzar ni dependencias ya realizadas. NOT_READY conserva bloqueantes explícitos. Los tickets existentes se enumeran en su sección y permanecen sujetos a sus puertas de revisión.
 
-## Propuestas nuevas de épicas (no incorporadas al alcance Beta aceptado)
+## Planificación frontend adicional (sin certificación de Beta)
 
-| ID propuesto | Resultado | Propiedad | Gate | Documento |
+| ID | Resultado | Propiedad | Gate | Documento |
 |---|---|---|---|---|
-| EL-EP-018 | Home público informativo, entrada y navegación a cuenta/eventos | Frontend transversal MOD-001/002/003 | DRAFT; sin tickets ni revisión de requisitos/UI | [EL-EP-018](epics/EL-EP-018.md) |
+| EL-EP-018 | Home público informativo, entrada y navegación a cuenta/eventos | Frontend transversal MOD-001/002/003 | READY de requisitos; arquitectura APPROVED, UI YES; EL-TK-205..214 READY | [EL-EP-018](epics/EL-EP-018.md) |
 
-**PROPUESTA 2026-10-12 (actualizada):** EP-018 no altera el inventario de 17 épicas confirmadas. **CONFIRMED:** Home `/` sin redirección automática para visitantes y autenticados, más 12 elecciones editoriales (CTA Beta, 4 FAQ, cabecera equilibrada y footer minimalista), sin atribución personal. [Registro editorial y auditoría de rutas](sessions/2026-10-12-el-ep-018-editorial-and-routes.md). La redacción literal es propuesta para revisión. **CONFIRMED A/B/C:** `/mi-cuenta` compone datos básicos, seguridad, sesiones y solicitud de eliminación sin segundo dashboard; quien no tenga sesión entra por `/ingresar` y vuelve sólo a destino interno autorizado; invitado por QR accede directo sin Home ni login organizador. **PENDING técnico:** implementación real de `/ingresar` y `/mi-cuenta`, paths candidatos de Beta/Mis eventos, formato de URL QR, montaje Angular Router, UI/UX y revisión jurídica. Prioridad P0 propuesta para ruta/entrada operativa de la Beta y P1 para contenido institucional. **Permanece DRAFT; sin tickets ni implementación.** No crear registro libre ni cuenta guest.
+**CONFIRMED — revisión018, 2026-10-12:** requisitos y arquitectura APPROVED, UI ratificada YES y ticket writing habilitado; sin implementación o certificación Beta. Historial editorial/A/B/C preservado. [Gates](sessions/2026-10-12-el-ep-018-review-gates.md), [contrato](../context/public-entry-contract.md), [UI/copy de diseño](../context/ui-public-entry.md). Paths `/solicitar-acceso` y `/mis-eventos` definidos; QR real `/g/:lookupKey`; logout propio confirmado→Home. Mi cuenta lee correo/verificación/estado efectivos; sesión restringida no accede a eventos/seguridad ordinaria. Correctivo de proyección ACTIVE y exposición API/cliente/SPA son trabajo de integración explícito, no gates de producto sin resolver. Publicación externa mantiene017/Q029. P0 propuesto integración operativa/P1 editorial, sin reordenar prioridades aceptadas ni crear registro libre/cuenta guest. Los cierres y gates originales de las17 épicas anteriores permanecen históricos.
 
-**OPERADOR JURÍDICO 2026-10-12:** Confirmada **persona natural** como operador inicial de EventLens. [Expediente preparatorio](../../docs/legal/README.md) sobre roles, datos, aviso Beta y gates; identidad/contacto reales y papel responsable/encargado en galerías siguen PENDING. EL-EP-017 continúa NOT_READY y Q-029 no se cierra.
-
-**LEGAL TICKET SCOPING — 2026-10-12:** [dictamen acotado EL-EP-018](sessions/2026-10-12-el-ep-018-legal-ticket-gate.md) = **PASS_WITH_CONDITIONS** exclusivamente para redactar tickets **DRAFT** (claims verificables, emails Beta/política/aviso/autorización/evidencia, fotografías autorizadas, footer y no trackers nuevos). No es dictamen de abogado: no habilita captación de datos, publicidad final ni servicio público; EL-EP-017/Q-029 permanece bloqueado. Gates globales de requirements/architect/ui_designer y READY_FOR_TICKET_WRITING se mantienen pendientes.
+**GATE JURÍDICO ACOTADO — 2026-10-12:** [informe](sessions/2026-10-12-el-ep-018-legal-ticket-gate.md) PASS_WITH_CONDITIONS y [expediente persona natural](../../docs/legal/README.md) incorporados **sin revertir** Gates APPROVED y tickets EL-TK-205..214 READY. Captación Beta, copy/fotos, contacto de privacidad y apertura pública requieren evidencias jurídicas; EL-EP-017/Q-029 permanece bloqueado. Nombre comercial en evaluación sin renombrado de código.
 
 ## Epics
 
@@ -38,7 +36,7 @@
 | EL-EP-012 | Operar y dar soporte con intervención administrativa justificada | MOD-007 | READY | P0 | EL-EP-001, EL-EP-014 | [EL-EP-012](epics/EL-EP-012.md) |
 | EL-EP-013 | Informar al organizador sobre su cuenta y sus recuerdos | MOD-009 | READY | P0 | Ninguna predecesora dura | [EL-EP-013](epics/EL-EP-013.md) |
 | EL-EP-014 | Detectar incidentes y reconstruir acciones relevantes | MOD-009 | READY | P0 | Ninguna predecesora dura | [EL-EP-014](epics/EL-EP-014.md) |
-| EL-EP-015 | Eliminar eventos y cuentas con cancelación y purga controladas | MOD-008 | READY | P0 | EL-EP-001, EL-EP-003, EL-EP-008, EL-EP-010, EL-EP-013, EL-EP-014 | [EL-EP-015](epics/EL-EP-015.md) |
+| EL-EP-015 | Eliminar eventos y cuentas con cancelación y purga controladas | MOD-008 | DONE | P0 | EL-EP-001, EL-EP-003, EL-EP-008, EL-EP-010, EL-EP-013, EL-EP-014 | [EL-EP-015](epics/EL-EP-015.md) |
 | EL-EP-016 | Evaluar la beta con evidencia de valor y confiabilidad | MOD-009 | READY | P1 | EL-EP-014 | [EL-EP-016](epics/EL-EP-016.md) |
 | EL-EP-017 | Cerrar políticas jurídicas y de privacidad para apertura pública | MOD-008 | NOT_READY | P1 | EL-EP-009, EL-EP-015 | [EL-EP-017](epics/EL-EP-017.md) |
 
@@ -235,23 +233,33 @@
 | EL-TK-185 | Corregir el verifier humano y migrar credenciales de organizador | EL-EP-001 | DONE | P0 | 013,018,019,046 | [EL-TK-185](tickets/EL-TK-185.md) |
 | EL-TK-186 | Emitir y consumir evidencia de reautenticación sensible de cuenta | EL-EP-001 | DONE | P0 | 185,013,014,046 | [EL-TK-186](tickets/EL-TK-186.md) |
 | EL-TK-187 | Corregir disposición y liberación de media en cuarentena | EL-EP-006 | DONE | P0 | 041,042,046; contrato 015 | [EL-TK-187](tickets/EL-TK-187.md) |
-| EL-TK-188 | Persistir el contrato canónico de solicitudes e intenciones de eliminación | EL-EP-015 | READY | P0 | 046,067; DEC-091..110 | [EL-TK-188](tickets/EL-TK-188.md) |
-| EL-TK-189 | Solicitar eliminación manual de evento con bloqueo inmediato | EL-EP-015 | READY | P0 | 188,072 | [EL-TK-189](tickets/EL-TK-189.md) |
-| EL-TK-190 | Cancelar eliminación manual de evento antes del claim irreversible | EL-EP-015 | READY | P0 | 189,188;193 integración | [EL-TK-190](tickets/EL-TK-190.md) |
-| EL-TK-191 | Solicitar eliminación de cuenta con reautenticación y suspensión global | EL-EP-015 | READY | P0 | 186,188 | [EL-TK-191](tickets/EL-TK-191.md) |
-| EL-TK-192 | Cancelar eliminación de cuenta con prueba nueva y recálculo de eventos | EL-EP-015 | READY | P0 | 191,186 | [EL-TK-192](tickets/EL-TK-192.md) |
-| EL-TK-193 | Propagar barreras de eliminación a accesos, grants y exportaciones | EL-EP-015 | READY | P0 | 189,191;128 | [EL-TK-193](tickets/EL-TK-193.md) |
-| EL-TK-194 | Coordinar ingresos por causa: gracia, retiro propio, papelera y cuarentena | EL-EP-015 | READY | P0 | 188,067,109,114,187;119/108 integración | [EL-TK-194](tickets/EL-TK-194.md) |
-| EL-TK-195 | Construir inventario verificable y detener escritores antes de purgar | EL-EP-015 | READY | P0 | 188,193;128 | [EL-TK-195](tickets/EL-TK-195.md) |
-| EL-TK-196 | Ejecutar purga física durable e idempotente de principales | EL-EP-015 | READY | P0 | 195,197;194 | [EL-TK-196](tickets/EL-TK-196.md) |
-| EL-TK-197 | Persistir tombstones y reconciliar eliminación con RecoveryAuthority | EL-EP-015 | READY | P0 | 188,046,172,174 | [EL-TK-197](tickets/EL-TK-197.md) |
-| EL-TK-198 | Cerrar estados DELETED y liquidar consumo solo con prueba principal | EL-EP-015 | READY | P0 | 196,197,137;159 | [EL-TK-198](tickets/EL-TK-198.md) |
-| EL-TK-199 | Verificar residual y restauraciones hasta deadline UTC más 30 días | EL-EP-015 | READY | P0 | 197,198,172,174 | [EL-TK-199](tickets/EL-TK-199.md) |
-| EL-TK-200 | Integrar solicitud y cancelación de eliminación en UI de evento | EL-EP-015 | READY | P0 | 189,190,193 | [EL-TK-200](tickets/EL-TK-200.md) |
-| EL-TK-201 | Integrar eliminación de cuenta y reautenticación en UI | EL-EP-015 | READY | P0 | 186,191,192,193 | [EL-TK-201](tickets/EL-TK-201.md) |
-| EL-TK-202 | Validar eliminación ordinaria de extremo a extremo y criterios de Beta | EL-EP-015 | READY | P0 | 194,196,198..201 | [EL-TK-202](tickets/EL-TK-202.md) |
+| EL-TK-188 | Persistir el contrato canónico de solicitudes e intenciones de eliminación | EL-EP-015 | DONE | P0 | 046,067; DEC-091..110 | [EL-TK-188](tickets/EL-TK-188.md) |
+| EL-TK-189 | Solicitar eliminación manual de evento con bloqueo inmediato | EL-EP-015 | DONE | P0 | 188,072 | [EL-TK-189](tickets/EL-TK-189.md) |
+| EL-TK-190 | Cancelar eliminación manual de evento antes del claim irreversible | EL-EP-015 | DONE | P0 | 189,188;193 integración | [EL-TK-190](tickets/EL-TK-190.md) |
+| EL-TK-191 | Solicitar eliminación de cuenta con reautenticación y suspensión global | EL-EP-015 | DONE | P0 | 186,188 | [EL-TK-191](tickets/EL-TK-191.md) |
+| EL-TK-192 | Cancelar eliminación de cuenta con prueba nueva y recálculo de eventos | EL-EP-015 | DONE | P0 | 191,186 | [EL-TK-192](tickets/EL-TK-192.md) |
+| EL-TK-193 | Propagar barreras de eliminación a accesos, grants y exportaciones | EL-EP-015 | DONE | P0 | 189,191;128 | [EL-TK-193](tickets/EL-TK-193.md) |
+| EL-TK-194 | Coordinar ingresos por causa: gracia, retiro propio, papelera y cuarentena | EL-EP-015 | DONE | P0 | 188,067,109,114,187;119/108 integración | [EL-TK-194](tickets/EL-TK-194.md) |
+| EL-TK-195 | Construir inventario verificable y detener escritores antes de purgar | EL-EP-015 | DONE | P0 | 188,193;128 | [EL-TK-195](tickets/EL-TK-195.md) |
+| EL-TK-196 | Ejecutar purga física durable e idempotente de principales | EL-EP-015 | DONE | P0 | 195,197;194 | [EL-TK-196](tickets/EL-TK-196.md) |
+| EL-TK-197 | Persistir tombstones y reconciliar eliminación con RecoveryAuthority | EL-EP-015 | DONE | P0 | 188,046,172,174 | [EL-TK-197](tickets/EL-TK-197.md) |
+| EL-TK-198 | Cerrar estados DELETED y liquidar consumo solo con prueba principal | EL-EP-015 | DONE | P0 | 196,197,137;159 | [EL-TK-198](tickets/EL-TK-198.md) |
+| EL-TK-199 | Verificar residual y restauraciones hasta deadline UTC más 30 días | EL-EP-015 | DONE | P0 | 197,198,172,174 | [EL-TK-199](tickets/EL-TK-199.md) |
+| EL-TK-200 | Integrar solicitud y cancelación de eliminación en UI de evento | EL-EP-015 | DONE | P0 | 189,190,193 | [EL-TK-200](tickets/EL-TK-200.md) |
+| EL-TK-201 | Integrar eliminación de cuenta y reautenticación en UI | EL-EP-015 | DONE | P0 | 186,191,192,193 | [EL-TK-201](tickets/EL-TK-201.md) |
+| EL-TK-202 | Validar eliminación ordinaria de extremo a extremo y criterios de Beta | EL-EP-015 | DONE | P0 | 194,196,198..201 | [EL-TK-202](tickets/EL-TK-202.md) |
 | EL-TK-203 | Validar y publicar los assets corporativos de marca | EL-EP-002 (CR-004) | DONE | P1 recomendado | — | [EL-TK-203](tickets/EL-TK-203.md) |
 | EL-TK-204 | Incorporar foundation visual y piloto aislado del shell de organizador | EL-EP-002 (CR-004) | DONE | P1 recomendado | 203,048 (componente existente) | [EL-TK-204](tickets/EL-TK-204.md) |
+| EL-TK-205 | Proyectar sesión efectiva de organizador para integración web | EL-EP-018 | READY | P0 | EL-TK-013, EL-TK-185 | [EL-TK-205](tickets/EL-TK-205.md) |
+| EL-TK-206 | Preparar infraestructura Router y contratos seguros de montaje | EL-EP-018 | READY | P0 | EL-TK-204 | [EL-TK-206](tickets/EL-TK-206.md) |
+| EL-TK-207 | Integrar ingreso y cierre de sesión del organizador | EL-EP-018 | READY | P0 | EL-TK-205, EL-TK-206, EL-TK-013, EL-TK-015, EL-TK-185 | [EL-TK-207](tickets/EL-TK-207.md) |
+| EL-TK-208 | Montar la solicitud pública de acceso Beta | EL-EP-018 | READY | P0 | EL-TK-008, EL-TK-206 | [EL-TK-208](tickets/EL-TK-208.md) |
+| EL-TK-209 | Componer Mi cuenta con superficies de sus propietarios | EL-EP-018 | READY | P0 | EL-TK-205, EL-TK-206, EL-TK-014, EL-TK-016, EL-TK-017, EL-TK-201 | [EL-TK-209](tickets/EL-TK-209.md) |
+| EL-TK-210 | Montar Mis eventos en la ruta del shell organizador | EL-EP-018 | READY | P0 | EL-TK-205, EL-TK-206, EL-TK-047, EL-TK-048 | [EL-TK-210](tickets/EL-TK-210.md) |
+| EL-TK-211 | Preservar la entrada guest por enlace o QR en el Router | EL-EP-018 | READY | P0 | EL-TK-206, EL-TK-074, EL-TK-075, EL-TK-076, EL-TK-077, EL-TK-078, EL-TK-082, EL-TK-083, EL-TK-084 | [EL-TK-211](tickets/EL-TK-211.md) |
+| EL-TK-212 | Configurar serving SPA y base confiable de enlaces guest | EL-EP-018 | READY | P0 | EL-TK-206, EL-TK-211 | [EL-TK-212](tickets/EL-TK-212.md) |
+| EL-TK-213 | Componer el Home público y cabecera sensible a capacidades | EL-EP-018 | READY | P1 | EL-TK-204, EL-TK-205, EL-TK-206, EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211 | [EL-TK-213](tickets/EL-TK-213.md) |
+| EL-TK-214 | Validar la entrada pública integrada | EL-EP-018 | READY | P0 | EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211, EL-TK-212, EL-TK-213 | [EL-TK-214](tickets/EL-TK-214.md) |
 
 **CONFIRMED — CR-004, 2026-10-12:** exactamente dos tickets nuevos de integración de marca, sin nueva épica, módulo o dependencia retroactiva de entregas DONE. Gates requisitos del cambio/técnico/UI y Gate2 APPROVED;203/204 pasan DRAFT→READY de requisitos.203 READY_FOR_IMPLEMENTATION YES;204 NO exclusivamente hasta ejecutar/validar203, con contrato propio aprobado. [Manual canónico](../../docs/branding/MANUAL-DE-MARCA.md), [contrato](../context/brand-integration-contract.md), [UI](../context/ui-brand-foundation.md) y [dictámenes](sessions/2026-10-12-brand-planning-gates.md). El cierre histórico de EL-EP-002 se conserva; la extensión no está implementada.
 
@@ -392,6 +400,12 @@ EL-TK-001..004 — SUPERSEDED por EL-TK-005..019; se preservan como historial. E
 **CONFIRMED — EL-TK-160 DONE, 2026-10-12:** generación de avisos de capacidad al 80% y 100% implementada en `@eventlens/notifications` (`CapacityNoticeService`) conforme a DEC-021, DEC-027 y contratos EL-TK-138. Genera intenciones de aviso contextual y correo (`CAPACITY_WARNING_80`, `CAPACITY_EXCEEDED_100`) con severidad `WARNING`/`CRITICAL`, acción autorizada de ampliación hacia `/events/${eventId}/capacity/extension`, estricta deduplicación/idempotencia por dedupKey ante señales repetidas, integración en `NoticeProjectionService` y plantillas accesibles en `EmailRenderer`, y auditoría sanitizada sin media. Suites de pruebas (4 unitarias y 2 de integración en PostgreSQL 16) PASS, typecheck y build limpios. Desbloquea downstream EL-TK-164 y EL-TK-165. Véase el [cierre](tickets/EL-TK-160.md).
 
 **CONFIRMED — EL-TK-163 DONE, 2026-10-12:** generación de avisos de denuncias e intervenciones según severidad autorizada implementada en `@eventlens/notifications` (`CaseNoticeService`) conforme a Q-018, DEC-021, DEC-023, DEC-088 y contratos EL-EP-009/014. Emite alertas prioritarias para administradores autorizados (`CASE_CRITICAL_ALERT`) ante casos críticos sin auto-ocultar contenido, copy mínimo autorizado para el organizador (`CASE_RESOLUTION_NOTICE`, `ADMIN_INTERVENTION`), supresión estricta por órdenes legales o de seguridad sin fugar razones confidenciales, y cero filtraciones de reportantes ni multimedia sensible en los payloads de notificación. Suites de pruebas (7 unitarias y 2 de integración en PostgreSQL 16) PASS, typecheck y build limpios. Desbloquea downstream EL-TK-164 y EL-TK-165. Véase el [cierre](tickets/EL-TK-163.md).
+
+
+
+
+
+**CONFIRMED — Gate 2 EL-EP-018, 2026-10-12:** EL-TK-205..214 formalizados y aprobados por requisitos, arquitectura y UI aplicable; READY de alcance, IMPLEMENTED NO. Ejecución condicionada a predecesoras verificadas; Mi cuenta espera EL-TK-201. [Dictámenes](sessions/2026-10-12-el-ep-018-review-gates.md). No certifica implementación ni apertura pública.
 
 
 

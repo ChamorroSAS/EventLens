@@ -26,7 +26,7 @@
 | Gate | Estado |
 |---|---|
 | LEGAL_SCOPE_FOR_TICKET_WRITING de EL-EP-018 | PASS_WITH_CONDITIONS: redactar tickets DRAFT |
-| READY_FOR_TICKET_WRITING global | NO hasta architect, ui_designer, requirements_reviewer |
+| READY_FOR_TICKET_WRITING global EL-EP-018 | YES tras [gates independientes](../../.codex/product/sessions/2026-10-12-el-ep-018-review-gates.md), tickets EL-TK-205..214 READY, IMPLEMENTED NO |
 | BETA_FORM_PUBLIC_COLLECTION | BLOCKED hasta LEG-01/03/04/05/06 y verificación legal |
 | PUBLIC_HOME_RELEASE | BLOCKED_PENDING_REVIEW de nombre comercial, copy, fotos, tracking y requisitos técnicos |
 | PUBLIC_SERVICE_OPENING | BLOCKED por EL-EP-017/Q-029/DEC-031 |
