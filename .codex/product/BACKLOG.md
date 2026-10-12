@@ -126,12 +126,12 @@
 | EL-TK-093 | Consultar el estado de intentos y resultados de carga del lote | EL-EP-005 | DONE | P0 | EL-TK-086,088,089,090,092 | [EL-TK-093](tickets/EL-TK-093.md) |
 | EL-TK-094 | Integrar selección, progreso y retry por archivo en la interfaz guest | EL-EP-005 | DONE | P0 | EL-TK-086..093 | [EL-TK-094](tickets/EL-TK-094.md) |
 | EL-TK-095 | Validar el flujo completo de carga móvil y resultado parcial | EL-EP-005 | DONE | P0 | EL-TK-086..094 | [EL-TK-095](tickets/EL-TK-095.md) |
-| EL-TK-096 | Consultar la galería guest de media publicada y autorizada | EL-EP-007 | READY | P0 | EL-TK-074, EL-TK-075, EL-TK-072, EL-TK-037 | [EL-TK-096](tickets/EL-TK-096.md) |
-| EL-TK-097 | Autorizar visualización temporal de un derivado privado | EL-EP-007 | READY | P0 | EL-TK-072, EL-TK-074, EL-TK-035, EL-TK-037 | [EL-TK-097](tickets/EL-TK-097.md) |
+| EL-TK-096 | Consultar la galería guest de media publicada y autorizada | EL-EP-007 | DONE | P0 | EL-TK-074, EL-TK-075, EL-TK-072, EL-TK-037 | [EL-TK-096](tickets/EL-TK-096.md) |
+| EL-TK-097 | Autorizar visualización temporal de un derivado privado | EL-EP-007 | DONE | P0 | EL-TK-072, EL-TK-074, EL-TK-035, EL-TK-037 | [EL-TK-097](tickets/EL-TK-097.md) |
 | EL-TK-098 | Consultar la biblioteca de media del organizador | EL-EP-007 | DONE | P0 | EL-TK-047, EL-TK-053 | [EL-TK-098](tickets/EL-TK-098.md) |
 | EL-TK-099 | Integrar la galería y viewer privados en la experiencia guest | EL-EP-007 | READY | P0 | EL-TK-096, EL-TK-097, EL-TK-101 | [EL-TK-099](tickets/EL-TK-099.md) |
 | EL-TK-100 | Integrar la biblioteca de media en la interfaz del organizador | EL-EP-007 | DONE | P0 | EL-TK-098, EL-TK-053, EL-TK-054 | [EL-TK-100](tickets/EL-TK-100.md) |
-| EL-TK-101 | Revalidar visibilidad cuando cambia el acceso o la media | EL-EP-007 | READY | P0 | EL-TK-096, EL-TK-097, EL-TK-072, EL-TK-074 | [EL-TK-101](tickets/EL-TK-101.md) |
+| EL-TK-101 | Revalidar visibilidad cuando cambia el acceso o la media | EL-EP-007 | DONE | P0 | EL-TK-096, EL-TK-097, EL-TK-072, EL-TK-074 | [EL-TK-101](tickets/EL-TK-101.md) |
 | EL-TK-102 | Validar privacidad y experiencia móvil de galería y biblioteca | EL-EP-007 | READY | P0 | EL-TK-096..101 | [EL-TK-102](tickets/EL-TK-102.md) |
 | EL-TK-103 | Aprobar una media pendiente de revisión | EL-EP-008 | READY | P0 | 098,037 | [EL-TK-103](tickets/EL-TK-103.md) |
 | EL-TK-104 | Rechazar una media pendiente de revisión | EL-EP-008 | READY | P0 | 098 | [EL-TK-104](tickets/EL-TK-104.md) |

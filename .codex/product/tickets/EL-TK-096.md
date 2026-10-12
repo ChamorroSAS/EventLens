@@ -4,7 +4,7 @@
 EL-EP-007
 
 ## Status
-READY
+DONE (2026-10-12)
 
 REQUIREMENTS_READY: YES
 READY_FOR_IMPLEMENTATION: YES
@@ -75,3 +75,11 @@ Q-005, Q-016; DEC-003, DEC-018, DEC-032, DEC-033, DEC-063, DEC-084; EL-EP-007, E
 - **Aislamiento de acceso:** La consulta se encuentra aislada a nivel de base de datos (`eventId` verificado por sesión). No expone metadatos de moderación ni estado de procesamiento para invitados.
 - **Diferenciación de estados:** El contrato discrimina `EMPTY_GALLERY` (el evento admite galería pero aún no hay fotos/videos publicados) de `GALLERY_DISABLED` (`guest_gallery_enabled: false`).
 - **Paginación determinística:** Cursor basado en orden de publicación o fecha para evitar resultados duplicados o saltos en scroll/bloques incrementales.
+
+## Cierre de implementación — 2026-10-12
+
+- **Resultado:** APROBADO.
+- **Implementación:** Implementado en `@eventlens/media-gallery` (`GuestGalleryService`) respetando aislamiento multi-tenant por evento, filtrado estricto a estado `PUBLISHED`, discriminación entre `EMPTY_GALLERY` y `GALLERY_DISABLED`, verificación de lifecycle (`EventAccessPolicy`) y validación de sesión/credencial guest.
+- **Paginación determinística:** Cursor codificado en base64url con `committed_at` y `media_ref` para navegación continua y deduplicada.
+- **Pruebas:** 13 pruebas unitarias PASS y suite de integración con PostgreSQL 16. Typecheck y build limpios con 0 errores.
+- **Evidencia de auditoría:** Auditoría sin exposición de tokens o credenciales completas.

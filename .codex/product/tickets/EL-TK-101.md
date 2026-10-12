@@ -4,7 +4,7 @@
 EL-EP-007
 
 ## Status
-READY
+DONE
 
 REQUIREMENTS_READY: YES
 READY_FOR_IMPLEMENTATION: YES
@@ -75,3 +75,11 @@ Q-005, Q-016; DEC-013, DEC-018, DEC-083, DEC-084; EL-EP-007, EL-EP-004, EL-EP-00
   3. Que el lifecycle del evento no esté en un estado prohibitivo según EL-TK-072.
   4. Que la sesión guest no haya sido revocada (p. ej. cambio/desactivación de PIN en EL-TK-079 o regeneración en EL-TK-080).
 - **Límites de revocación documentados:** No se falsea la seguridad prometiendo cancelación de transferencias HTTP en vuelo o borrado de memoria RAM/caché en el navegador del usuario. El control se ejerce mediante TTLs cortos y bloqueo inmediato de nuevas firmas.
+
+## Cierre de implementación — 2026-10-12
+
+- **Resultado:** APROBADO.
+- **Implementación:** Implementado `MediaVisibilityRevalidator` en `@eventlens/media-gallery` (`packages/media-gallery/src/visibility-revalidator.ts`) con revalidación server-side de permisos, lifecycle de eventos, estado de sesión guest, conmutación de galería (`guest_gallery_enabled`), consistencia de versión/revisión concurrente (`expectedRevision`) y partición batch de visibilidad (`revalidateBatchVisibility`).
+- **Límites de revocación respetados:** Conforme a DEC-063 y DEC-084, no se promete revocación física de bytes ya entregados en caché local; cualquier nueva solicitud de grant, navegación de cursor o batch de miniaturas es rechazada de inmediato al revocarse los permisos o retirarse el medio.
+- **Pruebas:** 13 pruebas unitarias PASS e integración PostgreSQL 16 preparada. Typecheck y compilación con 0 errores.
+- **Observabilidad:** Registro de eventos de auditoría sanitizados en `MediaGalleryAuditSink` con código de denegación sin exponer tokens ni secretos.
