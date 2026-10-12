@@ -56,7 +56,8 @@ Cada ticket de Home/rutas/CTA/formulario/footers que toque estas superficies deb
 
 | Tema | Estado | Quién debe definir/verificar según rol, sin atribuir aprobación |
 |---|---|---|
-| Entidad o persona jurídica responsable del tratamiento, domicilio, contacto, canal de derechos | `PENDING` | Decisión de negocio/operación y revisión jurídica, **sin asumir que el propietario del repositorio es el responsable legal** |
+| Tipo de operador inicial y responsable de tratamientos propios | **CONFIRMED: persona natural** (2026-10-12) | No inferir que es responsable único de contenidos de cada organizador; revisar roles caso a caso según [matriz](../../../docs/legal/CONTROLLER-ROLES.md) |
+| Identidad legal, domicilio/dirección, teléfono, contacto y canal de derechos | `PENDING` | Identificación publicable y canales reales según Decreto 1074/2015; no copiar automáticamente PII de perfil al Git |
 | Finalidad exacta, conservación y supresión de emails de solicitudes Beta no aceptadas | `PENDING` | Product/EL-EP-001 + asesoría legal; **no inventar plazo** |
 | Política de tratamiento, aviso, autorización y evidencia versionada del formulario | `PENDING` | Asesoría legal valida contenido; MOD-001 integra; QA evidencia |
 | Fotos ilustrativas/marketing, derechos de uso y menores | `PENDING` | Product/UX proveen assets autorizados; revisión jurídica según caso |
@@ -64,6 +65,10 @@ Cada ticket de Home/rutas/CTA/formulario/footers que toque estas superficies deb
 | Aprobación de claims publicados y FAQ | `PENDING FINAL COPY REVIEW` | Product/copy/UX, legal cuando afirmación lo amerita |
 | Q-029 completo y proceso de apertura del servicio | `BLOCKED` | Sigue en EL-EP-017; no se modifica ni se da por revisado |
 | Paths/Router/owners, gate UX y revisión de requisitos de EL-EP-018 | `PENDING NON-LEGAL` | architect + ui_designer + requirements_reviewer; ningún gate READY global cambia automáticamente |
+
+## Expediente jurídico preliminar asociado — 2026-10-12
+
+La persona que promueve EventLens confirmó **persona natural** como operador inicial; identidad y contacto concretos PENDING. Se abrió [expediente jurídico de preparación](../../../docs/legal/README.md), con [roles por tratamiento](../../../docs/legal/CONTROLLER-ROLES.md), [inventario](../../../docs/legal/DATA-PROCESSING-INVENTORY.md), [borrador de aviso Beta](../../../docs/legal/BETA-PRIVACY-NOTICE-DRAFT.md) y [gates](../../../docs/legal/COMPLIANCE-GATES.md). **No** eleva madurez de ninguna política, autorización o gate de publicación.
 
 ## 6. Handoff de la evaluación
 
