@@ -4,7 +4,7 @@
 EL-EP-001
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** sistema de identidad, **quiero** verificar contraseñas con perfil Argon2id y migración segura, **para** habilitar reautenticación sin digests rápidos ni sesiones antiguas autorizadas.
@@ -71,3 +71,12 @@ READY_FOR_FRONTEND_PLANNING: NOT_REQUIRED.
 REVIEW_STATUS: APPROVED — [dictámenes formales185..187](../sessions/2026-10-12-el-tk-185-187-readiness.md).
 
 Histórico: DRAFT en la propuesta original y fuera de la revisión188..202; READY tras revisión individual del 2026-10-12. No acredita implementación, pruebas, migración/cutover ni validation gates PASS.
+
+## Cierre de implementación — 2026-10-12
+- Implementado `PasswordVerifier` con perfil canónico Argon2id (`$argon2id$v=19$m=19456,t=2,p=1$<salt>$<tag>`) y formato PHC estricto sin padding (DEC-108 / ARCH-018).
+- Registro (EL-TK-010) y reseteo de contraseña (EL-TK-019) actualizados para emitir exclusivamente envelopes Argon2id con salt criptográfico de 16 bytes y tag de 32 bytes.
+- Login de organizador (EL-TK-013) actualizado para verificar Argon2id, detectar digests legacy SHA-256 y ejecutar migración inline transicional mediante CAS y protocolo PREPARE-SQL-ACK con `RecoveryAuthorityPort`.
+- Revocación atómica de sesiones anteriores al rotar/migrar credenciales (`revoked_at = now, revocation_reason = 'CREDENTIAL_ROTATED'`).
+- Validación de sesiones en `validateSession` deniega sesiones cuyo `session_watermark` sea menor a la revisión de credencial activa (`SESSION_REVOKED`).
+- `Mod001RecoveryCoordinator` actualizado para exigir `ackCommit` obligatorio (fail-closed) y tipar `subjectKind === 'ORGANIZER'` y `ADMIN`.
+- Pruebas unitarias de vectores Argon2id, PHC codec, degradación fail-closed, dummy constant-time verification, control de admisión saturada, migración transicional y reversión/fallo de ACK ejecutadas exitosamente (10 test suites, 122 tests pasados).

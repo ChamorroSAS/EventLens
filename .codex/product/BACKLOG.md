@@ -220,7 +220,7 @@
 | EL-TK-182 | Clasificar el resultado de la Beta con prevalencia de incidentes críticos | EL-EP-016 | DONE | P1 | 178..181; evidencia operacional EL-EP-014 | [EL-TK-182](tickets/EL-TK-182.md) |
 | EL-TK-183 | Generar el informe final reproducible de evaluación Beta | EL-EP-016 | DONE | P1 | 177..182 | [EL-TK-183](tickets/EL-TK-183.md) |
 
-| EL-TK-185 | Corregir el verifier humano y migrar credenciales de organizador | EL-EP-001 | READY | P0 | 013,018,019,046 | [EL-TK-185](tickets/EL-TK-185.md) |
+| EL-TK-185 | Corregir el verifier humano y migrar credenciales de organizador | EL-EP-001 | DONE | P0 | 013,018,019,046 | [EL-TK-185](tickets/EL-TK-185.md) |
 | EL-TK-186 | Emitir y consumir evidencia de reautenticación sensible de cuenta | EL-EP-001 | READY | P0 | 185,013,014,046 | [EL-TK-186](tickets/EL-TK-186.md) |
 | EL-TK-187 | Corregir disposición y liberación de media en cuarentena | EL-EP-006 | READY | P0 | 041,042,046; contrato 015 | [EL-TK-187](tickets/EL-TK-187.md) |
 | EL-TK-188 | Persistir el contrato canónico de solicitudes e intenciones de eliminación | EL-EP-015 | READY | P0 | 046,067; DEC-091..110 | [EL-TK-188](tickets/EL-TK-188.md) |
