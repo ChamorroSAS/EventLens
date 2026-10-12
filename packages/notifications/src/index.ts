@@ -5,3 +5,5 @@ export * from './fake-email-sender.js';
 export * from './email-notification-service.js';
 export * from './notice-projection-service.js';
 export * from './account-event-notice-service.js';
+export * from './capacity-notice-service.js';
+export * from './case-notice-service.js';

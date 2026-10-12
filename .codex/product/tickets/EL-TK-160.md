@@ -4,7 +4,7 @@
 EL-EP-013
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** sistema, **quiero** convertir señales de cuota en comunicaciones útiles, **para** avisar al organizador sin spam cuando se acerca o alcanza el límite.
@@ -68,3 +68,18 @@ DEC-021, DEC-027; EL-EP-013, EL-EP-011.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §EL-EP-013; sin componentes nuevos ni NotificationCenter obligatorio).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Cierre de implementación — 2026-10-12
+- **STATUS:** DONE
+- **Implementación técnica:**
+  - Servicio `CapacityNoticeService` en `@eventlens/notifications` (`capacity-notice-service.ts`), consumiendo señales de umbral de `@eventlens/capacity-management` (EL-TK-138) con deduplicación estricta.
+  - Escenario 1 (80%): Genera intención `CAPACITY_WARNING_80` con severidad `WARNING` y acción `/events/${eventId}/capacity`.
+  - Escenario 2 (100%): Genera intención `CAPACITY_EXCEEDED_100` con severidad `CRITICAL` y acción autorizada de ampliación `/events/${eventId}/capacity/extension`.
+  - Escenario 3: Idempotencia y deduplicación garantizadas mediante `dedupKey` y máquina de estados contra re-emisiones o repetición de señales.
+  - Compatibilidad de proyecciones y correo: Mapeo verificado en `NoticeProjectionService` y plantillas accesibles en `EmailRenderer`.
+  - Auditoría: Registro de eventos en `NotificationAuditSink` sin fugar multimedia ni datos sensibles.
+- **Validación y pruebas:**
+  - Suite unitaria: `test/capacity-notice.unit.test.ts` (4 pruebas PASS).
+  - Suite de integración: `test/capacity-notice.integration.test.ts` (2 pruebas PASS contra PostgreSQL 16 real).
+  - Typecheck y build limpios en todo el monorepo.
+

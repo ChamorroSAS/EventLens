@@ -262,3 +262,52 @@ export interface GenerateNoticeResult {
   supersededCount?: number;
 }
 
+/**
+ * Contracts for capacity usage threshold notice generation (EL-TK-160, DEC-021, DEC-027).
+ * Consumes signals from EL-EP-011 / EL-TK-138 with strict deduplication.
+ */
+export type CapacityThresholdNoticeType = 'USAGE_80' | 'USAGE_100';
+
+export interface CapacityThresholdFact {
+  actorContext: DomainFactActorContext;
+  eventId: string;
+  organizerRef: string;
+  recipientEmail?: string | null;
+  thresholdType: CapacityThresholdNoticeType;
+  thresholdPercent?: number;
+  currentStoragePercent?: number;
+  currentFilesPercent?: number;
+  consumedBytes?: bigint | number;
+  limitBytes?: bigint | number;
+  consumedFiles?: number;
+  limitFiles?: number;
+  dedupKey?: string;
+  occurredAt?: Date;
+}
+
+/**
+ * Contracts for case report and moderation intervention notice generation (EL-TK-163, Q-018, DEC-021, DEC-023, DEC-088).
+ * Consumes case facts from EL-EP-009 / media-inspection and audit contracts from EL-EP-014.
+ */
+export type CaseReportSeverity = 'CRITICAL' | 'NORMAL' | 'UNCLASSIFIED';
+export type CaseRecipientRole = 'ADMIN' | 'ORGANIZER';
+export type CaseActionType = 'CASE_REPORTED' | 'CASE_RESOLVED' | 'ADMIN_INTERVENTION';
+
+export interface CaseNotificationFact {
+  actorContext: DomainFactActorContext;
+  caseRef: string;
+  eventRef: string;
+  recipientRef: string;
+  recipientRole: CaseRecipientRole;
+  recipientEmail?: string | null;
+  severity: CaseReportSeverity;
+  actionType: CaseActionType;
+  isRestrictedLegalOrSecurity?: boolean;
+  suppressNotice?: boolean;
+  suppressionRef?: string | null;
+  summary?: string | null;
+  dedupKey?: string;
+  occurredAt?: Date;
+}
+
+
