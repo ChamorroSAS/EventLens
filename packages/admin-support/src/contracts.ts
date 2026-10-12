@@ -66,7 +66,11 @@ export interface AdminSearchResult {
 }
 
 export interface AdminSupportAuditEvent {
-  readonly procedure: 'ADMIN_SEARCH_PERFORMED' | 'ADMIN_EVENT_DETAIL_VIEWED';
+  readonly procedure:
+    | 'ADMIN_SEARCH_PERFORMED'
+    | 'ADMIN_EVENT_DETAIL_VIEWED'
+    | 'ADMIN_JOB_LIST_VIEWED'
+    | 'ADMIN_JOB_DETAIL_VIEWED';
   readonly principalId: string;
   readonly details: string;
   readonly timestamp: Date;
@@ -74,6 +78,80 @@ export interface AdminSupportAuditEvent {
 
 export interface AdminSupportAuditSink {
   record(event: AdminSupportAuditEvent): Promise<void>;
+}
+
+// ==========================================
+// EL-TK-148: Diagnóstico y Consulta de Jobs
+// ==========================================
+
+export type AdminJobStatus =
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'COMPLETED'
+  | 'RETRYING'
+  | 'FAILED'
+  | 'DEAD'
+  | 'CANCELLED';
+
+export interface AdminJobCapabilities {
+  readonly canRetry: boolean;
+  readonly canCancel: boolean;
+  readonly canMarkDead: boolean;
+}
+
+export interface AdminJobAttemptHistoryItem {
+  readonly number: number;
+  readonly startedAt: string;
+  readonly endedAt: string | null;
+  readonly result: string | null;
+}
+
+export interface AdminJobSummaryItem {
+  readonly id: string;
+  readonly type: string;
+  readonly status: AdminJobStatus;
+  readonly queue: string;
+  readonly priority: number;
+  readonly resourceRef: string;
+  readonly attempts: number;
+  readonly availableAt: string;
+  readonly cancelled: boolean;
+  readonly lastError?: string;
+  readonly capabilities: AdminJobCapabilities;
+}
+
+export interface AdminJobDetail {
+  readonly id: string;
+  readonly type: string;
+  readonly status: AdminJobStatus;
+  readonly queue: string;
+  readonly priority: number;
+  readonly resourceRef: string;
+  readonly attempts: number;
+  readonly availableAt: string;
+  readonly deadline: string | null;
+  readonly cancelled: boolean;
+  readonly sanitizedError: string | null;
+  readonly attemptsHistory: readonly AdminJobAttemptHistoryItem[];
+  readonly capabilities: AdminJobCapabilities;
+}
+
+export interface AdminQueryJobsQuery {
+  readonly actorContext: AdminActorContext;
+  readonly resourceRef?: string;
+  readonly status?: AdminJobStatus;
+  readonly page?: number;
+  readonly limit?: number;
+}
+
+export interface AdminQueryJobsResult {
+  readonly items: readonly AdminJobSummaryItem[];
+  readonly pagination: AdminSearchPagination;
+}
+
+export interface AdminGetJobDetailQuery {
+  readonly actorContext: AdminActorContext;
+  readonly jobId: string;
 }
 
 // ==========================================

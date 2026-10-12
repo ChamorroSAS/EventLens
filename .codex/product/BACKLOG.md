@@ -178,7 +178,7 @@
 | EL-TK-145 | Validar capacidad, ampliaciones y overrides de extremo a extremo | EL-EP-011 | READY | P0 | 134..144 | [EL-TK-145](tickets/EL-TK-145.md) |
 | EL-TK-146 | Buscar eventos y organizadores desde la consola administrativa | EL-EP-012 | DONE | P0 | 044; contrato EL-EP-002 | [EL-TK-146](tickets/EL-TK-146.md) |
 | EL-TK-147 | Consultar un detalle administrativo agregado sin preview de media | EL-EP-012 | DONE | P0 | 146; contratos propietarios vigentes | [EL-TK-147](tickets/EL-TK-147.md) |
-| EL-TK-148 | Consultar jobs y errores técnicos sanitizados desde soporte | EL-EP-012 | READY | P0 | 147; contrato JobQueue | [EL-TK-148](tickets/EL-TK-148.md) |
+| EL-TK-148 | Consultar jobs y errores técnicos sanitizados desde soporte | EL-EP-012 | DONE | P0 | 147; contrato JobQueue | [EL-TK-148](tickets/EL-TK-148.md) |
 | EL-TK-149 | Ejecutar acciones administrativas autorizadas sobre jobs | EL-EP-012 | READY | P0 | 148,044; contrato JobQueue | [EL-TK-149](tickets/EL-TK-149.md) |
 | EL-TK-150 | Autorizar acceso multimedia administrativo por soporte o incidente | EL-EP-012 | READY | P0 | 147, 044, contrato MediaViewGrant (097); contrato EL-EP-014 | [EL-TK-150](tickets/EL-TK-150.md) |
 | EL-TK-151 | Orquestar intervenciones administrativas mediante contratos propietarios | EL-EP-012 | READY | P0 | 147; contratos propietarios | [EL-TK-151](tickets/EL-TK-151.md) |

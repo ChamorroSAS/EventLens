@@ -44,6 +44,7 @@ try {
   if (
     typeof adminExports.AdminSearchService !== 'function' ||
     typeof adminExports.AdminEventDetailService !== 'function' ||
+    typeof adminExports.AdminJobInspectionService !== 'function' ||
     typeof adminExports.AdminSupportError !== 'function'
   ) {
     throw Error('PUBLIC_IMPORT_FAILED');
@@ -51,15 +52,15 @@ try {
   const exitCode = run(['--filter', '@eventlens/admin-support', 'exec', 'vitest', 'run', '--no-file-parallelism', '--reporter=default', '--reporter=json', '--outputFile=/evidence/tests.json'], true);
   const tests = JSON.parse(readFileSync('/evidence/tests.json', 'utf8'));
   writeFileSync('/evidence/result.json', JSON.stringify({
-    ticket: 'EL-TK-147',
-    precedingTicket: 'EL-TK-146',
+    ticket: 'EL-TK-148',
+    precedingTicket: 'EL-TK-147',
     runId: database,
     testedAt: new Date().toISOString(),
     result: tests.success && exitCode === 0 ? 'PASS' : 'FAIL',
     tests: tests.numTotalTests,
     passed: tests.numPassedTests,
     postgresql: '16 real isolated laboratory database',
-    adminEventDetail: 'Aggregated administrative event detail without media preview and explicit partial state (DEC-019, DEC-020, EL-TK-147)',
+    jobInspection: 'JobQueue query and sanitized technical error inspection for support (DEC-038, DEC-064, EL-TK-148)',
     gates: {
       'MEDIA-001': 'NOT_EVALUATED',
       'CAP-001': 'NOT_EVALUATED',
