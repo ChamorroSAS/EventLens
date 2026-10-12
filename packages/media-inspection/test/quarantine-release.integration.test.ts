@@ -461,4 +461,66 @@ describe('QuarantineReleaseService (Integration Tests against PostgreSQL 16)', (
     expect(catalogRows[0].status).toBe('UPLOADED');
     expect(catalogRows[0].generation).toBe(2n);
   });
+
+  it('Scenario 8: Rejects release and replay when media has active purge disposition (DISPOSITION_BARRED)', async () => {
+    const { service, mediaRef, eventRef } = await prepareQuarantinedMedia();
+
+    // Insert active purge intent directly
+    const purgeIntentId = randomUUID();
+    await transactions.run(async tx => {
+      await tx.execute(
+        `INSERT INTO media_quarantine_purge_intent (
+           id, operation_id, media_ref, event_ref, generation, status, dedup_key,
+           policy_ref, disposition_confirmed_at, purge_started_at,
+           main_purge_deadline, residual_purge_deadline, expected_revision, created_at
+         ) VALUES ($1::uuid, $2, $3, $4, 1, 'PENDING', $5, 'MOD-008-TRASH-QUARANTINE-PURGE-POLICY-V1', clock_timestamp(), clock_timestamp(), clock_timestamp() + interval '7 days', clock_timestamp() + interval '30 days', 2, clock_timestamp())`,
+        purgeIntentId,
+        'op-prior-purge-' + randomUUID(),
+        mediaRef,
+        eventRef,
+        'dedup-purge-' + randomUUID()
+      );
+    });
+
+    const adminContext: AdminActorContext = {
+      actorType: 'ADMIN_HUMAN',
+      principalId: 'admin-principal-barred',
+      identifier: 'sec-lead@eventlens.internal',
+      sessionId: randomUUID(),
+      authTime: new Date(),
+      credentialRevision: 1n,
+      adminAuthRevision: 1n,
+      sessionWatermark: 1n,
+      recoveryEpoch: 1n
+    };
+
+    const grant: AdminInterventionGrant = {
+      grantId: 'grant-barred-' + randomUUID(),
+      principalId: adminContext.principalId,
+      action: 'RELEASE_QUARANTINE',
+      targetRef: mediaRef,
+      reason: 'Release attempt after disposition',
+      status: 'ACTIVE'
+    };
+
+    const operationId = 'op-release-attempt-' + randomUUID();
+
+    await expect(
+      service.execute({
+        mediaRef,
+        operationId,
+        justification: 'Attempt release on disposed media',
+        actor: { type: 'ADMIN_HUMAN', actorContext: adminContext, grant }
+      })
+    ).rejects.toMatchObject({ code: 'DISPOSITION_BARRED' });
+
+    // Verify denial audit record was logged
+    const denialRows = await client.$queryRawUnsafe<any[]>(
+      'SELECT * FROM media_quarantine_release_denial_audit WHERE operation_id = $1',
+      operationId
+    );
+    expect(denialRows.length).toBe(1);
+    expect(denialRows[0].media_ref).toBe(mediaRef);
+    expect(denialRows[0].reason).toBe('DISPOSITION_BARRED');
+  });
 });

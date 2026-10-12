@@ -206,14 +206,20 @@ describe('QuarantineDeleteService (Integration Tests against PostgreSQL 16)', ()
     expect(receipt.generation).toBe(1n);
     expect(receipt.previousRevision).toBe(1n);
     expect(receipt.newRevision).toBe(2n);
-    expect(receipt.status).toBe('DELETED');
+    expect(receipt.status).toBe('QUARANTINED');
     expect(receipt.actorType).toBe('ADMIN_HUMAN');
     expect(receipt.actorId).toBe(adminContext.principalId);
     expect(receipt.grantId).toBe(grant.grantId);
     expect(receipt.purgeIntentId).toBeDefined();
+    expect(receipt.policyRef).toBe('MOD-008-TRASH-QUARANTINE-PURGE-POLICY-V1');
+    expect(receipt.dispositionConfirmedAt).toBeDefined();
+    expect(receipt.purgeStartedAt).toBeDefined();
+    expect(receipt.mainPurgeDeadline).toBeDefined();
+    expect(receipt.residualPurgeDeadline).toBeDefined();
+    expect(receipt.expectedRevision).toBe(2n);
     expect(receipt.wasExisting).toBe(false);
 
-    // Verify media_catalog updated to DELETED with incremented revision
+    // Verify media_catalog remains QUARANTINED with incremented revision (Opción A / DEC-109/110 / ARCH-006)
     const catalogRows = await client.$queryRawUnsafe<any[]>(
       'SELECT generation, revision, status FROM media_catalog WHERE media_ref = $1',
       mediaRef
@@ -221,7 +227,7 @@ describe('QuarantineDeleteService (Integration Tests against PostgreSQL 16)', ()
     expect(catalogRows.length).toBe(1);
     expect(catalogRows[0].generation).toBe(1n);
     expect(catalogRows[0].revision).toBe(2n);
-    expect(catalogRows[0].status).toBe('DELETED');
+    expect(catalogRows[0].status).toBe('QUARANTINED');
 
     // Verify active cycle in media_processing_cycle terminated
     const cycleRows = await client.$queryRawUnsafe<any[]>(
@@ -245,7 +251,7 @@ describe('QuarantineDeleteService (Integration Tests against PostgreSQL 16)', ()
       operationId
     );
     expect(receiptRows.length).toBe(1);
-    expect(receiptRows[0].status).toBe('DELETED');
+    expect(receiptRows[0].status).toBe('QUARANTINED');
     expect(receiptRows[0].purge_intent_id).toBe(receipt.purgeIntentId);
 
     // Verify audit record in database
@@ -265,6 +271,12 @@ describe('QuarantineDeleteService (Integration Tests against PostgreSQL 16)', ()
     expect(purgeRows.length).toBe(1);
     expect(purgeRows[0].media_ref).toBe(mediaRef);
     expect(purgeRows[0].status).toBe('PENDING');
+    expect(purgeRows[0].policy_ref).toBe('MOD-008-TRASH-QUARANTINE-PURGE-POLICY-V1');
+    expect(purgeRows[0].disposition_confirmed_at).toBeDefined();
+    expect(purgeRows[0].purge_started_at).toBeDefined();
+    expect(purgeRows[0].main_purge_deadline).toBeDefined();
+    expect(purgeRows[0].residual_purge_deadline).toBeDefined();
+    expect(purgeRows[0].expected_revision).toBe(2n);
 
     // Verify notification intent durable record
     const notifRows = await client.$queryRawUnsafe<any[]>(
@@ -328,7 +340,7 @@ describe('QuarantineDeleteService (Integration Tests against PostgreSQL 16)', ()
     expect(secondReceipt.wasExisting).toBe(true);
     expect(secondReceipt.operationId).toBe(operationId);
     expect(secondReceipt.purgeIntentId).toBe(firstReceipt.purgeIntentId);
-    expect(secondReceipt.status).toBe('DELETED');
+    expect(secondReceipt.status).toBe('QUARANTINED');
 
     // Verify only 1 receipt, 1 purge intent, and 1 notification intent exist in database
     const receiptCount = await client.$queryRawUnsafe<any[]>(
@@ -491,15 +503,15 @@ describe('QuarantineDeleteService (Integration Tests against PostgreSQL 16)', ()
 
     expect(receipt.actorType).toBe('SECURITY_AUTOMATION');
     expect(receipt.actorId).toBe('autonomous-sentinel-service');
-    expect(receipt.status).toBe('DELETED');
+    expect(receipt.status).toBe('QUARANTINED');
     expect(receipt.purgeIntentId).toBeDefined();
 
-    // Verify catalog updated to DELETED
+    // Verify catalog remains QUARANTINED with incremented revision
     const catalogRows = await client.$queryRawUnsafe<any[]>(
       'SELECT status, revision FROM media_catalog WHERE media_ref = $1',
       mediaRef
     );
-    expect(catalogRows[0].status).toBe('DELETED');
+    expect(catalogRows[0].status).toBe('QUARANTINED');
     expect(catalogRows[0].revision).toBe(2n);
   });
 });

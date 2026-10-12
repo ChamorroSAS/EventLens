@@ -122,7 +122,7 @@ describe('QuarantineReleaseService (Unit Tests)', () => {
     const cmd: QuarantineReleaseCommand = {
       mediaRef: 'media-1',
       operationId: 'op-unauth',
-      justification: 'Some justification',
+      justification: 'Release this',
       actor: {
         type: 'UNAUTHORIZED',
         actorId: 'guest-random'
@@ -134,70 +134,76 @@ describe('QuarantineReleaseService (Unit Tests)', () => {
     });
   });
 
-  describe('Admin Human Grant Validation (MOD-007)', () => {
-    const service = new QuarantineReleaseService(mockTransactions as any, mockQueue as any);
-
+  describe('Administrative Human Actor Validation', () => {
     it('rejects human admin if grant action is not RELEASE_QUARANTINE', async () => {
-      const wrongActionGrant: AdminInterventionGrant = {
+      const service = new QuarantineReleaseService(mockTransactions as any, mockQueue as any);
+
+      const invalidGrant = {
         ...validGrant,
-        action: 'OTHER_ACTION' as any
+        action: 'DELETE_QUARANTINE' as any
       };
 
       await expect(
         service.execute({
           mediaRef: 'media-1',
           operationId: 'op-grant-1',
-          justification: 'Safe',
+          justification: 'Release',
           actor: {
             type: 'ADMIN_HUMAN',
             actorContext: validAdminContext,
-            grant: wrongActionGrant
+            grant: invalidGrant
           }
         })
       ).rejects.toMatchObject({ code: 'INVALID_GRANT' });
     });
 
     it('rejects human admin if grant principalId does not match actorContext', async () => {
-      const mismatchGrant: AdminInterventionGrant = {
+      const service = new QuarantineReleaseService(mockTransactions as any, mockQueue as any);
+
+      const foreignGrant: AdminInterventionGrant = {
         ...validGrant,
-        principalId: 'other-admin-principal'
+        principalId: 'admin-principal-OTHER'
       };
 
       await expect(
         service.execute({
           mediaRef: 'media-1',
           operationId: 'op-grant-2',
-          justification: 'Safe',
+          justification: 'Release',
           actor: {
             type: 'ADMIN_HUMAN',
             actorContext: validAdminContext,
-            grant: mismatchGrant
+            grant: foreignGrant
           }
         })
       ).rejects.toMatchObject({ code: 'INVALID_GRANT' });
     });
 
     it('rejects human admin if grant targetRef does not match mediaRef', async () => {
-      const wrongTargetGrant: AdminInterventionGrant = {
+      const service = new QuarantineReleaseService(mockTransactions as any, mockQueue as any);
+
+      const mismatchedGrant: AdminInterventionGrant = {
         ...validGrant,
-        targetRef: 'media-DIFFERENT'
+        targetRef: 'media-ANOTHER'
       };
 
       await expect(
         service.execute({
           mediaRef: 'media-1',
           operationId: 'op-grant-3',
-          justification: 'Safe',
+          justification: 'Release',
           actor: {
             type: 'ADMIN_HUMAN',
             actorContext: validAdminContext,
-            grant: wrongTargetGrant
+            grant: mismatchedGrant
           }
         })
       ).rejects.toMatchObject({ code: 'INVALID_GRANT' });
     });
 
     it('rejects human admin if grant is not ACTIVE or has expired', async () => {
+      const service = new QuarantineReleaseService(mockTransactions as any, mockQueue as any);
+
       const revokedGrant: AdminInterventionGrant = {
         ...validGrant,
         status: 'REVOKED'
@@ -207,7 +213,7 @@ describe('QuarantineReleaseService (Unit Tests)', () => {
         service.execute({
           mediaRef: 'media-1',
           operationId: 'op-grant-4',
-          justification: 'Safe',
+          justification: 'Release',
           actor: {
             type: 'ADMIN_HUMAN',
             actorContext: validAdminContext,
@@ -219,14 +225,14 @@ describe('QuarantineReleaseService (Unit Tests)', () => {
       const expiredGrant: AdminInterventionGrant = {
         ...validGrant,
         status: 'ACTIVE',
-        expiresAt: new Date(Date.now() - 60000) // 1 minute in the past
+        expiresAt: new Date(Date.now() - 60000)
       };
 
       await expect(
         service.execute({
           mediaRef: 'media-1',
           operationId: 'op-grant-5',
-          justification: 'Safe',
+          justification: 'Release',
           actor: {
             type: 'ADMIN_HUMAN',
             actorContext: validAdminContext,
@@ -241,6 +247,7 @@ describe('QuarantineReleaseService (Unit Tests)', () => {
     it('accepts authorized security automation without human admin session', async () => {
       dummyTx.query.mockImplementation(async (sql: string) => {
         if (sql.includes('media_quarantine_release_receipt')) return [];
+        if (sql.includes('media_quarantine_purge_intent')) return [];
         if (sql.includes('media_catalog')) {
           return [{
             media_ref: 'media-1',
@@ -298,7 +305,7 @@ describe('QuarantineReleaseService (Unit Tests)', () => {
         service.execute({
           mediaRef: 'media-1',
           operationId: 'op-auto-bad',
-          justification: 'Safe',
+          justification: 'Release',
           actor: {
             type: 'SECURITY_AUTOMATION',
             serviceId: '',
@@ -309,10 +316,9 @@ describe('QuarantineReleaseService (Unit Tests)', () => {
     });
   });
 
-  describe('Media State and Idempotency Validation', () => {
+  describe('Media State, Disposition Barrier, and Idempotency Validation', () => {
     it('rejects if media is not in QUARANTINED status', async () => {
       dummyTx.query.mockImplementation(async (sql: string) => {
-        if (sql.includes('media_quarantine_release_receipt')) return [];
         if (sql.includes('media_catalog')) {
           return [{
             media_ref: 'media-1',
@@ -325,6 +331,7 @@ describe('QuarantineReleaseService (Unit Tests)', () => {
             job_id: 'job-1'
           }];
         }
+        if (sql.includes('media_quarantine_purge_intent')) return [];
         return [];
       });
 
@@ -344,9 +351,105 @@ describe('QuarantineReleaseService (Unit Tests)', () => {
       ).rejects.toMatchObject({ code: 'MEDIA_NOT_QUARANTINED' });
     });
 
-    it('returns existing receipt on compatible idempotent retry', async () => {
+    it('strictly denies release when an active purge disposition exists (DISPOSITION_BARRED)', async () => {
+      dummyTx.query.mockImplementation(async (sql: string) => {
+        if (sql.includes('media_catalog')) {
+          return [{
+            media_ref: 'media-1',
+            event_ref: 'event-1',
+            guest_ref: 'guest-1',
+            generation: 1n,
+            revision: 2n,
+            status: 'QUARANTINED',
+            original: {},
+            job_id: 'job-1'
+          }];
+        }
+        if (sql.includes('media_quarantine_purge_intent')) {
+          return [{ id: 'intent-uuid-1', status: 'PENDING' }];
+        }
+        return [];
+      });
+
+      const service = new QuarantineReleaseService(mockTransactions as any, mockQueue as any);
+
+      await expect(
+        service.execute({
+          mediaRef: 'media-1',
+          operationId: 'op-barred-release',
+          justification: 'Try to release disposed media',
+          actor: {
+            type: 'ADMIN_HUMAN',
+            actorContext: validAdminContext,
+            grant: validGrant
+          }
+        })
+      ).rejects.toMatchObject({ code: 'DISPOSITION_BARRED' });
+
+      // Verify denial audit was logged with DISPOSITION_BARRED
+      expect(dummyTx.execute).toHaveBeenCalledWith(
+        expect.stringContaining('INSERT INTO media_quarantine_release_denial_audit'),
+        expect.any(String),
+        'op-barred-release',
+        'media-1',
+        'ADMIN_HUMAN',
+        'admin-principal-1',
+        'DISPOSITION_BARRED'
+      );
+    });
+
+    it('strictly denies replay when media has active purge disposition (DISPOSITION_BARRED)', async () => {
+      dummyTx.query.mockImplementation(async (sql: string) => {
+        if (sql.includes('media_catalog')) {
+          return [{
+            media_ref: 'media-1',
+            event_ref: 'event-1',
+            guest_ref: 'guest-1',
+            generation: 1n,
+            revision: 2n,
+            status: 'QUARANTINED',
+            original: {},
+            job_id: 'job-1'
+          }];
+        }
+        if (sql.includes('media_quarantine_purge_intent')) {
+          return [{ id: 'intent-uuid-1', status: 'CONFIRMED' }];
+        }
+        return [];
+      });
+
+      const service = new QuarantineReleaseService(mockTransactions as any, mockQueue as any);
+
+      await expect(
+        service.execute({
+          mediaRef: 'media-1',
+          operationId: 'op-replay-after-disposition',
+          justification: 'Replay attempt',
+          actor: {
+            type: 'ADMIN_HUMAN',
+            actorContext: validAdminContext,
+            grant: validGrant
+          }
+        })
+      ).rejects.toMatchObject({ code: 'DISPOSITION_BARRED' });
+    });
+
+    it('returns existing receipt on compatible idempotent retry when no disposition exists', async () => {
       const committedAt = new Date();
       dummyTx.query.mockImplementation(async (sql: string) => {
+        if (sql.includes('media_catalog')) {
+          return [{
+            media_ref: 'media-1',
+            event_ref: 'event-1',
+            guest_ref: 'guest-1',
+            generation: 1n,
+            revision: 2n,
+            status: 'QUARANTINED',
+            original: {},
+            job_id: 'job-1'
+          }];
+        }
+        if (sql.includes('media_quarantine_purge_intent')) return [];
         if (sql.includes('media_quarantine_release_receipt')) {
           return [{
             operation_id: 'op-replay',
@@ -389,6 +492,19 @@ describe('QuarantineReleaseService (Unit Tests)', () => {
 
     it('throws IDEMPOTENCY_CONFLICT when same operationId has conflicting mediaRef or actor', async () => {
       dummyTx.query.mockImplementation(async (sql: string) => {
+        if (sql.includes('media_catalog')) {
+          return [{
+            media_ref: 'media-1',
+            event_ref: 'event-1',
+            guest_ref: 'guest-1',
+            generation: 1n,
+            revision: 2n,
+            status: 'QUARANTINED',
+            original: {},
+            job_id: 'job-1'
+          }];
+        }
+        if (sql.includes('media_quarantine_purge_intent')) return [];
         if (sql.includes('media_quarantine_release_receipt')) {
           return [{
             operation_id: 'op-conflict',

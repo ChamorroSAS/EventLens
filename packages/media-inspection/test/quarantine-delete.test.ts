@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   QuarantineDeleteService,
   QuarantineDeleteDeniedError,
+  reconcileLegacyQuarantineDeleted,
   type QuarantineDeleteCommand,
   type AdminDeleteInterventionGrant
 } from '../src/quarantine-delete.js';
@@ -239,11 +240,12 @@ describe('QuarantineDeleteService (Unit Tests)', () => {
     });
   });
 
-  describe('Security Automation Route', () => {
-    it('accepts authorized security automation without human admin session', async () => {
+  describe('Security Automation Route and Option A Enforcement', () => {
+    it('accepts authorized security automation, preserves QUARANTINED status, and sets anchor deadlines', async () => {
+      const confirmedDate = new Date('2026-10-12T12:00:00.000Z');
       dummyTx.query.mockImplementation(async (sql: string) => {
         if (sql.includes('media_quarantine_delete_receipt')) return [];
-        if (sql.includes('media_catalog')) {
+        if (sql.includes('media_catalog') && sql.includes('FOR UPDATE')) {
           return [{
             media_ref: 'media-1',
             event_ref: 'event-1',
@@ -254,6 +256,12 @@ describe('QuarantineDeleteService (Unit Tests)', () => {
             original: {},
             job_id: 'job-1'
           }];
+        }
+        if (sql.includes('media_quarantine_purge_intent') && sql.includes('SELECT id')) {
+          return [];
+        }
+        if (sql.includes('UPDATE media_catalog')) {
+          return [{ confirmed_at: confirmedDate }];
         }
         if (sql.includes('test_event_organizer')) return [{ organizer_ref: 'organizer-1' }];
         return [];
@@ -274,27 +282,34 @@ describe('QuarantineDeleteService (Unit Tests)', () => {
 
       expect(receipt.actorType).toBe('SECURITY_AUTOMATION');
       expect(receipt.actorId).toBe('malware-scanner-daemon');
-      expect(receipt.status).toBe('DELETED');
+      // Opción A: status remains QUARANTINED (restricted disposition, not DELETED physical)
+      expect(receipt.status).toBe('QUARANTINED');
       expect(receipt.generation).toBe(1n);
       expect(receipt.previousRevision).toBe(2n);
       expect(receipt.newRevision).toBe(3n);
       expect(receipt.purgeIntentId).toBeDefined();
+      expect(receipt.policyRef).toBe('MOD-008-TRASH-QUARANTINE-PURGE-POLICY-V1');
+      expect(receipt.dispositionConfirmedAt).toEqual(confirmedDate);
+      expect(receipt.purgeStartedAt).toEqual(confirmedDate);
+      expect(receipt.mainPurgeDeadline.toISOString()).toBe('2026-10-19T12:00:00.000Z');
+      expect(receipt.residualPurgeDeadline.toISOString()).toBe('2026-11-11T12:00:00.000Z');
+      expect(receipt.expectedRevision).toBe(3n);
       expect(receipt.wasExisting).toBe(false);
 
-      // Verify status set to DELETED in media_catalog
-      expect(dummyTx.execute).toHaveBeenCalledWith(
-        expect.stringContaining("SET status = 'DELETED'"),
+      // Verify media_catalog updated with new revision without changing status to DELETED
+      expect(dummyTx.query).toHaveBeenCalledWith(
+        expect.stringContaining('UPDATE media_catalog'),
         '3',
         'media-1'
       );
 
       // Verify active cycle termination and job queue cancellation
       expect(dummyTx.execute).toHaveBeenCalledWith(
-        expect.stringContaining("UPDATE media_processing_cycle"),
+        expect.stringContaining('UPDATE media_processing_cycle'),
         'media-1'
       );
       expect(dummyTx.execute).toHaveBeenCalledWith(
-        expect.stringContaining("UPDATE job_queue"),
+        expect.stringContaining('UPDATE job_queue'),
         'media-1'
       );
     });
@@ -352,8 +367,45 @@ describe('QuarantineDeleteService (Unit Tests)', () => {
       ).rejects.toMatchObject({ code: 'MEDIA_NOT_QUARANTINED' });
     });
 
+    it('rejects if media already has active purge disposition', async () => {
+      dummyTx.query.mockImplementation(async (sql: string) => {
+        if (sql.includes('media_quarantine_delete_receipt')) return [];
+        if (sql.includes('media_catalog')) {
+          return [{
+            media_ref: 'media-1',
+            event_ref: 'event-1',
+            guest_ref: 'guest-1',
+            generation: 1n,
+            revision: 2n,
+            status: 'QUARANTINED',
+            original: {},
+            job_id: 'job-1'
+          }];
+        }
+        if (sql.includes('media_quarantine_purge_intent') && sql.includes('SELECT id')) {
+          return [{ id: 'intent-existing-1' }];
+        }
+        return [];
+      });
+
+      const service = new QuarantineDeleteService(mockTransactions as any);
+
+      await expect(
+        service.execute({
+          mediaRef: 'media-1',
+          operationId: 'op-second-disposition',
+          justification: 'Delete again',
+          actor: {
+            type: 'ADMIN_HUMAN',
+            actorContext: validAdminContext,
+            grant: validGrant
+          }
+        })
+      ).rejects.toMatchObject({ code: 'MEDIA_NOT_QUARANTINED' });
+    });
+
     it('returns existing receipt on compatible idempotent retry', async () => {
-      const committedAt = new Date();
+      const committedAt = new Date('2026-10-12T10:00:00.000Z');
       dummyTx.query.mockImplementation(async (sql: string) => {
         if (sql.includes('media_quarantine_delete_receipt')) {
           return [{
@@ -362,13 +414,23 @@ describe('QuarantineDeleteService (Unit Tests)', () => {
             generation: 1n,
             previous_revision: 2n,
             new_revision: 3n,
-            status: 'DELETED',
+            status: 'QUARANTINED',
             actor_type: 'ADMIN_HUMAN',
             actor_id: 'admin-principal-1',
             grant_id: 'grant-uuid-1',
             justification: 'Already deleted',
             purge_intent_id: 'purge-uuid-1',
             committed_at: committedAt
+          }];
+        }
+        if (sql.includes('media_quarantine_purge_intent')) {
+          return [{
+            policy_ref: 'MOD-008-TRASH-QUARANTINE-PURGE-POLICY-V1',
+            disposition_confirmed_at: committedAt,
+            purge_started_at: committedAt,
+            main_purge_deadline: new Date('2026-10-19T10:00:00.000Z'),
+            residual_purge_deadline: new Date('2026-11-11T10:00:00.000Z'),
+            expected_revision: 3n
           }];
         }
         return [];
@@ -389,8 +451,9 @@ describe('QuarantineDeleteService (Unit Tests)', () => {
 
       expect(receipt.wasExisting).toBe(true);
       expect(receipt.operationId).toBe('op-replay');
-      expect(receipt.status).toBe('DELETED');
+      expect(receipt.status).toBe('QUARANTINED');
       expect(receipt.purgeIntentId).toBe('purge-uuid-1');
+      expect(receipt.mainPurgeDeadline.toISOString()).toBe('2026-10-19T10:00:00.000Z');
       expect(dummyTx.execute).not.toHaveBeenCalled();
     });
 
@@ -403,7 +466,7 @@ describe('QuarantineDeleteService (Unit Tests)', () => {
             generation: 1n,
             previous_revision: 2n,
             new_revision: 3n,
-            status: 'DELETED',
+            status: 'QUARANTINED',
             actor_type: 'ADMIN_HUMAN',
             actor_id: 'admin-principal-1',
             grant_id: 'grant-uuid-1',
@@ -419,7 +482,7 @@ describe('QuarantineDeleteService (Unit Tests)', () => {
 
       await expect(
         service.execute({
-          mediaRef: 'media-1', // Conflicting mediaRef
+          mediaRef: 'media-1',
           operationId: 'op-conflict',
           justification: 'Different attempt',
           actor: {
@@ -429,6 +492,49 @@ describe('QuarantineDeleteService (Unit Tests)', () => {
           }
         })
       ).rejects.toMatchObject({ code: 'IDEMPOTENCY_CONFLICT' });
+    });
+  });
+
+  describe('Legacy Reconciliation (Escenario 3)', () => {
+    it('reconciles legacy DELETED without physical proof: never reopened and never physicalPurged', async () => {
+      dummyTx.query.mockResolvedValueOnce([{
+        media_ref: 'media-legacy-1',
+        event_ref: 'event-1',
+        guest_ref: 'guest-1',
+        generation: 1n,
+        revision: 2n,
+        status: 'DELETED',
+        original: {},
+        job_id: 'job-1'
+      }]);
+
+      const result = await reconcileLegacyQuarantineDeleted(dummyTx, 'media-legacy-1');
+
+      expect(result.mediaRef).toBe('media-legacy-1');
+      expect(result.status).toBe('DELETED');
+      expect(result.isLegacyDeleted).toBe(true);
+      expect(result.reopened).toBe(false);
+      expect(result.physicalPurged).toBe(false);
+    });
+
+    it('reconciles non-deleted media correctly', async () => {
+      dummyTx.query.mockResolvedValueOnce([{
+        media_ref: 'media-quar-1',
+        event_ref: 'event-1',
+        guest_ref: 'guest-1',
+        generation: 1n,
+        revision: 2n,
+        status: 'QUARANTINED',
+        original: {},
+        job_id: 'job-1'
+      }]);
+
+      const result = await reconcileLegacyQuarantineDeleted(dummyTx, 'media-quar-1');
+
+      expect(result.status).toBe('QUARANTINED');
+      expect(result.isLegacyDeleted).toBe(false);
+      expect(result.reopened).toBe(false);
+      expect(result.physicalPurged).toBe(false);
     });
   });
 });
