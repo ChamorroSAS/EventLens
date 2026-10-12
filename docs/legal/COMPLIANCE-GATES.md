@@ -4,7 +4,7 @@
 
 | ID | Exigencia | Evidencia mínima | Responsable técnico sugerido | Estado |
 |---|---|---|---|---|
-| LEG-01 | Nombre/domicilio/dirección/email/teléfono real de operador | Identidad/canales verificados y aptos para publicar, sin exponer documentación privada Git | Producto | PENDING |
+| LEG-01 | Nombre/domicilio/dirección/email/teléfono real de operador | Persona natural y **municipio Barranquilla confirmados**; dirección recibida fuera de Git y sin permiso expreso de publicación; email aportado **sin @**, pendiente corrección y validación de canal; teléfono público pendiente | Producto | PARTIAL; PENDING contacto publicable |
 | LEG-02 | Clasificación responsable/encargado por tratamiento | Matriz de roles y contrato/instrucciones con organizador | Néstor | PENDING |
 | LEG-03 | PTI/aviso versionados | Documento completo revisado, URL real, vigencia y derechos | Producto + Cristian | PENDING |
 | LEG-04 | Solicitud Beta: base/consentimiento aplicable | Aviso antes de envío, acto válido, evidencia versionada y pruebas sin enumeración | Néstor contrato; Juan API; Cristian UI | PENDING |
@@ -19,6 +19,8 @@
 | LEG-13 | Situación fiscal/comercial de persona natural | Evaluación según actividad efectiva de RUT, impuestos, registro mercantil/facturación | Producto/contador | PENDING (fuera de EP-018) |
 | LEG-14 | RNBD | Verificar que sujeto natural real no esté comprendido en supuesto específico; otras obligaciones Ley 1581 siguen | Producto | Evaluación inicial, no certificación |
 
+| LEG-15 | Disponibilidad y distintividad de marca | Riesgo demostrado por uso de «EventLens» en servicios de fotos de eventos mediante QR; consultar SIPI, dominios y similitud antes de nueva elección. [Evaluación de naming](../branding/NAMING-RISK-2026-10-12.md) | Producto + revisión de marca | BLOCKED_PENDING_SEARCH |
+
 ## Gates no intercambiables
 
 | Gate | Estado |
@@ -26,7 +28,7 @@
 | LEGAL_SCOPE_FOR_TICKET_WRITING de EL-EP-018 | PASS_WITH_CONDITIONS: redactar tickets DRAFT |
 | READY_FOR_TICKET_WRITING global | NO hasta architect, ui_designer, requirements_reviewer |
 | BETA_FORM_PUBLIC_COLLECTION | BLOCKED hasta LEG-01/03/04/05/06 y verificación legal |
-| PUBLIC_HOME_RELEASE | BLOCKED_PENDING_REVIEW de copy, fotos, tracking y requisitos técnicos |
+| PUBLIC_HOME_RELEASE | BLOCKED_PENDING_REVIEW de nombre comercial, copy, fotos, tracking y requisitos técnicos |
 | PUBLIC_SERVICE_OPENING | BLOCKED por EL-EP-017/Q-029/DEC-031 |
 
 ## Orden recomendado
