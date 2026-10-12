@@ -23,6 +23,10 @@ export class MediaGalleryError extends Error {
   }
 }
 
+// ==========================================
+// EL-TK-097: Grants de visualización temporal
+// ==========================================
+
 export type DerivativeRole = 'THUMBNAIL' | 'PREVIEW' | 'PLAYBACK';
 
 export type MediaViewGrantActor =
@@ -56,6 +60,63 @@ export interface ObjectStorageDownloadSigner {
     ttlSeconds: number;
   }): Promise<string>;
 }
+
+// ==========================================
+// EL-TK-096: Galería Guest
+// ==========================================
+
+export type GuestGalleryStatus = 'ACTIVE' | 'EMPTY_GALLERY' | 'GALLERY_DISABLED';
+
+export interface GalleryMediaThumbnail {
+  readonly role: 'THUMBNAIL';
+  readonly width?: number;
+  readonly height?: number;
+  readonly format?: string;
+  readonly bytes?: number;
+}
+
+export interface GalleryMediaSummary {
+  readonly mediaId: string;
+  readonly mediaType: 'PHOTO' | 'VIDEO';
+  readonly publishedAt: string; // ISO 8601
+  readonly thumbnail?: GalleryMediaThumbnail;
+  readonly durationSeconds?: number;
+  readonly aspectRatio?: string;
+}
+
+export interface GalleryPaginationCursor {
+  readonly cursor?: string;
+  readonly hasMore: boolean;
+  readonly limit: number;
+  readonly nextCursor?: string;
+}
+
+export interface GalleryCapabilities {
+  readonly canViewGallery: boolean;
+  readonly canUpload: boolean;
+}
+
+export interface GuestGallerySnapshot {
+  readonly eventId: string;
+  readonly eventName: string;
+  readonly status: GuestGalleryStatus;
+  readonly items: readonly GalleryMediaSummary[];
+  readonly pagination: GalleryPaginationCursor;
+  readonly capabilities: GalleryCapabilities;
+}
+
+export interface QueryGuestGalleryCommand {
+  readonly eventId: string;
+  readonly guestSessionToken?: string;
+  readonly publicLookupKey?: string;
+  readonly limit?: number;
+  readonly cursor?: string;
+  readonly now?: Date;
+}
+
+// ==========================================
+// Observabilidad y Auditoría
+// ==========================================
 
 export interface MediaGalleryAuditEvent {
   readonly id: string;
