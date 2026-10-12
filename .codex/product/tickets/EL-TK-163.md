@@ -4,7 +4,7 @@
 EL-EP-013
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** sistema, **quiero** comunicar hechos de casos cuando corresponda, **para** informar a actores autorizados sin filtrar reportantes ni contenido sensible.
@@ -68,3 +68,18 @@ Q-018; DEC-021, DEC-023, DEC-088; EL-EP-013.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §EL-EP-013; sin componentes nuevos ni NotificationCenter obligatorio).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Cierre de implementación — 2026-10-12
+- **STATUS:** DONE
+- **Implementación técnica:**
+  - Servicio `CaseNoticeService` en `@eventlens/notifications` (`case-notice-service.ts`), consumiendo hechos de moderación de `@eventlens/media-inspection` (EL-EP-009) y auditoría de `@eventlens/observability` (EL-EP-014).
+  - Escenario 1: Alerta prioritaria `CASE_CRITICAL_ALERT` para administradores autorizados ante casos críticos sin alterar el estado del medio multimedia.
+  - Escenario 2: Notificaciones al organizador (`CASE_RESOLUTION_NOTICE`, `ADMIN_INTERVENTION`) con copy mínimo autorizado sin filtrar reportantes ni previews multimedia.
+  - Escenario 3: Supresión ante órdenes legales o directivas de seguridad (`suppressNotice`), auditada con mínimos sin fugar referencias ni razones confidenciales al destinatario.
+  - Idempotencia y deduplicación: Previene duplicación de comunicaciones ante replays o reintentos de hechos de casos.
+  - Integración: Proyecciones contextuales en `NoticeProjectionService` y plantillas de correo en `EmailRenderer`.
+- **Validación y pruebas:**
+  - Suite unitaria: `test/case-notice.unit.test.ts` (7 pruebas PASS).
+  - Suite de integración: `test/case-notice.integration.test.ts` (2 pruebas PASS contra PostgreSQL 16 real).
+  - Typecheck y build limpios en todo el monorepo.
+
