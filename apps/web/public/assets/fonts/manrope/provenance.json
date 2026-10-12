@@ -1,0 +1,50 @@
+{
+  "fontFamily": "Manrope",
+  "upstream": {
+    "provider": "@fontsource/manrope",
+    "version": "5.3.0",
+    "upstreamVersion": "v20",
+    "sourceUrl": "https://github.com/googlefonts/manrope",
+    "license": "SIL Open Font License 1.1 (OFL-1.1)",
+    "licenseUrl": "https://openfontlicense.org"
+  },
+  "files": {
+    "manrope-400.woff2": {
+      "weight": 400,
+      "style": "normal",
+      "format": "woff2",
+      "size": 14108,
+      "sha256": "849290ef12a2eeb9af5c11924120d11aa4ae8b435ed3347d7fc8bc240c293ca3",
+      "role": "Body / Caption"
+    },
+    "manrope-500.woff2": {
+      "weight": 500,
+      "style": "normal",
+      "format": "woff2",
+      "size": 14044,
+      "sha256": "19874318747181a650eda439c37955220b849d9c4797c9e0718ee67d4bf929bc",
+      "role": "Label"
+    },
+    "manrope-600.woff2": {
+      "weight": 600,
+      "style": "normal",
+      "format": "woff2",
+      "size": 14172,
+      "sha256": "f7ac6258da20ab7541939b59851155753d1d24f1b30cbcb949077a3faa3d1593",
+      "role": "Heading / Button"
+    },
+    "manrope-700.woff2": {
+      "weight": 700,
+      "style": "normal",
+      "format": "woff2",
+      "size": 14212,
+      "sha256": "d2a12c85a831e4b5db341767d0347fa3d1361d22a1fcb3e361a16b6c90080f71",
+      "role": "Display"
+    }
+  },
+  "license": {
+    "file": "OFL.txt",
+    "size": 4387,
+    "sha256": "58172e0c0fac2cda8a37b348164bb55e44b0e69051e557e92b1d3f6910141f7b"
+  }
+}

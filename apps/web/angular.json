@@ -14,7 +14,9 @@
             "assets": [
               { "glob": "**/*", "input": "public" }
             ],
-            "styles": []
+            "styles": [
+              "src/styles/ui-foundation.css"
+            ]
           },
           "configurations": {
             "production": { "outputHashing": "all", "budgets": [{ "type": "initial", "maximumWarning": "500kB", "maximumError": "1MB" }] },

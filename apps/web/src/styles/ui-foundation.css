@@ -1,0 +1,73 @@
+/*
+ * EventLens UI Brand Foundation (EL-TK-204)
+ * Self-hosted Manrope font family + inert :root custom properties (--el-ui-*)
+ * Roles and weights per ui-design-system.md and MANUAL-DE-MARCA.md
+ */
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/manrope/manrope-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/assets/fonts/manrope/manrope-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/assets/fonts/manrope/manrope-600.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/assets/fonts/manrope/manrope-700.woff2') format('woff2');
+}
+
+:root {
+  /* Tipografía base y fallback técnico */
+  --el-ui-font-family-base: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --el-ui-font-family-fallback: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Pesos de tipografía vigentes */
+  --el-ui-font-weight-regular: 400;
+  --el-ui-font-weight-medium: 500;
+  --el-ui-font-weight-semibold: 600;
+  --el-ui-font-weight-bold: 700;
+
+  /* Roles semánticos de marca UI */
+  --el-ui-color-primary: #17345C;
+  --el-ui-color-primary-hover: #102A4D;
+
+  --el-ui-color-accent: #F37A5D;
+  --el-ui-color-accent-soft: #FFF1ED;
+
+  --el-ui-color-background: #FAFAF8;
+  --el-ui-color-surface: #FFFFFF;
+
+  --el-ui-color-text-primary: #17202A;
+  --el-ui-color-text-secondary: #667085;
+
+  --el-ui-color-border: #E7E7E3;
+
+  --el-ui-color-success: #278C63;
+  --el-ui-color-warning: #D98A26;
+  --el-ui-color-danger: #C94A4A;
+
+  /* Foco accesible */
+  --el-ui-focus-outline-color: #17345C;
+  --el-ui-focus-outline-width: 2px;
+  --el-ui-focus-outline-offset: 2px;
+}

@@ -11,7 +11,20 @@ import { EventStatusBadgeComponent } from '../lifecycle/event-status-badge.compo
       <header class="shell-header" role="banner">
         <div class="shell-container header-inner">
           <div class="brand-area">
-            <h1 class="brand-title">EventLens</h1>
+            <h1 class="brand-title">
+              @if (!logoFailed) {
+                <img
+                  src="assets/branding/logo-primary.svg"
+                  alt="EventLens"
+                  class="brand-logo"
+                  width="160"
+                  height="25"
+                  (error)="onLogoError()"
+                />
+              } @else {
+                <span class="brand-fallback-text">EventLens</span>
+              }
+            </h1>
             <span class="brand-badge">Organizador</span>
           </div>
 
@@ -56,11 +69,20 @@ import { EventStatusBadgeComponent } from '../lifecycle/event-status-badge.compo
       font-family: system-ui, -apple-system, sans-serif;
     }
     .shell-header {
-      background-color: #ffffff;
-      border-bottom: 1px solid #e2e8f0;
-      position: sticky;
-      top: 0;
+      background-color: var(--el-ui-color-surface, #ffffff);
+      border-bottom: 1px solid var(--el-ui-color-border, #e7e7e3);
       z-index: 20;
+    }
+    @media (min-width: 769px) {
+      .shell-header {
+        position: sticky;
+        top: 0;
+      }
+    }
+    @media (max-width: 768px) {
+      .shell-header {
+        position: static;
+      }
     }
     .shell-container {
       width: 100%;
@@ -68,90 +90,142 @@ import { EventStatusBadgeComponent } from '../lifecycle/event-status-badge.compo
       margin: 0 auto;
       padding: 0 1rem;
     }
+    @media (min-width: 768px) {
+      .shell-container {
+        padding: 0 1.5rem;
+      }
+    }
     .header-inner {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
       min-height: 64px;
+      padding: 0.75rem 0;
       flex-wrap: wrap;
     }
     .brand-area {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.75rem;
+      flex-shrink: 0;
     }
     .brand-title {
       margin: 0;
+      display: inline-flex;
+      align-items: center;
+      font-family: var(--el-ui-font-family-base, 'Manrope', system-ui, sans-serif);
       font-size: 1.25rem;
-      font-weight: 700;
-      color: #0f172a;
-      letter-spacing: -0.025em;
+      line-height: 1.75rem;
+      font-weight: var(--el-ui-font-weight-semibold, 600);
+      color: var(--el-ui-color-text-primary, #17202A);
+    }
+    .brand-logo {
+      display: block;
+      width: 160px;
+      height: auto;
+      aspect-ratio: 1970 / 310;
+      max-width: 100%;
+    }
+    .brand-logo.is-hidden {
+      display: none;
+    }
+    .brand-fallback-text {
+      font-family: var(--el-ui-font-family-base, 'Manrope', system-ui, sans-serif);
+      font-weight: var(--el-ui-font-weight-semibold, 600);
+      font-size: 1.25rem;
+      line-height: 1.75rem;
+      color: var(--el-ui-color-text-primary, #17202A);
     }
     .brand-badge {
       display: inline-flex;
       align-items: center;
       padding: 0.125rem 0.5rem;
       border-radius: 9999px;
-      background-color: #e0e7ff;
-      color: #3730a3;
+      background-color: var(--el-ui-color-accent-soft, #FFF1ED);
+      color: var(--el-ui-color-primary, #17345C);
+      font-family: var(--el-ui-font-family-base, 'Manrope', system-ui, sans-serif);
       font-size: 0.75rem;
-      font-weight: 600;
+      line-height: 1rem;
+      font-weight: var(--el-ui-font-weight-medium, 500);
     }
     .event-context-area {
       display: flex;
       align-items: center;
       gap: 0.625rem;
       font-size: 0.875rem;
-      background-color: #f1f5f9;
+      background-color: var(--el-ui-color-surface, #ffffff);
       padding: 0.375rem 0.75rem;
       border-radius: 0.5rem;
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--el-ui-color-border, #E7E7E3);
+      flex-wrap: wrap;
+      max-width: 100%;
     }
     .context-label {
-      color: #64748b;
-      font-weight: 500;
+      color: var(--el-ui-color-text-secondary, #667085);
+      font-family: var(--el-ui-font-family-base, 'Manrope', system-ui, sans-serif);
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      font-weight: var(--el-ui-font-weight-medium, 500);
+      white-space: nowrap;
     }
     .context-event-name {
-      font-weight: 600;
-      color: #0f172a;
-      max-width: 200px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      color: var(--el-ui-color-text-primary, #17202A);
+      font-family: var(--el-ui-font-family-base, 'Manrope', system-ui, sans-serif);
+      font-weight: var(--el-ui-font-weight-semibold, 600);
+      font-size: 1rem;
+      line-height: 1.5rem;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      min-width: 0;
     }
     .btn-exit-context {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 36px;
-      padding: 0.25rem 0.625rem;
-      background: none;
-      border: 1px solid #cbd5e1;
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0.5rem 0.875rem;
+      background-color: var(--el-ui-color-surface, #ffffff);
+      border: 1px solid var(--el-ui-color-primary, #17345C);
       border-radius: 0.375rem;
-      color: #334155;
-      font-size: 0.75rem;
-      font-weight: 600;
+      color: var(--el-ui-color-primary, #17345C);
+      font-family: var(--el-ui-font-family-base, 'Manrope', system-ui, sans-serif);
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      font-weight: var(--el-ui-font-weight-semibold, 600);
       cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
     }
-    .btn-exit-context:hover {
-      background-color: #e2e8f0;
-      color: #0f172a;
+    .btn-exit-context:hover,
+    .btn-exit-context:active {
+      background-color: var(--el-ui-color-accent-soft, #FFF1ED);
+      border-color: var(--el-ui-color-primary-hover, #102A4D);
+      color: var(--el-ui-color-primary-hover, #102A4D);
     }
     .btn-exit-context:focus-visible {
-      outline: 2px solid #2563eb;
+      outline: 2px solid var(--el-ui-focus-outline-color, #17345C);
       outline-offset: 2px;
+    }
+    @media (max-width: 480px) {
+      .event-context-area {
+        width: 100%;
+      }
+      .btn-exit-context {
+        width: 100%;
+        margin-top: 0.25rem;
+      }
     }
     .shell-main {
       flex: 1;
       padding: 2rem 0;
     }
     .shell-footer {
-      background-color: #ffffff;
-      border-top: 1px solid #e2e8f0;
+      background-color: var(--el-ui-color-surface, #ffffff);
+      border-top: 1px solid var(--el-ui-color-border, #E7E7E3);
       padding: 1.5rem 0;
       font-size: 0.875rem;
-      color: #64748b;
     }
     .footer-inner {
       display: flex;
@@ -160,12 +234,23 @@ import { EventStatusBadgeComponent } from '../lifecycle/event-status-badge.compo
     }
     .footer-text {
       margin: 0;
+      color: var(--el-ui-color-text-secondary, #667085);
+      font-family: var(--el-ui-font-family-base, 'Manrope', system-ui, sans-serif);
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      font-weight: var(--el-ui-font-weight-regular, 400);
     }
   `
 })
 export class OrganizerAppShellComponent {
   @Input() selectedEvent?: OrganizerEventModel | null = null;
   @Output() exitContext = new EventEmitter<void>();
+
+  logoFailed = false;
+
+  onLogoError(): void {
+    this.logoFailed = true;
+  }
 
   onExitContext(): void {
     this.exitContext.emit();
