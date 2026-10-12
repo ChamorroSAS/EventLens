@@ -4,7 +4,7 @@
 EL-EP-003
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** administrador autorizado, **quiero** suspender un evento con motivo justificado, **para** bloquear su operación sin perder el estado previo necesario para una revisión posterior.
@@ -61,4 +61,18 @@ Q-015, Q-017; DEC-017, DEC-019, DEC-078; EL-EP-003, EL-EP-012.
 - [x] Sin preguntas BLOCKER
 
 ## Readiness de implementación — 2026-10-10
-REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: PARTIAL (YES para el alcance contractual propio neutral de suspensión y registro de previous_status consumido por SuspendEventDialog según el handoff UI/UX; NO para ejecución integrada humana hasta la disponibilidad de autenticación administrativa EL-TK-044).
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES (EL-TK-044 disponible).
+
+## Implementation Evidence — 2026-10-11
+- **Branch:** `feature/EL-TK-068`
+- **Schema & Migration:**
+  - Added columns `previous_status`, `suspension_reason`, `suspended_at`, `scheduled_at`, `expires_at`, `grace_ends_at`, and `revision BIGINT DEFAULT 1` to `event` table in migration `202610110033_event_lifecycle/migration.sql`.
+  - Schema assembled and deployed via Prisma migrate.
+- **Service & Contracts:**
+  - Expanded `EventRecord` and `EventStatus` with `SUSPENDED` and lifecycle columns in `packages/event-management/src/contracts.ts`.
+  - Implemented `EventLifecycleService.suspendEvent` in `packages/event-management/src/event-lifecycle.ts` enforcing `AdminActorContext` (`ADMIN_HUMAN`), mandatory justification, `FOR UPDATE` transactional row locks, rejection of terminal `DELETED` state (`TERMINAL_STATE_CANNOT_SUSPEND`), optimistic revision increment, and audit sink recording (`EVENT_SUSPENDED`).
+  - Exported `EventLifecycleService`, `SuspendEventCommand`, and `SuspendEventResult` from `@eventlens/event-management`.
+- **Test Coverage:**
+  - Unit tests (`packages/event-management/test/event-suspension.unit.test.ts`): 8 tests passing.
+  - Integration tests (`packages/event-management/test/event-suspension.integration.test.ts`): 3 tests passing against PostgreSQL 16.
+  - Full workspace test suite (`node scripts/workspace.mjs test`): all packages passing cleanly.
