@@ -25,6 +25,8 @@
 
 **LEG-06 — canal y trámite funcional confirmados (2026-10-12):** correo de privacidad + funciones existentes, atención manual y trazabilidad mínima; [procedimiento preparatorio](../../.codex/product/sessions/2026-10-12-el-ep-017-data-subject-rights-manual-procedure.md). No equivale a buzón operativo, verificación de identidad/representación, calendario de plazos ni cumplimiento jurídico comprobados. Retención de expedientes PENDING; 6 meses confirmados solo para solicitudes Beta sin invitación, no para derechos de titulares.
 
+**LEG-03/LEG-08 — avances de documentación:** borradores [PTI](PRIVACY-POLICY-DRAFT.md) y [Términos](TERMS-OF-USE-DRAFT.md) redactados el 2026-10-12 como **DRAFT NO PUBLICAR**. Sin aprobación legal, identidad/URL/versiones/canales finales o prueba de autorizaciones; estados PENDING sin cambios.
+
 ## Gates no intercambiables
 
 | Gate | Estado |
