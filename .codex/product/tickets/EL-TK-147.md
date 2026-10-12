@@ -4,7 +4,7 @@
 EL-EP-012
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** administración autorizada, **quiero** ver el contexto operativo de un evento, **para** diagnosticar estado, fechas, capacidad, reportes y jobs sin acceso indiscriminado a recuerdos.

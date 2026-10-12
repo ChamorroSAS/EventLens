@@ -43,6 +43,7 @@ try {
   const adminExports = await import('/workspace/packages/admin-support/dist/index.js');
   if (
     typeof adminExports.AdminSearchService !== 'function' ||
+    typeof adminExports.AdminEventDetailService !== 'function' ||
     typeof adminExports.AdminSupportError !== 'function'
   ) {
     throw Error('PUBLIC_IMPORT_FAILED');
@@ -50,15 +51,15 @@ try {
   const exitCode = run(['--filter', '@eventlens/admin-support', 'exec', 'vitest', 'run', '--no-file-parallelism', '--reporter=default', '--reporter=json', '--outputFile=/evidence/tests.json'], true);
   const tests = JSON.parse(readFileSync('/evidence/tests.json', 'utf8'));
   writeFileSync('/evidence/result.json', JSON.stringify({
-    ticket: 'EL-TK-146',
-    precedingTicket: 'EL-TK-044',
+    ticket: 'EL-TK-147',
+    precedingTicket: 'EL-TK-146',
     runId: database,
     testedAt: new Date().toISOString(),
     result: tests.success && exitCode === 0 ? 'PASS' : 'FAIL',
     tests: tests.numTotalTests,
     passed: tests.numPassedTests,
     postgresql: '16 real isolated laboratory database',
-    adminSearch: 'Sanitized administrative search by authorized identifiers and pagination (DEC-019, DEC-020, EL-TK-146)',
+    adminEventDetail: 'Aggregated administrative event detail without media preview and explicit partial state (DEC-019, DEC-020, EL-TK-147)',
     gates: {
       'MEDIA-001': 'NOT_EVALUATED',
       'CAP-001': 'NOT_EVALUATED',
