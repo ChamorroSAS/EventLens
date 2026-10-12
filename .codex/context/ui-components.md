@@ -338,6 +338,8 @@ Título y acciones de una sección.
 ## 4.46 AppHeader
 Variantes guest, organizer y admin.
 
+Extensión EL-EP-018: variante public con enlaces/acciones ya autorizados por owner, sin lógica de sesión/dominio en el control genérico. Menú Drawer/BottomSheet reutilizado; foco, anclas y estados unknown/unavailable/public/ordinary/restricted en [handoff de entrada pública](ui-public-entry.md), conforme [contrato](public-entry-contract.md). READY_FOR_IMPLEMENTATION en diseño tras gate final, no código certificado ni otro header.
+
 ## 4.47 MobileNavigation
 Navegación mobile autenticada cuando se requiera.
 
@@ -485,6 +487,8 @@ Variantes propia irreversible y sin sesión revisada: [handoff UX READY_FOR_IMPL
 
 ## 6.1 LegalFooter
 Links persistentes: Privacidad, Términos y Condiciones de publicación.
+
+Variante pública minimal EL-EP-018: marca/frase/copyright y sólo links con documento aprobado disponible/destino real; omitir links faltantes sin inventar condiciones ni cambiar footer guest. [Handoff](ui-public-entry.md); publicación conserva gate jurídico EP017.
 
 ## 6.2 LegalDocumentLink
 Enlace a documento legal versionado.
@@ -699,6 +703,8 @@ Revocación de invitación válida.
 
 ## 10.5 AccessRequestForm
 Solicitud pública BETA preservando no enumeración.
+
+Montaje acotado EL-EP-018 en /solicitar-acceso: sólo correo, CTA contractual y resultado neutral/429/indisponible; [handoff](ui-public-entry.md). Backend008 DONE no acredita formulario/endpoint/cliente operativo. Sin nueva validación de negocio, invitación automática ni cierre global del gate001.
 
 ## 10.6 AccessRequestList
 Listado administrativo.
@@ -1077,3 +1083,7 @@ sobre:
 - visuales decorativos que dificulten el uso.
 
 Este catálogo es una guía UI/UX y no obliga a implementar todos los componentes desde el inicio.
+
+# 25. Entrada pública — PublicHomePage
+
+PRODUCT_COMPONENT nuevo de EL-EP-018: composición editorial pública / sin auth, directorio o administración. Reutiliza AppHeader.public, patrones/secciones y LegalFooter; única responsabilidad visual nueva. [Handoff](ui-public-entry.md) / [contrato](public-entry-contract.md). Madurez READY_FOR_IMPLEMENTATION en diseño tras gate final; no eleva madurez de los componentes de cuenta/eventos ni certifica código.

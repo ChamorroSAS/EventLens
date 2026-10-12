@@ -57,6 +57,8 @@ Especificación acotada adoptada en [ui-brand-foundation.md](ui-brand-foundation
 
 ## Principios
 
+Aplicación acotada de roles vigentes a Home/navegación EL-EP-018: [ui-public-entry.md](ui-public-entry.md). Sin nueva paleta/fuente/peso/token ni ampliación implícita del piloto de OrganizerAppShell; no certifica implementación.
+
 - No usar coral como CTA principal.
 - No depender únicamente del color para comunicar estados.
 - CTA principal azul.
