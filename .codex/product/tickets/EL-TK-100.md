@@ -4,7 +4,7 @@
 EL-EP-007
 
 ## Status
-READY
+DONE
 
 REQUIREMENTS_READY: YES
 READY_FOR_IMPLEMENTATION: YES
@@ -82,3 +82,34 @@ Q-005, Q-016; DEC-003, DEC-018, DEC-032, DEC-033, DEC-037, DEC-076; EL-EP-007, E
   - Diseño apilado en móvil y flexible en tablet/desktop.
   - Cambio de filtros accesible sin recarga abrupta de página ni salto destructivo de foco.
   - Contrastes conformes a tokens de diseño y controles interactivos ≥ 44×44px.
+
+## Evidencia de implementación y verificación — 2026-10-12
+
+- **Contratos y Tipos (`apps/web/src/app/media/media.types.ts`):**
+  - Añadido `MediaStatusFilter` (`ALL`, `PUBLISHED`, `PROCESSING`, `PROCESSING_FAILED`, `QUARANTINED`, `PENDING_REVIEW`, `HIDDEN`, `REJECTED`, `TRASHED`).
+  - Añadido `EmptyReason` (`EMPTY_LIBRARY`, `EMPTY_FILTER_RESULTS`).
+  - Añadido modelo `OrganizerMediaLibrarySnapshotModel`.
+  - Extendido `MediaCardModel` con atributos opcionales de metadatos (`mimeType`, `sizeBytes`, `createdAt`).
+- **Servicio (`apps/web/src/app/media/media-library.service.ts`):**
+  - Implementado `MediaLibraryService` con método `getOrganizerMediaLibrary(...)` que consulta con aislamiento por `eventRef` y serialización de filtros/paginación, manejando errores `ACCESS_DENIED` (403), `EVENT_NOT_FOUND` (404) y `COMMUNICATION_ERROR`.
+- **Componentes (`apps/web/src/app/media/`):**
+  - `MediaStatusFilterComponent`: Toolbar accesible con `role="toolbar"` y botones con estado `aria-pressed`, altura mínima de 44px, indicación visual de foco y opción activa sin depender exclusivamente del color.
+  - `OrganizerMediaTableComponent`: Vista tabular accesible opcional para desktop/pantallas anchas con `caption`, `th scope="col"`, badges legibles de estado y seguridad, e integración contextual de acciones de reintento (`RetryProcessingActionComponent`) y descarga (`DownloadOriginalActionComponent`).
+  - `OrganizerMediaLibraryComponent`: Contenedor principal con header, contador de ítems, conmutador de vista cuadrícula/tabla, botón de actualización, filtrado sin recarga de página, diferenciación accesible de estados vacíos (`EMPTY_LIBRARY` vs `EMPTY_FILTER_RESULTS` con botón "Limpiar filtros"), y manejo de carga y error con botón de reintento.
+  - `index.ts`: Barrel export unificado de tipos, servicios y componentes multimedia.
+- **Integración en Navegación del Organizador (`apps/web/src/app/organizer/`):**
+  - Incorporada sección `'media'` en `EventSettingsSection` y `EventSettingsNavComponent`.
+  - Integrado renderizado de `OrganizerMediaLibraryComponent` dentro de `OrganizerDashboardComponent` en el workspace del evento seleccionado.
+- **Pruebas y Verificación Automatizada:**
+  - Suite unitaria dedicada `apps/web/src/app/media/organizer-media-library.component.spec.ts` (6/6 PASS):
+    - Escenario 1: Renderizado con estados autorizados y filtrado preservando aislamiento estricto de `eventRef`.
+    - Escenario 2: Reutilización de componentes `ProcessingFailedPanel` y `RetryProcessingAction` de EL-TK-054 para ítems en `PROCESSING_FAILED`.
+    - Escenario 3A: Discriminación y renderizado accesible de `EMPTY_LIBRARY` ("Aún no hay fotos ni videos subidos en este evento.").
+    - Escenario 3B: Discriminación y renderizado de `EMPTY_FILTER_RESULTS` ("No hay medios que coincidan con el filtro seleccionado.") con acción interactiva de "Limpiar filtros".
+    - Escenario 4: Conmutación fluida entre vista de cuadrícula y vista de tabla accesible (`OrganizerMediaTable`).
+    - Escenario 5: Manejo de errores de conexión y autorización (`ACCESS_DENIED`) con recuperación vía botón de reintento.
+    - Escenario 6: Cumplimiento de accesibilidad WCAG 2.2 AA (roles, etiquetas aria, áreas táctiles ≥ 44×44px, contraste).
+  - Suite completa `@eventlens/web`: 72/72 pruebas PASS en 14 suites.
+  - Verificación de tipos (`node scripts/workspace.mjs typecheck`): Clean (`ngc --noEmit` exit 0 across workspace).
+  - Verificación de build (`node scripts/workspace.mjs build`): Clean (bundle Angular generado exitosamente, 114.77 kB).
+

@@ -103,8 +103,8 @@ Contratos EL-EP-013/014 mediante interfaces acordadas; sin dependencia dura de s
 | EL-TK-029 | EL-TK-020 | — |
 | EL-TK-030 | EL-TK-020 | — |
 | EL-TK-031 | EL-TK-020 | — |
-| EL-TK-047 | EL-TK-020 | EL-TK-048 |
-| EL-TK-048 | EL-TK-047 | — |
+| EL-TK-047 (DONE) | EL-TK-020 | EL-TK-048 |
+| EL-TK-048 (DONE) | EL-TK-047 | — |
 | EL-TK-049 | EL-TK-020 | EL-TK-050 |
 | EL-TK-050 | EL-TK-049 | EL-TK-051 |
 | EL-TK-051 | EL-TK-020, EL-TK-050 | EL-TK-052 |
@@ -177,9 +177,9 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 |---|---|---|
 | EL-TK-096 | 074, 075, 072; EL-TK-037 | 099, 101, 102 |
 | EL-TK-097 | 072, 074, 035, 037 | 099, 101, 102 |
-| EL-TK-098 | 047, 053 | 100, 102 |
+| EL-TK-098 (DONE) | 047, 053 | 100, 102 |
 | EL-TK-099 | 096, 097, 101 | 102; UI guest downstream |
-| EL-TK-100 | 098, 053, 054 | 102; UI owner downstream |
+| EL-TK-100 (DONE) | 098, 053, 054 | 102; UI owner downstream |
 | EL-TK-101 | 096, 097, 072, 074 | 099, 102 |
 | EL-TK-102 | 096..101 | validación integrada de EL-EP-007 |
 
@@ -444,4 +444,15 @@ TB-01/TB-02 dejan de bloquear.033/035/036/041/042/056 YES propio;058 NO ejecuci�
 **CONFIRMED — EL-TK-145 DONE, 2026-10-11:** dependencias EL-TK-134..144 satisfechas; validación de extremo a extremo de la Épica `EL-EP-011` implementada en `@eventlens/capacity-management` (`test/capacity-epic-e2e.test.ts`). Valida con 4 escenarios canónicos: carreras concurrentes de uploads al límite comercial (DEC-079, DEC-080), sobregiro por reducción administrativa con preservación íntegra de archivos y rechazo DEC-102, ciclo completo de ampliación con aclaraciones y aprobación con override automático, y emisión/rearmado deduplicado de umbrales al 80% y 100%. Suite E2E 4/4 PASS, suite de capacidad 60/60 PASS, typecheck monorepo exit code 0. Épica `EL-EP-011` completada. Véase el [cierre](tickets/EL-TK-145.md).
 
 **CONFIRMED — EL-EP-004 (EL-TK-074..085) DONE, 2026-10-11:** dependencias 020, 027, 072 y 084 satisfechas; implementación integral del acceso público al evento, sesión anónima de invitado protegida por PIN, consentimiento versionado, apodo de aportante, consulta aislada de 'Mis aportes' per DEC-084, cambio y desactivación de PIN con revocación atómica per DEC-072/DEC-083, regeneración de credencial pública per DEC-083, generador QR vectorial autónomo sin dependencias externas, derivación a solicitud de retiro sin sesión previa per DEC-103..105, experiencia móvil de invitado en Angular Zoneless y consola de gestión de acceso de organizador accesible per WCAG 2.2 AA completada y validada en `@eventlens/event-management` y `@eventlens/web` (tickets EL-TK-074..EL-TK-085; 231/231 pruebas en event-management, 51/51 pruebas en web, suite completa del workspace PASS; 0 errores de build y typecheck). Cierra formalmente la épica EL-EP-004. Véanse los cierres de tickets en `tickets/EL-TK-078.md`..`EL-TK-085.md` y la minuta en [sesión de entrega EL-EP-004](sessions/2026-10-11-el-ep-004-guest-access-delivery.md).
+
+**CONFIRMED — EL-TK-047 DONE, 2026-10-12:** dependencia EL-TK-020 satisfecha; consulta de proyección de eventos propios y configuración autorizada implementada y validada en `@eventlens/event-management` (`EventDraftService.listOrganizerEvents` y `getAuthorizedConfiguration`) (8 unitarias y 4 de integración en PostgreSQL 16 PASS; 243/243 suite completa PASS). Garantiza aislamiento estricto por cuenta de organizador, cero exposición de secretos/hashes de PIN, manejo de vacío real `[]` ante cero eventos, no-revelación anti-enumeración ante eventos ajenos (`EVENT_NOT_FOUND`) y resolución de capacidades por estado de ciclo de vida. Desbloquea downstream EL-TK-048 y EL-TK-098. Véase el [cierre](tickets/EL-TK-047.md).
+
+**CONFIRMED — EL-TK-048 DONE, 2026-10-12:** dependencia EL-TK-047 satisfecha; superficie compartida de navegación del organizador implementada y validada en `@eventlens/web` (`OrganizerAppShellComponent`, `EventCardComponent`, `EventListComponent`, `EventSettingsNavComponent`, `OrganizerDashboardComponent`, `OrganizerService`) (5/5 pruebas unitarias PASS en vitest; 66/66 suite web PASS; 0 errores de typecheck y build). Entrega navegación responsive accesible WCAG 2.2 AA sin scroll horizontal móvil, manejo de estados ocupado/vacío/error con retry, barra de configuración por secciones (`general`, `schedule`, `access`, `guest`, `lifecycle`, `capacity`) y retorno al dashboard sin mutaciones de estado. Véase el [cierre](tickets/EL-TK-048.md).
+
+**CONFIRMED — EL-TK-098 DONE, 2026-10-12:** dependencias EL-TK-047 y EL-TK-053 satisfechas; consulta paginada y filtrable de la biblioteca de media del organizador implementada y validada en `@eventlens/media-inspection` (`OrganizerMediaLibraryService` y `PostgresOrganizerMediaLibraryRepository`) (5 unitarias y 5 de integración en PostgreSQL 16 PASS; build y typecheck del monorepo exit code 0). Asegura aislamiento estricto por `event_ref`, discriminación explícita entre biblioteca sin medios (`EMPTY_LIBRARY`) y filtro sin resultados (`EMPTY_FILTER_RESULTS`), cálculo server-side de capacidades (`canRetry`, `canDownloadOriginal` per DEC-075, `canView`, `canDelete`), y preservación de seguridad sin exponer jobs internos ni logs de workers. Desbloquea downstream EL-TK-100 y EL-TK-102. Véase el [cierre](tickets/EL-TK-098.md).
+
+**CONFIRMED — EL-TK-100 DONE, 2026-10-12:** dependencias EL-TK-098, EL-TK-053 y EL-TK-054 satisfechas; integración frontend de la biblioteca de medios del organizador implementada y validada en `@eventlens/web` (`OrganizerMediaLibraryComponent`, `OrganizerMediaTableComponent`, `MediaStatusFilterComponent`, `MediaLibraryService`) integrando componentes de fallo técnico (`ProcessingFailedPanelComponent`, `RetryProcessingActionComponent`) y aislamiento preventivo (`QuarantinedMediaStateComponent`) de EL-TK-054 (6 unitarias enfocadas PASS; 72/72 suite completa de `@eventlens/web` PASS; typecheck monorepo exit code 0; build de producción limpio 114.77 kB). Asegura discriminación accesible de estados vacíos (`EMPTY_LIBRARY` vs `EMPTY_FILTER_RESULTS` con botón interactivo "Limpiar filtros"), navegación y conmutación de vista (cuadrícula/tabla) accesible WCAG 2.2 AA (roles semánticos, estados aria, áreas interactivas ≥ 44×44px, foco visible estable y sin parpadeos destructivos) y preservación de aislamiento estricto por `eventRef`. Desbloquea downstream EL-TK-102. Véase el [cierre](tickets/EL-TK-100.md).
+
+
+
 

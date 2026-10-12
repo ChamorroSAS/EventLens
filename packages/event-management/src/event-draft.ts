@@ -11,7 +11,12 @@ import {
   type EventAuditSink,
   type EventRecord,
   type EventStatus,
-  type ModerationMode
+  type ModerationMode,
+  type OrganizerEventSummary,
+  type EventConfigurationCapabilities,
+  type AuthorizedEventConfiguration,
+  type ListOrganizerEventsCommand,
+  type GetAuthorizedConfigurationCommand
 } from './contracts.js';
 import { resolveScheduleLocalTime } from './timezone.js';
 
@@ -74,6 +79,44 @@ function mapRowToRecord(row: EventRow): EventRecord {
     updatedAt: new Date(row.updated_at)
   };
 }
+
+function mapRowToSummary(row: EventRow): OrganizerEventSummary {
+  return {
+    id: row.id,
+    organizerId: row.organizer_id,
+    name: row.name,
+    status: row.status as EventStatus,
+    timezone: row.timezone,
+    startsAtLocal: row.starts_at_local ?? null,
+    scheduledAt: row.scheduled_at ? new Date(row.scheduled_at) : null,
+    utcOffsetMinutes: row.utc_offset_minutes !== null && row.utc_offset_minutes !== undefined ? Number(row.utc_offset_minutes) : null,
+    expiresAt: row.expires_at ? new Date(row.expires_at) : null,
+    graceEndsAt: row.grace_ends_at ? new Date(row.grace_ends_at) : null,
+    uploadsEnabled: Boolean(row.uploads_enabled),
+    guestGalleryEnabled: Boolean(row.guest_gallery_enabled),
+    moderationMode: row.moderation_mode as ModerationMode,
+    pinEnabled: Boolean(row.pin_enabled),
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.updated_at)
+  };
+}
+
+function resolveCapabilities(status: EventStatus): EventConfigurationCapabilities {
+  const isDraftOrScheduled = status === 'DRAFT' || status === 'SCHEDULED';
+  const isActive = status === 'ACTIVE';
+  const isClosedOrGrace = status === 'CLOSED' || status === 'GRACE_PERIOD';
+  const isTerminal = status === 'PENDING_DELETION' || status === 'ARCHIVED';
+
+  return {
+    canEditSchedule: isDraftOrScheduled,
+    canEditSettings: isDraftOrScheduled || isActive,
+    canManageAccess: isDraftOrScheduled || isActive || isClosedOrGrace,
+    canViewLifecycle: status !== 'ARCHIVED',
+    canViewCapacity: !isTerminal,
+    canPublishOrActivate: isDraftOrScheduled
+  };
+}
+
 
 /**
  * Service responsible for event draft creation, isolation, and lifecycle preparation (MOD-002, EL-TK-020).
@@ -685,5 +728,88 @@ export class EventDraftService {
       };
     });
   }
+
+  /**
+   * Lists all events owned by the authenticated organizer (EL-TK-047).
+   * Ensures strict multi-tenant isolation: only events with organizer_id matching
+   * the actorContext are returned. A collection of zero events returns [] cleanly.
+   */
+  public async listOrganizerEvents(command: ListOrganizerEventsCommand): Promise<OrganizerEventSummary[]> {
+    if (!command || typeof command !== 'object') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Command is required');
+    }
+
+    const { actorContext } = command;
+    if (!actorContext || actorContext.actorType !== 'ORGANIZER_HUMAN' || !actorContext.accountId) {
+      throw new EventManagementError('UNAUTHORIZED', 'Authenticated organizer context is required');
+    }
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      const rows = await tx.query<EventRow>(
+        `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at,
+                utc_offset_minutes, expires_at, grace_ends_at, uploads_enabled,
+                guest_gallery_enabled, moderation_mode, pin_enabled, created_at, updated_at
+         FROM event
+         WHERE organizer_id = $1
+         ORDER BY created_at DESC`,
+        actorContext.accountId
+      );
+
+      return rows.map(mapRowToSummary);
+    });
+  }
+
+  /**
+   * Retrieves the authorized configuration and capabilities of a selected event (EL-TK-047).
+   * Returns authorized fields and capabilities without PIN hashes, salts or secrets.
+   * If the event does not exist or belongs to another organizer, returns EVENT_NOT_FOUND
+   * without leaking cross-organizer information.
+   */
+  public async getAuthorizedConfiguration(command: GetAuthorizedConfigurationCommand): Promise<AuthorizedEventConfiguration> {
+    if (!command || typeof command !== 'object') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Command is required');
+    }
+
+    const { actorContext, eventId } = command;
+    if (!actorContext || actorContext.actorType !== 'ORGANIZER_HUMAN' || !actorContext.accountId) {
+      throw new EventManagementError('UNAUTHORIZED', 'Authenticated organizer context is required');
+    }
+
+    if (!eventId || typeof eventId !== 'string') {
+      throw new EventManagementError('INVALID_ARGUMENT', 'Valid eventId is required');
+    }
+
+    return this.runner.run(async (tx: SqlTransaction) => {
+      const rows = await tx.query<EventRow>(
+        `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at,
+                utc_offset_minutes, expires_at, grace_ends_at, uploads_enabled,
+                guest_gallery_enabled, moderation_mode, pin_enabled, created_at, updated_at
+         FROM event
+         WHERE id = $1`,
+        eventId
+      );
+
+      if (!rows.length) {
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event with ID ${eventId} not found`);
+      }
+
+      const row = rows[0];
+      if (row.organizer_id !== actorContext.accountId) {
+        // Enforce anti-enumeration: do not reveal that the event exists for someone else
+        throw new EventManagementError('EVENT_NOT_FOUND', `Event with ID ${eventId} not found`);
+      }
+
+      const summary = mapRowToSummary(row);
+      const capabilities = resolveCapabilities(summary.status);
+      const revision = new Date(row.updated_at).getTime().toString();
+
+      return {
+        event: summary,
+        revision,
+        capabilities
+      };
+    });
+  }
 }
+
 
