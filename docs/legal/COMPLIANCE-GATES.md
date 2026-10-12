@@ -21,6 +21,8 @@
 
 | LEG-15 | Disponibilidad y distintividad de marca | Riesgo demostrado por uso de «EventLens» en servicios de fotos de eventos mediante QR; consultar SIPI, dominios y similitud antes de nueva elección. [Evaluación de naming](../branding/NAMING-RISK-2026-10-12.md) | Producto + revisión de marca | BLOCKED_PENDING_SEARCH |
 
+**Decisiones funcionales confirmadas (2026-10-12):** organizadores naturales y organizaciones; galería privada con controles de publicación vigentes; reportes/retiro sin cuenta. [Análisis de producto](../../.codex/product/sessions/2026-10-12-el-ep-017-organizers-gallery-and-reports.md). LEG-02, LEG-07/08 mantienen aprobación jurídica y evidencia operativa PENDING. Ningún control legal se da por implementado por esta confirmación.
+
 ## Gates no intercambiables
 
 | Gate | Estado |
