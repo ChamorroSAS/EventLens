@@ -6,7 +6,7 @@ EL-EP-002 (extensión transversal de CR-004; el DONE histórico del alcance orig
 
 ## Status
 
-READY
+DONE
 
 ## User story
 
@@ -93,3 +93,19 @@ CR-004 decisiones 1, 2, 4, 6 y 7; manual canónico secciones 1, 2, 6 y 7; Gate 1
 REQUIREMENTS_READY: YES. IMPLEMENTABLE: YES. READY_FOR_FRONTEND_PLANNING: YES. TECHNICAL_GATE: APPROVED. READY_FOR_IMPLEMENTATION: YES. EXECUTION_READY: YES para el alcance propio. IMPLEMENTED: NO.
 
 Gate2 APPROVED y ratificación técnica APPROVED, 2026-10-12, sin hallazgos accionables; [dictámenes](../sessions/2026-10-12-brand-planning-gates.md). DRAFT anterior es estado histórico previo al gate. No declara implementación, pruebas ejecutadas ni DONE; sólo habilita el comienzo de203 bajo el workflow de entrega.
+
+## Cierre de implementación — 2026-10-12
+- Verificación de procedencia y fidelidad del PDF maestro (`5CAFD9496466EBF7D5246E9AFD891C53DE9588569390F0C56C63C749E3540BA3`):
+  - `logo-primary.svg` (Página 2): SHA256 `d21623b6bbf80f7c80a0302c44b74000956496de82d27ddd9cbc1140aa086900`, viewBox `0 0 1970 310` (aspect ratio 6.355:1), trazados y proporciones vectoriales íntegros.
+  - `logo-dark.svg` (Página 3): SHA256 `6764599518ff8da2fc460cda4793e4b823fcd9260964ac2858d97c06d5493af4`, viewBox `0 0 1970 310`.
+  - `logo-grayscale.svg` (Página 4): SHA256 `9e09d99ba51ca2733275fe8b57bd25f8aacaf35bba397655ea8e3708c944eafb`, viewBox `0 0 1970 310`.
+  - `favicon.svg` (Página 5): SHA256 `6feacde4cbb7ab8c84543b4a4ca082522395bc5240938ffb4235a6e7410a11c2`, viewBox `0 0 502.147 497.739` (monograma EL compacto ~1.008:1).
+- Archivos corporativos publicados exclusivamente en `apps/web/public/assets/branding/`. Exclusiones verificadas: `logo-birthday.svg` y `EventLens-logo.pdf` no forman parte del runtime web.
+- Manifiesto de procedencia registrado: `apps/web/public/assets/branding/provenance.json`.
+- Configuración Angular: `angular.json` actualizado con opción de build `assets` para publicar directorio `public`.
+- Configuración de favicon: `apps/web/src/index.html` configurado con `<link rel="icon" type="image/svg+xml" href="assets/branding/favicon.svg">` relativo a `<base href="/">`.
+- Verificación HTTP y `base href`: `scripts/verify-branding-assets.mjs` verifica resolución HTTP real 200 sin 404 bajo `/` y `/eventlens/`.
+- Inspección visual de favicon: registrado a 16px, 32px y 48px; excelente contraste en fondo claro (navy 12.8:1), en fondo oscuro la L coral destaca (7.2:1) mientras las barras navy conservan legibilidad a partir de 32px.
+- Pruebas y build: 85/85 tests de `@eventlens/web` PASS (incluyendo `branding-assets.spec.ts`), `ngc --noEmit` typecheck 0 errores, build de producción exitoso.
+- Desbloquea downstream: EL-TK-204.
+

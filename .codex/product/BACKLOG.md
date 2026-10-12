@@ -238,7 +238,7 @@
 | EL-TK-200 | Integrar solicitud y cancelación de eliminación en UI de evento | EL-EP-015 | READY | P0 | 189,190,193 | [EL-TK-200](tickets/EL-TK-200.md) |
 | EL-TK-201 | Integrar eliminación de cuenta y reautenticación en UI | EL-EP-015 | READY | P0 | 186,191,192,193 | [EL-TK-201](tickets/EL-TK-201.md) |
 | EL-TK-202 | Validar eliminación ordinaria de extremo a extremo y criterios de Beta | EL-EP-015 | READY | P0 | 194,196,198..201 | [EL-TK-202](tickets/EL-TK-202.md) |
-| EL-TK-203 | Validar y publicar los assets corporativos de marca | EL-EP-002 (CR-004) | READY | P1 recomendado | — | [EL-TK-203](tickets/EL-TK-203.md) |
+| EL-TK-203 | Validar y publicar los assets corporativos de marca | EL-EP-002 (CR-004) | DONE | P1 recomendado | — | [EL-TK-203](tickets/EL-TK-203.md) |
 | EL-TK-204 | Incorporar foundation visual y piloto aislado del shell de organizador | EL-EP-002 (CR-004) | READY | P1 recomendado | 203,048 (componente existente) | [EL-TK-204](tickets/EL-TK-204.md) |
 
 **CONFIRMED — CR-004, 2026-10-12:** exactamente dos tickets nuevos de integración de marca, sin nueva épica, módulo o dependencia retroactiva de entregas DONE. Gates requisitos del cambio/técnico/UI y Gate2 APPROVED;203/204 pasan DRAFT→READY de requisitos.203 READY_FOR_IMPLEMENTATION YES;204 NO exclusivamente hasta ejecutar/validar203, con contrato propio aprobado. [Manual canónico](../../docs/branding/MANUAL-DE-MARCA.md), [contrato](../context/brand-integration-contract.md), [UI](../context/ui-brand-foundation.md) y [dictámenes](sessions/2026-10-12-brand-planning-gates.md). El cierre histórico de EL-EP-002 se conserva; la extensión no está implementada.
