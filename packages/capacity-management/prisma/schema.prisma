@@ -128,4 +128,40 @@ model CapacityThresholdState {
   @@map("capacity_threshold_state")
 }
 
+model ExtensionRequest {
+  id             String    @id @db.Uuid
+  eventId        String    @map("event_id") @db.Uuid
+  requestedBy    String    @map("requested_by") @db.Uuid
+  requestType    String    @map("request_type")
+  additionalGb   Float?    @map("additional_gb")
+  additionalDays Int?      @map("additional_days")
+  reason         String
+  status         String    @default("PENDING_REVIEW")
+  resolvedAt     DateTime? @map("resolved_at") @db.Timestamptz
+  resolvedBy     String?   @map("resolved_by")
+  decisionReason String?   @map("decision_reason")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+
+  messages ExtensionRequestMessage[]
+
+  @@index([eventId, status])
+  @@map("extension_request")
+}
+
+model ExtensionRequestMessage {
+  id          String   @id @db.Uuid
+  requestId   String   @map("request_id") @db.Uuid
+  authorRole  String   @map("author_role")
+  authorId    String   @map("author_id")
+  messageType String   @map("message_type")
+  content     String
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  request ExtensionRequest @relation(fields: [requestId], references: [id])
+
+  @@index([requestId, createdAt])
+  @@map("extension_request_message")
+}
+
 

@@ -4,7 +4,7 @@
 EL-EP-011
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador propietario, **quiero** solicitar GB o días adicionales con motivo, **para** pedir una ampliación sin modificar directamente mis límites.

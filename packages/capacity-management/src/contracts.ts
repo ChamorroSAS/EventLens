@@ -4,11 +4,13 @@ export type CapacityActorContext = AdminActorContext | OrganizerActorContext;
 
 export type CapacityErrorCode =
   | 'UNAUTHORIZED'
+  | 'FORBIDDEN'
   | 'INVALID_ARGUMENT'
   | 'EVENT_NOT_FOUND'
   | 'PLAN_NOT_FOUND'
   | 'OVERRIDE_NOT_FOUND'
   | 'CANNOT_REDUCE_BELOW_PAST_EXPIRATION'
+  | 'CANNOT_REDUCE_BELOW_USAGE'
   | 'INSUFFICIENT_STORAGE_CAPACITY'
   | 'INSUFFICIENT_FILE_CAPACITY'
   | 'FILE_SIZE_EXCEEDS_LIMIT'
@@ -17,7 +19,10 @@ export type CapacityErrorCode =
   | 'RESERVATION_ALREADY_COMMITTED'
   | 'MEDIA_NOT_FOUND'
   | 'MEDIA_ALREADY_PURGED'
-  | 'MEDIA_CONSUMPTION_CONFLICT';
+  | 'MEDIA_CONSUMPTION_CONFLICT'
+  | 'CONFLICT'
+  | 'EXTENSION_REQUEST_NOT_FOUND'
+  | 'EXTENSION_REQUEST_INVALID_STATE';
 
 export class CapacityError extends Error {
   constructor(
@@ -336,6 +341,81 @@ export interface EvaluateUsageThresholdsResult {
 
 export interface CapacitySignalSink {
   emitSignal(signal: UsageThresholdSignal): Promise<void>;
+}
+
+// ==========================================
+// EL-TK-139 / 140 / 141: Solicitudes de Ampliación
+// ==========================================
+
+export type ExtensionRequestType = 'STORAGE' | 'DURATION' | 'BOTH';
+
+export type ExtensionRequestStatus =
+  | 'PENDING_REVIEW'
+  | 'INFORMATION_REQUESTED'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'CANCELLED';
+
+export type ExtensionMessageAuthorRole = 'ORGANIZER' | 'ADMIN';
+
+export type ExtensionMessageType =
+  | 'INITIAL_REQUEST'
+  | 'INFORMATION_REQUESTED'
+  | 'INFORMATION_PROVIDED'
+  | 'APPROVED'
+  | 'REJECTED';
+
+export interface ExtensionRequestMessage {
+  id: string;
+  requestId: string;
+  authorRole: ExtensionMessageAuthorRole;
+  authorId: string;
+  messageType: ExtensionMessageType;
+  content: string;
+  createdAt: Date;
+}
+
+export interface ExtensionRequest {
+  id: string;
+  eventId: string;
+  requestedBy: string;
+  requestType: ExtensionRequestType;
+  additionalGb: number | null;
+  additionalDays: number | null;
+  reason: string;
+  status: ExtensionRequestStatus;
+  resolvedAt: Date | null;
+  resolvedBy: string | null;
+  decisionReason: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  messages?: ExtensionRequestMessage[];
+}
+
+export interface CreateExtensionRequestCommand {
+  eventId: string;
+  actorContext: CapacityActorContext;
+  requestType: ExtensionRequestType;
+  additionalGb?: number;
+  additionalDays?: number;
+  reason: string;
+}
+
+export interface RespondExtensionInfoCommand {
+  requestId: string;
+  actorContext: CapacityActorContext;
+  response: string;
+}
+
+export type ExtensionDecisionType = 'APPROVE' | 'REJECT' | 'REQUEST_INFO';
+
+export interface ReviewExtensionRequestCommand {
+  requestId: string;
+  actorContext: CapacityActorContext;
+  decision: ExtensionDecisionType;
+  decisionReason: string;
+  approvedGb?: number;
+  approvedDays?: number;
 }
 
 
