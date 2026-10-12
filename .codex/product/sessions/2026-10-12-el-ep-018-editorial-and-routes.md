@@ -23,6 +23,16 @@ Fecha: 2026-10-12. Rama de propuesta: `docs/el-ep-018-home-navigation`; base pre
 
 Las preferencias anteriores son decisiones editoriales; **los textos literales redactados a continuación son propuesta para validación final de UX/copy**, salvo las cadenas de CTA y los nombres seleccionados expresamente. Este documento no aprueba nuevos términos legales, capacidades, URLs definitivas ni assets fotográficos.
 
+## A.1 Decisiones confirmadas de cuenta y navegación — 2026-10-12
+
+**A — Mi cuenta (CONFIRMED):** en la ruta funcional `/mi-cuenta`, reunir datos básicos de la cuenta, seguridad, sesiones y opción de solicitar eliminación. Reutilizar capacidades de EL-EP-001 y EL-EP-015, incluida interfaz restringida de cuenta pendiente de eliminación, sin crear un segundo dashboard, entidad/perfil independiente ni rehacer sesiones/reauth/eliminación. Los campos exactos de «datos básicos» y el montaje de UI deben definirse a partir de contratos existentes, sin inventar campos editables.
+
+**B — Login/retorno (CONFIRMED):** acceso directo a `/mi-cuenta` sin sesión válida → `/ingresar`; tras autenticación correcta, volver al destino interno original **sólo si autorizado**. Validación de `returnUrl` local (sin `//`, orígenes externos, esquemas peligrosos, bypass de rutas o redirect loops), y verificación de permisos del servidor. Una cuenta `PENDING_DELETION` mantiene el acceso restringido a consulta/cancelación autorizadas, sin recuperar navegación ni acciones ordinarias.
+
+**C — Acceso guest directo (CONFIRMED):** links y QR existentes abren directamente la experiencia de su evento; no interceptar con Home ni obligar a autenticación de organizador. Conservar credencial revocable, PIN opcional, sesión guest event-scoped y políticas de lifecycle existentes. **No se elige ni se inventa** un path concreto de QR en esta aprobación.
+
+**Distinción de madurez:** las reglas A/B/C son decisiones funcionales confirmadas, no prueba de que exista routing, UI de cuenta o E2E. Las rutas `/ingresar` y `/mi-cuenta` han sido aceptadas en su **semántica funcional**; otras rutas propuestas continúan pendientes de aprobación/validación técnica.
+
 ## B. Copy propuesto para el Home
 
 ### Header público
@@ -122,20 +132,20 @@ Fuentes inspeccionadas directamente el 2026-10-12:
 | Ancla Beneficios | `/#beneficios` | Pública | Id estable y sección propuesta |
 | Ancla Privacidad | `/#privacidad` | Pública | Copy/aviso legal revisado según gate |
 | Ancla Preguntas frecuentes | `/#preguntas-frecuentes` | Pública | Marcado semántico accesible |
-| Iniciar sesión | `/ingresar` | MOD-001; sesión organizador verificada | Elegir path oficial, componer LoginForm y adaptador; redirect solo interno |
+| Iniciar sesión | `/ingresar` **(producto confirmado)** | MOD-001; sesión organizador verificada | Implementar/verificar ruta, LoginForm y adaptador; redirect solo interno y autorizado |
 | Solicitar acceso Beta | `/solicitar-acceso` | EL-TK-008, anónimo, sin enumeración | Elegir path oficial, formulario/adapter; éxito neutro y rate limit |
 | Mis eventos | `/mis-eventos` | MOD-002 y guard de identidad/autoridad | Montar OrganizerDashboard existente, no segundo dashboard |
-| Mi cuenta | `/mi-cuenta` | MOD-001; sesiones/seguridad; estado restringido según MOD-008 | Acordar propietario de composición de cuenta, secciones y contratos; no recrear UI de eliminación |
-| Evento por QR | **Path actual del contrato de enlace revocable, pendiente de identificar** | EL-EP-004; QR/PIN/guest; acceso event-scoped | Identificar formato real emitido y preservar credenciales/revocación; no inventar slug ni `/evento/:id` |
+| Mi cuenta | `/mi-cuenta` **(producto confirmado)** | MOD-001 y EL-EP-015: datos básicos/seguridad/sesiones/eliminación, restricción en PENDING_DELETION | Componer UI de owners sin segundo dashboard ni duplicar EL-TK-201 |
+| Evento por QR | **Formato existente por identificar**; entrada **directa aprobada** | EL-EP-004; QR/PIN/guest; acceso event-scoped | No pasa por Home/login organizador; auditar URL emitida y preservar credencial/revocación, no inventar `/evento/:id` |
 | Admin | **Sin enlace público propuesto** | EL-EP-012/EL-TK-044 | Conservar mecanismo admin independiente y protegido |
 | Not found | `**` (conceptual) | Sin enumeración ni divulgación de evento/cuenta | Vista 404 segura; no interceptar rutas API/media |
 
-### Reglas de navegación por validar con architect/ui_designer
+### Reglas funcionales confirmadas; ejecución técnica por validar con architect/ui_designer
 1. Registrar rutas/guards lazy donde corresponda respetando Angular vigente y EL-TD-004; no añadir módulo nuevo de dominio ni librería UI sin justificación.
-2. Anon/expired en destino protegido → login y `returnUrl` interno validado; tras login ir al destino original si autorizado. **No** redirigir automáticamente desde `/`.
-3. Cuenta pendiente de eliminación → sólo superficie restringida de consulta/cancelación definida por EL-EP-015; no renderizar menú de control normal.
+2. **CONFIRMED para `/mi-cuenta`:** sin sesión válida → `/ingresar` con destino original interno y validado; tras login correcto, regresar únicamente si autorizado por backend. Denegar open redirects, dobles barras, esquemas externos o ciclos. **No** redirigir automáticamente desde `/`.
+3. **CONFIRMED:** cuenta pendiente de eliminación → sólo superficie restringida de consulta/cancelación definida por EL-EP-015; no renderizar menú de control normal. La composición de `/mi-cuenta` reutiliza la variante `REAUTH_ACCOUNT` de EL-TK-201 cuando corresponda.
 4. Cuenta autorizada que visita `/` permanece en `/`; mostrar links propios, no eventos/correos privados en Home.
-5. Guest deep link sigue guest, nunca obliga a pasar por Home/login owner; preservar ruta credencial emitida y políticas de PIN, revocación y lifecycle.
+5. **CONFIRMED:** guest deep link sigue guest directamente, nunca obliga a pasar por Home/login owner; preservar ruta credencial emitida y políticas de PIN, revocación y lifecycle.
 6. `logout` limpia sesión/contexto sensible y evita volver a renderizar información previa con back/forward; comportamiento post-logout (Home o login) **queda por decidir**.
 7. Nginx/hosting entrega `index.html` para deep links de Angular autorizados; las URLs `/api` y media mantienen enrutamiento aparte. Confirmar `base href`, 404, refresco, query, rutas con fragmentos y CSP.
 8. Navegación anónima pública no depende de health API para mostrar copy; interacción con servicios informa errores neutros y reintentos.
@@ -143,9 +153,9 @@ Fuentes inspeccionadas directamente el 2026-10-12:
 
 ## D. Gates y siguiente paso
 
-- **CERRADO producto:** comportamiento Home; 12 decisiones editoriales, incluida cabecera equilibrada y footer minimalista.
+- **CERRADO producto:** comportamiento Home; 12 decisiones editoriales (cabecera equilibrada y footer minimalista), más las tres decisiones A/B/C de alcance `/mi-cuenta`, retorno seguro desde `/ingresar` y acceso guest directo sin Home/login.
 - **PENDIENTE editorial/UX:** aprobación final literal de copy, assets de fotografías, presentación responsive y contraste.
-- **PENDIENTE arquitectura:** contratos de paths definitivos, montaje de root, lifecycle sesión/guard, ubicación de Mi cuenta y formato QR real.
+- **PENDIENTE arquitectura:** implementar/verificar paths confirmados `/ingresar` y `/mi-cuenta`, contratos de paths restantes `/solicitar-acceso` y `/mis-eventos`, montaje de root, ciclo de sesión/guards/returnUrl, composición exacta de UI de Mi cuenta y formato real del QR. El comportamiento funcional A/B/C **no** sigue pendiente de decisión.
 - **PENDIENTE release:** política de indexación/marketing y revisión legal EL-EP-017/Q-029 antes de apertura pública.
 - **PENDIENTE formal:** `requirements_reviewer`, `ui_designer`, `architect`, ticketización y validación funcional. Por tanto `EL-EP-018` permanece **DRAFT** con `REQUIREMENTS_READY: PARTIAL`, `READY_FOR_TICKET_WRITING: NO`, `READY_FOR_FRONTEND_PLANNING: NO`, `READY_FOR_IMPLEMENTATION: NO`.
 
