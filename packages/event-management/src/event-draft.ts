@@ -174,6 +174,13 @@ export class EventDraftService {
       throw new EventManagementError('UNAUTHORIZED', 'Authenticated organizer context is required');
     }
 
+    if (actorContext.restrictedContext === 'DELETION_MANAGEMENT_ONLY') {
+      throw new EventManagementError(
+        'UNAUTHORIZED',
+        'Account is pending deletion and restricted to deletion consultation and cancellation'
+      );
+    }
+
     // 2. Validar nombre del evento (Escenario 2)
     if (!name || typeof name !== 'string') {
       await this.auditSink?.record({

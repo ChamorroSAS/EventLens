@@ -4,7 +4,7 @@
 EL-EP-015
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** sistema, **quiero** propagar restricciones de solicitudes y cancelaciones a módulos propietarios, **para** evitar acceso, subida o descarga después de revocación.
@@ -70,4 +70,9 @@ UI_REQUIRED: NO.
 READY_FOR_FRONTEND_PLANNING: NOT_REQUIRED — dictamen ui_designer; sin diseño de UI nueva.
 REVIEW_STATUS: APPROVED — [dictámenes formales y validación documental](../sessions/2026-10-12-el-ep-015-ticket-readiness.md).
 
-Histórico: DRAFT en la propuesta original; READY tras revisión individual del 2026-10-12. No acredita implementación, ejecución de pruebas ni PASS de validation gates.
+Histórico: DRAFT en la propuesta original; READY tras revisión individual del 2026-10-12.
+
+## Evidencia de cierre — 2026-10-12
+- **Implementación:** `packages/event-management/src/manual-deletion-workflows.ts` (`ManualDeletionWorkflowService.evaluateBarrierAccess`, `getResourceBarrierSnapshot`, `DeletionAccessBarrierRecord`, `ExportDeletionBarrierPort`), `packages/event-management/prisma/migrations/202610120054_deletion_barriers/migration.sql`.
+- **Verificación:** `packages/event-management/test/manual-deletion-workflows.unit.test.ts` y `packages/event-management/test/manual-deletion-workflows.integration.test.ts` (PASS en PostgreSQL 16 real: bloqueo efectivo desde `PREPARED`, invalidación de exportaciones con inventario de partes, vigilancia de writers en vuelo, levantamiento selectivo de barrera tras `ACK` y métricas de observabilidad).
+

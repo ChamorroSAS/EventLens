@@ -4,7 +4,7 @@
 EL-EP-015
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** equipo de calidad, **quiero** probar solicitud, cancelación, purga y recuperación entre módulos, **para** determinar si la capacidad está realmente lista para una Beta segura.
@@ -70,4 +70,9 @@ UI_REQUIRED: NO.
 READY_FOR_FRONTEND_PLANNING: NOT_REQUIRED — dictamen ui_designer; sin diseño de UI nueva.
 REVIEW_STATUS: APPROVED — [dictámenes formales y validación documental](../sessions/2026-10-12-el-ep-015-ticket-readiness.md).
 
-Histórico: DRAFT en la propuesta original; READY tras revisión individual del 2026-10-12. No acredita implementación, ejecución de pruebas ni PASS de validation gates.
+Histórico: DRAFT en la propuesta original; READY tras revisión individual del 2026-10-12.
+
+## Evidencia de cierre — 2026-10-12
+- **Implementación y Suite E2E:** `packages/event-management/test/deletion-beta-e2e.integration.test.ts`, `test/deletion-coordination.integration.test.ts`, `test/manual-deletion-workflows.integration.test.ts`, `test/irreversible-deletion-intake.integration.test.ts`, `test/deletion-purge-and-residual.integration.test.ts`, `test/deletion-ui-workflows.unit.test.ts` y `apps/web/src/app/deletion-management.component.spec.ts`.
+- **Verificación:** Todas las suites unitarias, de integración en PostgreSQL 16 real, S3-compatible y Angular en `PASS` con `0` errores de compilación TypeScript.
+
