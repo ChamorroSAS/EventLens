@@ -20,6 +20,8 @@ La decisión no convierte a NCH SERVICIOS S.A.S. en operadora, no constituye una
 
 **Seguridad:** no insertar automáticamente cédula, residencia personal, contraseñas, teléfonos privados u otros datos de perfil dentro de Git. Debe definirse qué dirección/canal cumple la norma y qué datos serán públicos, sin ocultar información legalmente exigida. Decreto 1074/2015 art. 2.2.2.25.3.1 exige nombre, domicilio, dirección, correo y teléfono del responsable en su política.
 
+**Decisión funcional 2026-10-12 — derechos de titulares:** usar canal de correo electrónico y funciones ya existentes, recepción manual con trazabilidad mínima. La dirección pública y su funcionamiento están pendientes de verificación y autorización; no insertar datos personales en Git. [Procedimiento preliminar](../../.codex/product/sessions/2026-10-12-el-ep-017-data-subject-rights-manual-procedure.md). Q-029/DEC-031 no cambian.
+
 ## Documentos del expediente
 
 | Documento | Finalidad | Estado |
