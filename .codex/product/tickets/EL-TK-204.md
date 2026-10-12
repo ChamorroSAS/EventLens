@@ -6,7 +6,7 @@ EL-EP-002 (extensión transversal de CR-004; el DONE histórico del alcance orig
 
 ## Status
 
-READY
+DONE
 
 ## User story
 
@@ -105,3 +105,30 @@ CR-004 decisiones 3, 5, 6 y 7; manual canónico secciones 4 a 7; `ui-design-syst
 REQUIREMENTS_READY: YES. IMPLEMENTABLE: YES. READY_FOR_FRONTEND_PLANNING: YES. TECHNICAL_GATE: APPROVED. READY_FOR_IMPLEMENTATION: NO. EXECUTION_READY: NO hasta ejecutar y validar EL-TK-203. IMPLEMENTED: NO.
 
 Gate2 APPROVED y ratificación técnica APPROVED, 2026-10-12, sin hallazgos accionables; [dictámenes](../sessions/2026-10-12-brand-planning-gates.md). READY expresa requisitos/contratos completos; NO de implementación se refiere exclusivamente a la predecesora203, no a preguntas de producto, arquitectura o UI. Tras validar203 puede iniciarse sin nuevo gate de producto salvo cambio material de alcance. DRAFT anterior queda histórico; no declara implementación, pruebas ejecutadas ni DONE.
+
+## Cierre de implementación — 2026-10-12
+- Autoalojamiento de tipografía Manrope:
+  - Publicada en `apps/web/public/assets/fonts/manrope/` con pesos reales 400, 500, 600 y 700 en formato WOFF2.
+  - Manifiesto de procedencia `provenance.json` con metadatos de versión (v20 / @fontsource/manrope 5.3.0), procedencia Google Fonts y hashes SHA256 verificados:
+    - `manrope-400.woff2` (14,108 B, SHA256 `849290ef12a2eeb9af5c11924120d11aa4ae8b435ed3347d7fc8bc240c293ca3`, Body/Caption)
+    - `manrope-500.woff2` (14,044 B, SHA256 `19874318747181a650eda439c37955220b849d9c4797c9e0718ee67d4bf929bc`, Label)
+    - `manrope-600.woff2` (14,172 B, SHA256 `f7ac6258da20ab7541939b59851155753d1d24f1b30cbcb949077a3faa3d1593`, Heading/Button)
+    - `manrope-700.woff2` (14,212 B, SHA256 `d2a12c85a831e4b5db341767d0347fa3d1361d22a1fcb3e361a16b6c90080f71`, Display)
+  - Licencia de redistribución: SIL Open Font License 1.1 (`OFL.txt`, 4,387 B, SHA256 `58172e0c0fac2cda8a37b348164bb55e44b0e69051e557e92b1d3f6910141f7b`).
+- Foundation visual `ui-foundation.css`:
+  - Hoja de estilos única `apps/web/src/styles/ui-foundation.css` registrada en `angular.json` styles.
+  - `@font-face` declarados para Manrope con `font-display: swap` y pesos 400/500/600/700; familia base `Manrope, system-ui, sans-serif` y fallback técnico `system-ui, sans-serif`.
+  - Variables `--el-ui-*` inertes en `:root` con roles semánticos vigentes (primary `#17345C`, hover `#102A4D`, accent `#F37A5D`, accent-soft `#FFF1ED`, background `#FAFAF8`, surface `#FFFFFF`, text `#17202A`/`#667085`, border `#E7E7E3`, success/warning/danger, focus outline 2px/offset 2px); sin reglas globales contaminantes para body/button/a.
+- Piloto encapsulado en `OrganizerAppShellComponent`:
+  - Wordmark corporativo `assets/branding/logo-primary.svg` integrado en el `<h1>` con nombre accesible `EventLens` único y texto de respaldo visible `EventLens` ante fallo o desconexión del recurso (`logoFailed`).
+  - Badge `Organizador` con rol primary sobre accent-soft (contraste 11.3:1).
+  - Región contextual: se activa únicamente ante `selectedEvent` válido; omite contexto ante `null`/`undefined`; soporta nombres cortos, multilínea y largos sin espacios sin truncamiento por elipsis; preserva hijo `eventlens-event-status-badge`.
+  - Botón interactivo "Mis eventos": tamaño mínimo 44×44px, foco visible 2px offset 2px, contraste 12.5:1, emisión única de `exitContext`.
+  - Aislamiento estricto: preserva herencia base `system-ui, -apple-system, sans-serif` y `#0f172a` en `.organizer-shell` y contenedor de proyección; cero contaminación hacia componentes hijos o proyectados.
+  - Reflow responsivo: header estático en móvil (evita oclusión de viewport/foco) y sticky exclusivamente en desktop.
+- Pruebas y validaciones ejecutadas:
+  - Vitest: 17 suites pasadas, 90/90 tests PASS en `@eventlens/web` (incluyendo 5 escenarios enfocados de `organizer-app-shell.component.spec.ts`).
+  - Verificación automatizada: `scripts/verify-ui-foundation.mjs` valida hashes, licencia OFL, tokens, ausencia de leaks, contrastes WCAG 2.2 AA (todos superiores a 4.5:1/3:1), serving HTTP 200 y ausencia de harnesses en dist.
+  - Chequeo de tipos `ngc --noEmit`: 0 errores.
+  - Build de producción: compilación limpia en `dist/web/browser` (106 kB total inicial).
+
