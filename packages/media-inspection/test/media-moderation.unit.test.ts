@@ -318,23 +318,145 @@ describe('MediaModerationService (EL-TK-103)', () => {
     ).rejects.toMatchObject({ code: 'MEDIA_NOT_FOUND' });
   });
 
-  it('Validación de entradas: rechaza con INVALID_ARGUMENT si faltan parámetros requeridos', async () => {
-    const service = new MediaModerationService(
-      mockTransactions,
-      {} as MediaModerationRepository,
-      {} as EventStatusAuthorizer
-    );
+  describe('rejectMedia (EL-TK-104)', () => {
+    it('Escenario 1: Dado media propia en PENDING_REVIEW, el organizador la rechaza y pasa a REJECTED', async () => {
+      const mockAuthorizer: EventStatusAuthorizer = {
+        assertAuthorized: vi.fn().mockResolvedValue(undefined)
+      };
 
-    await expect(
-      service.approveMedia({ organizerRef: '', eventRef: 'e-1', mediaRef: 'm-1' })
-    ).rejects.toMatchObject({ code: 'INVALID_ARGUMENT' });
+      const mockRepo: MediaModerationRepository = {
+        lockAndGetMedia: vi.fn().mockResolvedValue(baseMedia),
+        getSafetyFact: vi.fn(),
+        hasActiveRemovalBlock: vi.fn(),
+        updateStatus: vi.fn().mockResolvedValue(2n),
+        recordAudit: vi.fn().mockResolvedValue(undefined)
+      };
 
-    await expect(
-      service.approveMedia({ organizerRef: 'o-1', eventRef: '', mediaRef: 'm-1' })
-    ).rejects.toMatchObject({ code: 'INVALID_ARGUMENT' });
+      const service = new MediaModerationService(
+        mockTransactions,
+        mockRepo,
+        mockAuthorizer
+      );
 
-    await expect(
-      service.approveMedia({ organizerRef: 'o-1', eventRef: 'e-1', mediaRef: '' })
-    ).rejects.toMatchObject({ code: 'INVALID_ARGUMENT' });
+      const result = await service.rejectMedia({
+        organizerRef: 'org-001',
+        eventRef: 'event-001',
+        mediaRef: 'media-001',
+        reason: 'Contenido borroso o inapropiado'
+      });
+
+      expect(result.status).toBe('REJECTED');
+      expect(result.previousStatus).toBe('PENDING_REVIEW');
+      expect(result.revision).toBe(2n);
+      expect(mockRepo.updateStatus).toHaveBeenCalledWith(dummyTx, 'media-001', 1n, 'REJECTED');
+      expect(mockRepo.recordAudit).toHaveBeenCalledWith(
+        dummyTx,
+        expect.objectContaining({
+          action: 'MEDIA_REJECTED',
+          mediaRef: 'media-001',
+          newStatus: 'REJECTED',
+          reason: 'Contenido borroso o inapropiado'
+        })
+      );
+    });
+
+    it('Escenario 2: Dado media ya no pendiente (ej. PUBLISHED o HIDDEN), se rechaza sin modificar estado', async () => {
+      const mockAuthorizer: EventStatusAuthorizer = {
+        assertAuthorized: vi.fn().mockResolvedValue(undefined)
+      };
+
+      const mockRepo: MediaModerationRepository = {
+        lockAndGetMedia: vi.fn().mockResolvedValue({
+          ...baseMedia,
+          status: 'PUBLISHED'
+        }),
+        getSafetyFact: vi.fn(),
+        hasActiveRemovalBlock: vi.fn(),
+        updateStatus: vi.fn(),
+        recordAudit: vi.fn()
+      };
+
+      const service = new MediaModerationService(
+        mockTransactions,
+        mockRepo,
+        mockAuthorizer
+      );
+
+      await expect(
+        service.rejectMedia({
+          organizerRef: 'org-001',
+          eventRef: 'event-001',
+          mediaRef: 'media-001'
+        })
+      ).rejects.toMatchObject({ code: 'INVALID_STATE' });
+
+      expect(mockRepo.updateStatus).not.toHaveBeenCalled();
+    });
+
+    it('Escenario 2: Idempotencia - si la media ya está REJECTED, devuelve resultado sin error', async () => {
+      const mockAuthorizer: EventStatusAuthorizer = {
+        assertAuthorized: vi.fn().mockResolvedValue(undefined)
+      };
+
+      const mockRepo: MediaModerationRepository = {
+        lockAndGetMedia: vi.fn().mockResolvedValue({
+          ...baseMedia,
+          status: 'REJECTED',
+          revision: 2n
+        }),
+        getSafetyFact: vi.fn(),
+        hasActiveRemovalBlock: vi.fn(),
+        updateStatus: vi.fn(),
+        recordAudit: vi.fn()
+      };
+
+      const service = new MediaModerationService(
+        mockTransactions,
+        mockRepo,
+        mockAuthorizer
+      );
+
+      const result = await service.rejectMedia({
+        organizerRef: 'org-001',
+        eventRef: 'event-001',
+        mediaRef: 'media-001'
+      });
+
+      expect(result.status).toBe('REJECTED');
+      expect(result.revision).toBe(2n);
+      expect(mockRepo.updateStatus).not.toHaveBeenCalled();
+    });
+
+    it('Aislamiento: actor ajeno o media de otro evento rechaza con ACCESS_DENIED', async () => {
+      const mockAuthorizer: EventStatusAuthorizer = {
+        assertAuthorized: vi.fn().mockRejectedValue({ code: 'ACCESS_DENIED' })
+      };
+
+      const service = new MediaModerationService(
+        mockTransactions,
+        {} as MediaModerationRepository,
+        mockAuthorizer
+      );
+
+      await expect(
+        service.rejectMedia({
+          organizerRef: 'org-ajeno',
+          eventRef: 'event-001',
+          mediaRef: 'media-001'
+        })
+      ).rejects.toMatchObject({ code: 'ACCESS_DENIED' });
+    });
+
+    it('Validación de entradas en rejectMedia rechaza con INVALID_ARGUMENT', async () => {
+      const service = new MediaModerationService(
+        mockTransactions,
+        {} as MediaModerationRepository,
+        {} as EventStatusAuthorizer
+      );
+
+      await expect(
+        service.rejectMedia({ organizerRef: '', eventRef: 'e-1', mediaRef: 'm-1' })
+      ).rejects.toMatchObject({ code: 'INVALID_ARGUMENT' });
+    });
   });
 });
