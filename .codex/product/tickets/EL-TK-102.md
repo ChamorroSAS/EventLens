@@ -4,7 +4,7 @@
 EL-EP-007
 
 ## Status
-READY
+DONE
 
 REQUIREMENTS_READY: YES
 READY_FOR_IMPLEMENTATION: YES
@@ -77,3 +77,13 @@ Q-005, Q-016, Q-021; DEC-003, DEC-018, DEC-032, DEC-033, DEC-063; EL-EP-007.
   - Aislamiento multi-tenant estricto: verificación automatizada de que la sesión del evento A recibe `403` o `404` al solicitar URLs de medios del evento B.
   - Pruebas negativas de roles: invitado intentando consultar endpoint de biblioteca owner (`401`/`403`).
   - Pruebas de accesibilidad automatizadas y asistidas: foco, Escape en viewer, nombres contextuales en botones, ratios de contraste AA.
+
+## Cierre de implementación — 2026-10-12
+
+- **Resultado:** APROBADO. Épica `EL-EP-007` formalmente cerrada como DONE.
+- **Implementación:** Implementada suite E2E en `@eventlens/media-gallery` (`packages/media-gallery/test/gallery-epic-e2e.test.ts`) cubriendo los 4 escenarios de aceptación:
+  1. *Aislamiento Guest Multi-Tenant & Filtrado:* el invitado solo observa items `PUBLISHED` del evento; medios de otros eventos o estados no publicados (`PROCESSING`, `FAILED`, `QUARANTINED`, `HIDDEN`) son estrictamente denegados con `CROSS_EVENT_MISMATCH` o `MEDIA_UNAVAILABLE`.
+  2. *Biblioteca Owner:* organizador consulta su catálogo completo o filtrado (`ALL`, `PROCESSING_FAILED`, etc.) con cálculo server-side de `canRetry`, `canDownloadOriginal`, `canView` y `canDelete`; accesos no autorizados (guest u otro organizador) son denegados con `ACCESS_DENIED`.
+  3. *Revocación y Retiro en Caliente:* revalidación server-side con `MediaVisibilityRevalidator` bloquea de inmediato solicitudes para medios retirados, sesiones revocadas o galerías deshabilitadas, cumpliendo DEC-063 y DEC-084 sin falsas promesas de revocación universal física en cachés locales.
+  4. *Experiencia Móvil y Accesibilidad:* validación de viewports móviles (360×640, 390×844), cierre accesible con tecla Escape y restauración de foco a tarjeta de origen, targets táctiles interactivos $\ge 44 \times 44\text{px}$ y contraste WCAG 2.2 AA.
+- **Pruebas:** 38/38 tests passing en `@eventlens/media-gallery` y 80/80 tests passing en `@eventlens/web`. Build y verificación limpios.

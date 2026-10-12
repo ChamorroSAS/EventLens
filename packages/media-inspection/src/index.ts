@@ -16,5 +16,6 @@ export * from './attempt-cleanup.js';
 export * from './pipeline-validation.js';
 export * from './organizer-library.js';
 export * from './media-moderation.js';
+export * from './media-visibility.js';
 
 

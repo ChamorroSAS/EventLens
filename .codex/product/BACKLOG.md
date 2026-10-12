@@ -18,7 +18,7 @@
 | EL-EP-004 | Entrar por QR y participar con consentimiento sin cuenta | MOD-003 | DONE | P0 | EL-EP-003 | [EL-EP-004](epics/EL-EP-004.md) |
 | EL-EP-005 | Cargar recuerdos con tolerancia a fallos móviles | MOD-003 | READY | P0 | EL-EP-004, EL-EP-011 | [EL-EP-005](epics/EL-EP-005.md) |
 | EL-EP-006 | Procesar multimedia preservando originales y aislando riesgos | MOD-003 | READY | P0 | EL-EP-005 | [EL-EP-006](epics/EL-EP-006.md) |
-| EL-EP-007 | Visualizar recuerdos en una galería privada móvil | MOD-004 | READY | P0 | EL-EP-004, EL-EP-006 | [EL-EP-007](epics/EL-EP-007.md) |
+| EL-EP-007 | Visualizar recuerdos en una galería privada móvil | MOD-004 | DONE | P0 | EL-EP-004, EL-EP-006 | [EL-EP-007](epics/EL-EP-007.md) |
 | EL-EP-008 | Moderar, ocultar y recuperar contenido del evento | MOD-004 | READY | P0 | EL-EP-006, EL-EP-007 | [EL-EP-008](epics/EL-EP-008.md) |
 | EL-EP-009 | Atender denuncias y solicitudes de retiro sin cuenta | MOD-004 | READY | P0 | EL-EP-004, EL-EP-007, EL-EP-014 | [EL-EP-009](epics/EL-EP-009.md) |
 | EL-EP-010 | Recuperar originales individualmente y por exportación | MOD-005 | READY | P0 | EL-EP-006, EL-EP-008, EL-EP-013 | [EL-EP-010](epics/EL-EP-010.md) |
@@ -132,11 +132,11 @@
 | EL-TK-099 | Integrar la galería y viewer privados en la experiencia guest | EL-EP-007 | DONE | P0 | EL-TK-096, EL-TK-097, EL-TK-101 | [EL-TK-099](tickets/EL-TK-099.md) |
 | EL-TK-100 | Integrar la biblioteca de media en la interfaz del organizador | EL-EP-007 | DONE | P0 | EL-TK-098, EL-TK-053, EL-TK-054 | [EL-TK-100](tickets/EL-TK-100.md) |
 | EL-TK-101 | Revalidar visibilidad cuando cambia el acceso o la media | EL-EP-007 | DONE | P0 | EL-TK-096, EL-TK-097, EL-TK-072, EL-TK-074 | [EL-TK-101](tickets/EL-TK-101.md) |
-| EL-TK-102 | Validar privacidad y experiencia móvil de galería y biblioteca | EL-EP-007 | READY | P0 | EL-TK-096..101 | [EL-TK-102](tickets/EL-TK-102.md) |
+| EL-TK-102 | Validar privacidad y experiencia móvil de galería y biblioteca | EL-EP-007 | DONE | P0 | EL-TK-096..101 | [EL-TK-102](tickets/EL-TK-102.md) |
 | EL-TK-103 | Aprobar una media pendiente de revisión | EL-EP-008 | DONE | P0 | 098,037 | [EL-TK-103](tickets/EL-TK-103.md) |
 | EL-TK-104 | Rechazar una media pendiente de revisión | EL-EP-008 | DONE | P0 | 098 | [EL-TK-104](tickets/EL-TK-104.md) |
-| EL-TK-105 | Ocultar una media publicada sin eliminarla | EL-EP-008 | READY | P0 | 098,101 | [EL-TK-105](tickets/EL-TK-105.md) |
-| EL-TK-106 | Volver a publicar una media oculta cuando sigue autorizada | EL-EP-008 | READY | P0 | 105,101 | [EL-TK-106](tickets/EL-TK-106.md) |
+| EL-TK-105 | Ocultar una media publicada sin eliminarla | EL-EP-008 | DONE | P0 | 098,101 | [EL-TK-105](tickets/EL-TK-105.md) |
+| EL-TK-106 | Volver a publicar una media oculta cuando sigue autorizada | EL-EP-008 | DONE | P0 | 105,101 | [EL-TK-106](tickets/EL-TK-106.md) |
 | EL-TK-107 | Mover una media elegible a papelera conservando su estado previo | EL-EP-008 | DONE | P0 | 098,053; contrato EL-EP-006 | [EL-TK-107](tickets/EL-TK-107.md) |
 | EL-TK-108 | Restaurar una media de papelera respetando bloqueos vigentes | EL-EP-008 | DONE | P0 | 107 | [EL-TK-108](tickets/EL-TK-108.md) |
 | EL-TK-109 | Entregar a purga una media cuya papelera venció | EL-EP-008 | READY | P0 | 107,055; contrato EL-EP-015 | [EL-TK-109](tickets/EL-TK-109.md) |
