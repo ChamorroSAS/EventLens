@@ -89,7 +89,20 @@ export {
   type RequestPasswordResetCommand,
   type RequestPasswordResetResult,
   type CompletePasswordResetCommand,
-  type CompletePasswordResetResult
+  type CompletePasswordResetResult,
+  type ReauthenticationOperation,
+  type ReauthenticationResourceType,
+  type ReauthenticationChallengeStatus,
+  type ReauthenticationEvidenceStatus,
+  type ReauthenticationErrorCode,
+  ReauthenticationError,
+  type BeginReauthenticationCommand,
+  type BeginReauthenticationResult,
+  type VerifyReauthenticationCommand,
+  type VerifyReauthenticationResult,
+  type ConsumeReauthenticationEvidenceCommand,
+  type ConsumeReauthenticationEvidenceResult,
+  type AccountReauthenticationPort
 } from './contracts.js';
 
 export { AdminProvisioningService } from './provisioning.js';
@@ -127,6 +140,11 @@ export {
   PasswordResetService,
   type PasswordResetServiceOptions
 } from './password-reset.js';
+
+export {
+  AccountReauthenticationService,
+  type ReauthenticationServiceOptions
+} from './reauthentication.js';
 
 export {
   PasswordVerifier,

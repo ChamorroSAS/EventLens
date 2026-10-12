@@ -177,3 +177,48 @@ model PasswordResetIntent {
   @@index([emailNormalized])
   @@map("password_reset_intent")
 }
+
+model AccountReauthenticationChallenge {
+  id               String    @id @db.Uuid
+  accountId        String    @map("account_id") @db.Uuid
+  sessionId        String    @map("session_id") @db.Uuid
+  operation        String
+  resourceType     String    @default("ACCOUNT") @map("resource_type")
+  resourceId       String    @map("resource_id") @db.Uuid
+  expectedRevision BigInt    @map("expected_revision")
+  intentionHash    String    @map("intention_hash")
+  requestId        String?   @map("request_id") @db.Uuid
+  status           String    @default("PENDING")
+  failedAttempts   Int       @default(0) @map("failed_attempts")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  expiresAt        DateTime  @map("expires_at") @db.Timestamptz
+  verifiedAt       DateTime? @map("verified_at") @db.Timestamptz
+
+  @@index([accountId, status])
+  @@index([sessionId])
+  @@map("account_reauthentication_challenge")
+}
+
+model AccountReauthenticationEvidence {
+  id                 String    @id @db.Uuid
+  challengeId        String    @map("challenge_id") @db.Uuid
+  accountId          String    @map("account_id") @db.Uuid
+  sessionId          String    @map("session_id") @db.Uuid
+  evidenceDigest     String    @unique @map("evidence_digest")
+  operation          String
+  resourceType       String    @default("ACCOUNT") @map("resource_type")
+  resourceId         String    @map("resource_id") @db.Uuid
+  expectedRevision   BigInt    @map("expected_revision")
+  intentionHash      String    @map("intention_hash")
+  requestId          String?   @map("request_id") @db.Uuid
+  status             String    @default("ACTIVE")
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  expiresAt          DateTime  @map("expires_at") @db.Timestamptz
+  consumedAt         DateTime? @map("consumed_at") @db.Timestamptz
+  consumptionReceipt String?   @map("consumption_receipt")
+
+  @@index([evidenceDigest])
+  @@index([accountId, status])
+  @@map("account_reauthentication_evidence")
+}
+

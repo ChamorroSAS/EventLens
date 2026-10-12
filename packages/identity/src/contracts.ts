@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import type { SqlTransaction } from '@eventlens/database';
 
 export type ProvisioningErrorCode =
   | 'INVALID_ARGUMENT'
@@ -430,7 +431,10 @@ export interface AuditEventRecord {
     | 'ORGANIZER_SESSION_VALIDATE'
     | 'ORGANIZER_SESSION_LIST_VIEWED'
     | 'ORGANIZER_SESSION_REVOKED'
-    | 'ORGANIZER_OTHER_SESSIONS_REVOKED';
+    | 'ORGANIZER_OTHER_SESSIONS_REVOKED'
+    | 'ACCOUNT_REAUTHENTICATION_CHALLENGE_BEGUN'
+    | 'ACCOUNT_REAUTHENTICATION_VERIFIED'
+    | 'ACCOUNT_REAUTHENTICATION_EVIDENCE_CONSUMED';
   readonly actorId: string;
   readonly targetIdentifier: string;
   readonly targetPrincipalId?: string | null;
@@ -779,3 +783,92 @@ export interface CompletePasswordResetResult {
   readonly outcome: 'PASSWORD_RESET_COMPLETED';
   readonly revokedSessionsCount: number;
 }
+
+// ---------------------------------------------------------------------------
+// Account Reauthentication (EL-TK-186 / MOD-001 / DEC-107 / ARCH-017)
+// ---------------------------------------------------------------------------
+
+export type ReauthenticationOperation = 'REQUEST_ACCOUNT_DELETION' | 'CANCEL_ACCOUNT_DELETION';
+export type ReauthenticationResourceType = 'ACCOUNT';
+export type ReauthenticationChallengeStatus = 'PENDING' | 'VERIFIED' | 'EXPIRED' | 'CANCELLED';
+export type ReauthenticationEvidenceStatus = 'ACTIVE' | 'CONSUMED' | 'EXPIRED';
+
+export type ReauthenticationErrorCode =
+  | 'INVALID_ARGUMENT'
+  | 'UNAUTHENTICATED'
+  | 'FORBIDDEN'
+  | 'CHALLENGE_NOT_FOUND'
+  | 'CHALLENGE_EXPIRED'
+  | 'CHALLENGE_ALREADY_VERIFIED'
+  | 'EVIDENCE_NOT_FOUND'
+  | 'EVIDENCE_EXPIRED'
+  | 'EVIDENCE_ALREADY_CONSUMED'
+  | 'BINDING_MISMATCH'
+  | 'CONCURRENCY_CONFLICT'
+  | 'RATE_LIMITED'
+  | 'RESTRICTED_CONTEXT_VIOLATION'
+  | 'RECOVERY_AUTHORITY_UNAVAILABLE';
+
+export class ReauthenticationError extends Error {
+  constructor(public readonly code: ReauthenticationErrorCode, message?: string) {
+    super(message ?? code);
+    this.name = 'ReauthenticationError';
+  }
+}
+
+export interface BeginReauthenticationCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly operation: ReauthenticationOperation;
+  readonly resourceType: ReauthenticationResourceType;
+  readonly resourceId: string;
+  readonly expectedRevision: bigint;
+  readonly intentionHash: string;
+  readonly requestId?: string;
+}
+
+export interface BeginReauthenticationResult {
+  readonly challengeId: string;
+  readonly expiresAt: Date;
+  readonly operation: ReauthenticationOperation;
+  readonly resourceId: string;
+}
+
+export interface VerifyReauthenticationCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly challengeId: string;
+  readonly credential: string; // raw password
+}
+
+export interface VerifyReauthenticationResult {
+  readonly evidence: string; // raw opaque evidence token
+  readonly expiresAt: Date;
+}
+
+export interface ConsumeReauthenticationEvidenceCommand {
+  readonly evidence: string; // raw opaque evidence token
+  readonly accountId: string;
+  readonly sessionId: string;
+  readonly operation: ReauthenticationOperation;
+  readonly resourceType: ReauthenticationResourceType;
+  readonly resourceId: string;
+  readonly expectedRevision: bigint;
+  readonly intentionHash: string;
+  readonly requestId?: string;
+  readonly idempotencyKey?: string;
+}
+
+export interface ConsumeReauthenticationEvidenceResult {
+  readonly outcome: 'CONSUMED' | 'REPLAY_ACKNOWLEDGED';
+  readonly consumedAt: Date;
+  readonly receiptId: string;
+}
+
+export interface AccountReauthenticationPort {
+  beginChallenge(command: BeginReauthenticationCommand): Promise<BeginReauthenticationResult>;
+  verifyChallenge(command: VerifyReauthenticationCommand): Promise<VerifyReauthenticationResult>;
+  assertAndConsumeEvidence(
+    tx: SqlTransaction,
+    command: ConsumeReauthenticationEvidenceCommand
+  ): Promise<ConsumeReauthenticationEvidenceResult>;
+}
+
