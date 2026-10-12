@@ -74,7 +74,7 @@ Estas rutas son **propuestas de navegación** sujetas a auditoría del Router y 
 
 ## Business rules
 - **CONFIRMED desde producto vigente:** BETA por invitación, cuenta de organizador con correo verificado, acceso guest sin cuenta mediante enlace/QR, contenido privado y autorización por servidor. EL-TK-008 acepta solicitud Beta sin activación ni revelación de cuenta existente.
-- **RECOMMENDED:** Home `/` accesible con o sin sesión; no redirigir automáticamente al organizador autenticado, sino mostrar `Mis eventos` y `Mi cuenta` (decisión de UX pendiente de aprobación).
+- **CONFIRMED — aprobación explícita 2026-10-12:** Home `/` accesible con o sin sesión. No hay redirección automática del organizador autenticado; se muestran enlaces `Mis eventos` y `Mi cuenta` según permisos y tipo de sesión. La navegación no sustituye autorización server-side.
 - Las acciones de navegación nunca reemplazan guards/server policies, no infieren `canView` por estado visual, no registran secretos ni tokens en analítica; deep links autorizan según dominio propietario.
 - **RECOMMENDED:** copiar solo beneficios realmente disponibles en la fase publicada; no afirmar aprobación legal, ausencia absoluta de fallos ni tiempos/planes comerciales no aceptados.
 
@@ -124,7 +124,7 @@ WCAG 2.2 AA, mobile-first y últimas versiones de navegadores soportados; españ
 Scope creep de página marketing; cambio inadvertido de políticas de autenticación; hacer parecer completado un backend sin APIs conectadas al runtime; loops de redirect; home indexable que filtre rutas privadas; incumplimiento jurídico al publicar enlaces/textos no revisados; duplicación de shell/estilos; aparente capacidad habilitada por cliente.
 
 ## Open questions — decisiones locales pendientes (no alterar DEC existentes)
-1. **PRODUCT — RECOMMENDED:** aprobar Home informativo como entrada `/` para público + usuarios autenticados; estos últimos ven atajos sin redirección automática. Alternativa: redirección a Mis eventos tras login, manteniendo `/` visitable.
+1. **PRODUCT — CONFIRMED 2026-10-12:** Home informativo en `/` para visitantes y autenticados, sin redirección automática; accesos `Mis eventos` y `Mi cuenta` para organizador autorizado. Decisión cerrada por el usuario, sin modificar DEC/TC/ARCH.
 2. **PRODUCT — RECOMMENDED:** navegación mínima de Home con Inicio / Cómo funciona / Características / Privacidad, CTA Iniciar sesión + Solicitar acceso Beta; con sesión, Mis eventos / Mi cuenta / Cerrar sesión. El soporte/contacto y FAQs solo con contenido oficial.
 3. **PRODUCT — PENDING:** aprobación editorial de hero, textos, claims y FAQ; enlaces legales solo al existir documentos revisados.
 4. **TECH/UX — PENDING:** rutas finales existentes, ownership de página de `Mi cuenta`, composición Angular Router y variante pública AppHeader; confirmar sin reimplementación.
@@ -141,7 +141,8 @@ Secciones: Header/hero, Cómo funciona, Capacidades, Privacidad, Beta/CTA, FAQ y
 - [x] Alcance y out-of-scope delimitados frente a épicas existentes.
 - [x] Contratos de acceso privado y Beta vigente documentados.
 - [x] Escenarios y criterios de aceptación comprobables propuestos.
-- [ ] Menú, copy y comportamiento de Home aprobados por product_owner.
+- [x] Comportamiento de `/` con y sin sesión aprobado por el usuario (sin redirección automática).
+- [ ] Menú y copy aprobados por product_owner.
 - [ ] Rutas y ownership auditados por architect/frontend.
 - [ ] Handoff `ui_designer` aprobado.
 - [ ] `requirements_reviewer` sin BLOCKER.
@@ -151,4 +152,5 @@ Secciones: Header/hero, Cómo funciona, Capacidades, Privacidad, Beta/CTA, FAQ y
 P0 **propuesta** para entrada/roteo funcional de la Beta (sin navegación no existe app usable desde `/`); contenido institucional/FAQ y SEO fino P1 y pueden entregarse sin desplazar seguridad, galería, exportaciones o purga. La priorización no cambia el roadmap aprobado sin evaluación.
 
 ## Change history
+- 2026-10-12: confirmado comportamiento Home `/` accesible con y sin sesión, con atajos al organizador y sin redirección automática; copy, menú y rutas siguen pendientes de aprobación/auditoría.
 - 2026-10-12: propuesta de épica nueva a solicitud del proyecto; revisión documental de root actual, EL-EP-001/002/004, manual de marca CR-004 y EL-TK-203/204. Sin tickets, código, contratos nuevos ni aprobación de gates.
