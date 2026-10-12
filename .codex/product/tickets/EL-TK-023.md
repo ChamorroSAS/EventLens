@@ -6,9 +6,13 @@ EL-EP-002
 
 ## Status
 
-READY
+DONE
 
-**HISTÓRICO CONFIRMED — 2026-10-07:** requirements_reviewer declaró este ticket implementable, sin hallazgos pendientes. Se conservan sus dependencias de ejecución. Véase [dictamen](../sessions/2026-10-07-el-ep-002-ticket-review.md).
+**IMPLEMENTED — 2026-10-11:** Implementación completada en `packages/event-management`.
+- Migración `202610110031_event_schedule` (`starts_at_local`, `scheduled_at`, `utc_offset_minutes`).
+- Motor de resolución de zonas horarias y DST según DEC-070 (`timezone.ts`): rechazo `DST_GAP_TIME` ante hora inexistente, rechazo `AMBIGUOUS_LOCAL_TIME` / validación de `utcOffsetMinutes` ante hora repetida de otoño, cálculo canónico de instante UTC.
+- Método `setSchedule` en `EventDraftService` con transacción PostgreSQL, lock pesimista row-level (`FOR UPDATE`), aislamiento de propietario (403), verificación de estado DRAFT y registro de auditoría (`EVENT_SCHEDULE_SET` y `EVENT_SCHEDULE_REJECTED`).
+- 18 pruebas unitarias e integración en verde contra PostgreSQL 16 real.
 
 ## User story
 

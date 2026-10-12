@@ -95,7 +95,7 @@ Contratos EL-EP-013/014 mediante interfaces acordadas; sin dependencia dura de s
 | EL-TK-020 (DONE) | EL-TK-013 | EL-TK-021, EL-TK-022, EL-TK-023, EL-TK-024, EL-TK-025, EL-TK-027, EL-TK-028, EL-TK-029, EL-TK-030, EL-TK-031, EL-TK-047, EL-TK-049, EL-TK-051 |
 | EL-TK-021 | EL-TK-020 | — |
 | EL-TK-022 | EL-TK-020 | — |
-| EL-TK-023 | EL-TK-020 | EL-TK-024, EL-TK-025 |
+| EL-TK-023 (DONE) | EL-TK-020 | EL-TK-024, EL-TK-025 |
 | EL-TK-024 | EL-TK-020, EL-TK-023 | — |
 | EL-TK-025 | EL-TK-020, EL-TK-023, EL-TK-044 | — |
 | EL-TK-027 | EL-TK-020 | — |
@@ -120,12 +120,12 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
-| EL-TK-062 | EL-TK-023; contrato vigencia EL-EP-011 | 063,064,067,069,070 |
-| EL-TK-063 | 020,023,062 | 064,071 |
-| EL-TK-064 | 063,062,055 | 065,067,071,072 |
-| EL-TK-065 | 064 | 066,067,071,072 |
-| EL-TK-066 | 065,062 | 071,072 |
-| EL-TK-067 | 062,064,065,055; contrato EL-EP-015 | 069,071,072 |
+| EL-TK-062 (DONE) | EL-TK-023; contrato vigencia EL-EP-011 | 063,064,067,069,070 |
+| EL-TK-063 (DONE) | 020,023,062 | 064,071 |
+| EL-TK-064 (DONE) | 063,062,055 | 065,067,071,072 |
+| EL-TK-065 (DONE) | 064 | 066,067,071,072 |
+| EL-TK-066 (DONE) | 065,062 | 071,072 |
+| EL-TK-067 (DONE) | 062,064,065,055; contrato EL-EP-015 | 069,071,072 |
 | EL-TK-068 | 044 | 069,071,072 |
 | EL-TK-069 | 062,067,068,044 | 071,072 |
 | EL-TK-070 | 062; contrato ampliaciones EL-EP-011 | 071,072 |
@@ -294,18 +294,18 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
-| EL-TK-166 | ninguna predecesora funcional dura | 167,173,175,176,184 |
-| EL-TK-167 | 166 | 175,176; consumidor EL-EP-012 |
-| EL-TK-168 | ninguna predecesora funcional dura | 169,170,176,184; telemetría 177 |
-| EL-TK-169 | 168; contrato JobQueue | 173,176 |
-| EL-TK-170 | 168, 184 | 173,174,176 |
-| EL-TK-171 | baseline EL-TD-008; DEC-062 | 172,174,176 |
-| EL-TK-172 | 171; contrato EL-EP-015 | 174,176 |
-| EL-TK-173 | 166,169,170 | 176 |
-| EL-TK-174 | 170,171,172 | 176; evidencia Beta |
-| EL-TK-175 | 167; contrato EL-EP-012 | 176 |
-| EL-TK-176 | 166..175, 184 | EL-EP-016; validación EL-EP-014 |
-| EL-TK-184 | 166, 168 | 170, 176 |
+| EL-TK-166 (DONE) | ninguna predecesora funcional dura | 167,173,175,176,184 |
+| EL-TK-167 (DONE) | 166 | 175,176; consumidor EL-EP-012 |
+| EL-TK-168 (DONE) | ninguna predecesora funcional dura | 169,170,176,184; telemetría 177 |
+| EL-TK-169 (DONE) | 168; contrato JobQueue | 173,176 |
+| EL-TK-170 (DONE) | 168, 184 | 173,174,176 |
+| EL-TK-171 (DONE) | baseline EL-TD-008; DEC-062 | 172,174,176 |
+| EL-TK-172 (DONE) | 171; contrato EL-EP-015 | 174,176 |
+| EL-TK-173 (DONE) | 166,169,170 | 176 |
+| EL-TK-174 (DONE) | 170,171,172 | 176; evidencia Beta |
+| EL-TK-175 (DONE) | 167; contrato EL-EP-012 | 176 |
+| EL-TK-176 (DONE) | 166..175, 184 | EL-EP-016; validación EL-EP-014 |
+| EL-TK-184 (DONE) | 166, 168 | 170, 176 |
 
 12 activos READY de requisitos tras dictamen de requirements_reviewer y ui_designer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de auditoría mínima y sanitizada, consulta paginada con filtros, telemetría y health neutrales de proveedor, detección de colas/jobs degradados, alertas de infraestructura y disponibilidad agregada, backups PostgreSQL diarios con PITR (RPO≤1h/RTO≤4h), verificación de restore periódico con preservación de tombstones, redundancia/recuperación de ObjectStorage (DEC-062/063), incidentes operacionales, retención de auditoría (12m) y rotación de logs (30d) en EL-TK-184, visor contextual de auditoría en consola administrativa (AuditLogViewer/Detail, UI_REQUIRED: YES, READY_FOR_FRONTEND_PLANNING: YES) y validación integrada E2E. Superficies UI reutilizadas del catálogo canónico (ui-mvp-epic-review.md#el-ep-014), sin dashboard operacional nuevo ni nuevos componentes. Proveedores de observabilidad y storage definitivo permanecen DEFERRED bajo gate operacional DR-001.
 
@@ -317,13 +317,13 @@ READY de requisitos, pero READY_FOR_TICKET_WRITING: PARTIAL y READY_FOR_IMPLEMEN
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
-| EL-TK-177 | contratos de dominios propietarios; telemetría EL-TK-168 | 178..183 |
-| EL-TK-178 | 177; contratos EL-EP-005/006 | 182,183 |
-| EL-TK-179 | 177; contratos EL-EP-010/012, EL-TK-173 | 182,183 |
-| EL-TK-180 | 177; contrato EL-EP-004 | 182,183 |
-| EL-TK-181 | 177 | 182,183 |
-| EL-TK-182 | 178..181; evidencia operacional EL-EP-014 (EL-TK-174, EL-TK-176) | 183 |
-| EL-TK-183 | 177..182 | decisión operativa posterior a Beta |
+| EL-TK-177 (DONE) | contratos de dominios propietarios; telemetría EL-TK-168 | 178..183 |
+| EL-TK-178 (DONE) | 177; contratos EL-EP-005/006 | 182,183 |
+| EL-TK-179 (DONE) | 177; contratos EL-EP-010/012, EL-TK-173 | 182,183 |
+| EL-TK-180 (DONE) | 177; contrato EL-EP-004 | 182,183 |
+| EL-TK-181 (DONE) | 177 | 182,183 |
+| EL-TK-182 (DONE) | 178..181; evidencia operacional EL-EP-014 (EL-TK-174, EL-TK-176) | 183 |
+| EL-TK-183 (DONE) | 177..182 | decisión operativa posterior a Beta |
 
 7 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES (UI_REQUIRED: NO, UX_READINESS: NOT_REQUIRED conforme a ui-mvp-epic-review.md#el-ep-016) para el contrato de métricas agregadas y minimizadas de la Beta desacoplado a telemetría EL-TK-168, confiabilidad de cargas y procesamiento multimedia (cargas válidas ≥95%, fotos ≥98%, video ≥95%, latencias p95), soporte funcional clasificado (`category: FUNCTIONAL`) y descargas de recuerdos, participación indicativa, ventana 8..12 semanas / volumen mínimo con discriminador determinista de cohorte (`cohort_inclusion`), congelación de snapshot inmutable y clasificación con prevalencia absoluta de incidentes críticos en EL-TK-182, e informe final reproducible en EL-TK-183 basado en dicho snapshot inmutable. Inicio Beta y responsable formal permanecen datos operativos de ejecución, no blockers funcionales.
 

@@ -26,10 +26,10 @@ async function reserve(ms=10000){return queue.reserve(['media'],'worker',1,ms);}
 async function sql(text:string,...params:unknown[]){return txs.run(tx=>tx.execute(text,...params));}
 async function count(table:string){const r=await txs.run(tx=>tx.query<{n:bigint}>(`SELECT count(*)::bigint n FROM ${table}`));return Number(r[0].n);}
 const effect=(tx:SqlTransaction)=>tx.execute(`INSERT INTO test_effect(kind) VALUES('domain'),('audit')`).then(()=>{});
-beforeAll(async()=>{await sql(`CREATE TABLE test_resource(ref text PRIMARY KEY,generation bigint NOT NULL,blocked boolean NOT NULL DEFAULT false)`);await sql(`CREATE TABLE test_effect(id bigserial PRIMARY KEY,kind text NOT NULL)`);});
+beforeAll(async()=>{await sql(`CREATE TABLE IF NOT EXISTS test_resource(ref text PRIMARY KEY,generation bigint NOT NULL,blocked boolean NOT NULL DEFAULT false)`);await sql(`CREATE TABLE IF NOT EXISTS test_effect(id bigserial PRIMARY KEY,kind text NOT NULL)`);});
 afterAll(async()=>{await client.$disconnect();});
 beforeEach(async()=>{
- await sql('TRUNCATE job_receipt,job_attempt,job_queue,test_resource,test_effect RESTART IDENTITY');
+ await sql('TRUNCATE job_receipt,job_attempt,job_queue,test_resource,test_effect RESTART IDENTITY CASCADE');
  await sql(`INSERT INTO test_resource(ref,generation) VALUES('r',1),('other',1)`);
  authority.epoch='external-epoch-1';authority.revision=0;authority.blocked=false;authority.available=true;
  slots=new LocalSlots(4);queue=new JobQueuePostgres(txs,authority,policy,slots,{candidateScanLimit:32});

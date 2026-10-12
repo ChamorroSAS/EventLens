@@ -4,9 +4,17 @@
 EL-EP-014
 
 ## Status
-READY
+DONE
 
-**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Verificación de restore periódico en entorno aislado, objetivos RPO ≤ 1h / RTO ≤ 4h y preservación de eliminaciones/tombstones sin resucitar contenido (DEC-045, DEC-062, DEC-092). REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES (UI_REQUIRED: NO).
+**IMPLEMENTED — 2026-10-11:** Implementado `PostgresRecoveryService` y `RealPostgresRestoreTarget` en `@eventlens/observability` conforme a los criterios de aceptación y DEC-045, DEC-062, DEC-092:
+- Definición y ejecución de simulacros de restauración periódicos y PITR en entorno aislado (`executeRecoveryExercise`), restaurando snapshots validados por SHA-256 y registrando evidencia estructurada (Escenario 1).
+- Medición objetiva de RPO observado (objetivo RPO ≤ 1h / 60m) y RTO observado (objetivo RTO ≤ 4h / 240m) conforme a DEC-062.
+- Evaluación determinista del gate de recuperación (`overallGateStatus`): si RPO o RTO exceden los objetivos, el resultado queda explícitamente en `FAIL` y `FAIL_OBJECTIVE_MISSED` sin ocultamiento (Escenario 2).
+- Reaplicación estricta de restricciones de eliminación y tombstones (`applyTombstoneRestrictions`), asegurando que contenidos purgados tras `purge_started_at` nunca resuciten en estado activo, y aislando retenciones especiales bajo `hasLegalHold` (DEC-045, DEC-092, Escenario 3).
+- Verificación de no-corrupción y validación de sumas de comprobación SHA-256 previo a cualquier restauración.
+- Control de acceso que restringe la ejecución de simulacros a actores autorizados (`SYSTEM`, `ADMIN`).
+- Emisión de telemetría operativa (`infrastructure.recovery.rpo_observed_minutes`, `infrastructure.recovery.rto_observed_minutes`, `infrastructure.recovery.gate_status`, `infrastructure.recovery.resurrections_prevented`).
+- Pruebas completas: 10 pruebas (7 unitarias y 3 de integración con PostgreSQL 16 real) con 100% PASS.
 
 ## User story
 **Como** equipo operativo, **quiero** ejecutar restauraciones periódicas controladas, **para** demostrar que backup y PITR realmente recuperan el sistema dentro de objetivos.

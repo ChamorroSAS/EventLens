@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** invitado, **quiero** validar el PIN cuando el evento lo exige, **para** obtener una sesión anónima limitada al evento sin registrarme.

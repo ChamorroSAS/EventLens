@@ -4,7 +4,7 @@
 EL-EP-004
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** invitado, **quiero** abrir un evento mediante su enlace o QR vigente, **para** acceder sin crear una cuenta cuando el lifecycle lo permite.

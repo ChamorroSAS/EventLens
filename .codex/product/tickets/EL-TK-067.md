@@ -4,7 +4,10 @@
 EL-EP-003
 
 ## Status
-READY
+DONE
+
+## Resolution
+Implementado el avance temporal automático del lifecycle por vencimiento de vigencia (`ACTIVE/CLOSED -> GRACE_PERIOD`) y fin de gracia (`GRACE_PERIOD -> PENDING_DELETION`), fijando `purge_started_at` conforme a DEC-092 y el contrato de EL-EP-015. Implementada la preservación de la barrera de aislamiento para eventos en `SUSPENDED`, idempotencia determinista sin regresión ni resurrección bajo `FOR UPDATE`, migración de esquema `202610110035_event_purge_started_at` y auditoría `EVENT_TEMPORAL_ADVANCE`. Validado con 67 pruebas (100% PASS) en laboratorio PostgreSQL 16 aislado y typecheck global.
 
 ## User story
 **Como** sistema, **quiero** avanzar el lifecycle al vencer la vigencia y la gracia, **para** aplicar restricciones temporales aunque no haya tráfico.

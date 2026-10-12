@@ -4,9 +4,13 @@
 EL-EP-014
 
 ## Status
-READY
+DONE
 
-**CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el ticket como READY. Cubre la política y ejecución periódica de depuración de AuditEvent (12 meses) y rotación/retención de logs técnicos operativos (30 días) configurables conforme a DEC-059 y Q-014/Q-021. Sin mezclar con purga ni conservación de multimedia. UI_REQUIRED: NO. REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES.
+**IMPLEMENTED — 2026-10-11:** Implementado `AuditRetentionService` y `TechnicalLogRotationService` en `@eventlens/observability` conforme a los criterios de aceptación y DEC-059:
+- Depuración acotada e idempotente en PostgreSQL para registros `audit_event` con antigüedad superior a 12 meses (soporta dry-run y lotes acotados sin bloquear registros activos ni mutar datos de dominio).
+- Rotación periódica de logs técnicos activos cuando superan el tamaño máximo configurable (10 MB) y purga de logs rotados con antigüedad superior a 30 días.
+- Emisión de señales operativas `PurgeExecutionSignal` (con estados `SUCCESS` / `FAILURE`, reporte de error sanitizado sin credenciales/tokens, y emisión de métricas operativas y señales de salud sanitizadas para consumo en el alertamiento de EL-TK-170).
+- Pruebas unitarias e integración en PostgreSQL 16 y disco verificadas: `retention-service.unit.test.ts` (5/5) y `retention-service.integration.test.ts` (2/2). Suite completa de `@eventlens/observability` en 49/49 pruebas verdes.
 
 ## User story
 **Como** equipo operativo y de privacidad, **quiero** que los logs técnicos se roten y retengan a 30 días y los eventos de auditoría se depuren a 12 meses, **para** garantizar la minimización de datos y el uso eficiente de almacenamiento sin afectar registros activos ni multimedia.

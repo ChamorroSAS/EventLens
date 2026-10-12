@@ -4,7 +4,19 @@
 EL-EP-003
 
 ## Status
-READY
+DONE
+
+**IMPLEMENTED — 2026-10-11:** Implementación completada en `packages/event-management`.
+- Migración `202610110033_event_activation`: columna `activated_at` (TIMESTAMPTZ) en tabla `event`.
+- Método `activateEvent` en `EventLifecycleService` (`event-lifecycle.ts`):
+  - Soporte para activación manual anticipada (`MANUAL_EARLY`) con validación de propiedad de organizador.
+  - Soporte para activación automática por scheduler (`SCHEDULED_AUTO`).
+  - **Invariante DEC-077 comprobada**: la activación anticipada nunca altera los anclas de `expiresAt` ni `graceEndsAt`.
+  - Serialización de carreras concurrentes (manual vs scheduler) bajo bloqueo pesimista `SELECT ... FOR UPDATE` resultando en ganador único y replay idempotente limpio.
+  - Idempotencia determinista: si ya está `ACTIVE`, llamadas repetidas devuelven `IDEMPOTENT_REPLAY` sin error y sin segundas transiciones incompatibles.
+  - Restricción de estado: solo eventos en `SCHEDULED` pueden activarse (`EVENT_NOT_IN_SCHEDULED`).
+  - Auditoría atómica de `EVENT_ACTIVATED` en `admin_audit_event`.
+- 7 pruebas añadidas (5 unitarias + 2 de integración en PostgreSQL 16 real). Total: 45/45 pruebas en verde en `event-management`.
 
 ## User story
 **Como** organizador o sistema, **quiero** activar un evento SCHEDULED, **para** habilitar su experiencia cuando corresponda sin alterar su vencimiento.

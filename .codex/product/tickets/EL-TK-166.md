@@ -4,9 +4,9 @@
 EL-EP-014
 
 ## Status
-READY
+DONE
 
-**CONFIRMED — 2026-10-10:** requirements_reviewer y ui_designer aprueban el paso de DRAFT a READY. Contrato transversal de auditoría mínima y sanitizada (Q-014, Q-021; DEC-019, DEC-034, DEC-059). Sin exposición de multimedia ni secretos. REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES (alcance backend/datos).
+**IMPLEMENTED — 2026-10-11:** Implementado `@eventlens/observability` con `AuditService`, `AuditSanitizer` y contratos (`AuditActor`, `AuditResult`, `AuditEventRecord`). Persistencia en PostgreSQL 16 con migración `202610110031_audit_event`. Sanitización estricta de credenciales, tokens, cookies, streams binarios/multimedia, prevención de prototype pollution y límites de payload/profundidad. Manejo de actores humanos y sistema sin inventar usuarios. Sanitización de errores sin stack traces ni secretos. Protección anti-recursión en el pipeline y deduplicación por clave de idempotencia. Evidencia de pruebas: 22/22 tests superados (17 unitarios + 5 integración con PostgreSQL 16 real).
 
 ## User story
 **Como** sistema, **quiero** registrar acciones relevantes con metadatos mínimos, **para** reconstruir intervenciones sin almacenar recuerdos ni secretos.

@@ -4,8 +4,13 @@
 EL-EP-016
 
 ## Status
-READY
+DONE
 
+**CONFIRMED — 2026-10-11:** Métricas de soporte funcional y recuperación de recuerdos para Beta implementadas al 100% mediante `BetaSupportAndRetrievalService` (`packages/observability/src/beta-support-and-retrieval-service.ts`), contratos correspondientes en `packages/observability/src/contracts.ts` y tests unitarios en `packages/observability/test/beta-support-and-retrieval-service.unit.test.ts`.
+- **Escenario 1 (Proporción de eventos sin soporte funcional):** Agregación determinística de eventos de cohorte evaluando ausencia de incidentes de categoría `FUNCTIONAL` (`category === 'FUNCTIONAL'` o `hadFunctionalIncident === true`). Se evalúa el objetivo $\ge 80\%$ con cómputo reproducible.
+- **Escenario 2 (Exclusión de soporte comercial o dudas no técnicas):** Eventos con consultas comerciales o dudas de configuración (`category === 'COMMERCIAL_OR_NON_TECHNICAL'`) se excluyen de la penalización de falla y cuentan como soporte autónomo exitoso (DEC-053). Casos ambiguos sin evidencia explícita de falla funcional se clasifican como no funcionales por defecto sin penalización.
+- **Escenario 3 (Recuperación de recuerdos por organizador y denominadores):** Evaluación de descargas válidas de recuerdos por organizador con contenido, validando objetivo $\ge 70\%$ (DEC-054). Eventos u organizadores sin contenido se excluyen estrictamente del denominador para no distorsionar la métrica. Descargas canceladas o inválidas no se computan como exitosas.
+- **Deduplicación, bordes y privacidad:** Deduplicación determinística por ID de hecho y por par organizador-evento, exclusión de pruebas internas y hechos fuera de ventana, y reporte reproducible sanitizado libre de textos de soporte, nombres y URLs de almacenamiento. Suite completa PASS (115/115 tests en 24 archivos en `@eventlens/observability`).
 **CONFIRMED — 2026-10-10:** requirements_reviewer aprueba el paso de DRAFT a READY. Medición de soporte funcional y recuperación de recuerdos (DEC-053, DEC-054). Soporte comercial excluido de falla; eventos sin contenido excluidos del denominador de descarga. UI_REQUIRED: NO. REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES.
 
 ## User story

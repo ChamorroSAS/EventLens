@@ -4,7 +4,24 @@
 EL-EP-003
 
 ## Status
-READY
+DONE
+
+## Implementation & Verification Evidence
+- **Method:** `EventLifecycleService.reactivateEvent(command: ReactivateEventCommand)`
+- **DEC-081 & DEC-078 Business Rules Implemented:**
+  - Exige rol de administrador humano (`ADMIN_HUMAN`), rechazando accesos no autorizados con `UNAUTHORIZED`.
+  - Recalcula el estado vigente a fecha actual `now`:
+    - Si el fin de gracia ya transcurrió (`now >= grace_ends_at`), prevalece `PENDING_DELETION` y se fija `purge_started_at`.
+    - Si la vigencia ya transcurrió (`now >= expires_at`), prevalece `GRACE_PERIOD`.
+    - Si se encuentra dentro de vigencia: restaura `previous_status` para `DRAFT`, `CLOSED` (conservando cierre voluntario per DEC-081), `ACTIVE`, y para `SCHEDULED` compara `now >= scheduled_at` pasando a `ACTIVE` con `activated_at = now` o conservando `SCHEDULED` si el inicio aún es futuro.
+  - Limpia atómicamente en PostgreSQL los campos de suspensión: `suspended_at = NULL`, `suspension_reason = NULL`, `previous_status = NULL`.
+  - Rechaza si el evento no está en `SUSPENDED` (`EVENT_NOT_SUSPENDED`) o si `previous_status` es terminal/inválido (`INVALID_PREVIOUS_STATUS`).
+  - Idempotencia determinista: repeticiones exactas devuelven `IDEMPOTENT_REPLAY` sin doble transición.
+  - Registro de auditoría `EVENT_REACTIVATED` con resultado `SUCCESS` o `IDEMPOTENT_REPLAY`.
+- **Tests & Evidence:**
+  - 6 tests unitarios en `test/event-lifecycle.unit.test.ts`.
+  - 2 tests de integración en PostgreSQL 16 real en `test/event-lifecycle.integration.test.ts`.
+  - Suite de validación en Docker: 82/82 tests PASS.
 
 ## User story
 **Como** administrador autorizado, **quiero** levantar una suspensión, **para** devolver el evento al estado temporal que realmente corresponde en ese instante.
