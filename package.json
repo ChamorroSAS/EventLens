@@ -13,6 +13,8 @@
                     "build:media-inspection":  "pnpm --filter @eventlens/media-inspection build",
                     "test:identity":  "pnpm --filter @eventlens/identity test",
                     "build:identity":  "pnpm --filter @eventlens/identity build",
+                    "test:media-gallery":  "pnpm --filter @eventlens/media-gallery test",
+                    "build:media-gallery":  "pnpm --filter @eventlens/media-gallery build",
                     "typecheck":  "node scripts/workspace.mjs typecheck",
                     "client:generate":  "node scripts/workspace.mjs client",
                     "dev:down":  "node scripts/workspace.mjs down",

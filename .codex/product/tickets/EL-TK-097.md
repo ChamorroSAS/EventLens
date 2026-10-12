@@ -4,7 +4,7 @@
 EL-EP-007
 
 ## Status
-READY
+DONE (2026-10-12)
 
 REQUIREMENTS_READY: YES
 READY_FOR_IMPLEMENTATION: YES
@@ -72,3 +72,11 @@ Q-005, Q-016; DEC-003, DEC-007, DEC-013, DEC-018, DEC-063; EL-EP-007, EL-EP-006.
 - **Seguridad en storage:** Conforme a DEC-063, el almacenamiento en S3/MinIO es 100% privado sin acceso anónimo. Cada grant emite una URL prefirmada `GET` con TTL corto vinculada exclusivamente al derivado solicitado.
 - **Protección de originales:** El rol guest únicamente tiene habilitados grants de derivados optimizados para navegación (`THUMBNAIL`, `DISPLAY_WEB`, `VIDEO_PREVIEW`).
 - **Idempotencia y cache temporal:** La expiración controlada de la URL previene enlaces duraderos compartidos fuera de la sesión autorizada.
+
+## Cierre de implementación — 2026-10-12
+
+- **Resultado:** APROBADO.
+- **Implementación:** Implementado en `@eventlens/media-gallery` (`MediaViewGrantService`) con revalidación estricta server-side del actor (`GUEST` vs `ORGANIZER`), aislamiento de evento, control de lifecycle y estado de media, y entrega de URLs prefirmadas de lectura con TTL corto mediante puerto desacoplado `ObjectStorageDownloadSigner`.
+- **Protección de originales:** El rol guest únicamente puede acceder a derivados optimizados (`THUMBNAIL`, `PREVIEW`, `PLAYBACK`) de media `PUBLISHED`, impidiendo la fuga de URLs de originales (DEC-013, DEC-018, DEC-063).
+- **Pruebas:** 8 pruebas unitarias PASS e integración PostgreSQL 16. Typecheck y build limpios con 0 errores.
+- **Evidencia de auditoría:** Auditoría sanitizada sin exponer URLs firmadas completas ni claves privadas de almacenamiento.
