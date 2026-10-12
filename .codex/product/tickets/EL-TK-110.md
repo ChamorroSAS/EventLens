@@ -4,7 +4,7 @@
 EL-EP-008
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador propietario, **quiero** cambiar el modo de moderación del evento, **para** aplicar la nueva regla a resultados futuros sin alterar retroactivamente el contenido existente.
@@ -68,3 +68,17 @@ Q-006; DEC-005, DEC-087; EL-EP-008, EL-EP-006.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §8.5..9; sin componentes nuevos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Cierre de implementación — 2026-10-12
+
+- **Resultado:** APROBADO.
+- **Implementación:**
+  - Actualizado `EventDraftService.setModerationMode` en `@eventlens/event-management` para permitir la modificación del modo (`AUTO_PUBLISH` vs `MANUAL_REVIEW`) en eventos con estados `['DRAFT', 'SCHEDULED', 'ACTIVE']` respetando la política de gobernanza `canEditSettings`.
+  - Implementado `PostgresMediaGovernance` en `@eventlens/media-inspection` desacoplado del catálogo de medios: lee atómicamente el modo del evento para guiar la decisión de publicación (`AUTO` vs `PRE_REVIEW`) en la finalización de procesamiento.
+  - Regla canónica DEC-087 preservada: cambiar el modo no muta retroactivamente el catálogo existente. Los items en `PENDING_REVIEW` continúan pendientes de aprobación manual; los items en `PUBLISHED` permanecen publicados.
+- **Criterios de aceptación verificados:**
+  - Escenario 1: Al cambiar de modo con elementos pendientes, los pendientes existentes se mantienen inalterados en `PENDING_REVIEW`.
+  - Escenario 2: Procesamientos que finalizan posterior al cambio consultan y aplican el modo vigente en el evento.
+  - Escenario 3: Contenido previamente publicado permanece en `PUBLISHED` sin mutaciones colaterales.
+- **Pruebas:** 30/30 tests unitarios PASS en `event-draft-config.unit.test.ts` (suite unitaria total 276 tests pass en `event-management`), y validación de integración E2E en `media-moderation-e2e.integration.test.ts`. Builds limpios.
+

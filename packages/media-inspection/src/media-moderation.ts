@@ -112,6 +112,87 @@ export interface RestoreMediaResult {
   readonly operationId: string;
 }
 
+/**
+ * Computes a target date adding full UTC calendar days preserving exact time-of-day.
+ * Conforms to DEC-092 / DEC-109 / ARCH-019.
+ */
+export function addUtcCalendarDays(date: Date, days: number): Date {
+  const result = new Date(date);
+  result.setUTCDate(result.getUTCDate() + days);
+  return result;
+}
+
+export interface ExpireTrashMediaCommand {
+  readonly mediaRef: string;
+  readonly operationId?: string;
+  readonly now?: Date;
+}
+
+export interface ExpireTrashMediaResult {
+  readonly outcome:
+    | 'PURGE_REQUESTED'
+    | 'ALREADY_PURGED'
+    | 'SKIPPED_ALREADY_RESTORED'
+    | 'SKIPPED_NOT_EXPIRED';
+  readonly mediaRef: string;
+  readonly eventRef: string;
+  readonly purgeIntentId?: string;
+  readonly purgeStartedAt?: Date;
+  readonly mainPurgeDeadline?: Date;
+  readonly residualPurgeDeadline?: Date;
+  readonly previousStatus?: string;
+  readonly revision?: bigint;
+}
+
+export interface ProcessExpiredTrashCommand {
+  readonly limit?: number;
+  readonly now?: Date;
+}
+
+export interface ProcessExpiredTrashResult {
+  readonly processedCount: number;
+  readonly results: ExpireTrashMediaResult[];
+}
+
+export interface PurgeRequestPayload {
+  readonly purgeIntentId: string;
+  readonly operationId: string;
+  readonly mediaRef: string;
+  readonly eventRef: string;
+  readonly organizerRef: string;
+  readonly generation: bigint;
+  readonly revision: bigint;
+  readonly purgeStartedAt: Date;
+  readonly mainPurgeDeadline: Date;
+  readonly residualPurgeDeadline: Date;
+  readonly policyRef: string;
+  readonly policyVersion: string;
+}
+
+export interface PurgeDispatcherPort {
+  dispatchPurgeRequest(request: PurgeRequestPayload): Promise<void>;
+}
+
+export interface TrashPurgeIntentRecord {
+  readonly id: string;
+  readonly operationId: string;
+  readonly trashRecordId: string;
+  readonly mediaRef: string;
+  readonly eventRef: string;
+  readonly organizerRef: string;
+  readonly generation: bigint;
+  readonly previousRevision: bigint;
+  readonly newRevision: bigint;
+  readonly purgeStartedAt: Date;
+  readonly mainPurgeDeadline: Date;
+  readonly residualPurgeDeadline: Date;
+  readonly policyRef: string;
+  readonly policyVersion: string;
+  readonly status: string;
+  readonly dedupKey: string;
+  readonly createdAt: Date;
+}
+
 export interface MediaCatalogRecord {
   readonly mediaRef: string;
   readonly eventRef: string;
@@ -185,6 +266,39 @@ export interface MediaModerationRepository {
     trashRecordId: string,
     restoredAt: Date
   ): Promise<void>;
+
+  getExpiredTrashRecords(
+    tx: SqlTransaction,
+    now: Date,
+    limit: number
+  ): Promise<MediaTrashRecord[]>;
+
+  getTrashPurgeIntentByTrashId(
+    tx: SqlTransaction,
+    trashRecordId: string
+  ): Promise<TrashPurgeIntentRecord | null>;
+
+  recordTrashPurgeIntent(
+    tx: SqlTransaction,
+    params: {
+      id: string;
+      operationId: string;
+      trashRecordId: string;
+      mediaRef: string;
+      eventRef: string;
+      organizerRef: string;
+      generation: bigint;
+      previousRevision: bigint;
+      newRevision: bigint;
+      purgeStartedAt: Date;
+      mainPurgeDeadline: Date;
+      residualPurgeDeadline: Date;
+      policyRef: string;
+      policyVersion: string;
+      status: string;
+      dedupKey: string;
+    }
+  ): Promise<void>;
 }
 
 export class PostgresMediaModerationRepository
@@ -251,6 +365,15 @@ export class PostgresMediaModerationRepository
       mediaRef
     );
     if (Number(qRows[0]?.cnt ?? 0) > 0) {
+      return true;
+    }
+
+    // Check if media trash purge intent exists
+    const tpRows = await tx.query<{ cnt: number | string }>(
+      `SELECT count(*)::int as cnt FROM media_trash_purge_intent WHERE media_ref = $1`,
+      mediaRef
+    );
+    if (Number(tpRows[0]?.cnt ?? 0) > 0) {
       return true;
     }
 
@@ -408,13 +531,164 @@ export class PostgresMediaModerationRepository
       restoredAt
     );
   }
+
+  async getExpiredTrashRecords(
+    tx: SqlTransaction,
+    now: Date,
+    limit: number = 50
+  ): Promise<MediaTrashRecord[]> {
+    const rows = await tx.query<{
+      id: string;
+      operation_id: string;
+      media_ref: string;
+      event_ref: string;
+      organizer_ref: string;
+      previous_status: string;
+      trashed_at: Date | string;
+      restore_deadline: Date | string;
+      restored_at: Date | string | null;
+      reason: string | null;
+    }>(
+      `SELECT id, operation_id, media_ref, event_ref, organizer_ref,
+              previous_status, trashed_at, restore_deadline, restored_at, reason
+       FROM media_trash_record
+       WHERE restored_at IS NULL AND restore_deadline <= $1
+       ORDER BY restore_deadline ASC
+       LIMIT $2`,
+      now,
+      limit
+    );
+
+    return rows.map(r => ({
+      id: r.id,
+      operationId: r.operation_id,
+      mediaRef: r.media_ref,
+      eventRef: r.event_ref,
+      organizerRef: r.organizer_ref,
+      previousStatus: r.previous_status,
+      trashedAt: new Date(r.trashed_at),
+      restoreDeadline: new Date(r.restore_deadline),
+      restoredAt: r.restored_at ? new Date(r.restored_at) : null,
+      reason: r.reason
+    }));
+  }
+
+  async getTrashPurgeIntentByTrashId(
+    tx: SqlTransaction,
+    trashRecordId: string
+  ): Promise<TrashPurgeIntentRecord | null> {
+    const rows = await tx.query<{
+      id: string;
+      operation_id: string;
+      trash_record_id: string;
+      media_ref: string;
+      event_ref: string;
+      organizer_ref: string;
+      generation: bigint | string | number;
+      previous_revision: bigint | string | number;
+      new_revision: bigint | string | number;
+      purge_started_at: Date | string;
+      main_purge_deadline: Date | string;
+      residual_purge_deadline: Date | string;
+      policy_ref: string;
+      policy_version: string;
+      status: string;
+      dedup_key: string;
+      created_at: Date | string;
+    }>(
+      `SELECT id, operation_id, trash_record_id, media_ref, event_ref, organizer_ref,
+              generation, previous_revision, new_revision, purge_started_at,
+              main_purge_deadline, residual_purge_deadline, policy_ref, policy_version,
+              status, dedup_key, created_at
+       FROM media_trash_purge_intent
+       WHERE trash_record_id = $1::uuid
+       LIMIT 1`,
+      trashRecordId
+    );
+
+    if (!rows.length) return null;
+    const r = rows[0]!;
+    return {
+      id: r.id,
+      operationId: r.operation_id,
+      trashRecordId: r.trash_record_id,
+      mediaRef: r.media_ref,
+      eventRef: r.event_ref,
+      organizerRef: r.organizer_ref,
+      generation: BigInt(r.generation),
+      previousRevision: BigInt(r.previous_revision),
+      newRevision: BigInt(r.new_revision),
+      purgeStartedAt: new Date(r.purge_started_at),
+      mainPurgeDeadline: new Date(r.main_purge_deadline),
+      residualPurgeDeadline: new Date(r.residual_purge_deadline),
+      policyRef: r.policy_ref,
+      policyVersion: r.policy_version,
+      status: r.status,
+      dedupKey: r.dedup_key,
+      createdAt: new Date(r.created_at)
+    };
+  }
+
+  async recordTrashPurgeIntent(
+    tx: SqlTransaction,
+    params: {
+      id: string;
+      operationId: string;
+      trashRecordId: string;
+      mediaRef: string;
+      eventRef: string;
+      organizerRef: string;
+      generation: bigint;
+      previousRevision: bigint;
+      newRevision: bigint;
+      purgeStartedAt: Date;
+      mainPurgeDeadline: Date;
+      residualPurgeDeadline: Date;
+      policyRef: string;
+      policyVersion: string;
+      status: string;
+      dedupKey: string;
+    }
+  ): Promise<void> {
+    await tx.execute(
+      `INSERT INTO media_trash_purge_intent (
+         id, operation_id, trash_record_id, media_ref, event_ref, organizer_ref,
+         generation, previous_revision, new_revision, purge_started_at,
+         main_purge_deadline, residual_purge_deadline, policy_ref, policy_version,
+         status, dedup_key, created_at
+       ) VALUES (
+         $1::uuid, $2, $3::uuid, $4, $5, $6,
+         $7::bigint, $8::bigint, $9::bigint, $10,
+         $11, $12, $13, $14,
+         $15, $16, clock_timestamp()
+       )
+       ON CONFLICT (dedup_key) DO NOTHING`,
+      params.id,
+      params.operationId,
+      params.trashRecordId,
+      params.mediaRef,
+      params.eventRef,
+      params.organizerRef,
+      params.generation.toString(),
+      params.previousRevision.toString(),
+      params.newRevision.toString(),
+      params.purgeStartedAt,
+      params.mainPurgeDeadline,
+      params.residualPurgeDeadline,
+      params.policyRef,
+      params.policyVersion,
+      params.status,
+      params.dedupKey
+    );
+  }
 }
 
 export class MediaModerationService {
   constructor(
     private readonly transactions: TransactionRunner,
     private readonly repository: MediaModerationRepository,
-    private readonly authorizer: EventStatusAuthorizer
+    private readonly authorizer: EventStatusAuthorizer,
+    private readonly purgeDispatcher?: PurgeDispatcherPort
   ) {}
 
   /**
@@ -920,11 +1194,19 @@ export class MediaModerationService {
         );
       }
 
-      // 5. Restore window check (Escenario 3, DEC-096 7 days window)
-      if (trashRecord.restoreDeadline.getTime() < now.getTime()) {
+      // 5. Restore window check (Escenario 3, DEC-096 7 days window, ARCH-019 boundary)
+      if (trashRecord.restoreDeadline.getTime() <= now.getTime()) {
         throw new MediaModerationError(
           'RESTORE_WINDOW_EXPIRED',
           `Restore deadline '${trashRecord.restoreDeadline.toISOString()}' has expired`
+        );
+      }
+
+      const existingPurge = await this.repository.getTrashPurgeIntentByTrashId(tx, trashRecord.id);
+      if (existingPurge) {
+        throw new MediaModerationError(
+          'RESTORE_WINDOW_EXPIRED',
+          'Media restore window expired and purge has been requested'
         );
       }
 
@@ -983,5 +1265,189 @@ export class MediaModerationService {
         operationId
       };
     });
+  }
+
+  /**
+   * Expires media whose trash window (7 days) reached restoreDeadline (EL-TK-109, DEC-109, ARCH-019).
+   * Transitions media to DELETED, records durable PurgeIntent with original restoreDeadline anchor,
+   * emits purge request idempotently, and closes restoration window irreversibly.
+   */
+  async expireTrashMedia(command: ExpireTrashMediaCommand): Promise<ExpireTrashMediaResult> {
+    if (!command || typeof command !== 'object') {
+      throw new MediaModerationError('INVALID_ARGUMENT', 'Command is required');
+    }
+    const { mediaRef } = command;
+    if (!mediaRef || typeof mediaRef !== 'string' || !mediaRef.trim()) {
+      throw new MediaModerationError('INVALID_ARGUMENT', 'mediaRef is required');
+    }
+
+    const operationId = command.operationId ?? randomUUID();
+    const now = command.now ?? new Date();
+
+    return await this.transactions.run(async (tx) => {
+      // 1. Lock and retrieve media
+      const media = await this.repository.lockAndGetMedia(tx, mediaRef.trim());
+      if (!media) {
+        throw new MediaModerationError('MEDIA_NOT_FOUND', `Media '${mediaRef}' not found`);
+      }
+
+      // 2. Retrieve active trash record
+      const trashRecord = await this.repository.getActiveTrashRecord(tx, media.mediaRef);
+
+      // 3. Escenario 2: Idempotencia si el job se repite
+      if (trashRecord) {
+        const existingPurge = await this.repository.getTrashPurgeIntentByTrashId(tx, trashRecord.id);
+        if (existingPurge) {
+          return {
+            outcome: 'ALREADY_PURGED',
+            mediaRef: media.mediaRef,
+            eventRef: media.eventRef,
+            purgeIntentId: existingPurge.id,
+            purgeStartedAt: existingPurge.purgeStartedAt,
+            mainPurgeDeadline: existingPurge.mainPurgeDeadline,
+            residualPurgeDeadline: existingPurge.residualPurgeDeadline,
+            previousStatus: 'TRASHED',
+            revision: existingPurge.newRevision
+          };
+        }
+      }
+
+      // Escenario 3: Si la media fue restaurada antes del deadline, no se purga ni invalida la restauración
+      if (media.status !== 'TRASHED' || (trashRecord && trashRecord.restoredAt !== null)) {
+        return {
+          outcome: 'SKIPPED_ALREADY_RESTORED',
+          mediaRef: media.mediaRef,
+          eventRef: media.eventRef,
+          previousStatus: media.status,
+          revision: media.revision
+        };
+      }
+
+      if (!trashRecord) {
+        return {
+          outcome: 'SKIPPED_ALREADY_RESTORED',
+          mediaRef: media.mediaRef,
+          eventRef: media.eventRef,
+          previousStatus: media.status,
+          revision: media.revision
+        };
+      }
+
+      // Check if deadline has been reached
+      if (now.getTime() < trashRecord.restoreDeadline.getTime()) {
+        return {
+          outcome: 'SKIPPED_NOT_EXPIRED',
+          mediaRef: media.mediaRef,
+          eventRef: media.eventRef,
+          purgeStartedAt: trashRecord.restoreDeadline,
+          previousStatus: media.status,
+          revision: media.revision
+        };
+      }
+
+      // 4. Escenario 1: Cerrar restauración, transicionar media a DELETED y registrar PurgeIntent
+      const newRevision = await this.repository.updateStatus(
+        tx,
+        media.mediaRef,
+        media.revision,
+        'DELETED'
+      );
+
+      const purgeIntentId = randomUUID();
+      const dedupKey = `trash-purge:${trashRecord.id}`;
+      const purgeStartedAt = trashRecord.restoreDeadline; // Ancla aprobada DEC-109 / ARCH-019
+      const mainPurgeDeadline = addUtcCalendarDays(purgeStartedAt, 7);
+      const residualPurgeDeadline = addUtcCalendarDays(purgeStartedAt, 30);
+      const policyRef = 'MOD-008/ARCH-019';
+      const policyVersion = '1.0';
+
+      await this.repository.recordTrashPurgeIntent(tx, {
+        id: purgeIntentId,
+        operationId,
+        trashRecordId: trashRecord.id,
+        mediaRef: media.mediaRef,
+        eventRef: media.eventRef,
+        organizerRef: trashRecord.organizerRef,
+        generation: media.generation,
+        previousRevision: media.revision,
+        newRevision,
+        purgeStartedAt,
+        mainPurgeDeadline,
+        residualPurgeDeadline,
+        policyRef,
+        policyVersion,
+        status: 'PENDING',
+        dedupKey
+      });
+
+      // Auditar
+      await this.repository.recordAudit(tx, {
+        action: 'MEDIA_TRASH_EXPIRED_PURGE_REQUESTED',
+        operationId,
+        mediaRef: media.mediaRef,
+        eventRef: media.eventRef,
+        actorRef: 'SYSTEM',
+        previousStatus: 'TRASHED',
+        newStatus: 'DELETED',
+        revision: newRevision,
+        timestamp: now
+      });
+
+      // Emisión al dispatcher si existe
+      if (this.purgeDispatcher) {
+        await this.purgeDispatcher.dispatchPurgeRequest({
+          purgeIntentId,
+          operationId,
+          mediaRef: media.mediaRef,
+          eventRef: media.eventRef,
+          organizerRef: trashRecord.organizerRef,
+          generation: media.generation,
+          revision: newRevision,
+          purgeStartedAt,
+          mainPurgeDeadline,
+          residualPurgeDeadline,
+          policyRef,
+          policyVersion
+        });
+      }
+
+      return {
+        outcome: 'PURGE_REQUESTED',
+        mediaRef: media.mediaRef,
+        eventRef: media.eventRef,
+        purgeIntentId,
+        purgeStartedAt,
+        mainPurgeDeadline,
+        residualPurgeDeadline,
+        previousStatus: 'TRASHED',
+        revision: newRevision
+      };
+    });
+  }
+
+  /**
+   * Sweeps and processes all expired trash records up to limit (EL-TK-109).
+   */
+  async processExpiredTrash(command: ProcessExpiredTrashCommand = {}): Promise<ProcessExpiredTrashResult> {
+    const now = command.now ?? new Date();
+    const limit = command.limit ?? 50;
+
+    const candidates = await this.transactions.run(async (tx) => {
+      return await this.repository.getExpiredTrashRecords(tx, now, limit);
+    });
+
+    const results: ExpireTrashMediaResult[] = [];
+    for (const candidate of candidates) {
+      const res = await this.expireTrashMedia({
+        mediaRef: candidate.mediaRef,
+        now
+      });
+      results.push(res);
+    }
+
+    return {
+      processedCount: results.filter(r => r.outcome === 'PURGE_REQUESTED').length,
+      results
+    };
   }
 }

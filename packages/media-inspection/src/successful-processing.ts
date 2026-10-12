@@ -95,3 +95,44 @@ export class ApplySuccessfulProcessing {
   throw new GovernanceRevisionChanged();
  }
 }
+
+export class PostgresMediaGovernance implements MediaGovernance {
+  async lockAndRead(
+    tx: SqlTransaction,
+    scope: { eventRef: string; mediaRef: string }
+  ): Promise<GovernanceDecision> {
+    const rows = await tx.query<{
+      moderation_mode: string;
+      updated_at: Date | string;
+    }>(
+      `SELECT moderation_mode, updated_at
+       FROM event
+       WHERE id = $1`,
+      scope.eventRef
+    );
+
+    if (!rows.length) {
+      throw new InspectionError('CONFLICT');
+    }
+
+    const row = rows[0]!;
+    const mode = row.moderation_mode === 'MANUAL_REVIEW' ? 'PRE_REVIEW' : 'AUTO';
+    const rev = String(new Date(row.updated_at).getTime());
+
+    return {
+      mode,
+      revision: rev,
+      decisionRevision: rev,
+      decision: 'ALLOW'
+    };
+  }
+
+  async compareAndAssertCurrent(
+    tx: SqlTransaction,
+    scope: { eventRef: string; mediaRef: string },
+    expected: GovernanceDecision
+  ): Promise<boolean> {
+    const current = await this.lockAndRead(tx, scope);
+    return current.mode === expected.mode && current.revision === expected.revision;
+  }
+}

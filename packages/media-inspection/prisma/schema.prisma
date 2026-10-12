@@ -389,3 +389,55 @@ model MediaTrashRecord {
 
   @@map("media_trash_record")
 }
+
+model MediaTrashPurgeIntent {
+  id                    String   @id @db.Uuid
+  operationId           String   @map("operation_id")
+  trashRecordId         String   @map("trash_record_id") @db.Uuid
+  mediaRef              String   @map("media_ref")
+  eventRef              String   @map("event_ref")
+  organizerRef          String   @map("organizer_ref")
+  generation            BigInt
+  previousRevision      BigInt   @map("previous_revision")
+  newRevision           BigInt   @map("new_revision")
+  purgeStartedAt        DateTime @map("purge_started_at") @db.Timestamptz
+  mainPurgeDeadline     DateTime @map("main_purge_deadline") @db.Timestamptz
+  residualPurgeDeadline DateTime @map("residual_purge_deadline") @db.Timestamptz
+  policyRef             String   @map("policy_ref")
+  policyVersion         String   @map("policy_version")
+  status                String
+  dedupKey              String   @unique @map("dedup_key")
+  createdAt             DateTime @map("created_at") @db.Timestamptz
+
+  @@map("media_trash_purge_intent")
+}
+
+model MediaVisibilityAudit {
+  id             String   @id @db.Uuid
+  operationId    String?  @map("operation_id")
+  mediaRef       String   @map("media_ref")
+  eventRef       String   @map("event_ref")
+  organizerRef   String   @map("organizer_ref")
+  action         String
+  previousStatus String   @map("previous_status")
+  newStatus      String   @map("new_status")
+  generation     BigInt
+  revision       BigInt
+  reason         String?
+  committedAt    DateTime @map("committed_at") @db.Timestamptz
+
+  @@map("media_visibility_audit")
+}
+
+model MediaVisibilityDenialAudit {
+  id          String   @id @db.Uuid
+  operationId String?  @map("operation_id")
+  mediaRef    String   @map("media_ref")
+  eventRef    String   @map("event_ref")
+  actorRef    String   @map("actor_ref")
+  action      String
+  reason      String
+  attemptedAt DateTime @map("attempted_at") @db.Timestamptz
+
+  @@map("media_visibility_denial_audit")
+}

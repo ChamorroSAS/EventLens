@@ -764,19 +764,20 @@ export class EventDraftService {
         throw new EventManagementError('UNAUTHORIZED', 'Actor is not authorized to edit this event draft');
       }
 
-      if (current.status !== 'DRAFT') {
+      const allowedStatuses: EventStatus[] = ['DRAFT', 'SCHEDULED', 'ACTIVE'];
+      if (!allowedStatuses.includes(current.status as EventStatus)) {
         await this.auditSink?.record({
           id: randomUUID(),
           procedure: 'EVENT_MODERATION_MODE_SET',
           actorId: actorContext.accountId,
           targetIdentifier: eventId,
           result: 'REJECTED_INVALID_STATE',
-          details: `Attempted to set moderation mode on event in '${current.status}' status (must be DRAFT)`,
+          details: `Attempted to set moderation mode on event in '${current.status}' status (must be DRAFT, SCHEDULED, or ACTIVE)`,
           timestamp: new Date()
         });
         throw new EventManagementError(
-          'EVENT_NOT_IN_DRAFT',
-          `Moderation mode can only be chosen for events in DRAFT status, current is '${current.status}'`
+          'INVALID_STATE',
+          `Moderation mode can only be chosen for events in DRAFT, SCHEDULED, or ACTIVE status, current is '${current.status}'`
         );
       }
 

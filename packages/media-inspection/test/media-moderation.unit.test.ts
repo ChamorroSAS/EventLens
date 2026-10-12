@@ -57,6 +57,9 @@ describe('MediaModerationService (EL-EP-008)', () => {
       recordTrash: vi.fn().mockResolvedValue(undefined),
       getActiveTrashRecord: vi.fn().mockResolvedValue(null),
       markTrashRestored: vi.fn().mockResolvedValue(undefined),
+      getExpiredTrashRecords: vi.fn().mockResolvedValue([]),
+      getTrashPurgeIntentByTrashId: vi.fn().mockResolvedValue(null),
+      recordTrashPurgeIntent: vi.fn().mockResolvedValue(undefined),
       ...overrides
     };
   }
@@ -1119,6 +1122,206 @@ describe('MediaModerationService (EL-EP-008)', () => {
           mediaRef: 'media-001'
         })
       ).rejects.toMatchObject({ code: 'ACCESS_DENIED' });
+    });
+  });
+
+  describe('expireTrashMedia & processExpiredTrash (EL-TK-109, DEC-109, ARCH-019)', () => {
+    const expiredTrashRecord = {
+      id: 'trash-001',
+      operationId: 'op-trash-001',
+      mediaRef: 'media-001',
+      eventRef: 'event-001',
+      organizerRef: 'org-001',
+      previousStatus: 'PUBLISHED',
+      trashedAt: new Date('2026-10-01T10:00:00.000Z'),
+      restoreDeadline: new Date('2026-10-08T10:00:00.000Z'),
+      restoredAt: null,
+      reason: 'eliminado por organizador'
+    };
+
+    it('Escenario 1: Dado media TRASHED que alcanzó su restoreDeadline, la transiciona a DELETED y registra PurgeIntent con ancla original', async () => {
+      const mockDispatcher = {
+        dispatchPurgeRequest: vi.fn().mockResolvedValue(undefined)
+      };
+
+      const mockRepo = createMockRepo({
+        lockAndGetMedia: vi.fn().mockResolvedValue({
+          mediaRef: 'media-001',
+          eventRef: 'event-001',
+          status: 'TRASHED',
+          generation: 1n,
+          revision: 2n
+        }),
+        getActiveTrashRecord: vi.fn().mockResolvedValue(expiredTrashRecord),
+        getTrashPurgeIntentByTrashId: vi.fn().mockResolvedValue(null),
+        updateStatus: vi.fn().mockResolvedValue(3n)
+      });
+
+      const service = new MediaModerationService(
+        mockTransactions,
+        mockRepo,
+        { assertAuthorized: vi.fn().mockResolvedValue(undefined) },
+        mockDispatcher
+      );
+
+      const now = new Date('2026-10-08T10:00:01.000Z');
+      const result = await service.expireTrashMedia({
+        mediaRef: 'media-001',
+        now
+      });
+
+      expect(result.outcome).toBe('PURGE_REQUESTED');
+      expect(result.mediaRef).toBe('media-001');
+      expect(result.previousStatus).toBe('TRASHED');
+      expect(result.revision).toBe(3n);
+      expect(result.purgeStartedAt).toEqual(expiredTrashRecord.restoreDeadline);
+      expect(mockRepo.updateStatus).toHaveBeenCalledWith(dummyTx, 'media-001', 2n, 'DELETED');
+      expect(mockRepo.recordTrashPurgeIntent).toHaveBeenCalled();
+      expect(mockDispatcher.dispatchPurgeRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          mediaRef: 'media-001',
+          purgeStartedAt: expiredTrashRecord.restoreDeadline,
+          policyRef: 'MOD-008/ARCH-019'
+        })
+      );
+    });
+
+    it('Escenario 2: Dado el job se repite para un purgeIntent ya registrado, devuelve ALREADY_PURGED sin duplicar', async () => {
+      const existingPurge = {
+        id: 'purge-001',
+        operationId: 'op-purge-001',
+        trashRecordId: 'trash-001',
+        mediaRef: 'media-001',
+        eventRef: 'event-001',
+        organizerRef: 'org-001',
+        generation: 1n,
+        previousRevision: 2n,
+        newRevision: 3n,
+        purgeStartedAt: expiredTrashRecord.restoreDeadline,
+        mainPurgeDeadline: new Date('2026-10-15T10:00:00.000Z'),
+        residualPurgeDeadline: new Date('2026-11-07T10:00:00.000Z'),
+        policyRef: 'MOD-008/ARCH-019',
+        policyVersion: '1.0',
+        status: 'PENDING',
+        dedupKey: 'trash-purge:trash-001',
+        createdAt: new Date()
+      };
+
+      const mockRepo = createMockRepo({
+        lockAndGetMedia: vi.fn().mockResolvedValue({
+          mediaRef: 'media-001',
+          eventRef: 'event-001',
+          status: 'TRASHED',
+          generation: 1n,
+          revision: 2n
+        }),
+        getActiveTrashRecord: vi.fn().mockResolvedValue(expiredTrashRecord),
+        getTrashPurgeIntentByTrashId: vi.fn().mockResolvedValue(existingPurge)
+      });
+
+      const service = new MediaModerationService(
+        mockTransactions,
+        mockRepo,
+        { assertAuthorized: vi.fn().mockResolvedValue(undefined) }
+      );
+
+      const result = await service.expireTrashMedia({
+        mediaRef: 'media-001',
+        now: new Date('2026-10-09T10:00:00.000Z')
+      });
+
+      expect(result.outcome).toBe('ALREADY_PURGED');
+      expect(mockRepo.updateStatus).not.toHaveBeenCalled();
+      expect(mockRepo.recordTrashPurgeIntent).not.toHaveBeenCalled();
+    });
+
+    it('Escenario 3: Dado la media fue restaurada antes del deadline, un job atrasado no la purga ni invalida', async () => {
+      const restoredTrashRecord = {
+        ...expiredTrashRecord,
+        restoredAt: new Date('2026-10-05T12:00:00.000Z')
+      };
+
+      const mockRepo = createMockRepo({
+        lockAndGetMedia: vi.fn().mockResolvedValue({
+          mediaRef: 'media-001',
+          eventRef: 'event-001',
+          status: 'PUBLISHED',
+          generation: 1n,
+          revision: 3n
+        }),
+        getActiveTrashRecord: vi.fn().mockResolvedValue(restoredTrashRecord)
+      });
+
+      const service = new MediaModerationService(
+        mockTransactions,
+        mockRepo,
+        { assertAuthorized: vi.fn().mockResolvedValue(undefined) }
+      );
+
+      const result = await service.expireTrashMedia({
+        mediaRef: 'media-001',
+        now: new Date('2026-10-10T10:00:00.000Z')
+      });
+
+      expect(result.outcome).toBe('SKIPPED_ALREADY_RESTORED');
+      expect(mockRepo.updateStatus).not.toHaveBeenCalled();
+      expect(mockRepo.recordTrashPurgeIntent).not.toHaveBeenCalled();
+    });
+
+    it('Dado que aún no alcanza el restoreDeadline, devuelve SKIPPED_NOT_EXPIRED', async () => {
+      const mockRepo = createMockRepo({
+        lockAndGetMedia: vi.fn().mockResolvedValue({
+          mediaRef: 'media-001',
+          eventRef: 'event-001',
+          status: 'TRASHED',
+          generation: 1n,
+          revision: 2n
+        }),
+        getActiveTrashRecord: vi.fn().mockResolvedValue(expiredTrashRecord)
+      });
+
+      const service = new MediaModerationService(
+        mockTransactions,
+        mockRepo,
+        { assertAuthorized: vi.fn().mockResolvedValue(undefined) }
+      );
+
+      const result = await service.expireTrashMedia({
+        mediaRef: 'media-001',
+        now: new Date('2026-10-05T10:00:00.000Z') // Antes del 2026-10-08
+      });
+
+      expect(result.outcome).toBe('SKIPPED_NOT_EXPIRED');
+      expect(mockRepo.updateStatus).not.toHaveBeenCalled();
+    });
+
+    it('processExpiredTrash barre y procesa registros vencidos', async () => {
+      const mockRepo = createMockRepo({
+        getExpiredTrashRecords: vi.fn().mockResolvedValue([expiredTrashRecord]),
+        lockAndGetMedia: vi.fn().mockResolvedValue({
+          mediaRef: 'media-001',
+          eventRef: 'event-001',
+          status: 'TRASHED',
+          generation: 1n,
+          revision: 2n
+        }),
+        getActiveTrashRecord: vi.fn().mockResolvedValue(expiredTrashRecord),
+        getTrashPurgeIntentByTrashId: vi.fn().mockResolvedValue(null),
+        updateStatus: vi.fn().mockResolvedValue(3n)
+      });
+
+      const service = new MediaModerationService(
+        mockTransactions,
+        mockRepo,
+        { assertAuthorized: vi.fn().mockResolvedValue(undefined) }
+      );
+
+      const result = await service.processExpiredTrash({
+        now: new Date('2026-10-09T10:00:00.000Z')
+      });
+
+      expect(result.processedCount).toBe(1);
+      expect(result.results[0].outcome).toBe('PURGE_REQUESTED');
     });
   });
 });
