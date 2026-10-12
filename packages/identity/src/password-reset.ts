@@ -13,6 +13,7 @@ import {
   computeCredentialDigest
 } from './contracts.js';
 import { BetaInvitationService } from './invitation.js';
+import { PasswordVerifier } from './password-verifier.js';
 
 interface AccountRow {
   id: string;
@@ -48,6 +49,7 @@ export interface PasswordResetServiceOptions {
   readonly tokenTtlMs?: number;
   readonly maxRequestsPerWindow?: number;
   readonly rateLimitWindowMs?: number;
+  readonly passwordVerifier?: PasswordVerifier;
 }
 
 /**
@@ -68,6 +70,7 @@ export class PasswordResetService {
   private readonly tokenTtlMs: number;
   private readonly maxRequestsPerWindow: number;
   private readonly rateLimitWindowMs: number;
+  private readonly passwordVerifier: PasswordVerifier;
   private readonly requestCounts = new Map<string, { count: number; firstAttemptAt: number }>();
 
   constructor(
@@ -77,6 +80,7 @@ export class PasswordResetService {
     this.auditSink = options?.auditSink;
     this.recoveryAuthority = options?.recoveryAuthority;
     this.notificationPort = options?.notificationPort;
+    this.passwordVerifier = options?.passwordVerifier ?? new PasswordVerifier();
     this.tokenTtlMs = options?.tokenTtlMs ?? 60 * 60 * 1000; // 1 hora
     this.maxRequestsPerWindow = options?.maxRequestsPerWindow ?? 5;
     this.rateLimitWindowMs = options?.rateLimitWindowMs ?? 15 * 60 * 1000; // 15 minutos
@@ -332,12 +336,8 @@ export class PasswordResetService {
       const currentRevision = credentialRows.length > 0 ? BigInt(credentialRows[0].revision) : 1n;
       const newRevision = currentRevision + 1n;
 
-      // 6. Compute new secret digest with strict domain separation (TB-03)
-      const newSecretDigest = computeCredentialDigest(
-        'ORGANIZER_AUTHENTICATION',
-        account.id,
-        command.newPassword
-      );
+      // 6. Compute new Argon2id secret envelope (MOD-001, DEC-108, EL-TK-185)
+      const newSecretDigest = await this.passwordVerifier.hashPassword(command.newPassword);
 
       // 7. Update or create organizer credential
       if (credentialRows.length > 0) {
