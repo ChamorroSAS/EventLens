@@ -40,6 +40,8 @@ CONFIRMED: revisión antes de lanzamiento público, organizadores adultos, menor
 
 **CONFIRMED — atención de derechos de los titulares, 2026-10-12:** canal principal de privacidad por **correo electrónico**, recepción y seguimiento **manual con trazabilidad mínima**, reutilizando las funciones de cuenta, denuncias y retiro sin cuenta de EL-EP-009 y eliminación de EL-EP-015. La dirección de correo publicable/operable, clasificación jurídica de casos, prueba proporcional de identidad y conservación del expediente continúan PENDING. [Procedimiento preparatorio](../sessions/2026-10-12-el-ep-017-data-subject-rights-manual-procedure.md). No se introduce un sistema paralelo de PQR ni se declara integración comprobada.
 
+**DOCUMENTED DRAFT — 2026-10-12:** [Política de datos](../../../docs/legal/PRIVACY-POLICY-DRAFT.md) y [Términos de uso](../../../docs/legal/TERMS-OF-USE-DRAFT.md) preparados para revisión profesional; no aprobados ni publicables. Falta prueba de implementación de avisos y autorizaciones, roles jurídicos, proveedores, retenciones y contactos reales.
+
 ## Main scenarios
 
 Profesional revisa políticas y flujo; validar avisos/consentimientos; acordar derechos y retención; identificar ajustes previos al go-live público.
