@@ -4,7 +4,7 @@
 EL-EP-012
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** administración autorizada, **quiero** operar soporte desde una consola mínima unificada, **para** localizar, diagnosticar e intervenir sin privilegios ilimitados.
