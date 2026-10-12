@@ -563,7 +563,7 @@ export interface OrganizerAccountRecord {
   readonly id: string;
   readonly email: string;
   readonly emailNormalized: string;
-  readonly status: 'PENDING_VERIFICATION' | 'ACTIVE' | 'SUSPENDED' | 'REVOKED';
+  readonly status: 'PENDING_VERIFICATION' | 'ACTIVE' | 'SUSPENDED' | 'REVOKED' | 'PENDING_DELETION' | 'DELETED';
   readonly declaredAdult: boolean;
   readonly declaredAdultAt?: Date | null;
   readonly invitationId: string;
@@ -632,6 +632,7 @@ export interface OrganizerActorContext {
   readonly credentialRevision: bigint;
   readonly sessionWatermark: bigint;
   readonly recoveryEpoch: bigint;
+  readonly restrictedContext?: 'DELETION_MANAGEMENT_ONLY';
 }
 
 export interface OrganizerSessionCookieSpec {

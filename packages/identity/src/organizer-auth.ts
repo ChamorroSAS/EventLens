@@ -434,14 +434,15 @@ export class OrganizerAuthenticationService {
         authTime,
         credentialRevision: credRevBigInt,
         sessionWatermark: watermark,
-        recoveryEpoch: epoch
+        recoveryEpoch: epoch,
+        ...(account.status === 'PENDING_DELETION' ? { restrictedContext: 'DELETION_MANAGEMENT_ONLY' as const } : {})
       };
 
       const accountRecord: OrganizerAccountRecord = {
         id: account.id,
         email: account.email,
         emailNormalized: account.email_normalized,
-        status: 'ACTIVE',
+        status: (account.status as OrganizerAccountRecord['status']) || 'ACTIVE',
         declaredAdult: Boolean(account.declared_adult),
         declaredAdultAt: account.declared_adult_at ? new Date(account.declared_adult_at) : null,
         invitationId: account.invitation_id,
@@ -557,7 +558,10 @@ export class OrganizerAuthenticationService {
         authTime: new Date(session.auth_time),
         credentialRevision: currentCredRev,
         sessionWatermark: sessionWatermark,
-        recoveryEpoch: epoch
+        recoveryEpoch: epoch,
+        ...(session.account_status === 'PENDING_DELETION'
+          ? { restrictedContext: 'DELETION_MANAGEMENT_ONLY' as const }
+          : {})
       };
 
       return {
