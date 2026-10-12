@@ -79,7 +79,8 @@ export interface AdminSupportAuditEvent {
     | 'ADMIN_JOB_LIST_VIEWED'
     | 'ADMIN_JOB_DETAIL_VIEWED'
     | 'ADMIN_JOB_ACTION_EXECUTED'
-    | 'ADMIN_MEDIA_ACCESS_GRANTED';
+    | 'ADMIN_MEDIA_ACCESS_GRANTED'
+    | 'ADMIN_INTERVENTION_ORCHESTRATED';
   readonly principalId: string;
   readonly details: string;
   readonly timestamp: Date;
@@ -307,3 +308,87 @@ export interface AdministrativeSupportMediaGrant {
 export interface MediaGrantSigner {
   signDownloadUrl(key: string, ttlSeconds: number): Promise<string>;
 }
+
+// ==========================================
+// EL-TK-151: Orquestación de Intervenciones Administrativas Propietarias
+// ==========================================
+
+export type AdminInterventionType =
+  | 'SUSPEND_EVENT'
+  | 'REACTIVATE_EVENT'
+  | 'EXTEND_EVENT_VALIDITY'
+  | 'CLOSE_EVENT'
+  | 'REVOKE_GUEST_ACCESS'
+  | 'APPLY_CAPACITY_OVERRIDE';
+
+export interface ExecuteInterventionCommand {
+  readonly actorContext: AdminActorContext;
+  readonly eventId: string;
+  readonly interventionType: AdminInterventionType;
+  readonly reason: string;
+  readonly idempotencyKey?: string;
+  readonly params?: {
+    readonly extensionDays?: number;
+    readonly storageBytes?: string | bigint;
+    readonly maxFiles?: number;
+    readonly retentionDays?: number;
+  };
+}
+
+export interface ExecuteInterventionResult {
+  readonly outcome: 'EXECUTED' | 'IDEMPOTENT_REPLAY';
+  readonly interventionType: AdminInterventionType;
+  readonly eventId: string;
+  readonly executedAt: string;
+  readonly downstreamResult: Record<string, unknown>;
+}
+
+export interface AdminLifecyclePort {
+  suspendEvent(params: {
+    actorContext: AdminActorContext;
+    eventId: string;
+    reason: string;
+    idempotencyKey?: string;
+  }): Promise<{ outcome: string; previousStatus: string; newStatus: string; suspendedAt: string }>;
+
+  reactivateEvent(params: {
+    actorContext: AdminActorContext;
+    eventId: string;
+    reason: string;
+    idempotencyKey?: string;
+  }): Promise<{ outcome: string; previousStatus: string; newStatus: string; reactivatedAt: string }>;
+
+  extendEventValidity(params: {
+    actorContext: AdminActorContext;
+    eventId: string;
+    extensionDays: number;
+    reason: string;
+    idempotencyKey?: string;
+  }): Promise<{ outcome: string; previousStatus: string; newStatus: string; newExpiresAt: string; extendedAt: string }>;
+
+  closeEvent(params: {
+    actorContext: AdminActorContext;
+    eventId: string;
+    reason: string;
+  }): Promise<{ outcome: string; previousStatus: string; newStatus: string; closedAt: string }>;
+}
+
+export interface AdminAccessPort {
+  revokeAllGuestSessions(params: {
+    actorContext: AdminActorContext;
+    eventId: string;
+    reason: string;
+  }): Promise<{ outcome: string; eventId: string; revokedSessionsCount: number; revokedAt: string }>;
+}
+
+export interface AdminCapacityOverridePort {
+  applyCapacityOverride(params: {
+    actorContext: AdminActorContext;
+    eventId: string;
+    storageBytes?: string | bigint;
+    maxFiles?: number;
+    retentionDays?: number;
+    reason: string;
+  }): Promise<{ outcome: string; eventId: string; overrideId: string; appliedAt: string }>;
+}
+
