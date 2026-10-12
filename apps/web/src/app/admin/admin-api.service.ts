@@ -120,4 +120,95 @@ export class AdminApiService {
 
     return response.json() as Promise<ExecuteInterventionResult>;
   }
+
+  async applyCapacityOverride(
+    eventId: string,
+    payload: {
+      storageBytes?: string;
+      maxFiles?: number;
+      retentionDays?: number;
+      reason: string;
+    },
+    callerActorId?: string
+  ): Promise<{ success: boolean; eventId: string }> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (callerActorId) {
+      headers['x-admin-actor-id'] = callerActorId;
+    }
+
+    const response = await fetch(`${this.baseUrl}/events/${encodeURIComponent(eventId)}/capacity-override`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error((err as { message?: string }).message || `Error applying capacity override: ${response.status}`);
+    }
+
+    return response.json() as Promise<{ success: boolean; eventId: string }>;
+  }
+
+  async removeCapacityOverride(
+    eventId: string,
+    payload: { reason: string },
+    callerActorId?: string
+  ): Promise<{ success: boolean; eventId: string }> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (callerActorId) {
+      headers['x-admin-actor-id'] = callerActorId;
+    }
+
+    const response = await fetch(`${this.baseUrl}/events/${encodeURIComponent(eventId)}/capacity-override/revert`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error((err as { message?: string }).message || `Error removing capacity override: ${response.status}`);
+    }
+
+    return response.json() as Promise<{ success: boolean; eventId: string }>;
+  }
+
+  async reviewExtensionRequest(
+    requestId: string,
+    payload: {
+      decision: 'APPROVE' | 'REQUEST_INFO' | 'REJECT';
+      reason: string;
+      overrideLimits?: {
+        storageBytes?: string;
+        maxFiles?: number;
+        retentionDays?: number;
+      };
+    },
+    callerActorId?: string
+  ): Promise<{ success: boolean; requestId: string; decision: string }> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (callerActorId) {
+      headers['x-admin-actor-id'] = callerActorId;
+    }
+
+    const response = await fetch(`${this.baseUrl}/capacity-requests/${encodeURIComponent(requestId)}/review`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error((err as { message?: string }).message || `Error reviewing extension request: ${response.status}`);
+    }
+
+    return response.json() as Promise<{ success: boolean; requestId: string; decision: string }>;
+  }
 }

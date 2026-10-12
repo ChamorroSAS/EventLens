@@ -4,7 +4,7 @@
 EL-EP-011
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** administración autorizada, **quiero** revisar solicitudes y ajustar límites desde el detalle del evento, **para** operar ampliaciones sin duplicar políticas ni formularios.
@@ -68,3 +68,12 @@ DEC-095, DEC-100..102; EL-EP-011, EL-EP-012.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-capacity-lifecycle.md y ui-mvp-epic-review.md §EL-EP-011; sin componentes nuevos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Implementación y Validación — 2026-10-11
+- Implementado diálogo modal `AdminCapacityOverrideDialogComponent` con comparación de métricas base, límites actuales y propuestos, motivo obligatorio de auditoría y acción de retorno al plan base.
+- Implementado componente `AdminCapacityRequestsComponent` para revisar solicitudes de ampliación del evento con historial e interacciones de aprobación, solicitud de información (`REQUEST_INFO`) y rechazo (`REJECT`).
+- Integrado en `AdminEventDetailComponent` dentro de la sección de capacidad y consumo.
+- Ampliado `AdminApiService` con clientes para aplicar/retornar overrides y revisar solicitudes.
+- Suite de pruebas unitarias en `admin-capacity-override.component.spec.ts` (5 tests en verde) cubriendo los 3 escenarios de aceptación.
+- Suite completa de frontend `apps/web`: 52/52 pruebas PASS.
+- `pnpm typecheck` validado con código de salida 0.

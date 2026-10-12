@@ -251,7 +251,7 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-141 (DONE) | 139,044 | 142,144,145 |
 | EL-TK-142 (DONE) | 134,141; contrato EL-EP-003 | 144,145 |
 | EL-TK-143 (DONE) | 135,139,140 | 145 |
-| EL-TK-144 | 141,142; contrato EL-EP-012 | 145 |
+| EL-TK-144 (DONE) | 141,142; contrato EL-EP-012 | 145 |
 | EL-TK-145 | 134..144 | validación EL-EP-011 |
 
 12 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de plan BETA base y límites efectivos, consulta de consumo comercial y reservas separadas de storage operacional (DEC-079), reserva y liberación atómica de cuota (DEC-080), consolidación de consumo en aceptación/purga física, emisión de señales deduplicadas al 80% y 100%, solicitud de ampliación (DEC-093..095/100..102), respuesta en misma solicitud, revisión administrativa con motivo, aplicación de overrides/retorno al plan base con denegación de vencimiento pasado y superficies UI de organizador y consola administrativa. Superficies UI reutilizadas del catálogo canónico (ui-capacity-lifecycle.md y ui-mvp-epic-review.md §EL-EP-011), sin componentes nuevos. Carga en EL-EP-005, lifecycle en EL-EP-003 y notificaciones en EL-EP-013.

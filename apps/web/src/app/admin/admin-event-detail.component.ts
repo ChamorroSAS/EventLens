@@ -13,10 +13,16 @@ import { AdminInterventionDialogComponent } from './admin-intervention-dialog.co
 import { AdminMediaGrantDialogComponent } from './admin-media-grant-dialog.component.js';
 import { JobsViewerComponent } from '../jobs/jobs-viewer.component.js';
 import { AuditLogViewerComponent } from '../audit/audit-log-viewer.component.js';
+import { AdminCapacityOverrideDialogComponent } from './admin-capacity-override-dialog.component.js';
+import { AdminCapacityRequestsComponent } from './admin-capacity-requests.component.js';
 import type {
+  AdminApplyOverrideCommand,
+  AdminCapacityRequestItem,
   AdminEventDetailSnapshot,
   AdminInterventionType,
   AdminMediaPurpose,
+  AdminRemoveOverrideCommand,
+  AdminReviewRequestCommand,
   AdministrativeSupportMediaGrant,
   ExecuteInterventionPayload,
 } from './admin.types.js';
@@ -30,6 +36,8 @@ import type {
     AdminMediaGrantDialogComponent,
     JobsViewerComponent,
     AuditLogViewerComponent,
+    AdminCapacityOverrideDialogComponent,
+    AdminCapacityRequestsComponent,
   ],
   template: `
     <section class="event-detail-container" aria-labelledby="detail-heading">
@@ -188,12 +196,29 @@ import type {
 
         <!-- Capacidad y Cuotas (Disponibilidad honesta) -->
         <section class="section-card" aria-labelledby="capacity-heading">
-          <h3 id="capacity-heading" class="section-title">Capacidad y Consumo de Almacenamiento</h3>
+          <div class="card-header-flex">
+            <h3 id="capacity-heading" class="section-title">Capacidad y Consumo de Almacenamiento</h3>
+            @if (snapshot()!.capacity.availability === 'AVAILABLE') {
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm"
+                (click)="openOverrideDialog()"
+              >
+                Ajustar Capacidad / Overrides
+              </button>
+            }
+          </div>
+
           @if (snapshot()!.capacity.availability === 'AVAILABLE') {
             <div class="info-grid">
               <div class="info-item">
                 <span class="info-label">Plan Activo</span>
-                <strong>{{ snapshot()!.capacity.planCode || 'Standard' }}</strong>
+                <strong>
+                  {{ snapshot()!.capacity.planCode || 'Standard' }}
+                  @if (snapshot()!.capacity.isOverrideActive) {
+                    <span class="badge badge-override">(Override Activo)</span>
+                  }
+                </strong>
               </div>
               <div class="info-item">
                 <span class="info-label">Límite de Almacenamiento</span>
@@ -208,6 +233,17 @@ import type {
                 <span>{{ snapshot()!.capacity.filesCount ?? 0 }} / {{ snapshot()!.capacity.fileLimit || 'Ilimitado' }}</span>
               </div>
             </div>
+
+            <!-- Solicitudes de Ampliación de Capacidad -->
+            @if (snapshot()!.capacityRequests && snapshot()!.capacityRequests!.availability === 'AVAILABLE') {
+              <div class="requests-block">
+                <eventlens-admin-capacity-requests
+                  [requests]="snapshot()!.capacityRequests!.requests || []"
+                  (openOverrideForApproval)="onOpenOverrideForApproval($event)"
+                  (reviewRequest)="onReviewCapacityRequest($event)"
+                ></eventlens-admin-capacity-requests>
+              </div>
+            }
           } @else {
             <div class="alert alert-warning" role="status">
               <strong>Capacidad No Disponible:</strong> {{ snapshot()!.capacity.unavailableReason || 'El servicio de cuotas está temporalmente degradado.' }} No se asume consumo cero.
@@ -280,6 +316,21 @@ import type {
           (requestGrant)="onRequestMediaGrant($event)"
           (close)="closeMediaGrantDialog()"
         ></eventlens-admin-media-grant-dialog>
+      }
+
+      <!-- Diálogo de Override de Capacidad -->
+      @if (isOverrideDialogOpen() && snapshot()?.capacity) {
+        <eventlens-admin-capacity-override-dialog
+          [eventId]="eventId"
+          [baseLimits]="getBaseLimits()"
+          [currentLimits]="getCurrentLimits()"
+          [isOverrideActive]="snapshot()!.capacity.isOverrideActive || false"
+          [submitting]="overrideSubmitting()"
+          [errorMessage]="overrideErrorMessage()"
+          (applyOverride)="onApplyCapacityOverride($event)"
+          (revertToBase)="onRevertCapacityOverride($event)"
+          (cancel)="closeOverrideDialog()"
+        ></eventlens-admin-capacity-override-dialog>
       }
     </section>
   `,
@@ -441,6 +492,31 @@ import type {
       font-size: 0.75rem;
       font-weight: 600;
     }
+    .card-header-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .btn-sm {
+      padding: 0.25rem 0.625rem;
+      font-size: 0.75rem;
+    }
+    .badge-override {
+      background: rgba(56, 189, 248, 0.2);
+      color: #38bdf8;
+      border: 1px solid #0284c7;
+      padding: 0.125rem 0.375rem;
+      border-radius: 0.25rem;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      margin-left: 0.375rem;
+    }
+    .requests-block {
+      margin-top: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid #334155;
+    }
     .mono { font-family: monospace; }
     .text-muted { color: #94a3b8; }
   `]
@@ -462,6 +538,10 @@ export class AdminEventDetailComponent implements OnInit {
 
   pendingMediaGrantTarget = signal<string | null>(null);
   lastInvokingElement: HTMLElement | null = null;
+
+  isOverrideDialogOpen = signal<boolean>(false);
+  overrideSubmitting = signal<boolean>(false);
+  overrideErrorMessage = signal<string | null>(null);
 
   ngOnInit(): void {
     this.loadDetail();
@@ -540,5 +620,85 @@ export class AdminEventDetailComponent implements OnInit {
       this.errorMessage.set(`No se pudo autorizar acceso a multimedia: ${msg}`);
       this.closeMediaGrantDialog();
     }
+  }
+
+  openOverrideDialog(): void {
+    this.overrideErrorMessage.set(null);
+    this.isOverrideDialogOpen.set(true);
+  }
+
+  closeOverrideDialog(): void {
+    this.isOverrideDialogOpen.set(false);
+  }
+
+  getBaseLimits(): { storageGigabytes: number; maxFiles: number; retentionDays: number } {
+    const cap = this.snapshot()?.capacity;
+    const bytes = cap?.baseStorageLimitBytes
+      ? BigInt(cap.baseStorageLimitBytes)
+      : cap?.storageLimitBytes
+        ? BigInt(cap.storageLimitBytes)
+        : 10737418240n;
+    return {
+      storageGigabytes: Number(bytes) / (1024 * 1024 * 1024),
+      maxFiles: cap?.baseMaxFiles ?? cap?.fileLimit ?? 1000,
+      retentionDays: cap?.baseRetentionDays ?? cap?.retentionDays ?? 30,
+    };
+  }
+
+  getCurrentLimits(): { storageGigabytes: number; maxFiles: number; retentionDays: number } {
+    const cap = this.snapshot()?.capacity;
+    const bytes = cap?.storageLimitBytes ? BigInt(cap.storageLimitBytes) : 10737418240n;
+    return {
+      storageGigabytes: Number(bytes) / (1024 * 1024 * 1024),
+      maxFiles: cap?.fileLimit ?? 1000,
+      retentionDays: cap?.retentionDays ?? 30,
+    };
+  }
+
+  async onApplyCapacityOverride(command: AdminApplyOverrideCommand): Promise<void> {
+    this.overrideSubmitting.set(true);
+    this.overrideErrorMessage.set(null);
+    try {
+      await this.adminApi.applyCapacityOverride(this.eventId, command, this.callerActorId);
+      this.closeOverrideDialog();
+      await this.loadDetail();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Error al aplicar override';
+      this.overrideErrorMessage.set(msg);
+    } finally {
+      this.overrideSubmitting.set(false);
+    }
+  }
+
+  async onRevertCapacityOverride(command: AdminRemoveOverrideCommand): Promise<void> {
+    this.overrideSubmitting.set(true);
+    this.overrideErrorMessage.set(null);
+    try {
+      await this.adminApi.removeCapacityOverride(this.eventId, command, this.callerActorId);
+      this.closeOverrideDialog();
+      await this.loadDetail();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Error al revertir override';
+      this.overrideErrorMessage.set(msg);
+    } finally {
+      this.overrideSubmitting.set(false);
+    }
+  }
+
+  async onReviewCapacityRequest(command: AdminReviewRequestCommand): Promise<void> {
+    this.loading.set(true);
+    try {
+      await this.adminApi.reviewExtensionRequest(command.requestId, command, this.callerActorId);
+      await this.loadDetail();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Error al revisar solicitud de ampliación';
+      this.errorMessage.set(msg);
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  onOpenOverrideForApproval(_req: AdminCapacityRequestItem): void {
+    this.openOverrideDialog();
   }
 }

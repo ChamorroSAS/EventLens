@@ -71,10 +71,17 @@ export interface AdminEventLifecycleSection {
 export interface AdminEventCapacitySection {
   readonly availability: SectionAvailability;
   readonly planCode?: string;
+  readonly isOverrideActive?: boolean;
   readonly storageLimitBytes?: string;
   readonly storageUsedBytes?: string;
+  readonly reservedStorageBytes?: string;
   readonly fileLimit?: number;
   readonly filesCount?: number;
+  readonly reservedFiles?: number;
+  readonly retentionDays?: number;
+  readonly baseStorageLimitBytes?: string;
+  readonly baseMaxFiles?: number;
+  readonly baseRetentionDays?: number;
   readonly unavailableReason?: string;
 }
 
@@ -107,18 +114,51 @@ export interface AdminEventInvitationsSection {
   readonly unavailableReason?: string;
 }
 
+export interface AdminCapacityRequestMessageItem {
+  readonly id: string;
+  readonly authorRole: 'ORGANIZER' | 'ADMIN';
+  readonly content: string;
+  readonly createdAt: string;
+}
+
 export interface AdminCapacityRequestItem {
   readonly requestId: string;
-  readonly requestedPlan: string;
-  readonly status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  readonly requestType?: 'STORAGE' | 'DURATION' | 'BOTH';
+  readonly requestedPlan?: string;
+  readonly additionalGb?: number | null;
+  readonly additionalDays?: number | null;
+  readonly status: 'PENDING' | 'PENDING_REVIEW' | 'INFORMATION_REQUESTED' | 'APPROVED' | 'REJECTED';
   readonly requestedAt: string;
   readonly justification: string;
+  readonly messages?: readonly AdminCapacityRequestMessageItem[];
 }
 
 export interface AdminEventCapacityRequestsSection {
   readonly availability: SectionAvailability;
   readonly requests?: readonly AdminCapacityRequestItem[];
   readonly unavailableReason?: string;
+}
+
+export interface AdminApplyOverrideCommand {
+  readonly storageBytes?: string;
+  readonly maxFiles?: number;
+  readonly retentionDays?: number;
+  readonly reason: string;
+}
+
+export interface AdminRemoveOverrideCommand {
+  readonly reason: string;
+}
+
+export interface AdminReviewRequestCommand {
+  readonly requestId: string;
+  readonly decision: 'APPROVE' | 'REQUEST_INFO' | 'REJECT';
+  readonly reason: string;
+  readonly overrideLimits?: {
+    readonly storageBytes?: string;
+    readonly maxFiles?: number;
+    readonly retentionDays?: number;
+  };
 }
 
 export interface AdminReportSummaryItem {
