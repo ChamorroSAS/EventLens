@@ -6,6 +6,14 @@
 
 **RECOMMENDED:** primera descomposición funcional; prioridad P0 = necesaria para beta operativa segura; P1 = evaluación beta o preparación pública. Estado READY significa DoR de épica, no autorización de lanzar ni dependencias ya realizadas. NOT_READY conserva bloqueantes explícitos. Los tickets existentes se enumeran en su sección y permanecen sujetos a sus puertas de revisión.
 
+## Propuestas nuevas de épicas (no incorporadas al alcance Beta aceptado)
+
+| ID propuesto | Resultado | Propiedad | Gate | Documento |
+|---|---|---|---|---|
+| EL-EP-018 | Home público informativo, entrada y navegación a cuenta/eventos | Frontend transversal MOD-001/002/003 | DRAFT; sin tickets ni revisión de requisitos/UI | [EL-EP-018](epics/EL-EP-018.md) |
+
+**PROPUESTA 2026-10-12 (actualizada):** EP-018 no altera el inventario de 17 épicas confirmadas. **CONFIRMED:** Home `/` sin redirección automática para visitantes y autenticados, más 12 elecciones editoriales (CTA Beta, 4 FAQ, cabecera equilibrada y footer minimalista), sin atribución personal. [Registro editorial y auditoría de rutas](sessions/2026-10-12-el-ep-018-editorial-and-routes.md). La redacción literal es propuesta para revisión. **CONFIRMED A/B/C:** `/mi-cuenta` compone datos básicos, seguridad, sesiones y solicitud de eliminación sin segundo dashboard; quien no tenga sesión entra por `/ingresar` y vuelve sólo a destino interno autorizado; invitado por QR accede directo sin Home ni login organizador. **PENDING técnico:** implementación real de `/ingresar` y `/mi-cuenta`, paths candidatos de Beta/Mis eventos, formato de URL QR, montaje Angular Router, UI/UX y revisión jurídica. Prioridad P0 propuesta para ruta/entrada operativa de la Beta y P1 para contenido institucional. **Permanece DRAFT; sin tickets ni implementación.** No crear registro libre ni cuenta guest.
+
 ## Epics
 
 **CONFIRMED - 2026-10-08, gate UI actual:** todas16 MVP READY de requisitos. Intake004009 aprobado DEC-103..105, frontend planning YES. EL-EP-017 sigue NOT_READY juridico publico. Total17:16 READY/1 NOT_READY. [Matriz vigente](../context/ui-mvp-epic-review.md), [gate intake](sessions/2026-10-08-removal-intake.md). Solo001015 mantienen gates tecnicos frontend localizados; no implementacion/lanzamiento certificados.
@@ -19,7 +27,7 @@
 | EL-EP-005 | Cargar recuerdos con tolerancia a fallos móviles | MOD-003 | READY | P0 | EL-EP-004, EL-EP-011 | [EL-EP-005](epics/EL-EP-005.md) |
 | EL-EP-006 | Procesar multimedia preservando originales y aislando riesgos | MOD-003 | READY | P0 | EL-EP-005 | [EL-EP-006](epics/EL-EP-006.md) |
 | EL-EP-007 | Visualizar recuerdos en una galería privada móvil | MOD-004 | DONE | P0 | EL-EP-004, EL-EP-006 | [EL-EP-007](epics/EL-EP-007.md) |
-| EL-EP-008 | Moderar, ocultar y recuperar contenido del evento | MOD-004 | READY | P0 | EL-EP-006, EL-EP-007 | [EL-EP-008](epics/EL-EP-008.md) |
+| EL-EP-008 | Moderar, ocultar y recuperar contenido del evento | MOD-004 | DONE | P0 | EL-EP-006, EL-EP-007 | [EL-EP-008](epics/EL-EP-008.md) |
 | EL-EP-009 | Atender denuncias y solicitudes de retiro sin cuenta | MOD-004 | DONE | P0 | EL-EP-004, EL-EP-007, EL-EP-014 | [EL-EP-009](epics/EL-EP-009.md) |
 | EL-EP-010 | Recuperar originales individualmente y por exportación | MOD-005 | READY | P0 | EL-EP-006, EL-EP-008, EL-EP-013 | [EL-EP-010](epics/EL-EP-010.md) |
 | EL-EP-011 | Aplicar planes BETA y ampliaciones controladas | MOD-006 | READY | P0 | EL-EP-001 | [EL-EP-011](epics/EL-EP-011.md) |
@@ -145,7 +153,7 @@
 | EL-TK-108 | Restaurar una media de papelera respetando bloqueos vigentes | EL-EP-008 | DONE | P0 | 107 | [EL-TK-108](tickets/EL-TK-108.md) |
 | EL-TK-109 | Entregar a purga una media cuya papelera venció | EL-EP-008 | DONE | P0 | 107,055; contrato EL-EP-015 | [EL-TK-109](tickets/EL-TK-109.md) |
 | EL-TK-110 | Cambiar el modo de moderación sin reescribir contenido existente | EL-EP-008 | DONE | P0 | 028,037 | [EL-TK-110](tickets/EL-TK-110.md) |
-| EL-TK-111 | Integrar acciones de moderación y papelera en la biblioteca del organizador | EL-EP-008 | READY | P0 | 100,103..108,110 | [EL-TK-111](tickets/EL-TK-111.md) |
+| EL-TK-111 | Integrar acciones de moderación y papelera en la biblioteca del organizador | EL-EP-008 | DONE | P0 | 100,103..108,110 | [EL-TK-111](tickets/EL-TK-111.md) |
 | EL-TK-112 | Validar moderación, papelera y restauración de extremo a extremo | EL-EP-008 | DONE | P0 | 103..111 | [EL-TK-112](tickets/EL-TK-112.md) |
 | EL-TK-113 | Registrar una denuncia sobre contenido visible | EL-EP-009 | DONE | P0 | contrato media visible EL-EP-007; contrato EL-EP-014 | [EL-TK-113](tickets/EL-TK-113.md) |
 | EL-TK-114 | Retirar irreversiblemente un aporte propio con sesión guest válida | EL-EP-009 | DONE | P0 | 078; contrato EL-EP-015 | [EL-TK-114](tickets/EL-TK-114.md) |
@@ -194,10 +202,10 @@
 | EL-TK-157 | Encolar y procesar correos de notificación con proveedor desacoplado | EL-EP-013 | DONE | P0 | 156, 055; contrato JobQueue | [EL-TK-157](tickets/EL-TK-157.md) |
 | EL-TK-158 | Proyectar avisos contextuales vigentes para el panel del organizador | EL-EP-013 | DONE | P0 | 156 | [EL-TK-158](tickets/EL-TK-158.md) |
 | EL-TK-159 | Generar avisos de lifecycle, gracia y eliminación próxima | EL-EP-013 | READY | P0 | 156; contratos EL-EP-003/015 | [EL-TK-159](tickets/EL-TK-159.md) |
-| EL-TK-160 | Generar avisos de capacidad al 80 y 100 por ciento | EL-EP-013 | READY | P0 | 156; contrato 138 | [EL-TK-160](tickets/EL-TK-160.md) |
+| EL-TK-160 | Generar avisos de capacidad al 80 y 100 por ciento | EL-EP-013 | DONE | P0 | 156; contrato 138 | [EL-TK-160](tickets/EL-TK-160.md) |
 | EL-TK-161 | Generar avisos de exportación disponible y expiración | EL-EP-013 | READY | P0 | 156; contrato EL-EP-010 | [EL-TK-161](tickets/EL-TK-161.md) |
 | EL-TK-162 | Generar avisos de cuenta, seguridad y cambios del evento | EL-EP-013 | DONE | P0 | 156; contratos EL-EP-001/003 | [EL-TK-162](tickets/EL-TK-162.md) |
-| EL-TK-163 | Generar avisos de denuncias e intervenciones según severidad autorizada | EL-EP-013 | READY | P0 | 156; contratos EL-EP-009/014 | [EL-TK-163](tickets/EL-TK-163.md) |
+| EL-TK-163 | Generar avisos de denuncias e intervenciones según severidad autorizada | EL-EP-013 | DONE | P0 | 156; contratos EL-EP-009/014 | [EL-TK-163](tickets/EL-TK-163.md) |
 | EL-TK-164 | Integrar avisos contextuales y plantillas de correo accesibles | EL-EP-013 | READY | P0 | 157..163 | [EL-TK-164](tickets/EL-TK-164.md) |
 | EL-TK-165 | Validar notificaciones, deduplicación y obsolescencia de extremo a extremo | EL-EP-013 | READY | P0 | 156..164 | [EL-TK-165](tickets/EL-TK-165.md) |
 | EL-TK-166 | Registrar eventos de auditoría mínimos y sanitizados | EL-EP-014 | DONE | P0 | ninguna predecesora funcional dura | [EL-TK-166](tickets/EL-TK-166.md) |
@@ -376,6 +384,11 @@ EL-TK-001..004 — SUPERSEDED por EL-TK-005..019; se preservan como historial. E
 **CONFIRMED — EL-TK-155 DONE, 2026-10-12:** validación de soporte e intervención administrativa de extremo a extremo completada en `@eventlens/admin-support` (`test/admin-support-epic-e2e.test.ts`) conforme a Q-017, DEC-019, DEC-020, DEC-027, DEC-038 y contratos EL-EP-012. Cubre los 4 escenarios canónicos: 1) denegación estricta de acceso multimedia sin justificación válida / sin actor administrativo humano y emisión firmada de `MediaViewGrant` con auditoría inmutable `ADMIN_MEDIA_ACCESS_GRANTED`; 2) ejecución de intervenciones sobre dominios dueños (`SUSPEND_EVENT`), replay idempotente (`IDEMPOTENT_REPLAY`) y acciones controladas sobre jobs (`RETRY`, rechazo de estados incompatibles) con auditoría `ADMIN_JOB_ACTION_EXECUTED`; 3) tolerancia a fallos en detalle agregado (`overallAvailability: 'PARTIAL'`) ante fallos de secciones propietarias sin ofrecer acciones falsas, y deshabilitación estricta de capacidades en estado cerrado (`CLOSED`) y terminal (`DELETED`); 4) búsqueda administrativa con mínimo privilegio y auditoría `ADMIN_SEARCH_PERFORMED`. Suite total de 11/11 pruebas E2E PASS, 90 pruebas de la suite de admin-support PASS, y typecheck limpio. Épica `EL-EP-012` completada de extremo a extremo. Véase el [cierre](tickets/EL-TK-155.md).
 
 **CONFIRMED — EL-EP-009 CIERRE DEFINITIVO, 2026-10-12:** épica EL-EP-009 (Atender denuncias y solicitudes de retiro sin cuenta) completada al 100% de sus 11 tickets (EL-TK-113..123 todos DONE). Cubre el ciclo completo de privacidad y gobernanza: registro de denuncias con neutralidad de feedback per DEC-088; retiro propio irreversible inmediato sin papelera de organizador per DEC-089 y DEC-097; intake sin sesión con campos apilados conforme a DEC-103..105 (declaración obligatoria nunca preseleccionada y validación de correo sin atribuir sesión ni titularidad); clasificación de severidad con priorización administrativa pero sin auto-ocultamiento per DEC-088; acceso técnico justificado a multimedia con grant temporal de 15 minutos; ocultamiento preventivo a HIDDEN; resolución definitiva (ACTION_TAKEN, RESOLVED, DISMISSED) con purga irreversible downstream; consulta de cola sanitizada sin previews multimedia en el listado; integración en experiencia pública/guest y en consola administrativa de frontend (@eventlens/web); y suite de validación E2E contra PostgreSQL 16 real (media-report-governance-e2e.integration.test.ts). Suite completa web (101 tests PASS) y suite de media-inspection (248 unitarias y 22 de integración PASS) sin regresiones. Épica `EL-EP-009` cerrada oficialmente.
+
+**CONFIRMED — EL-TK-160 DONE, 2026-10-12:** generación de avisos de capacidad al 80% y 100% implementada en `@eventlens/notifications` (`CapacityNoticeService`) conforme a DEC-021, DEC-027 y contratos EL-TK-138. Genera intenciones de aviso contextual y correo (`CAPACITY_WARNING_80`, `CAPACITY_EXCEEDED_100`) con severidad `WARNING`/`CRITICAL`, acción autorizada de ampliación hacia `/events/${eventId}/capacity/extension`, estricta deduplicación/idempotencia por dedupKey ante señales repetidas, integración en `NoticeProjectionService` y plantillas accesibles en `EmailRenderer`, y auditoría sanitizada sin media. Suites de pruebas (4 unitarias y 2 de integración en PostgreSQL 16) PASS, typecheck y build limpios. Desbloquea downstream EL-TK-164 y EL-TK-165. Véase el [cierre](tickets/EL-TK-160.md).
+
+**CONFIRMED — EL-TK-163 DONE, 2026-10-12:** generación de avisos de denuncias e intervenciones según severidad autorizada implementada en `@eventlens/notifications` (`CaseNoticeService`) conforme a Q-018, DEC-021, DEC-023, DEC-088 y contratos EL-EP-009/014. Emite alertas prioritarias para administradores autorizados (`CASE_CRITICAL_ALERT`) ante casos críticos sin auto-ocultar contenido, copy mínimo autorizado para el organizador (`CASE_RESOLUTION_NOTICE`, `ADMIN_INTERVENTION`), supresión estricta por órdenes legales o de seguridad sin fugar razones confidenciales, y cero filtraciones de reportantes ni multimedia sensible en los payloads de notificación. Suites de pruebas (7 unitarias y 2 de integración en PostgreSQL 16) PASS, typecheck y build limpios. Desbloquea downstream EL-TK-164 y EL-TK-165. Véase el [cierre](tickets/EL-TK-163.md).
+
 
 
 

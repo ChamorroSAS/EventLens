@@ -203,10 +203,10 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-108 (DONE) | 107 | 111,112 |
 | EL-TK-109 (DONE) | 107,055; contrato EL-EP-015 | 112; consumidor purge EL-EP-015 |
 | EL-TK-110 (DONE) | 028,037 | 111,112 |
-| EL-TK-111 | 100,103..108,110 | 112 |
+| EL-TK-111 (DONE) | 100,103..108,110 | 112 |
 | EL-TK-112 (DONE) | 103..111 | validación EL-EP-008 |
 
-9 activos COMPLETADOS (DONE) de 10 tickets en EL-EP-008 tras culminación de motor backend, expiración de papelera (EL-TK-109), cambio de modo DEC-087 (EL-TK-110) y validación integral E2E en PostgreSQL 16 (EL-TK-112). Solo resta EL-TK-111 (integración UI). Superficies UI reutilizadas del catálogo canónico (§8.5..9), sin componentes nuevos. Seguridad/cuarentena en EL-EP-006 y purga física en EL-EP-015.
+10 activos COMPLETADOS (DONE) de 10 tickets en EL-EP-008 tras culminación de motor backend, expiración de papelera (EL-TK-109), cambio de modo DEC-087 (EL-TK-110), integración UI de moderación, papelera, avisos y diálogos en Angular (@eventlens/web per EL-TK-111) y validación integral E2E en PostgreSQL 16 (EL-TK-112). Épica EL-EP-008 formalmente cerrada como DONE. Superficies UI reutilizadas del catálogo canónico (§8.5..9), sin componentes nuevos. Seguridad/cuarentena en EL-EP-006 y purga física en EL-EP-015.
 
 ## Tickets vigentes — EL-EP-009 (quality gate APPROVED)
 
@@ -286,10 +286,10 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-157 (DONE) | 156, 055; contrato JobQueue (DEC-064) | 164,165 |
 | EL-TK-158 (DONE) | 156 | 164,165 |
 | EL-TK-159 | 156; contratos EL-EP-003/015 | 164,165 |
-| EL-TK-160 | 156; contrato 138 | 164,165 |
+| EL-TK-160 (DONE) | 156; contrato 138 | 164,165 |
 | EL-TK-161 | 156; contrato EL-EP-010 | 164,165 |
 | EL-TK-162 (DONE) | 156; hechos de dominio EL-EP-001/003 | 164,165 |
-| EL-TK-163 | 156; hechos de dominio EL-EP-009; contrato EL-EP-014 | 164,165 |
+| EL-TK-163 (DONE) | 156; hechos de dominio EL-EP-009; contrato EL-EP-014 | 164,165 |
 | EL-TK-164 | 157..163 | 165 |
 | EL-TK-165 | 156..164 | validación EL-EP-013 |
 
@@ -514,7 +514,23 @@ TB-01/TB-02 dejan de bloquear.033/035/036/041/042/056 YES propio;058 NO ejecuci�
 
 **CONFIRMED — EL-TK-204 DONE, 2026-10-12:** dependencias EL-TK-203 y EL-TK-048 satisfechas; foundation visual de marca y piloto aislado de `OrganizerAppShellComponent` implementados y validados en `@eventlens/web`. Tipografía Manrope autoalojada en `apps/web/public/assets/fonts/manrope/` con pesos reales 400, 500, 600 y 700 WOFF2, licencia SIL Open Font License 1.1 (`OFL.txt`) y manifiesto de procedencia (`provenance.json`). Hoja de estilos única `apps/web/src/styles/ui-foundation.css` con `@font-face` (`font-display: swap`) y custom properties `--el-ui-*` inertes en `:root` registrada en `angular.json` sin contaminación global. Wordmark corporativo integrado en `h1` con nombre accesible `EventLens` y fallback textual ante fallo de carga. Roles semánticos WCAG 2.2 AA (contraste > 4.5:1 texto, > 3:1 foco), touch targets ≥ 44×44px, nombres largos sin truncamiento por elipsis, responsive reflow sin scroll horizontal (header estático en móvil y sticky en desktop) y preservación estricta de herencia `system-ui` hacia contenido proyectado y badges hijos. Suite de pruebas 90/90 PASS en `@eventlens/web` (incluyendo 5 unitarias en `organizer-app-shell.component.spec.ts`), verificación automatizada `scripts/verify-ui-foundation.mjs` PASS, typecheck 0 errores, build de producción limpio (106 kB). Épica transversal CR-004 completamente cerrada. Véase el [cierre](tickets/EL-TK-204.md).
 
+**CONFIRMED — EL-TK-160 DONE, 2026-10-12:** dependencias EL-TK-156 y contrato EL-TK-138 satisfechas; generación de avisos de capacidad al 80% y 100% implementada y validada en `@eventlens/notifications` (`CapacityNoticeService`, `packages/notifications/src/capacity-notice-service.ts`) conforme a DEC-021, DEC-027 y contratos EL-EP-011 / EL-TK-138. Genera intenciones deduplicadas `CAPACITY_WARNING_80` (severidad `WARNING`, acción `/events/${eventId}/capacity`) y `CAPACITY_EXCEEDED_100` (severidad `CRITICAL`, acción autorizada de ampliación `/events/${eventId}/capacity/extension`), garantizando estricta idempotencia por dedupKey ante señales repetidas, compatibilidad con `NoticeProjectionService` y `EmailRenderer`, y auditoría sin fugar media ni datos confidenciales. 4/4 pruebas unitarias PASS en `capacity-notice.unit.test.ts`, 2/2 pruebas de integración PASS contra PostgreSQL 16 real en `capacity-notice.integration.test.ts`, 0 errores de typecheck. Desbloquea downstream EL-TK-164 y EL-TK-165. Véase el [cierre](tickets/EL-TK-160.md).
+
+**CONFIRMED — EL-TK-163 DONE, 2026-10-12:** dependencias EL-TK-156, hechos de dominio EL-EP-009 y contrato de auditoría EL-EP-014 satisfechas; generación de avisos de denuncias e intervenciones según severidad autorizada implementada y validada en `@eventlens/notifications` (`CaseNoticeService`, `packages/notifications/src/case-notice-service.ts`) conforme a Q-018, DEC-021, DEC-023, DEC-088 y contratos EL-EP-009/014. Emite alertas prioritarias para administradores autorizados (`CASE_CRITICAL_ALERT`, severidad `CRITICAL`) ante reportes críticos sin auto-ocultamiento de contenido, copy mínimo autorizado para el organizador (`CASE_RESOLUTION_NOTICE`, `ADMIN_INTERVENTION`), supresión estricta por órdenes legales o directivas de seguridad sin fugar razones confidenciales al destinatario, y garantía de cero filtraciones de reportantes o previews multimedia en los payloads de notificación. 7/7 pruebas unitarias PASS en `case-notice.unit.test.ts`, 2/2 pruebas de integración PASS contra PostgreSQL 16 real en `case-notice.integration.test.ts`, 0 errores de typecheck. Desbloquea downstream EL-TK-164 y EL-TK-165. Véase el [cierre](tickets/EL-TK-163.md).
 
 
 
 
+
+
+
+## Propuesta sin aprobar — EL-EP-018 (Home y navegación)
+
+**DRAFT 2026-10-12 — NO ALTERA EL MAPA DE ÉPICAS ACEPTADAS.** [Propuesta](epics/EL-EP-018.md). No se crea módulo funcional nuevo ni ciclo con identidad/eventos. La navegación consume capacidades existentes, con fronteras:
+- `EL-EP-001`/`EL-TK-008` para login, cuenta y solicitud Beta; no registro abierto.
+- `EL-EP-002` para Mis eventos/OrganizerAppShell; no segundo dashboard.
+- `EL-EP-004` para acceso guest por QR/deep link; no directorio público de eventos.
+- `EL-EP-015` para sesión de eliminación restringida/gestión de cuenta; no nuevas políticas.
+- `EL-TK-203/204` para assets/foundation ya definidos; cambios visuales acotados, sin rediseño total.
+- `EL-EP-017` conserva gate jurídico antes de apertura pública; no impide propuesta documental.
+- Antes de tickets: auditar rutas Angular/runtime/guard, aprobar navegación y copy, `ui_designer`, `requirements_reviewer`, `architect`. Ningún DONE histórico se reabre sin correctivo nuevo explícito.

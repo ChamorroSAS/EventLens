@@ -57,6 +57,20 @@ function mapRowToRecord(row: NotificationIntentRow): NotificationIntentRecord {
   };
 }
 
+function canonicalize(val: unknown): unknown {
+  if (val === null || typeof val !== 'object') {
+    return val;
+  }
+  if (Array.isArray(val)) {
+    return val.map(canonicalize);
+  }
+  const sortedObj: Record<string, unknown> = {};
+  for (const key of Object.keys(val as Record<string, unknown>).sort()) {
+    sortedObj[key] = canonicalize((val as Record<string, unknown>)[key]);
+  }
+  return sortedObj;
+}
+
 function computePayloadHash(
   recipientRef: string,
   notificationType: string,
@@ -64,7 +78,11 @@ function computePayloadHash(
   payload: Record<string, unknown>
 ): string {
   return createHash('sha256')
-    .update(JSON.stringify({ recipientRef, notificationType, resourceRef, payload }))
+    .update(
+      JSON.stringify(
+        canonicalize({ recipientRef, notificationType, resourceRef, payload })
+      )
+    )
     .digest('hex');
 }
 

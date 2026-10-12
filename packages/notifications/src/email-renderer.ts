@@ -117,12 +117,22 @@ export class EmailRenderer {
         break;
       }
 
+      case 'CASE_CRITICAL_ALERT': {
+        subject = 'Alerta prioritaria de moderación — EventLens';
+        heading = 'Alerta prioritaria de moderación';
+        message =
+          'Se ha registrado un reporte de severidad crítica en la plataforma que requiere atención administrativa inmediata.';
+        actionLabel = 'Revisar caso';
+        break;
+      }
+
+      case 'CASE_RESOLUTION_NOTICE':
       case 'REPORT_RESOLVED': {
         subject = 'Actualización sobre una moderación o reporte — EventLens';
         heading = 'Resolución de caso';
         message =
-          'Se ha registrado una resolución sobre una solicitud o reporte en tu evento.';
-        actionLabel = 'Ver detalles';
+          'Se ha completado la revisión de un reporte sobre contenido en tu evento. La moderación ha sido aplicada de conformidad con los términos y políticas.';
+        actionLabel = 'Ver detalles de moderación';
         break;
       }
 

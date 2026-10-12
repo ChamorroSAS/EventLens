@@ -38,11 +38,12 @@ export class AccountEventNoticeService {
       throw new NotificationError('INVALID_ARGUMENT', 'eventType is required for account security notice');
     }
 
-    const occurredAt = fact.occurredAt || new Date();
     const sanitizedMetadata: Record<string, unknown> = {
-      eventType: fact.eventType,
-      occurredAt: occurredAt.toISOString()
+      eventType: fact.eventType
     };
+    if (fact.occurredAt) {
+      sanitizedMetadata.occurredAt = fact.occurredAt.toISOString();
+    }
 
     if (fact.ipAddress) {
       // Sanitize IP: ensure clean string without headers or injection attempts
@@ -80,7 +81,7 @@ export class AccountEventNoticeService {
         break;
     }
 
-    const dateBucket = occurredAt.toISOString().slice(0, 10);
+    const dateBucket = (fact.occurredAt || new Date()).toISOString().slice(0, 10);
     const dedupKey = fact.dedupKey || `sec:${fact.accountRef}:${fact.eventType}:${dateBucket}`;
 
     const result = await this.intentService.recordDomainFact({
@@ -95,7 +96,7 @@ export class AccountEventNoticeService {
         message,
         ...sanitizedMetadata
       },
-      effectiveAt: occurredAt
+      effectiveAt: fact.occurredAt || undefined
     });
 
     return {

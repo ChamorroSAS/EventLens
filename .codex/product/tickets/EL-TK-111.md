@@ -4,7 +4,7 @@
 EL-EP-008
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador, **quiero** moderar y gestionar papelera desde la biblioteca compartida, **para** controlar contenido sin duplicar pantallas ni perder contexto.
@@ -68,3 +68,19 @@ Q-006, Q-019; DEC-005, DEC-022, DEC-086, DEC-087, DEC-096; EL-EP-008; ui-mvp-epi
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §8.5..9; sin componentes nuevos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Implementación y Cierre — 2026-10-12
+- **Arquitectura de componentes:**
+  - `MediaModerationActionsComponent`: Botones contextuales de acción (Aprobar, Rechazar, Ocultar, Republicar, Enviar a papelera, Restaurar) mapeados estrictamente contra `media.capabilities` y aviso de "Ventana de restauración vencida" cuando `canRestore` es falso en `TRASHED`.
+  - `HideMediaDialogComponent`: Modal accesible (`role="dialog"`, `aria-modal="true"`) confirmando ocultamiento reversible sin afectación de cuota de almacenamiento.
+  - `RejectMediaDialogComponent`: Modal accesible con captura opcional de motivo de rechazo.
+  - `TrashMediaDialogComponent`: Modal accesible con advertencia explícita de retención de 7 días y purga definitiva posterior (DEC-005, DEC-022, DEC-096).
+  - `RetentionNoticeComponent`: Banner informativo de retención de 7 días visible cuando se activa el filtro `TRASHED`.
+  - `ModerationSettingsComponent`: Panel colapsable de ajuste de modo de moderación (`AUTO_PUBLISH` vs `ORGANIZER_REVIEW`, DEC-087 / EL-TK-110).
+  - `OrganizerMediaLibraryComponent`: Integración de panel de ajustes, alertas de feedback con aria-live, invocación de `MediaLibraryService` (`approveMedia`, `rejectMedia`, `hideMedia`, `republishMedia`, `trashMedia`, `restoreMedia`, `getModerationSettings`, `updateModerationMode`) y manejo resiliente de errores (`SAFETY_BLOCKED`, `RESTORE_WINDOW_EXPIRED`, `CONCURRENCY_CONFLICT`).
+  - `MediaStatusFilterComponent`: Adición de opciones `HIDDEN` ("Ocultos") y `TRASHED` ("Papelera").
+- **Validación automatizada:**
+  - `pnpm --filter @eventlens/web test`: 20 archivos de prueba pasados, 120 tests pasados (100% verde).
+  - `pnpm --filter @eventlens/web typecheck`: 0 errores con `ngc --noEmit`.
+  - `pnpm --filter @eventlens/web build`: Generación de bundle de producción exitosa.
+

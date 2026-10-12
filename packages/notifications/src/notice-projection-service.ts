@@ -146,29 +146,45 @@ export class NoticeProjectionService {
 
     switch (intent.notificationType) {
       case 'CAPACITY_WARNING_80': {
-        const usage = payload.current ?? payload.usage ?? 80;
+        const usage = payload.current ?? payload.usage ?? payload.currentStoragePercent ?? 80;
         const limit = payload.limit ?? 100;
-        title = 'Capacidad al 80%';
-        fact = `El almacenamiento del evento ha alcanzado el 80% (${usage}/${limit}).`;
+        title = typeof payload.title === 'string' ? payload.title : 'Capacidad al 80%';
+        fact =
+          typeof payload.fact === 'string'
+            ? payload.fact
+            : `El almacenamiento del evento ha alcanzado el 80% (${usage}/${limit}).`;
         consequence =
-          'Si se alcanza el 100%, las cargas de fotos y videos se pausarán automáticamente.';
+          typeof payload.consequence === 'string'
+            ? payload.consequence
+            : 'Si se alcanza el 100%, las cargas de fotos y videos se pausarán automáticamente.';
         severity = 'WARNING';
         action = {
-          label: 'Gestionar capacidad',
-          destination: `/events/${resourceRef}/capacity`
+          label: typeof payload.actionLabel === 'string' ? payload.actionLabel : 'Gestionar capacidad',
+          destination:
+            typeof payload.actionDestination === 'string'
+              ? payload.actionDestination
+              : `/events/${resourceRef}/capacity`
         };
         break;
       }
 
       case 'CAPACITY_EXCEEDED_100': {
-        title = 'Capacidad máxima alcanzada (100%)';
-        fact = 'Se ha alcanzado el límite total de almacenamiento contratado para el evento.';
+        title = typeof payload.title === 'string' ? payload.title : 'Capacidad máxima alcanzada (100%)';
+        fact =
+          typeof payload.fact === 'string'
+            ? payload.fact
+            : 'Se ha alcanzado el límite total de almacenamiento contratado para el evento.';
         consequence =
-          'Las nuevas cargas de recuerdos han sido pausadas hasta que se amplíe la cuota.';
+          typeof payload.consequence === 'string'
+            ? payload.consequence
+            : 'Las nuevas cargas de recuerdos han sido pausadas hasta que se amplíe la cuota.';
         severity = 'CRITICAL';
         action = {
-          label: 'Ampliar capacidad',
-          destination: `/events/${resourceRef}/capacity`
+          label: typeof payload.actionLabel === 'string' ? payload.actionLabel : 'Ampliar capacidad',
+          destination:
+            typeof payload.actionDestination === 'string'
+              ? payload.actionDestination
+              : `/events/${resourceRef}/capacity/extension`
         };
         break;
       }
@@ -288,6 +304,77 @@ export class NoticeProjectionService {
         action = {
           label: 'Ver invitación',
           destination: '/team/invitations'
+        };
+        break;
+      }
+
+      case 'CASE_CRITICAL_ALERT': {
+        const caseRef = typeof payload.caseRef === 'string' ? payload.caseRef : resourceRef;
+        title = typeof payload.title === 'string' ? payload.title : 'Alerta prioritaria de moderación';
+        fact =
+          typeof payload.fact === 'string'
+            ? payload.fact
+            : 'Se ha registrado un reporte de severidad crítica que requiere atención prioritaria.';
+        consequence =
+          typeof payload.consequence === 'string'
+            ? payload.consequence
+            : 'El caso debe ser evaluado por el equipo de administración.';
+        severity = 'CRITICAL';
+        action = {
+          label: typeof payload.actionLabel === 'string' ? payload.actionLabel : 'Revisar caso',
+          destination:
+            typeof payload.actionDestination === 'string'
+              ? payload.actionDestination
+              : `/admin/cases/${caseRef}`
+        };
+        break;
+      }
+
+      case 'CASE_ADMIN_ALERT': {
+        const caseRef = typeof payload.caseRef === 'string' ? payload.caseRef : resourceRef;
+        title = typeof payload.title === 'string' ? payload.title : 'Aviso de moderación de contenido';
+        fact =
+          typeof payload.fact === 'string'
+            ? payload.fact
+            : 'Se ha registrado un nuevo caso para revisión administrativa.';
+        consequence =
+          typeof payload.consequence === 'string'
+            ? payload.consequence
+            : 'Evalúa el caso conforme a las directrices de la plataforma.';
+        severity = 'WARNING';
+        action = {
+          label: typeof payload.actionLabel === 'string' ? payload.actionLabel : 'Revisar caso',
+          destination:
+            typeof payload.actionDestination === 'string'
+              ? payload.actionDestination
+              : `/admin/cases/${caseRef}`
+        };
+        break;
+      }
+
+      case 'CASE_RESOLUTION_NOTICE': {
+        title =
+          typeof payload.title === 'string'
+            ? payload.title
+            : 'Resolución de revisión en tu evento';
+        fact =
+          typeof payload.fact === 'string'
+            ? payload.fact
+            : 'Se ha completado la revisión de un reporte sobre contenido en tu evento.';
+        consequence =
+          typeof payload.consequence === 'string'
+            ? payload.consequence
+            : 'La moderación ha sido aplicada de conformidad con los términos y políticas.';
+        severity = 'INFO';
+        action = {
+          label:
+            typeof payload.actionLabel === 'string'
+              ? payload.actionLabel
+              : 'Ver detalles de moderación',
+          destination:
+            typeof payload.actionDestination === 'string'
+              ? payload.actionDestination
+              : `/events/${resourceRef}/moderation`
         };
         break;
       }
