@@ -3,7 +3,7 @@
 ## Status
 DRAFT — propuesta de producto para revisión; no aprobada por requirements_reviewer, ui_designer ni architect. No genera tickets ni modifica decisiones aceptadas.
 
-REQUIREMENTS_READY: PARTIAL — las doce elecciones editoriales y el comportamiento de `/` están confirmados; falta aprobar literal de copy, rutas/owners, revisión UX y requisitos.
+REQUIREMENTS_READY: PARTIAL — doce elecciones editoriales, comportamiento de `/` y reglas A/B/C de cuenta, retorno tras login y QR están confirmadas. Pendientes copy literal, integración/contratos técnicos de rutas restantes, revisión UX y requisitos.
 READY_FOR_TICKET_WRITING: NO — completar dictamen de requisitos, contratos de rutas y handoff UI; no generar tickets por aprobación editorial.
 UI_REQUIRED: YES
 READY_FOR_FRONTEND_PLANNING: NO — pendiente evaluación de navegación pública y autenticada.
@@ -40,8 +40,8 @@ La raíz Angular actual (`apps/web/src/app/app.component.ts`) presenta una vista
 ### 2. Navegación por estado de acceso
 | Contexto | Cabecera/acciones de entrada | Destino propietario |
 |---|---|---|
-| Visitante sin sesión | **Cómo funciona, Beneficios, Privacidad, Preguntas frecuentes**; **Iniciar sesión** y **Solicitar acceso a la Beta** | Login y solicitud Beta de MOD-001; el Home no construye credenciales |
-| Organizador con sesión activa | Menú editorial equilibrado según responsive; **Mis eventos**, **Mi cuenta**, **Cerrar sesión**; permanece en `/` sin redirect | EL-EP-001 (cuenta/sesiones) y EL-EP-002 (eventos); autorización backend por recurso |
+| Visitante sin sesión | **Cómo funciona, Beneficios, Privacidad, Preguntas frecuentes**; **Iniciar sesión** y **Solicitar acceso a la Beta** | Login en `/ingresar` confirmado funcionalmente y solicitud Beta de MOD-001; el Home no construye credenciales |
+| Organizador con sesión activa | Menú editorial equilibrado según responsive; **Mis eventos**, **Mi cuenta**, **Cerrar sesión**; permanece en `/` sin redirect | `/mi-cuenta`: datos básicos de cuenta, seguridad, sesiones, opción de solicitar eliminación; UI compuesta reutilizando EL-EP-001/015, no segundo dashboard. Eventos: EL-EP-002, autorización backend |
 | Sesión pendiente/restringida por eliminación | Acceso a consulta/cancelación de solicitud según contrato MOD-001/MOD-008, **sin** Mis eventos ni poderes normales | EL-EP-015 / EL-TK-186,191,192,201; no elevar sesión restringida |
 | Sesión expirada/revocada | Acceso público y **Iniciar sesión**; no presentar nombres/recursos privados | MOD-001, mensaje accesible neutro, return target seguro si aplica |
 | Invitado de evento | Sigue el deep link/QR privado y, si corresponde, PIN; enlace de regreso al Home solo si no altera sesión | EL-EP-004; no buscador/listado/código de evento inventado |
@@ -53,15 +53,15 @@ La raíz Angular actual (`apps/web/src/app/app.component.ts`) presenta una vista
 | Intención | Ruta candidata | Condición |
 |---|---|---|
 | Home | `/` | CONFIRMED: pública con/sin sesión, sin redirección automática |
-| Iniciar sesión | `/ingresar` | Reutilizar auth owner existente; URL definitiva según router |
+| Iniciar sesión | `/ingresar` | **CONFIRMED como destino funcional** del login de organizador, no ruta Angular implementada; componer auth owner existente |
 | Solicitar acceso Beta | `/solicitar-acceso` | Reutilizar EL-TK-008; mensaje neutro sin enumeración |
 | Mis eventos | `/mis-eventos` | Sesión/autoridad organizador; componer shell actual |
-| Mi cuenta | `/mi-cuenta` | Cuenta propia; seguridad, sesiones y eliminación en owners existentes |
+| Mi cuenta | `/mi-cuenta` | **CONFIRMED como destino funcional** de gestión propia: datos básicos, seguridad, sesiones, opción de solicitar eliminación; reutilizar EL-EP-001/015 |
 | Evento recibido por QR | Ruta de credencial pública ya establecida por EL-EP-004 | **No renombrar** ni publicar el token en Home/analytics |
 
-Estas rutas son **propuestas de navegación** sujetas a auditoría del Router y enlaces actuales. No crean nuevas APIs ni endpoint de directorio de eventos. Resolver deep links/direct refresh sin `404` de servidor, sin convertir urls de media privada en páginas públicas.
+`/`, `/ingresar` y `/mi-cuenta` tienen **comportamiento/destino de producto confirmado**; su implementación técnica no existe todavía en el bootstrap auditado. `/solicitar-acceso` y `/mis-eventos` son **paths candidatos**, pendientes de contrato. No crear APIs ni endpoint de directorio de eventos. Resolver deep links/direct refresh sin `404` de servidor, sin convertir urls de media privada en páginas públicas.
 
-Las anclas candidatas de secciones son `/#como-funciona`, `/#beneficios`, `/#privacidad` y `/#preguntas-frecuentes`, no rutas independientes. Guest conserva el path real que emite el dominio; no inventar `/evento/:id`. Al navegar a un destino protegido, validar sesión y `returnUrl` interno; no redirigir desde Home. Elegir comportamiento post-logout, paths definitivos, modalidad de `Mi cuenta`, SPA fallback y la URL QR real en el gate técnico.
+Las anclas candidatas de secciones son `/#como-funciona`, `/#beneficios`, `/#privacidad` y `/#preguntas-frecuentes`, no rutas independientes. Guest conserva el path real que emite el dominio; no inventar `/evento/:id`. **CONFIRMED — navegación protegida:** si alguien entra a `/mi-cuenta` sin una sesión de organizador válida, navegar a `/ingresar`; tras autenticarse correctamente, volver al **destino interno seguro solicitado** si conserva autorización. Validar estrictamente URL local y autorización para impedir open redirect; no usar credenciales de QR ni sesiones guest como `returnUrl`. La cuenta pendiente de eliminación utiliza exclusivamente gestión restringida según EL-EP-015. **CONFIRMED — guest:** acceso directo desde URL revocable emitida por EL-EP-004, sin desvío por Home ni exigencia de login organizador. Permanecen por cerrar logout, composición Angular Router, SPA fallback, paths aún candidatos y el **formato real** de la URL QR.
 
 ### 4. Composición frontend y diseño
 - Integrar Angular Router/entrada productiva en `AppComponent` usando shells existentes; la comprobación de health queda interna/operativa y no ocupa el Home de usuarios.
@@ -79,6 +79,7 @@ Las anclas candidatas de secciones son `/#como-funciona`, `/#beneficios`, `/#pri
 ## Business rules
 - **CONFIRMED desde producto vigente:** BETA por invitación, cuenta de organizador con correo verificado, acceso guest sin cuenta mediante enlace/QR, contenido privado y autorización por servidor. EL-TK-008 acepta solicitud Beta sin activación ni revelación de cuenta existente.
 - **CONFIRMED — aprobación explícita 2026-10-12:** Home `/` accesible con o sin sesión. No hay redirección automática del organizador autenticado; se muestran enlaces `Mis eventos` y `Mi cuenta` según permisos y tipo de sesión. La navegación no sustituye autorización server-side.
+- **CONFIRMED — reglas A/B/C de navegación 2026-10-12:** `/mi-cuenta` compone datos básicos, seguridad, sesiones y opción de eliminación desde owners EL-EP-001/015 (sin segundo dashboard). Entrada no autenticada a `/mi-cuenta` conduce a `/ingresar`, con retorno al destino original interno y autorizado tras login; estado pendiente de eliminación sólo muestra operaciones restringidas. Guest QR llega directo al evento, sin Home ni login de organizador. Los paths mencionados están aceptados como **destinos funcionales**, no acreditan código Angular listo.
 - Las acciones de navegación nunca reemplazan guards/server policies, no infieren `canView` por estado visual, no registran secretos ni tokens en analítica; deep links autorizan según dominio propietario.
 - **CONFIRMED 2026-10-12 — dirección editorial:** doce elecciones registradas en [sesión de consolidación](../sessions/2026-10-12-el-ep-018-editorial-and-routes.md#a-doce-decisiones-editoriales-confirmadas), sin atribución personal. H1/subtítulos/FAQ/cierre literales son **copy propuesto** sujeto a aprobación final de UX/copy. No afirmar aprobación legal, ausencia de fallos o tiempos comerciales no aceptados.
 
@@ -86,8 +87,8 @@ Las anclas candidatas de secciones son `/#como-funciona`, `/#beneficios`, `/#pri
 1. Visitante entra a Home, entiende EventLens, consulta cómo funciona y navega a `Iniciar sesión`.
 2. Visitante no invitado pulsa `Solicitar acceso a la Beta`, presenta solicitud y recibe respuesta neutra sin activar cuenta.
 3. Organizador autenticado abre Home, elige `Mis eventos` o `Mi cuenta`; las rutas requieren permisos vigentes.
-4. Organizador sin sesión usa deep link a `Mi cuenta`, va a login y retorna a destino interno permitido tras autenticación si el flujo actual lo soporta.
-5. Invitado usa el link/QR recibido para ir directamente al evento privado sin pasar por creación de cuenta.
+4. Organizador sin sesión abre `/mi-cuenta`, va a `/ingresar` y, tras autenticarse, retorna al destino interno original si la sesión tiene autorización; URLs externas, inválidas o no autorizadas no se usan como retorno.
+5. Invitado usa el link/QR recibido para ir directamente al evento privado **sin pasar por Home ni login de organizador** ni crear cuenta.
 6. Usuario con cuenta en proceso de eliminación tiene navegación restringida conforme a EL-EP-015, no acceso normal a eventos.
 
 ## Edge cases
@@ -133,8 +134,8 @@ Scope creep de página marketing; cambio inadvertido de políticas de autenticac
 
 **PENDING — sin bloquear la propuesta documental:**
 1. **COPY/UX:** validar redacción final (hero, subtítulo, beneficios, FAQ, privacidad, cierre, footer), imágenes reales y disposición responsive; no añadir datos/claims no fundamentados.
-2. **ARCH/FRONTEND:** confirmar URLs de `/ingresar`, `/solicitar-acceso`, `/mis-eventos`, `/mi-cuenta`, propietarios, Angular Router, guards y retorno a destino interno seguro. Montaje de Mi cuenta sin duplicar identidad/EL-TK-201.
-3. **INTEGRACIÓN GUEST:** identificar formato de URL real emitido por EL-EP-004 y conservar acceso por credencial revocable, PIN y privacidad.
+2. **ARCH/FRONTEND:** producto confirmó `/ingresar` y `/mi-cuenta` y su comportamiento; verificar integración real de esas rutas en Angular Router, guards, retorno a destino interno seguro y composición con owners de identidad/EL-TK-201. Resolver los **paths candidatos** `/solicitar-acceso` y `/mis-eventos` antes de implementación.
+3. **INTEGRACIÓN GUEST:** confirmada entrada **directa**, sin Home/login owner. Identificar el formato de URL real emitido por EL-EP-004 y asegurar credencial revocable, PIN y privacidad.
 4. **NAV UX:** salida tras logout y disposición exacta del menú autenticado/móvil; manejar estados sesión pendiente/expirada/restringida.
 5. **OPS/RELEASE:** Nginx SPA fallback/base href, política de indexación de Home y revisión legal antes de lanzamiento público conforme EL-EP-017/Q-029.
 
@@ -150,7 +151,9 @@ Secciones: Header/hero, Beneficios, Cómo funciona, Privacidad, FAQ, cierre con 
 - [x] Contratos de acceso privado y Beta vigente documentados.
 - [x] Escenarios y criterios de aceptación comprobables propuestos.
 - [x] Comportamiento de `/` con y sin sesión aprobado por el usuario (sin redirección automática).
-- [x] Doce elecciones editoriales y estructura de menú/footer aprobadas por el usuario.
+- [x] Doce elecciones editoriales y estructura de menú/footer confirmadas.
+- [x] Alcance `Mi cuenta`, redirect/login/retorno seguro y acceso guest QR directo confirmados (decisiones A/B/C).
+- [ ] URLs candidatas restantes, composición efectiva de account y paths QR pendientes de contrato técnico.
 - [ ] Copy literal, ilustraciones y tratamiento UX revisados formalmente.
 - [ ] Rutas y ownership auditados por architect/frontend.
 - [ ] Handoff `ui_designer` aprobado.
@@ -161,6 +164,7 @@ Secciones: Header/hero, Beneficios, Cómo funciona, Privacidad, FAQ, cierre con 
 P0 **propuesta** para entrada/roteo funcional de la Beta (sin navegación no existe app usable desde `/`); contenido institucional/FAQ y SEO fino P1 y pueden entregarse sin desplazar seguridad, galería, exportaciones o purga. La priorización no cambia el roadmap aprobado sin evaluación.
 
 ## Change history
+- 2026-10-12: confirmadas reglas A/B/C de navegación: alcance de `/mi-cuenta` (datos básicos/seguridad/sesiones/eliminación sin duplicación), `/mi-cuenta` → `/ingresar` → retorno interno autorizado, cuenta con eliminación pendiente restringida y QR guest directo sin Home/login organizador. Contratos de ruta aún requieren integración técnica; gates sin cambios.
 - 2026-10-12: confirmadas las 12 decisiones de dirección editorial, incluida navegación equilibrada, FAQ de cuatro preguntas, CTA Beta discreto y footer minimalista. Actualizados alcance, copy propuesto y auditoría de rutas de `stage`; gates y rutas definitivas siguen pendientes. [Registro](../sessions/2026-10-12-el-ep-018-editorial-and-routes.md).
 - 2026-10-12: confirmado comportamiento Home `/` accesible con y sin sesión, con atajos al organizador y sin redirección automática; copy, menú y rutas siguen pendientes de aprobación/auditoría.
 - 2026-10-12: propuesta de épica nueva a solicitud del proyecto; revisión documental de root actual, EL-EP-001/002/004, manual de marca CR-004 y EL-TK-203/204. Sin tickets, código, contratos nuevos ni aprobación de gates.
