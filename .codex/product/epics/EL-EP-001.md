@@ -6,6 +6,10 @@ READY
 
 **RECOMMENDED:** frontera, descomposición y prioridad propuestas por product_planner. **CONFIRMED:** reglas atribuidas al discovery en Q-014, Q-024; DEC-030, DEC-040. READY expresa DoR del resultado, no finalización de predecesoras; NOT_READY requiere cerrar preguntas locales antes de tickets.
 
+## Gate localizado de verifier — 2026-10-12
+
+DEC-108 / ARCH-018: [contrato aceptado](../../context/organizer-password-verifier.md) tras auditoría de fuente y revisión de seguridad/crítica. REQUIREMENTS_READY YES y READY_FOR_IMPLEMENTATION YES para verifier/migración, authority/sesiones/grants correctivos y challenge/consumidores definidos. No regenera login/admin ni declara código corregido. Gates de EL-TK-018/019 sobre token/política permanecen; no se certifica globalmente toda identidad, recovery ni Beta.
+
 ## Module
 
 MOD-001

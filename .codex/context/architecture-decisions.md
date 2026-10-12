@@ -281,6 +281,20 @@ Necesita gates cumplidos, políticas funcionales cerradas y flujos integrados ve
 - **Impacto:** complementa DEC-091 y el gate técnico015. No supersede ARCH-002/010/013, no cambia confirmación de evento ni identidad guest/SYSTEM, no elige proveedores, password KDF/librería ni habilita hold. Verifier humano, integración y evidencia de seguridad siguen trabajo técnico pendiente.
 - **Validación:** revisión documental de contratos/gates; no implementación ni PASS operacional por adopción.
 
+## ARCH-018 — Verifier humano y upgrade con revisión existente
+
+- **Status:** ACCEPTED — 2026-10-12, DEC-108 ratificada por usuario después de revisión de seguridad/crítica.
+- **Decisión:** MOD-001 adopta Argon2id nativo asíncrono y envelope versionado; upgrade usa credentialRevision/watermark y PREPARE-SQL-ACK existentes. Credencial antigua nunca acredita nueva reauth por SHA.
+- **Fuente de verdad:** [verifier/migración](organizer-password-verifier.md); perfil, encoding, cutover, recursos y evidencia se mantienen allí.
+- **Impacto:** correctivos de identidad/sesiones/recovery y reset grants; invalidación explícita aprobada. No supersede ARCH-010/013/017 ni selecciona proveedor. Remediación, benchmark/vectores/carreras/PITR siguen pendientes.
+
+## ARCH-019 — Anclas de purga y DELETED físico sin excepción
+
+- **Status:** ACCEPTED — 2026-10-12, DEC-109/110 ratificadas por usuario.
+- **Decisión:** completar mappings de papelera/cuarentena y corregir productor042/guardia041 para preservar ARCH-006; disposición, principal verificado y residual son hechos distintos.
+- **Fuente de verdad:** [política de causas](trash-quarantine-purge-policy.md), complementaria a [coordinación](deletion-coordination-contract.md).
+- **Impacto:** correctivos/intakes y sus consumidores por capacidad. No nuevos estados funcionales ni supersesión de ventanas, ARCH-006 o garantías de recuperación; histórico DONE preservado, sin purga ejecutada ni hold habilitado.
+
 ## Fuentes técnicas verificadas
 
 Referencias primarias de mecanismos/protocolos, no selección comercial/versionada: [locking PostgreSQL](https://www.postgresql.org/docs/current/sql-select.html), [PITR y archivo continuo](https://www.postgresql.org/docs/current/continuous-archiving.html), [presigned URLs S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html), [multipart S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html).

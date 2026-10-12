@@ -44,6 +44,12 @@ P0 / S
 
 Q-023; DEC-038, DEC-064; EL-EP-006, EL-EP-012.
 
+## Dependencia correctiva aprobada — 2026-10-12
+
+DEC-110 / [política de cuarentena](../../context/trash-quarantine-purge-policy.md): al corregir042 para conservar QUARANTINED hasta purga verificada,041 debe denegar liberación/replay que reactive una disposición irreversible bajo el mismo lock/CAS del propietario y authority vigente. Revisión anticipada de authority opcional no satisface esa serialización. Preservar cierre DONE y reglas de actores; ningún correctivo se implementó aquí.
+
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para la guardia correctiva contractual. La integración del nuevo comportamiento042 exige ese trabajo y pruebas de carrera/PITR; el histórico no acredita esta nueva evidencia.
+
 ## Definition of Ready
 
 - [x] Comportamiento inequívoco

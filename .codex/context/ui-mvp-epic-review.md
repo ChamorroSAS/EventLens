@@ -20,7 +20,7 @@ Fecha: 2026-10-08. Handoffs read-only de ui_designer incorporados por el orquest
 | EL-EP-012 | READY | YES | READY | YES | Consola/consulta propias listas; cada acción incrustada conserva gate de su dueño. |
 | EL-EP-013 | READY | YES | READY | YES | Handoff incorporado: avisos contextuales y correo, sin bandeja adicional. |
 | EL-EP-014 | READY | YES | READY | YES | UI limitada a consulta de auditoría; sin dashboard operativo obligatorio. |
-| EL-EP-015 | READY | YES | READY | YES | DEC-107 y handoff015 aprobados; gates técnicos de verifier/intakes se conservan por alcance. |
+| EL-EP-015 | READY | YES | READY | YES | DEC-107..110 y handoff015 aprobados; implementación/evidencia integrada pendientes. |
 | EL-EP-016 | READY | NO | NOT_REQUIRED | YES | Informe/evidencia operativa; no requiere pantalla nueva. |
 
 Las reglas aceptadas del [gate funcional previo](../product/sessions/2026-10-08-precisiones-finales-mvp.md) se conservan. PL-024..026 respondidas en DEC-103..105; requisitos y UX del intake aprobados en [sesión final](../product/sessions/2026-10-08-removal-intake.md). EL-EP-004/009 vuelven a READY de requisitos y UX. Los gates anteriores se conservan como historia; PARTIAL es un eje de readiness, no un estado canónico nuevo.

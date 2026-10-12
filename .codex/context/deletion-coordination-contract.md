@@ -21,7 +21,7 @@ Un único DeletionCoordinator MOD-008 consume solicitudes e intents de los propi
 
 DeletionIntent: sourceOperationId, owner/cause, scopeType/scopeRef, requestId cuando existe, generación/revisión esperadas, policyRef/version, cancelUntil cuando corresponde, purgeStartedAt autorizado y referencias verificables de recursos relacionados. Identidad/capacidad se resuelven en servidor; no instrucciones SQL/storage del cliente. Deduplicar por operación productora + scope/generación + causa; un cambio de payload/política bajo mismo identificador da conflicto.
 
-Una causa no inventa el ancla de otra. Las anclas aprobadas para evento/cuenta manual, gracia y retiro están en DEC-092/097..099. Papelera/cuarentena deben entregar la referencia a su política propietaria vigente; si no acredita ancla/deadline aplicable, ese intake queda BLOCKED y se escala al propietario, sin trasladar automáticamente la regla de retiro propio. Esta carencia localizada no bloquea las otras causas cerradas.
+Una causa no inventa el ancla de otra. Las anclas para evento/cuenta manual, gracia y retiro están en DEC-092/097..099. DEC-109 completa explícitamente papelera/cuarentena en [su política](trash-quarantine-purge-policy.md). La decisión ya está cerrada; cada productor debe implementar entrega/binding de la ancla/deadlines/inventario autorizados. Un mensaje sin esos hechos no autoriza purga, pero la implementación pendiente no reabre el gate documental de su contrato.
 
 ## Solicitud, cancelación y claim
 
@@ -39,7 +39,7 @@ Cancelar nuevas escrituras/capacidades; probar quiescencia y drenaje externo ant
 
 DeletionEvidence separa: request/claim confirmado, inventario/revisión, pruebas terminales de writers, resultado por objeto/version, principal verificado/mainPurgedAt, liquidación causal, tombstone/journal sequence/checkpoint, deadline residual y prueba de no recuperación activa. No guarda multimedia, passwords, firmas ni un volcado de datos personales. La finalización física del coordinador y la terminación DELETED de evento/cuenta, cuando corresponda, requieren principal verificado y ausencia de capacidades/escritores capaces de recrearlo; no prueban borrado instantáneo de backups. Purga SQL minimiza datos conforme a política propietaria; conserva recibos/tombstones mínimos indispensables, no borra la información que evita resurrección.
 
-No equiparar una disposición de un productor con esa evidencia: el cierre documental de EL-TK-042 registra media DELETED al emitir un QuarantinePurgeIntent todavía pendiente. No se modifica ese ticket ni se usa su estado como prueba física. La integración de ese intake debe acreditar política/ancla y reconciliar su proyección con el contrato físico ARCH-006 antes de habilitarlo; permanece un pendiente localizado, no una redefinición general del lifecycle.
+No equiparar una disposición de un productor con esa evidencia: el cierre histórico de EL-TK-042 registra media DELETED al emitir QuarantinePurgeIntent pendiente. DEC-110 aprueba su corrección futura y la guardia041, manteniendo QUARANTINED restringido hasta verify físico conforme a ARCH-006. Histórico DONE no se reescribe; filas antiguas no se reactivan ni su label acredita purga. Contrato corregido listo para implementar; integración sigue pendiente de ese correctivo y de evidencia real.
 
 ## Deadlines y recuperación
 
@@ -51,6 +51,6 @@ LEGAL_OR_SECURITY_HOLD no está habilitado en MVP ordinario. Un campo/flag de un
 
 ## Gate por alcance
 
-Contratos cerrados permiten ticket-writing y planificación independientes sin exigir épicas vecinas completamente DONE. Ejecución integrada requiere sus capacidades concretas: reauth/sesión restringida para cuenta; productores de intents; invalidación de exports; storage/inventario/drain; journal/restore; notificaciones/ledger. Proveedor definitivo, dimensionamiento y evidencia Beta siguen pendientes. Causas sin ancla acreditada quedan PARTIAL sólo en ese intake.
+DEC-108..110 / ARCH-018..019 cierran decisiones previamente localizadas: contratos de verifier y ambas causas tienen REQUIREMENTS_READY YES y READY_FOR_IMPLEMENTATION YES para su alcance propio, tras architect/requirements_reviewer. Ticket-writing y planificación no exigen épicas vecinas completamente DONE. Ejecución integrada requiere reauth/sesión restringida/correctivos de identidad; productores/bindings/guardias; invalidación de exports; storage/inventario/drain; journal/restore; notificaciones/ledger. Proveedor definitivo, dimensionamiento y evidencia Beta siguen pendientes. Datos no acreditados fallan cerrado; no son otra decisión de política por resolver.
 
 Pruebas futuras: PostgreSQL real para request/cancel/claim/replay/CAS y rollback; storage real para versiones/multipart/Unknown/drain/escritor tardío; restore anterior a request/cancel/claim; +7/+30 UTC; principal vs residual; no liberación doble de consumo. UI/gates en [handoff](ui-deletion-flow.md). No se declara PASS de MEDIA-001, CAP-001, DR-001 ni EXPORT-001.

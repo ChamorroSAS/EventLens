@@ -41,4 +41,4 @@ Extensiones a EventDeleteRequestDialog, Countdown (fecha/expiry), LifecyclePanel
 
 Validación futura: componentes y Playwright para request/cancel/caducidad/conflicto/doble envío/ACK incierto/sesión limitada, teclado/foco/lector y mobile/tablet/desktop. No afirma ejecución física, integración ni certificación accesible por esta especificación.
 
-READY_FOR_FRONTEND_PLANNING: YES — ui_designer revisó la incorporación y aprobó expresamente el gate el 2026-10-12. Los gates técnicos de verifier/migración e intakes pendientes permanecen independientes.
+READY_FOR_FRONTEND_PLANNING: YES — ui_designer revisó la incorporación y aprobó expresamente el gate el 2026-10-12. DEC-108..110 cierra las decisiones técnicas de verifier/intakes; correctivos y evidencia integrada siguen pendientes sin invalidar el diseño aprobado.

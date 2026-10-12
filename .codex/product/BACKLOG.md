@@ -30,7 +30,9 @@
 | EL-EP-016 | Evaluar la beta con evidencia de valor y confiabilidad | MOD-009 | READY | P1 | EL-EP-014 | [EL-EP-016](epics/EL-EP-016.md) |
 | EL-EP-017 | Cerrar políticas jurídicas y de privacidad para apertura pública | MOD-008 | NOT_READY | P1 | EL-EP-009, EL-EP-015 | [EL-EP-017](epics/EL-EP-017.md) |
 
-**CONFIRMED — gate EL-EP-015, 2026-10-12:** REQUIREMENTS_READY YES; reauth DEC-107/ARCH-017 y handoff revisados/aprobados. READY_FOR_FRONTEND_PLANNING YES. READY_FOR_TICKET_WRITING YES en causas cerradas, consumidores/proyección y UI diseñada; PARTIAL global para verifier/migración MOD-001 e intakes sin política/ancla acreditada. READY_FOR_IMPLEMENTATION PARTIAL global, con construcción independiente habilitada por contratos donde corresponde. [Matriz, revisión y scopes](sessions/2026-10-12-el-ep-015-gates.md). No tickets nuevos ni gates Beta PASS; hold jurídico excluido.
+**HISTÓRICO — primer gate EL-EP-015, 2026-10-12:** REQUIREMENTS_READY YES; reauth DEC-107/ARCH-017 y handoff aprobados; frontend YES, implementación/ticket-writing global PARTIAL por verifier/intakes. [Matriz inicial](sessions/2026-10-12-el-ep-015-gates.md). El cierre vigente siguiente supera esos bloqueos de decisión, sin certificar ejecución.
+
+**CONFIRMED — decisiones EL-EP-015 cerradas, 2026-10-12:** usuario aprueba DEC-108..110 / ARCH-018..019 tras auditoría de fuente y seguridad/crítico. Architect/requirements_reviewer habilitan REQUIREMENTS_READY YES, READY_FOR_IMPLEMENTATION YES y READY_FOR_TICKET_WRITING YES del scope propio; frontend YES preservado. [Impacto y reevaluación](sessions/2026-10-12-el-ep-015-decisions.md). Verifier/sesiones/recovery, guardias041/042 e intake109 necesitan implementación/evidencia antes de integración; DONE históricos no se cambian.018/019 conservan gates de token/política independientes. Sin código, tickets nuevos, proveedor ni gates Beta PASS.
 
 ## Tickets
 

@@ -63,6 +63,12 @@ Q-019; DEC-022, DEC-045, DEC-092; EL-EP-008, EL-EP-015.
 - [x] Permisos/errores definidos cuando aplican
 - [x] Sin preguntas BLOCKER
 
+## Contrato vigente de entrega — 2026-10-12
+
+DEC-109 / ARCH-019: [política de papelera](../../context/trash-quarantine-purge-policy.md). PurgeIntent de episodio vigente lleva sourceOperation/episode, policyRef/version, generation/revisión, purgeStartedAt=restoreDeadline original, deadlines +7/+30 UTC y referencia al inventario propietario. Al llegar deadline no se restaura; job atrasado no mueve ancla ni purga un episodio ya restaurado. Mantener responsabilidad de expiry/emisión, sin implementar físico/backups aquí.
+
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para este contrato, según reevaluación architect/requirements_reviewer. Ejecución integrada depende de015; no hay purga acreditada ni cambio de estado READY a DONE. Los campos/guardias pendientes son implementación, no decisión abierta.
+
 ## Readiness de implementación y UI/UX — 2026-10-10
 - **REQUIREMENTS_READY:** YES (requisitos, alcances, criterios Gherkin y reglas canónicas DEC-086/087/096 validados sin blockers).
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §8.5..9; sin componentes nuevos).

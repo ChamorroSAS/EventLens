@@ -56,6 +56,12 @@ P0 / M
 ## Traceability
 Q-019; DEC-022, DEC-086, DEC-096; EL-EP-008, EL-EP-015.
 
+## Correctivo temporal localizado — 2026-10-12
+
+DEC-109 / [política de papelera](../../context/trash-quarantine-purge-policy.md): mantener cierre DONE histórico. Auditoría confirma comparación deadline < now que admite igualdad; el contrato vigente sólo permite restore cuando now < restoreDeadline y decisión vigente bajo lock/CAS/reloj servidor. Corregir frontera y carrera con109 sin extender ventana ni tratar el ticket histórico como correctivo ya ejecutado.
+
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el correctivo definido tras architect/requirements_reviewer. Registrar seguimiento trazable y pruebas reales; no implementación nueva en esta nota.
+
 ## Definition of Ready
 - [x] Comportamiento inequívoco
 - [x] Criterios comprobables

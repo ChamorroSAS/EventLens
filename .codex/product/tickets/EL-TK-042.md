@@ -44,6 +44,12 @@ P0 / S
 
 Q-023; DEC-037, DEC-038; EL-EP-006, EL-EP-008, EL-EP-015.
 
+## Correctivo aprobado, sin implementación — 2026-10-12
+
+DEC-109/110 / ARCH-019: [contrato actualizado](../../context/trash-quarantine-purge-policy.md). El cierre DONE documenta la ejecución histórica y se conserva. Auditoría de fuente confirma DELETED lógico antes de purga; la corrección futura aprobada conserva QUARANTINED restringido, registra disposición irreversible/ancla/binding y sólo confirma DELETED mediante propietario tras verify físico/drain. Guardia041 bajo lock requerida; no reactivar filas antiguas ni equiparar receipt con evidencia física.
+
+REQUIREMENTS_READY: YES. READY_FOR_IMPLEMENTATION: YES para el alcance correctivo definido, tras architect/requirements_reviewer; no acredita que el correctivo esté construido ni reabre automáticamente el ticket histórico DONE. Debe enrutarse como trabajo correctivo trazable antes de exposición integrada, sin duplicar purga015 ni modificar ARCH-006.
+
 ## Definition of Ready
 
 - [x] Comportamiento inequívoco

@@ -310,9 +310,11 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 ## EL-EP-015 — no ticketizado en este PR
 
-**CONFIRMED — 2026-10-12:** READY de requisitos; DEC-107 / ARCH-017 y [contratos/handoff incorporados](../context/ui-deletion-flow.md) revisados por architect, requirements_reviewer, ui_designer y product_planner. READY_FOR_FRONTEND_PLANNING: YES. READY_FOR_TICKET_WRITING: YES para causas cerradas (manual evento/cuenta, gracia, retiro propio), consumidores neutrales, proyección/consulta y UI diseñada; PARTIAL global para verifier humano/migración e intakes sin política/ancla acreditada. READY_FOR_IMPLEMENTATION: PARTIAL global; los alcances propios contractualmente cerrados pueden construirse con sus dependencias explícitas, sin exigir todas las épicas vecinas DONE. [Matriz y dictámenes](sessions/2026-10-12-el-ep-015-gates.md).
+**CONFIRMED — cierre de decisiones2026-10-12:** DEC-108..110 / ARCH-018..019 resuelven verifier/migración y anclas/disposición de ambos intakes, ratificados por usuario tras auditoría real/revisión de seguridad. Architect/requirements_reviewer: REQUIREMENTS_READY YES, READY_FOR_IMPLEMENTATION YES y READY_FOR_TICKET_WRITING YES para scope propio de015; READY_FOR_FRONTEND_PLANNING YES conservado. No depende de todas las épicas vecinas DONE para construir contratos/correctivos. [Reevaluación vigente](sessions/2026-10-12-el-ep-015-decisions.md); [primer gate PARTIAL histórico](sessions/2026-10-12-el-ep-015-gates.md).
 
 MOD-001 posee challenge/evidencia/sesión restringida; MOD-008 consume el puerto. No duplicar067/109/114/119/042 productores,128 invalidación exports,137 ledger,159 avisos o172 restore. El coordinador emite hechos/recibos;013/014 consumen contratos, no forman ciclos de implementación. Integración requiere capacidades reales; no elegir proveedor ni convertir gates Beta en PASS. LEGAL_OR_SECURITY_HOLD permanece excluido. No se generan tickets en este PR.
+
+Dependencias de ejecución: correctivos verifier/authority/sesiones/grants MOD-001 → challenge/evidencia y consumidor cuenta;109 → intake papelera; correctivos041+042 → intake cuarentena; inventario/drain/authority actuales → purga015 → verify físico → liquidación137/avisos159/evidencia de recuperación. No reabrir DONE ni reutilizar IDs para esos correctivos.018/019 conservan sus decisiones de token/política pendientes; implementar/verificar esos flujos antes de resets forzados, sin bloquear la construcción independiente de los scopes aquí aceptados.
 
 ## Tickets vigentes — EL-EP-016 (quality gate APPROVED)
 
@@ -376,7 +378,7 @@ NOT_READY. Q-029 y revisión jurídica profesional siguen siendo blocker explíc
 
 EL-TK-001..004 están SUPERSEDED y no son predecesoras de ejecución. Su grafo histórico se conserva en sus archivos y en el dictamen anterior. Sustitución: 001 → 005..009; 002 → 010..012; 003 → 013..017; 004 → 018..019.
 
-**Gate UI actual - 2026-10-08:** [matriz vigente](../context/ui-mvp-epic-review.md), [gate intake](sessions/2026-10-08-removal-intake.md). Todas16 MVP READY de requisitos; 15 UI requeridas UX READY,016 NOT_REQUIRED. PL-024..026 respondidas DEC-103..105. Frontend001015 PARTIAL tecnico localizado. EL-EP-017 juridico publico pendiente. Sin tickets/codigo.
+**HISTÓRICO — Gate UI de2026-10-08:** [matriz](../context/ui-mvp-epic-review.md), [gate intake](sessions/2026-10-08-removal-intake.md). Todas16 MVP READY de requisitos; 15 UI requeridas UX READY,016 NOT_REQUIRED. PL-024..026 respondidas DEC-103..105. En aquel snapshot frontend001015 PARTIAL técnico localizado;015 queda superado por DEC-107..110 y su gate vigente arriba. EL-EP-017 jurídico público pendiente. Sin tickets/código en aquel gate.
 
 ## Dependencias/readiness tras ARCH-015 — 2026-10-09 (HISTÓRICO pre-implementación de EL-TK-033)
 

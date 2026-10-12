@@ -7,7 +7,7 @@ READY
 **RECOMMENDED:** frontera, descomposición y prioridad propuestas por product_planner. **CONFIRMED:** reglas atribuidas al discovery en Q-019, Q-026; DEC-043, DEC-044, DEC-045, DEC-059. READY expresa DoR del resultado, no finalización de predecesoras; NOT_READY requiere cerrar preguntas locales antes de tickets.
 
 REQUIREMENTS_READY: YES
-READY_FOR_IMPLEMENTATION: PARTIAL
+READY_FOR_IMPLEMENTATION: YES - para el alcance propio contractual aprobado; no acredita integración ni Beta. Dictamen actualizado2026-10-12, DEC-108..110 / ARCH-018..019.
 UI_REQUIRED: YES - alcance en handoff UI/UX.
 READY_FOR_FRONTEND_PLANNING: YES - gate explícito ui_designer del 2026-10-12; no certifica implementación.
 
@@ -99,7 +99,7 @@ Ningún BLOCKER de requisitos propio: PL-013/014/018..020 respondidas en DEC-091
 
 ## UI/UX handoff
 
-READY_FOR_TICKET_WRITING: PARTIAL global; YES para causas cerradas, consumidores neutrales, proyección/consulta y UI diseñada tras dictamen APPROVED de requirements_reviewer del2026-10-12. Ver límites por alcance abajo.
+READY_FOR_TICKET_WRITING: YES - decisions verifier/intakes cerradas y dictamen APPROVED; ejecución conserva dependencias y pruebas. Ver límites por alcance abajo.
 
 UX_SCOPE: Confirmar/cancelar borrado, causas y retención; DEC-107 cierra reautenticación de cuenta. [Handoff aprobado](../../context/ui-deletion-flow.md).
 
@@ -114,11 +114,11 @@ UX_OPEN_QUESTIONS: ninguna funcional nueva; gates tecnicos aplicables en el hand
 DEC-107 completa la reautenticación aprobada sin modificar las ventanas ni reglas previas. [Coordinación MOD-008](../../context/deletion-coordination-contract.md) reutiliza ARCH-002/005/006/010 y los propietarios existentes. Los dictámenes previos se conservan como historia.
 
 - READY_FOR_IMPLEMENTATION: YES para contratos/consumidores de causas cerradas (manual evento/cuenta, gracia, retiro propio), proyección y UI diseñada; ejecución integrada conserva dependencias concretas.
-- READY_FOR_IMPLEMENTATION: PARTIAL global: selección/parámetros y migración segura del verifier humano MOD-001 pendientes; intake de papelera/cuarentena requiere política/ancla acreditada de su productor y reconciliación del estado productor con evidencia física. No se infiere una política nueva.
+- **HISTÓRICO del primer gate2026-10-12:** PARTIAL por verifier/migración e intakes no acreditados. **VIGENTE:** DEC-108..110 los resuelven con aprobación del usuario y revisión de seguridad; [verifier](../../context/organizer-password-verifier.md) y [causas de purga](../../context/trash-quarantine-purge-policy.md) tienen scope propio READY_FOR_IMPLEMENTATION YES. Correcciones/implementación y evidencia integrada pendientes, sin declararlas realizadas.
 - Implementación no terminada no equivale a contrato pendiente. Adapters/recovery/storage y validaciones reales siguen trabajo de integración/Beta, sin seleccionar proveedores ni declarar gates PASS.
 - LEGAL_OR_SECURITY_HOLD excluido; Q-029/EL-EP-017 no se cierran por este gate ordinario.
 
-Evidencia y acciones mínimas en [auditoría/revisiones](../sessions/2026-10-12-el-ep-015-gates.md).
+Evidencia histórica en [primer gate](../sessions/2026-10-12-el-ep-015-gates.md); cierre/impacto vigente en [decisiones y reevaluación](../sessions/2026-10-12-el-ep-015-decisions.md). EL-TK-018/019 conservan sus gates independientes de política/token: no bloquean construir verifier/consumidores, pero recuperación debe estar implementada antes de depender de resets forzados.
 
 ## Definition of Ready
 
@@ -138,6 +138,8 @@ DoR de requisitos aprobada; no generar tickets frontend antes del gate UI comple
 P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
+
+- 2026-10-12: usuario ratifica DEC-108..110 tras auditoría real y revisión de seguridad/crítica. Architect/requirements_reviewer habilitan alcance propio; datos legacy/correctivos/recovery y pruebas siguen prerrequisitos de integración. No código ni tickets nuevos; histórico preservado.
 
 - 2026-10-12: DEC-107 aprobada por usuario; gate UI aprobado expresamente; contratos localizados y auditoría de dependencias. Sin código/tickets nuevos ni cambios de reglas aceptadas; pendientes técnicos por alcance explícitos.
 
