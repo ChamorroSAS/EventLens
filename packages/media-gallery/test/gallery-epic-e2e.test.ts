@@ -16,8 +16,8 @@ import {
   type OrganizerMediaLibraryRepository,
   type OrganizerMediaLibraryRow,
   type MediaStatusFilter,
-  type EventStatusAuthorizer,
 } from '../../media-inspection/src/organizer-library.js';
+import type { EventStatusAuthorizer } from '../../media-inspection/src/media-status.js';
 
 interface InMemoryGalleryE2eDb {
   events: Map<string, {
@@ -520,7 +520,7 @@ describe('End-to-End Guest Gallery & Owner Library Suite (EL-TK-102 — EL-EP-00
 
     // Seed Organizer Library Service
     organizerAuthorizer = {
-      async assertAuthorized(tx, scope) {
+      async assertAuthorized(tx: any, scope: any) {
         if (scope.actor.role !== 'ORGANIZER') {
           throw new MediaLibraryError('ACCESS_DENIED', 'Only organizers can access the library');
         }
@@ -532,10 +532,10 @@ describe('End-to-End Guest Gallery & Owner Library Suite (EL-TK-102 — EL-EP-00
     };
 
     organizerLibraryRepository = {
-      async getTotalEventCount(tx, eventRef) {
+      async getTotalEventCount(tx: any, eventRef: string) {
         return Array.from(db.mediaCatalog.values()).filter((m) => m.event_ref === eventRef).length;
       },
-      async getFilteredEventCount(tx, eventRef, statusFilter) {
+      async getFilteredEventCount(tx: any, eventRef: string, statusFilter: MediaStatusFilter) {
         if (statusFilter === 'ALL') {
           return this.getTotalEventCount(tx, eventRef);
         }
@@ -543,7 +543,7 @@ describe('End-to-End Guest Gallery & Owner Library Suite (EL-TK-102 — EL-EP-00
           (m) => m.event_ref === eventRef && m.status === statusFilter
         ).length;
       },
-      async queryItems(tx, eventRef, statusFilter, limit, offset) {
+      async queryItems(tx: any, eventRef: string, statusFilter: MediaStatusFilter, limit: number, offset: number) {
         let items = Array.from(db.mediaCatalog.values()).filter((m) => m.event_ref === eventRef);
         if (statusFilter !== 'ALL') {
           items = items.filter((m) => m.status === statusFilter);

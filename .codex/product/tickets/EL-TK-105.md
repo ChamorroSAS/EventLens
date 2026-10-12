@@ -4,7 +4,7 @@
 EL-EP-008
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador propietario, **quiero** ocultar una media publicada, **para** retirarla de la galería manteniendo el recuerdo y su consumo.
@@ -68,3 +68,14 @@ Q-006, Q-019; DEC-005, DEC-018, DEC-039; EL-EP-008, EL-EP-007.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §8.5..9; sin componentes nuevos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Cierre de implementación — 2026-10-12
+
+- **Resultado:** APROBADO.
+- **Implementación:** Implementado `HideMediaService` en `@eventlens/media-inspection` (`packages/media-inspection/src/media-visibility.ts`) permitiendo al organizador propietario transicionar contenido propio de `PUBLISHED` a `HIDDEN`.
+  - Transición atómica CAS verificando ownership del organizador y avanzando revisión (`revision + 1n`).
+  - Si la media no está en estado `PUBLISHED`, devuelve `CONFLICT` sin corromper información existente.
+  - Conforme a DEC-005, DEC-018 y DEC-039, ocultar la media NO elimina el original físico ni reduce la cuota comercial ni el consumo contable.
+  - Se integra con `MediaVisibilityRevalidator` (EL-TK-101) para retirar de inmediato la media de nuevas consultas de galería o emisiones de view grants guest.
+  - Auditoría durable y sanitizada registrada vía `MediaVisibilityAuditSink`.
+- **Pruebas:** 11/11 pruebas unitarias PASS en vitest para visibilidad y moderación (`packages/media-inspection/test/media-visibility.test.ts`). Typecheck con 0 errores.

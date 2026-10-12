@@ -191,8 +191,8 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 |---|---|---|
 | EL-TK-103 | 098,037 | 111,112 |
 | EL-TK-104 | 098 | 107,111,112 |
-| EL-TK-105 | 098,101 | 106,107,111,112 |
-| EL-TK-106 | 105,101 | 111,112 |
+| EL-TK-105 (DONE) | 098,101 | 106,107,111,112 |
+| EL-TK-106 (DONE) | 105,101 | 111,112 |
 | EL-TK-107 | 098,053; contrato EL-EP-006 | 108,109,111,112 |
 | EL-TK-108 | 107 | 111,112 |
 | EL-TK-109 | 107,055; contrato EL-EP-015 | 112; consumidor purge EL-EP-015 |
@@ -460,5 +460,9 @@ TB-01/TB-02 dejan de bloquear.033/035/036/041/042/056 YES propio;058 NO ejecuci�
 **CONFIRMED — EL-TK-100 DONE, 2026-10-12:** dependencias EL-TK-098, EL-TK-053 y EL-TK-054 satisfechas; integración frontend de la biblioteca de medios del organizador implementada y validada en `@eventlens/web` (`OrganizerMediaLibraryComponent`, `OrganizerMediaTableComponent`, `MediaStatusFilterComponent`, `MediaLibraryService`) integrando componentes de fallo técnico (`ProcessingFailedPanelComponent`, `RetryProcessingActionComponent`) y aislamiento preventivo (`QuarantinedMediaStateComponent`) de EL-TK-054 (6 unitarias enfocadas PASS; 72/72 suite completa de `@eventlens/web` PASS; typecheck monorepo exit code 0; build de producción limpio 114.77 kB). Asegura discriminación accesible de estados vacíos (`EMPTY_LIBRARY` vs `EMPTY_FILTER_RESULTS` con botón interactivo "Limpiar filtros"), navegación y conmutación de vista (cuadrícula/tabla) accesible WCAG 2.2 AA (roles semánticos, estados aria, áreas interactivas ≥ 44×44px, foco visible estable y sin parpadeos destructivos) y preservación de aislamiento estricto por `eventRef`. Desbloquea downstream EL-TK-102. Véase el [cierre](tickets/EL-TK-100.md).
 
 **CONFIRMED — EL-TK-102 DONE, 2026-10-12:** dependencias EL-TK-096..101 satisfechas; suite de pruebas E2E de galería guest y biblioteca owner implementada en `@eventlens/media-gallery` (`packages/media-gallery/test/gallery-epic-e2e.test.ts`) validando los 4 escenarios de aceptación: aislamiento multi-tenant cross-event estricto, autorización server-side y cálculo de capacidades en biblioteca owner, retiro/revocación en caliente con denegación instantánea de nuevos grants sin promesas falsas de purga universal en cachés locales (DEC-063, DEC-084), y experiencia móvil y accesibilidad WCAG 2.2 AA (targets ≥ 44×44px, navegación y escape con foco contenido y retornado). Épica `EL-EP-007` formalmente cerrada como DONE. Suite 38/38 PASS en `@eventlens/media-gallery`, 80/80 PASS en `@eventlens/web`. Véase el [cierre](tickets/EL-TK-102.md).
+
+**CONFIRMED — EL-TK-105 DONE, 2026-10-12:** dependencias EL-TK-098 y EL-TK-101 satisfechas; servicio de ocultamiento de medios (`HideMediaService`) implementado en `@eventlens/media-inspection` (`packages/media-inspection/src/media-visibility.ts`) permitiendo al organizador propietario transicionar `PUBLISHED` a `HIDDEN` de forma atómica y reversible. Preserva íntegramente el original físico y no reduce el consumo contable ni la cuota comercial (DEC-005, DEC-018, DEC-039). Se integra con `MediaVisibilityRevalidator` para retirar el medio de inmediato de consultas de galería y grants guest. Suite 11/11 PASS en `media-visibility.test.ts`. Véase el [cierre](tickets/EL-TK-105.md).
+
+**CONFIRMED — EL-TK-106 DONE, 2026-10-12:** dependencias EL-TK-105 y EL-TK-101 satisfechas; servicio de re-publicación de medios (`RepublishMediaService`) implementado en `@eventlens/media-inspection` (`packages/media-inspection/src/media-visibility.ts`) permitiendo restaurar visibilidad (`HIDDEN` a `PUBLISHED`). Valida en tiempo real que no existan bloqueos vigentes (inspección de seguridad fallida `DENIED` deniega con `SAFETY_BLOCKED`, o carrera concurrente deniega con `CONFLICT` conforme a DEC-005, DEC-086 y DEC-087). Suite 11/11 PASS en `media-visibility.test.ts`. Véase el [cierre](tickets/EL-TK-106.md).
 
 

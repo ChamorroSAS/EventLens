@@ -4,7 +4,7 @@
 EL-EP-008
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador propietario, **quiero** volver a publicar una media oculta, **para** restaurar su visibilidad sin saltar bloqueos vigentes.
@@ -68,3 +68,13 @@ Q-006, Q-019; DEC-005, DEC-086, DEC-087; EL-EP-008.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §8.5..9; sin componentes nuevos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Cierre de implementación — 2026-10-12
+
+- **Resultado:** APROBADO.
+- **Implementación:** Implementado `RepublishMediaService` en `@eventlens/media-inspection` (`packages/media-inspection/src/media-visibility.ts`) permitiendo al organizador propietario restaurar la publicación (`HIDDEN` $\to$ `PUBLISHED`).
+  - Revalida en tiempo real que no existan bloqueos de seguridad (`safety_outcome !== 'DENIED'`), cuarentena ni intervenciones restrictivas conforme a DEC-005, DEC-086 y DEC-087.
+  - Si la media no está en estado `HIDDEN` o sufre modificaciones concurrentes (`expectedRevision`), devuelve `CONFLICT` sin forzar publicación indebida.
+  - Si la media tiene una inspección de seguridad con resultado `DENIED`, deniega con `SAFETY_BLOCKED` y la media permanece en `HIDDEN`.
+  - Transición atómica CAS avanzando revisión (`revision + 1n`) y registrando auditoría en `MediaVisibilityAuditSink`.
+- **Pruebas:** 11/11 pruebas unitarias PASS en vitest (`packages/media-inspection/test/media-visibility.test.ts`). Typecheck y monorepo limpios.
