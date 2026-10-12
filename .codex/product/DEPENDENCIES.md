@@ -524,6 +524,10 @@ TB-01/TB-02 dejan de bloquear.033/035/036/041/042/056 YES propio;058 NO ejecuci�
 
 
 
+## Gate jurídico localizado — EL-EP-018 (2026-10-12)
+
+**LEGAL_SCOPE_FOR_TICKET_WRITING: PASS_WITH_CONDITIONS** para crear tickets DRAFT conforme a [gate jurídico](sessions/2026-10-12-el-ep-018-legal-ticket-gate.md). `EL-EP-017 / Q-029` **no** es predecesora dura de ticketización de navegación/Home, pero sí sigue siendo condición de la apertura pública del servicio; la captación pública de email en solicitud Beta tiene bloqueos independientes de política/aviso/autorización/evidencia y responsable/canal de derechos. No se certifica publicación, copy final ni cumplimiento legal. Mantener revisión architect/UI/requirements y ownership MOD-001 para cualquier adaptación de formulario de solicitud; no duplicar `EL-TK-008`.
+
 ## Propuesta sin aprobar — EL-EP-018 (Home y navegación)
 
 **DRAFT 2026-10-12 — NO ALTERA EL MAPA DE ÉPICAS ACEPTADAS.** [Propuesta](epics/EL-EP-018.md). No se crea módulo funcional nuevo ni ciclo con identidad/eventos. La navegación consume capacidades existentes, con fronteras:
