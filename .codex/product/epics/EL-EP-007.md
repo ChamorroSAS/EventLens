@@ -2,7 +2,7 @@
 
 ## Status
 
-READY
+DONE
 
 **RECOMMENDED:** frontera, descomposición y prioridad propuestas por product_planner. **CONFIRMED:** reglas atribuidas al discovery en Q-005, Q-016; DEC-003, DEC-018, DEC-032, DEC-033. READY expresa DoR del resultado, no finalización de predecesoras; NOT_READY requiere cerrar preguntas locales antes de tickets.
 
