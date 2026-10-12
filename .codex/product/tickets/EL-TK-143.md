@@ -4,7 +4,7 @@
 EL-EP-011
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador, **quiero** ver consumo y gestionar solicitudes desde mi evento, **para** comprender límites y pedir ampliaciones con una experiencia accesible.
@@ -68,3 +68,9 @@ DEC-079, DEC-093, DEC-094, DEC-100, DEC-101; EL-EP-011; ui-capacity-lifecycle.md
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-capacity-lifecycle.md y ui-mvp-epic-review.md §EL-EP-011; sin componentes nuevos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Implementación y Validación — 2026-10-11
+- Implementados componentes `EventCapacityPanelComponent` y `ExtensionRequestDialogComponent` en `@eventlens/web`.
+- Implementado servicio `EventCapacityService` e interfaces de tipos `capacity.types.ts`.
+- Pruebas unitarias de componentes en `event-capacity-panel.component.spec.ts` (5 tests en verde).
+- `pnpm typecheck` validado con código de salida 0.

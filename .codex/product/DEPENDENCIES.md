@@ -245,12 +245,12 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-135 (DONE) | 134, 136, 137 | 138,139,143,144,145 |
 | EL-TK-136 (DONE) | 134 | contrato upload 086/092; 137,145 |
 | EL-TK-137 (DONE) | 136; contratos EL-EP-005/015 | 135,138,145 |
-| EL-TK-138 | 135,137 | consumidor EL-EP-013; 145 |
-| EL-TK-139 | 134,135 | 140,141,143,144,145 |
-| EL-TK-140 | 139 | 141,143,144,145 |
-| EL-TK-141 | 139,044 | 142,144,145 |
-| EL-TK-142 | 134,141; contrato EL-EP-003 | 144,145 |
-| EL-TK-143 | 135,139,140 | 145 |
+| EL-TK-138 (DONE) | 135,137 | consumidor EL-EP-013; 145 |
+| EL-TK-139 (DONE) | 134,135 | 140,141,143,144,145 |
+| EL-TK-140 (DONE) | 139 | 141,143,144,145 |
+| EL-TK-141 (DONE) | 139,044 | 142,144,145 |
+| EL-TK-142 (DONE) | 134,141; contrato EL-EP-003 | 144,145 |
+| EL-TK-143 (DONE) | 135,139,140 | 145 |
 | EL-TK-144 | 141,142; contrato EL-EP-012 | 145 |
 | EL-TK-145 | 134..144 | validación EL-EP-011 |
 
