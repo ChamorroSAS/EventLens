@@ -220,6 +220,28 @@
 | EL-TK-182 | Clasificar el resultado de la Beta con prevalencia de incidentes críticos | EL-EP-016 | DONE | P1 | 178..181; evidencia operacional EL-EP-014 | [EL-TK-182](tickets/EL-TK-182.md) |
 | EL-TK-183 | Generar el informe final reproducible de evaluación Beta | EL-EP-016 | DONE | P1 | 177..182 | [EL-TK-183](tickets/EL-TK-183.md) |
 
+| EL-TK-185 | Corregir el verifier humano y migrar credenciales de organizador | EL-EP-001 | DRAFT | P0 | 013,018,019,046 | [EL-TK-185](tickets/EL-TK-185.md) |
+| EL-TK-186 | Emitir y consumir evidencia de reautenticación sensible de cuenta | EL-EP-001 | DRAFT | P0 | 185 | [EL-TK-186](tickets/EL-TK-186.md) |
+| EL-TK-187 | Corregir disposición y liberación de media en cuarentena | EL-EP-006 | DRAFT | P0 | 041,042; contrato 015 | [EL-TK-187](tickets/EL-TK-187.md) |
+| EL-TK-188 | Persistir el contrato canónico de solicitudes e intenciones de eliminación | EL-EP-015 | DRAFT | P0 | 046,067; DEC-091..110 | [EL-TK-188](tickets/EL-TK-188.md) |
+| EL-TK-189 | Solicitar eliminación manual de evento con bloqueo inmediato | EL-EP-015 | DRAFT | P0 | 188,072 | [EL-TK-189](tickets/EL-TK-189.md) |
+| EL-TK-190 | Cancelar eliminación manual de evento antes del claim irreversible | EL-EP-015 | DRAFT | P0 | 189 | [EL-TK-190](tickets/EL-TK-190.md) |
+| EL-TK-191 | Solicitar eliminación de cuenta con reautenticación y suspensión global | EL-EP-015 | DRAFT | P0 | 186,188 | [EL-TK-191](tickets/EL-TK-191.md) |
+| EL-TK-192 | Cancelar eliminación de cuenta con prueba nueva y recálculo de eventos | EL-EP-015 | DRAFT | P0 | 191,186 | [EL-TK-192](tickets/EL-TK-192.md) |
+| EL-TK-193 | Propagar barreras de eliminación a accesos, grants y exportaciones | EL-EP-015 | DRAFT | P0 | 189,191;128 | [EL-TK-193](tickets/EL-TK-193.md) |
+| EL-TK-194 | Coordinar ingresos por causa: gracia, retiro propio, papelera y cuarentena | EL-EP-015 | DRAFT | P0 | 188,109,114,187;119 | [EL-TK-194](tickets/EL-TK-194.md) |
+| EL-TK-195 | Construir inventario verificable y detener escritores antes de purgar | EL-EP-015 | DRAFT | P0 | 188,193;128 | [EL-TK-195](tickets/EL-TK-195.md) |
+| EL-TK-196 | Ejecutar purga física durable e idempotente de principales | EL-EP-015 | DRAFT | P0 | 195,197;194 | [EL-TK-196](tickets/EL-TK-196.md) |
+| EL-TK-197 | Persistir tombstones y reconciliar eliminación con RecoveryAuthority | EL-EP-015 | DRAFT | P0 | 188,046,172,174 | [EL-TK-197](tickets/EL-TK-197.md) |
+| EL-TK-198 | Cerrar estados DELETED y liquidar consumo solo con prueba principal | EL-EP-015 | DRAFT | P0 | 196,197,137;159 | [EL-TK-198](tickets/EL-TK-198.md) |
+| EL-TK-199 | Verificar residual y restauraciones hasta deadline UTC más 30 días | EL-EP-015 | DRAFT | P0 | 197,198,172,174 | [EL-TK-199](tickets/EL-TK-199.md) |
+| EL-TK-200 | Integrar solicitud y cancelación de eliminación en UI de evento | EL-EP-015 | DRAFT | P0 | 189,190,193 | [EL-TK-200](tickets/EL-TK-200.md) |
+| EL-TK-201 | Integrar eliminación de cuenta y reautenticación en UI | EL-EP-015 | DRAFT | P0 | 186,191,192,193 | [EL-TK-201](tickets/EL-TK-201.md) |
+| EL-TK-202 | Validar eliminación ordinaria de extremo a extremo y criterios de Beta | EL-EP-015 | DRAFT | P0 | 194,196,198..201 | [EL-TK-202](tickets/EL-TK-202.md) |
+
+**PROPUESTA — ticketización EL-EP-015 2026-10-12:** EL-TK-185..202 DRAFT para revisión en PR; 185/186 (MOD-001), 187 (MOD-003/EL-EP-006) y 188..202 (MOD-008/EL-EP-015). Gates funcional/UI de épica YES; revisión formal de tickets y evidencia de implementación pendientes. No reabrir 041/042 ni duplicar109/114/119/128/137/159. [Grafo y dictamen estructural](sessions/2026-10-12-el-ep-015-ticket-plan.md).
+
+
 **CONFIRMED — 2026-10-10, EL-EP-014/016:** requirements_reviewer y ui_designer aprueban EL-TK-166..176, EL-TK-184 y EL-TK-177..183 como READY; cubren registro mínimo/sanitizado de auditoría, consulta con filtros/paginación, telemetría y health neutrales de proveedor, alertas operativas de colas e infra, backups PostgreSQL diarios con PITR (RPO≤1h/RTO≤4h), verificación de restore periódico con no-resurrección, redundancia/recuperación de ObjectStorage (DEC-062/063), incidentes operacionales, retención de auditoría (12m) y rotación de logs (30d) en EL-TK-184, visor contextual de auditoría en consola administrativa (AuditLogViewer/Detail, UI_REQUIRED: YES, READY_FOR_FRONTEND_PLANNING: YES), validación integrada E2E de EL-EP-014; y métricas agregadas Beta desacopladas a telemetría 168 (cargas válidas, éxito foto/video, latencias, soporte funcional catalogado, descarga, participación indicativa, cohorte real vs pruebas internas), ventana 8..12 semanas / volumen mínimo, snapshot inmutable (182), clasificación y reporte reproducible (183) para EL-EP-016 (UI_REQUIRED: NO, UX_READINESS: NOT_REQUIRED).
 
 **CONFIRMED — 2026-10-10, EL-EP-005:** EL-TK-086..095 aprobados por requirements_reviewer como READY; cubren autorización/reserva atómica vinculada a consentimiento (076) e identidad (077), carga directa a storage privado, confirmación real, validación de restricciones (089 conserva gate técnico PARTIAL para inspección segura de archivos no confiables), aceptación/handoff al contrato downstream transaccional de EL-TK-032 (DONE), retry por archivo, cancelación por policy (DEC-085), consulta de lote, interfaz guest accesible e integración E2E. Implementación conforme a dependencias técnicas y ObjectStorage privado (DEC-063).
