@@ -192,5 +192,11 @@ Fuente completa de esta respuesta y precisiones posteriores en DEC-103..105. Rev
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | DEC-106 | 2026-10-08 | ACCEPTED | Entorno local Dockerizado/Compose; PostgreSQL 16 en contenedor independiente; DB y aplicación comparten servidor durante Beta. MinIO local para desarrollo/validación y Docker como runtime candidato de aislamiento. Fuente completa: [EL-TD-008](../context/technical-baseline.md#el-td-008--local-environment-and-beta-topology). | Concretar candidatos de EL-TK-059 y topología Beta autorizada. | Separación física obligatoria DB/app sustituida sólo para Beta; storage definitivo sigue DEFERRED. | Supersesión parcial de DEC-061/TC-001/CR-002 y restricción derivada de ARCH-001: únicamente separación física DB/app durante Beta. No reinstaura media permanente en app ni Redis de DEC-060. DEC-062 y requisitos de seguridad/recuperación se conservan. | Decisión explícita del usuario |
 
+## Reautenticación de eliminación de cuenta — 2026-10-12
+
+| ID | Fecha | Estado | Decisión | Motivo | Alternativas no elegidas | Impacto | Fuente |
+|---|---|---|---|---|---|---|---|
+| DEC-107 | 2026-10-12 | ACCEPTED | MOD-001 verifica credencial vigente para solicitar/cancelar eliminación de cuenta; challenge y evidencia de un uso duran cinco minutos cada uno y se vinculan a sesión, operación, recurso y revisión. Durante siete días pendientes se permite autenticarse sólo para consultar/cancelar eliminación propia. [Contrato completo](../context/account-reauthentication-contract.md). | Cerrar gate localizado de EL-EP-015 sin duplicar identidad. | Freshness global sin binding; segundo login en MOD-008; extender challenge a evento/guest/SYSTEM no elegidos. | Completa reautenticación de cuenta y cancelación DEC-091; no cambia ventanas, anclas, lifecycle, admin ARCH-013 ni confirmación explícita de evento. Implementación y verificación de seguridad pendientes; ningún gate Beta aprobado. | Usuario: «Apruebo el contrato mínimo», respuesta explícita del 2026-10-12. |
+
 **SUPERSEDED PARA BETA:** la exigencia de PostgreSQL físicamente fuera del servidor app de DEC-061. Su fila y CR-002 se conservan como registro histórico; DEC-106 prevalece únicamente en este alcance. El resto de DEC-061..064 permanece vigente, incluidos límites, storage multimedia Beta externo y recuperación.
 

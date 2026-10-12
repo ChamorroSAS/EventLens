@@ -30,6 +30,8 @@
 | EL-EP-016 | Evaluar la beta con evidencia de valor y confiabilidad | MOD-009 | READY | P1 | EL-EP-014 | [EL-EP-016](epics/EL-EP-016.md) |
 | EL-EP-017 | Cerrar políticas jurídicas y de privacidad para apertura pública | MOD-008 | NOT_READY | P1 | EL-EP-009, EL-EP-015 | [EL-EP-017](epics/EL-EP-017.md) |
 
+**CONFIRMED — gate EL-EP-015, 2026-10-12:** REQUIREMENTS_READY YES; reauth DEC-107/ARCH-017 y handoff revisados/aprobados. READY_FOR_FRONTEND_PLANNING YES. READY_FOR_TICKET_WRITING YES en causas cerradas, consumidores/proyección y UI diseñada; PARTIAL global para verifier/migración MOD-001 e intakes sin política/ancla acreditada. READY_FOR_IMPLEMENTATION PARTIAL global, con construcción independiente habilitada por contratos donde corresponde. [Matriz, revisión y scopes](sessions/2026-10-12-el-ep-015-gates.md). No tickets nuevos ni gates Beta PASS; hold jurídico excluido.
+
 ## Tickets
 
 **CONFIRMED — CR-002:** TC-001..004 RESOLVED/ACCEPTED; DEC-061..064 sustituyen parcialmente DEC-060. Conservados9módulos/17épicas/8READY/9NOT_READY/IDs/prioridades. Afectadas EL-EP-003/005/006/007/010/011/012/013/014/015 por carga directa/storage externo/PITR/jobs/administración. PL-001..014 permanecen; diseño/validación concreta pendientes antes de beta.

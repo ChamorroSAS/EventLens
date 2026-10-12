@@ -498,8 +498,12 @@ Aviso contextual breve.
 ## 6.5 RetentionNotice
 Vencimiento, grace period o eliminación próxima.
 
+Eliminación015: contexto de principal/residual y fechas verificables en [handoff aprobado](ui-deletion-flow.md); extensión READY_FOR_IMPLEMENTATION en diseño, sin acreditar ejecución.
+
 ## 6.6 RemovalPolicyNotice
 Explicación contextual de retiro.
+
+Reutilizar [handoff015](ui-deletion-flow.md) para irreversibilidad/causas; no agrega consentimiento ni controles de hold.
 
 ---
 
@@ -549,6 +553,8 @@ Estado, fechas, acciones válidas y próximas transiciones.
 
 Especificación temporal y fronteras de las acciones relacionadas: [handoff de vigencia](ui-capacity-lifecycle.md#el-ep-003--vigencia-y-reactivación). Diseño del alcance DESIGNED; extensión/borrado y operaciones invitadas conservan gates de sus épicas propietarias.
 
+Extensión eliminación015: causa, cancelabilidad y principal/residual según [handoff aprobado](ui-deletion-flow.md), READY_FOR_IMPLEMENTATION en diseño; no amplía acciones de lifecycle ni certifica purga.
+
 ## 7.15 EventLifecycleAction
 Publicar/programar, activar, cerrar, reactivar, solicitar eliminación.
 
@@ -558,8 +564,12 @@ Confirmación de cierre.
 ## 7.17 EventDeleteRequestDialog
 Confirmación de eliminación y ventana de cancelación.
 
+Variante015 y errores/causas: [handoff aprobado](ui-deletion-flow.md), READY_FOR_IMPLEMENTATION en diseño; misma responsabilidad y componente.
+
 ## 7.18 EventDeletionCountdown
 Tiempo restante para cancelar eliminación.
+
+Variante015 añade fecha exacta/expiry accesibles; sólo ventana cancelable, nunca progreso de purga. [Handoff](ui-deletion-flow.md), READY_FOR_IMPLEMENTATION en diseño.
 
 ## 7.19 EventGracePeriodBanner
 Explica vencimiento y acciones restantes.
@@ -702,6 +712,8 @@ Pending, verifying, verified, invalid/expired y resend available.
 
 ## 10.10 LoginForm
 Inicio de sesión.
+
+Variante `REAUTH_ACCOUNT` de MOD-001 para solicitar/cancelar eliminación de cuenta conforme a [contrato](account-reauthentication-contract.md) y [handoff aprobado](ui-deletion-flow.md). PRODUCT_COMPONENT de identidad reutilizado; READY_FOR_IMPLEMENTATION en diseño. No crea otra identidad/login MOD-008 ni afirma implementación del verifier.
 
 ## 10.11 ForgotPasswordForm
 Recuperación con respuesta neutra.

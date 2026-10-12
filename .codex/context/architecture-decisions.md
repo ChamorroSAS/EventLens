@@ -273,6 +273,14 @@ READY_FOR_BETA: VALIDATION_REQUIRED
 
 Necesita gates cumplidos, políticas funcionales cerradas y flujos integrados verificados. Baseline congelado no certifica disponibilidad99,5%,100usuarios, éxito de cohorte, restore ni revisión legal. Selección neutral de proveedor DB/storage/correo/tipoEC2/herramientas queda localizada dentro de DEC/TC vigentes. Las alternativas de complejidad superior documentadas no forman parte de la mínima Beta hasta su trigger.
 
+## ARCH-017 — Evidencia de reautenticación ligada a eliminación de cuenta
+
+- **Status:** ACCEPTED_SCOPE — 2026-10-12, DEC-107 aprobado expresamente por el usuario.
+- **Decisión:** reutilizar MOD-001 para challenge/evidencia de un uso ligados a sesión, operación, recurso y revisión, con vigencia de cinco minutos. MOD-008 consume el puerto dentro de la UnitOfWork existente y conserva PREPARE-SQL-ACK. Cuenta pendiente permite sólo gestión autenticada de eliminación propia.
+- **Fuente de verdad:** [contrato de reautenticación](account-reauthentication-contract.md); no duplicar aquí especificación HTTP, concurrencia ni UI.
+- **Impacto:** complementa DEC-091 y el gate técnico015. No supersede ARCH-002/010/013, no cambia confirmación de evento ni identidad guest/SYSTEM, no elige proveedores, password KDF/librería ni habilita hold. Verifier humano, integración y evidencia de seguridad siguen trabajo técnico pendiente.
+- **Validación:** revisión documental de contratos/gates; no implementación ni PASS operacional por adopción.
+
 ## Fuentes técnicas verificadas
 
 Referencias primarias de mecanismos/protocolos, no selección comercial/versionada: [locking PostgreSQL](https://www.postgresql.org/docs/current/sql-select.html), [PITR y archivo continuo](https://www.postgresql.org/docs/current/continuous-archiving.html), [presigned URLs S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html), [multipart S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html).

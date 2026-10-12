@@ -310,7 +310,9 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 ## EL-EP-015 — no ticketizado en este PR
 
-READY de requisitos, pero READY_FOR_TICKET_WRITING: PARTIAL y READY_FOR_IMPLEMENTATION: PARTIAL. No se generan tickets hasta cerrar el gate técnico de reautenticación/UI sensible. La eliminación ordinaria backend puede planificarse después sin habilitar LEGAL_OR_SECURITY_HOLD pendiente jurídico.
+**CONFIRMED — 2026-10-12:** READY de requisitos; DEC-107 / ARCH-017 y [contratos/handoff incorporados](../context/ui-deletion-flow.md) revisados por architect, requirements_reviewer, ui_designer y product_planner. READY_FOR_FRONTEND_PLANNING: YES. READY_FOR_TICKET_WRITING: YES para causas cerradas (manual evento/cuenta, gracia, retiro propio), consumidores neutrales, proyección/consulta y UI diseñada; PARTIAL global para verifier humano/migración e intakes sin política/ancla acreditada. READY_FOR_IMPLEMENTATION: PARTIAL global; los alcances propios contractualmente cerrados pueden construirse con sus dependencias explícitas, sin exigir todas las épicas vecinas DONE. [Matriz y dictámenes](sessions/2026-10-12-el-ep-015-gates.md).
+
+MOD-001 posee challenge/evidencia/sesión restringida; MOD-008 consume el puerto. No duplicar067/109/114/119/042 productores,128 invalidación exports,137 ledger,159 avisos o172 restore. El coordinador emite hechos/recibos;013/014 consumen contratos, no forman ciclos de implementación. Integración requiere capacidades reales; no elegir proveedor ni convertir gates Beta en PASS. LEGAL_OR_SECURITY_HOLD permanece excluido. No se generan tickets en este PR.
 
 ## Tickets vigentes — EL-EP-016 (quality gate APPROVED)
 
