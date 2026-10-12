@@ -167,7 +167,7 @@
 | EL-TK-134 | Asignar y resolver el plan BETA efectivo de un evento | EL-EP-011 | DONE | P0 | contrato EL-EP-001 | [EL-TK-134](tickets/EL-TK-134.md) |
 | EL-TK-135 | Consultar consumo comercial y capacidad disponible del evento | EL-EP-011 | READY | P0 | 134, 136, 137 | [EL-TK-135](tickets/EL-TK-135.md) |
 | EL-TK-136 | Reservar y liberar capacidad comercial de forma atómica | EL-EP-011 | DONE | P0 | 134 | [EL-TK-136](tickets/EL-TK-136.md) |
-| EL-TK-137 | Consolidar consumo al aceptar o purgar originales | EL-EP-011 | READY | P0 | 136; contratos EL-EP-005/015 | [EL-TK-137](tickets/EL-TK-137.md) |
+| EL-TK-137 | Consolidar consumo al aceptar o purgar originales | EL-EP-011 | DONE | P0 | 136; contratos EL-EP-005/015 | [EL-TK-137](tickets/EL-TK-137.md) |
 | EL-TK-138 | Emitir señales deduplicadas de uso al 80 y 100 por ciento | EL-EP-011 | READY | P0 | 135,137 | [EL-TK-138](tickets/EL-TK-138.md) |
 | EL-TK-139 | Crear una solicitud de ampliación para almacenamiento o vigencia | EL-EP-011 | READY | P0 | 134,135 | [EL-TK-139](tickets/EL-TK-139.md) |
 | EL-TK-140 | Responder una solicitud de información adicional de ampliación | EL-EP-011 | READY | P0 | 139 | [EL-TK-140](tickets/EL-TK-140.md) |

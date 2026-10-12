@@ -14,7 +14,10 @@ export type CapacityErrorCode =
   | 'FILE_SIZE_EXCEEDS_LIMIT'
   | 'RESERVATION_NOT_FOUND'
   | 'IDEMPOTENCY_CONFLICT'
-  | 'RESERVATION_ALREADY_COMMITTED';
+  | 'RESERVATION_ALREADY_COMMITTED'
+  | 'MEDIA_NOT_FOUND'
+  | 'MEDIA_ALREADY_PURGED'
+  | 'MEDIA_CONSUMPTION_CONFLICT';
 
 export class CapacityError extends Error {
   constructor(
@@ -171,3 +174,89 @@ export interface EventCapacitySnapshot {
   availableFiles: number;
   snapshotAt: Date;
 }
+
+// ==========================================
+// EL-TK-137: Consolidación y Purga de Originales
+// ==========================================
+
+export type MediaLifecycleLogicalStatus =
+  | 'ACTIVE'
+  | 'TRASHED'
+  | 'QUARANTINED'
+  | 'HIDDEN'
+  | 'PURGED';
+
+/**
+ * DEC-079 / DEC-080: Estados lógicos no liberan cuota comercial.
+ * Solo la confirmación de purga física ('PURGED') libera cuota.
+ */
+export function doesMediaRetainCommercialQuota(status: MediaLifecycleLogicalStatus): boolean {
+  return status !== 'PURGED';
+}
+
+export type MediaArtifactRole =
+  | 'ORIGINAL'
+  | 'PREVIEW'
+  | 'THUMBNAIL'
+  | 'EXPORT_ARCHIVE'
+  | 'COVER_DERIVATIVE';
+
+/**
+ * DEC-096: Portadas, derivados y ZIP permanecen fuera del consumo comercial.
+ * Solo los originales cuentan para la cuota del evento.
+ */
+export function isArtifactBillableAgainstQuota(role: MediaArtifactRole): boolean {
+  return role === 'ORIGINAL';
+}
+
+export interface SettleOriginalAcceptanceCommand {
+  eventId: string;
+  mediaId: string;
+  bytes: bigint | number;
+  fileSlots?: number;
+  reservationId?: string;
+  idempotencyKey?: string;
+  mediaType?: 'PHOTO' | 'VIDEO';
+  artifactRole?: MediaArtifactRole;
+}
+
+export interface SettleOriginalAcceptanceResult {
+  eventId: string;
+  mediaId: string;
+  bytes: bigint;
+  fileSlots: number;
+  isExisting: boolean;
+  settledAt: Date;
+  reservationCommitted: boolean;
+}
+
+export interface ConfirmPhysicalPurgeCommand {
+  eventId: string;
+  mediaId: string;
+  purgeReceiptId: string;
+  bytes?: bigint | number;
+  fileSlots?: number;
+}
+
+export interface ConfirmPhysicalPurgeResult {
+  eventId: string;
+  mediaId: string;
+  purgeReceiptId: string;
+  bytesReleased: bigint;
+  filesReleased: number;
+  isExisting: boolean;
+  releasedAt: Date;
+}
+
+export interface MediaConsumptionRecord {
+  id: string;
+  eventId: string;
+  mediaId: string;
+  bytes: bigint;
+  fileSlots: number;
+  reservationId: string | null;
+  status: 'COMMITTED' | 'PURGED';
+  committedAt: Date;
+  purgedAt: Date | null;
+}
+

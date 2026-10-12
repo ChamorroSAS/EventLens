@@ -4,7 +4,7 @@
 EL-EP-011
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** sistema, **quiero** convertir reservas en consumo y liberar consumo solo tras borrado físico confirmado, **para** mantener la cuota consistente con los originales realmente existentes.

@@ -78,3 +78,37 @@ model EventCapacityBalance {
 
   @@map("event_capacity_balance")
 }
+
+model MediaConsumptionLedger {
+  id            String    @id @db.Uuid
+  eventId       String    @map("event_id") @db.Uuid
+  mediaId       String    @map("media_id") @db.Uuid
+  bytes         BigInt    @map("bytes")
+  fileSlots     Int       @default(1) @map("file_slots")
+  reservationId String?   @map("reservation_id") @db.Uuid
+  status        String    @default("COMMITTED")
+  committedAt   DateTime  @default(now()) @map("committed_at") @db.Timestamptz
+  purgedAt      DateTime? @map("purged_at") @db.Timestamptz
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@unique([eventId, mediaId])
+  @@index([eventId, status])
+  @@map("media_consumption_ledger")
+}
+
+model PurgeReleaseReceipt {
+  id             String   @id @db.Uuid
+  eventId        String   @map("event_id") @db.Uuid
+  mediaId        String   @map("media_id") @db.Uuid
+  purgeReceiptId String   @map("purge_receipt_id")
+  bytes          BigInt   @map("bytes")
+  fileSlots      Int      @default(1) @map("file_slots")
+  releasedAt     DateTime @default(now()) @map("released_at") @db.Timestamptz
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@unique([eventId, purgeReceiptId])
+  @@index([eventId, mediaId])
+  @@map("purge_release_receipt")
+}
+

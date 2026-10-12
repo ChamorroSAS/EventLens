@@ -1,3 +1,4 @@
 export * from './contracts.js';
 export * from './capacity-plan.js';
 export * from './capacity-reservation.js';
+export * from './media-consumption.js';
