@@ -4,7 +4,7 @@
 EL-EP-001
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador, **quiero** reautenticar una operación específica sobre su cuenta, **para** autorizar solicitud/cancelación sin nuevos mecanismos de login.
@@ -71,3 +71,13 @@ READY_FOR_FRONTEND_PLANNING: NOT_REQUIRED.
 REVIEW_STATUS: APPROVED — [dictámenes formales185..187](../sessions/2026-10-12-el-tk-185-187-readiness.md).
 
 Histórico: DRAFT en la propuesta original y fuera de la revisión188..202; READY tras revisión individual del 2026-10-12. No acredita implementación, pruebas, migración/cutover ni validation gates PASS.
+
+## Cierre de implementación — 2026-10-12
+- Implementado puerto y servicio `AccountReauthenticationService` en `packages/identity/src/reauthentication.ts` conforme a DEC-107, ARCH-017 y el contrato normativo aprobado.
+- Soporte para operaciones sensibles `REQUEST_ACCOUNT_DELETION` y `CANCEL_ACCOUNT_DELETION` sobre recursos tipo `ACCOUNT`.
+- Emisión de challenges opacos con vigencia de 5 minutos, rate limiting (5 por minuto por sesión) y binding estricto a sesión, operación, accountId, expectedRevision e intentionHash.
+- Verificación de challenges mediante `PasswordVerifier` (Argon2id), control de reintentos fallidos (máximo 5 por challenge) y emisión de evidencia opaca de un solo uso con vigencia de 5 minutos.
+- Consumo atómico de evidencia en `assertAndConsumeEvidence` dentro de UnitOfWork (tx), con detección de replay idéntico (`REPLAY_ACKNOWLEDGED` retornando el receipt existente sin repetir consumo ni efectos), y rechazo estricto ante cambios de payload o revisión de credenciales (`CONCURRENCY_CONFLICT`).
+- Cumplimiento de contexto restringido: cuentas en `PENDING_DELETION` solo pueden autorizar `CANCEL_ACCOUNT_DELETION` (con `requestId` obligatorio) y son rechazadas ante `REQUEST_ACCOUNT_DELETION`. Cuentas activas son rechazadas ante cancelaciones prematuras.
+- Esquema Prisma y migración SQL persistidos para `account_reauthentication_challenge` y `account_reauthentication_evidence`.
+- 9 pruebas unitarias añadidas en `reauthentication.unit.test.ts` con cobertura total de los escenarios y criterios de aceptación (11 test suites y 131 pruebas aprobadas en identidad).
