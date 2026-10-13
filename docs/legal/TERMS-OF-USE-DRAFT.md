@@ -58,6 +58,14 @@ Cuando un evento sea suspendido, **Phoeve notificará al organizador** mediante 
 
 Esta decisión **reutiliza** el alcance de EL-EP-013 (correo y avisos del panel para suspensión/reactivación) y los permisos/estados de EL-EP-003/012; no crea un NotificationCenter, nueva clase de mensaje público, poderes administrativos ni altera DEC-088/089 o DEC-078/081. Confirmar plantillas, enlaces de revisión y pruebas de entrega antes de declarar implementado. **LEGAL_REVIEW_PENDING**.
 
+## 8.3. Solicitud de revisión de suspensión — decisión funcional confirmada (2026-10-12)
+
+El organizador podrá solicitar la revisión de una suspensión de su evento mediante el **canal de soporte o privacidad existente**. Podrá aportar su explicación y documentación pertinente, con medidas de minimización y acceso restringido. La administración autorizada revisará el motivo original y los elementos presentados, y registrará una resolución justificada y su comunicación al organizador, sin revelar identidades de denunciantes o datos de terceros.
+
+**La solicitud no reactiva automáticamente el evento.** Si la administración autoriza levantar la suspensión, la plataforma recalcula el estado vigente según **DEC-078 y DEC-081**, atendiendo fechas, cierre voluntario, gracia y restricciones actuales; no restaura ciegamente el estado anterior ni reactiva un evento `DELETED`. Se mantienen límites de EL-EP-009 y las medidas de seguridad justificadas.
+
+**Implementación propuesta:** reutilizar el procedimiento manual de privacidad/soporte y las capacidades administrativas de EL-EP-012, notificaciones de EL-EP-013, lifecycle de EL-EP-003 y auditoría existente. No crear un módulo de apelaciones, permisos administrativos nuevos ni un canal de seguimiento público por esta decisión. **PENDING:** verificar rutas/roles reales, condiciones de levantamiento, evidencia mínima, tiempos aplicables y revisión jurídica antes de publicar.
+
 ## 9. Relación con organizaciones y proveedores
 
 Un representante humano puede gestionar un evento de organización, pero los alcances de representación, instrucciones de tratamiento y rol responsable/encargado deben definirse caso a caso. Los proveedores técnicos, ubicaciones y contratos de tratamiento no se consideran finalizados por estos términos.
