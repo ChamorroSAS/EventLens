@@ -1,17 +1,24 @@
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import { createPrismaClient, PrismaTransactions } from '@eventlens/database';
+import { createPrismaClient, PrismaTransactions, readDatabaseUrl } from '@eventlens/database';
 import {
   OrganizerAuthenticationService,
   AuthenticationError,
-  computeCredentialDigest,
+  PasswordVerifier,
   type RecoveryAuthorityPort,
   type AuditSink,
   type AuditEventRecord
 } from '../src/index.js';
 
-const databaseUrl = process.env.DATABASE_URL;
+const databaseUrl = (() => {
+  try {
+    return readDatabaseUrl(process.env);
+  } catch {
+    return undefined;
+  }
+})();
 const describeIntegration = databaseUrl ? describe : describe.skip;
+const verifier = new PasswordVerifier();
 
 describeIntegration('OrganizerAuthenticationService (Real PostgreSQL Integration Tests — EL-TK-013)', () => {
   const client = createPrismaClient(databaseUrl!);
@@ -151,7 +158,7 @@ describeIntegration('OrganizerAuthenticationService (Real PostgreSQL Integration
     );
 
     // 3. Credencial
-    const secretDigest = computeCredentialDigest('ORGANIZER_AUTHENTICATION', accountId, password);
+    const secretDigest = await verifier.hashPassword(password);
     await sql(
       `INSERT INTO organizer_credential (
          id, account_id, purpose, secret_digest, revision, status
@@ -389,6 +396,46 @@ describeIntegration('OrganizerAuthenticationService (Real PostgreSQL Integration
     // La sesión ajena de alien sigue autorizada
     const validAlien = await service.validateSession({ sessionToken: alienSession.sessionToken });
     expect(validAlien.actorContext.sessionId).toBe(alienSession.actorContext.sessionId);
+  });
+
+  it('EL-TK-205: proyecta estado restringido para cuenta PENDING_DELETION y valida CSRF en PostgreSQL 16 real', async () => {
+    const restricted = await seedActiveOrganizer({ status: 'PENDING_DELETION' });
+    const auditEvents: AuditEventRecord[] = [];
+    const service = createService(auditEvents);
+
+    const loginResult = await service.login({
+      email: restricted.email,
+      password: restricted.password
+    });
+
+    expect(loginResult.account.status).toBe('PENDING_DELETION');
+    expect(loginResult.actorContext.restrictedContext).toBe('DELETION_MANAGEMENT_ONLY');
+    expect(loginResult.projection.state).toBe('ORGANIZER_RESTRICTED_DELETION');
+    expect(loginResult.projection.capabilities.canAccessMyEvents).toBe(false);
+    expect(loginResult.projection.capabilities.canManageAccountDeletion).toBe(true);
+    expect(loginResult.projection.capabilities.canSignOut).toBe(true);
+
+    // Validación con CSRF correcto
+    const validated = await service.validateSession({
+      sessionToken: loginResult.sessionToken,
+      csrfToken: loginResult.csrfToken,
+      requireCsrf: true
+    });
+    expect(validated.projection.state).toBe('ORGANIZER_RESTRICTED_DELETION');
+
+    // Validación con CSRF inválido rechaza con FORBIDDEN
+    await expect(
+      service.validateSession({
+        sessionToken: loginResult.sessionToken,
+        csrfToken: 'wrong-csrf-token',
+        requireCsrf: true
+      })
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+
+    // Operaciones ordinarias como listSessions se rechazan en modo restringido
+    await expect(
+      service.listSessions({ actorContext: loginResult.actorContext })
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
   });
 });
 

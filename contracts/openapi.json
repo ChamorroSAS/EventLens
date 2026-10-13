@@ -93,6 +93,3352 @@
           "platform"
         ]
       }
+    },
+    "/api/v1/organizer/session": {
+      "get": {
+        "operationId": "getOrganizerSessionProjection",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "state",
+                    "capabilities",
+                    "account"
+                  ],
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "ANONYMOUS",
+                        "ORGANIZER_ACTIVE",
+                        "ORGANIZER_RESTRICTED_DELETION"
+                      ]
+                    },
+                    "capabilities": {
+                      "type": "object",
+                      "required": [
+                        "canSignIn",
+                        "canRequestBetaAccess",
+                        "canAccessMyEvents",
+                        "canAccessMyAccount",
+                        "canManageSessions",
+                        "canManageAccountDeletion",
+                        "isDeletionRestricted",
+                        "canSignOut"
+                      ],
+                      "properties": {
+                        "canSignIn": {
+                          "type": "boolean"
+                        },
+                        "canRequestBetaAccess": {
+                          "type": "boolean"
+                        },
+                        "canAccessMyEvents": {
+                          "type": "boolean"
+                        },
+                        "canAccessMyAccount": {
+                          "type": "boolean"
+                        },
+                        "canManageSessions": {
+                          "type": "boolean"
+                        },
+                        "canManageAccountDeletion": {
+                          "type": "boolean"
+                        },
+                        "isDeletionRestricted": {
+                          "type": "boolean"
+                        },
+                        "canSignOut": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    "account": {
+                      "type": "object",
+                      "nullable": true,
+                      "required": [
+                        "email",
+                        "emailVerified",
+                        "accountStatus"
+                      ],
+                      "properties": {
+                        "email": {
+                          "type": "string"
+                        },
+                        "emailVerified": {
+                          "type": "boolean"
+                        },
+                        "accountStatus": {
+                          "type": "string",
+                          "enum": [
+                            "ACTIVE",
+                            "PENDING_DELETION"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Proyectar estado efectivo y capacidades de la sesión de organizador",
+        "tags": [
+          "identity"
+        ]
+      }
+    },
+    "/api/v1/organizer/session/login": {
+      "post": {
+        "operationId": "loginOrganizerSession",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "state",
+                    "capabilities",
+                    "account"
+                  ],
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "ANONYMOUS",
+                        "ORGANIZER_ACTIVE",
+                        "ORGANIZER_RESTRICTED_DELETION"
+                      ]
+                    },
+                    "capabilities": {
+                      "type": "object",
+                      "required": [
+                        "canSignIn",
+                        "canRequestBetaAccess",
+                        "canAccessMyEvents",
+                        "canAccessMyAccount",
+                        "canManageSessions",
+                        "canManageAccountDeletion",
+                        "isDeletionRestricted",
+                        "canSignOut"
+                      ],
+                      "properties": {
+                        "canSignIn": {
+                          "type": "boolean"
+                        },
+                        "canRequestBetaAccess": {
+                          "type": "boolean"
+                        },
+                        "canAccessMyEvents": {
+                          "type": "boolean"
+                        },
+                        "canAccessMyAccount": {
+                          "type": "boolean"
+                        },
+                        "canManageSessions": {
+                          "type": "boolean"
+                        },
+                        "canManageAccountDeletion": {
+                          "type": "boolean"
+                        },
+                        "isDeletionRestricted": {
+                          "type": "boolean"
+                        },
+                        "canSignOut": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    "account": {
+                      "type": "object",
+                      "nullable": true,
+                      "required": [
+                        "email",
+                        "emailVerified",
+                        "accountStatus"
+                      ],
+                      "properties": {
+                        "email": {
+                          "type": "string"
+                        },
+                        "emailVerified": {
+                          "type": "boolean"
+                        },
+                        "accountStatus": {
+                          "type": "string",
+                          "enum": [
+                            "ACTIVE",
+                            "PENDING_DELETION"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Iniciar sesión de organizador con credenciales verificadas",
+        "tags": [
+          "identity"
+        ]
+      }
+    },
+    "/api/v1/organizer/session/logout": {
+      "post": {
+        "operationId": "logoutOrganizerSession",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "outcome",
+                    "projection"
+                  ],
+                  "properties": {
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "LOGGED_OUT",
+                        "ALREADY_EXPIRED_OR_REVOKED"
+                      ]
+                    },
+                    "projection": {
+                      "type": "object",
+                      "required": [
+                        "state",
+                        "capabilities",
+                        "account"
+                      ],
+                      "properties": {
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "ANONYMOUS",
+                            "ORGANIZER_ACTIVE",
+                            "ORGANIZER_RESTRICTED_DELETION"
+                          ]
+                        },
+                        "capabilities": {
+                          "type": "object",
+                          "required": [
+                            "canSignIn",
+                            "canRequestBetaAccess",
+                            "canAccessMyEvents",
+                            "canAccessMyAccount",
+                            "canManageSessions",
+                            "canManageAccountDeletion",
+                            "isDeletionRestricted",
+                            "canSignOut"
+                          ],
+                          "properties": {
+                            "canSignIn": {
+                              "type": "boolean"
+                            },
+                            "canRequestBetaAccess": {
+                              "type": "boolean"
+                            },
+                            "canAccessMyEvents": {
+                              "type": "boolean"
+                            },
+                            "canAccessMyAccount": {
+                              "type": "boolean"
+                            },
+                            "canManageSessions": {
+                              "type": "boolean"
+                            },
+                            "canManageAccountDeletion": {
+                              "type": "boolean"
+                            },
+                            "isDeletionRestricted": {
+                              "type": "boolean"
+                            },
+                            "canSignOut": {
+                              "type": "boolean"
+                            }
+                          }
+                        },
+                        "account": {
+                          "type": "object",
+                          "nullable": true,
+                          "required": [
+                            "email",
+                            "emailVerified",
+                            "accountStatus"
+                          ],
+                          "properties": {
+                            "email": {
+                              "type": "string"
+                            },
+                            "emailVerified": {
+                              "type": "boolean"
+                            },
+                            "accountStatus": {
+                              "type": "string",
+                              "enum": [
+                                "ACTIVE",
+                                "PENDING_DELETION"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Cerrar la sesión actual de organizador preservando otros contextos",
+        "tags": [
+          "identity"
+        ]
+      }
+    },
+    "/api/v1/public/beta-access-requests": {
+      "post": {
+        "operationId": "submitPublicBetaAccessRequest",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "outcome",
+                    "message"
+                  ],
+                  "properties": {
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "REQUEST_RECEIVED"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Enviar solicitud pública de acceso a la Beta sin enumeración",
+        "tags": [
+          "identity"
+        ]
+      }
+    },
+    "/api/v1/organizer/account/sessions": {
+      "get": {
+        "operationId": "listOrganizerSessions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "sessions",
+                    "total"
+                  ],
+                  "properties": {
+                    "sessions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "authTime",
+                          "createdAt",
+                          "lastActiveAt",
+                          "expiresAt",
+                          "idleExpiresAt",
+                          "isCurrent"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "authTime": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "lastActiveAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "expiresAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "idleExpiresAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "isCurrent": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    },
+                    "total": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Listar sesiones activas de la cuenta de organizador actual",
+        "tags": [
+          "organizer-account"
+        ]
+      }
+    },
+    "/api/v1/organizer/account/sessions/revoke": {
+      "post": {
+        "operationId": "revokeOrganizerSession",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "targetSessionId"
+                ],
+                "properties": {
+                  "targetSessionId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "outcome",
+                    "targetSessionId",
+                    "isCurrentSession"
+                  ],
+                  "properties": {
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "REVOKED",
+                        "ALREADY_REVOKED"
+                      ]
+                    },
+                    "targetSessionId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "isCurrentSession": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Revocar una sesión específica perteneciente al organizador autenticado",
+        "tags": [
+          "organizer-account"
+        ]
+      }
+    },
+    "/api/v1/organizer/account/sessions/revoke-others": {
+      "post": {
+        "operationId": "revokeOtherOrganizerSessions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "outcome",
+                    "revokedCount",
+                    "preservedCurrentSessionId"
+                  ],
+                  "properties": {
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "REVOKED_OTHERS"
+                      ]
+                    },
+                    "revokedCount": {
+                      "type": "number"
+                    },
+                    "preservedCurrentSessionId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Cerrar todas las demás sesiones activas preservando la sesión actual",
+        "tags": [
+          "organizer-account"
+        ]
+      }
+    },
+    "/api/v1/organizer/account/deletion": {
+      "get": {
+        "operationId": "getOrganizerAccountDeletionState",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "accountId",
+                    "accountStatus",
+                    "sessionMode",
+                    "revision",
+                    "affectedEventsCount",
+                    "canRequestDeletion",
+                    "canCancelDeletion",
+                    "cancelUntilUtcIso",
+                    "isUncertainAck",
+                    "isIrreversible",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "accountId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "accountStatus": {
+                      "type": "string",
+                      "enum": [
+                        "ACTIVE",
+                        "PENDING_DELETION",
+                        "DELETED"
+                      ]
+                    },
+                    "sessionMode": {
+                      "type": "string",
+                      "enum": [
+                        "ORDINARY",
+                        "DELETION_MANAGEMENT_ONLY"
+                      ]
+                    },
+                    "revision": {
+                      "type": "number"
+                    },
+                    "affectedEventsCount": {
+                      "type": "number"
+                    },
+                    "canRequestDeletion": {
+                      "type": "boolean"
+                    },
+                    "canCancelDeletion": {
+                      "type": "boolean"
+                    },
+                    "cancelUntilUtcIso": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "isUncertainAck": {
+                      "type": "boolean"
+                    },
+                    "isIrreversible": {
+                      "type": "boolean"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Consultar estado y capacidades de eliminación de la cuenta propia",
+        "tags": [
+          "organizer-account"
+        ]
+      },
+      "post": {
+        "operationId": "executeOrganizerAccountDeletionTransition",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "challengeId",
+                  "currentPassword",
+                  "operation",
+                  "expectedRevision",
+                  "idempotencyKey"
+                ],
+                "properties": {
+                  "challengeId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "currentPassword": {
+                    "type": "string"
+                  },
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "REQUEST_ACCOUNT_DELETION",
+                      "CANCEL_ACCOUNT_DELETION"
+                    ]
+                  },
+                  "accountId": {
+                    "type": "string"
+                  },
+                  "expectedRevision": {
+                    "type": "number"
+                  },
+                  "idempotencyKey": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "accountStatus",
+                    "status",
+                    "cancelUntilUtcIso",
+                    "message"
+                  ],
+                  "properties": {
+                    "accountStatus": {
+                      "type": "string",
+                      "enum": [
+                        "ACTIVE",
+                        "PENDING_DELETION",
+                        "DELETED"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "CONFIRMED",
+                        "CANCELLED",
+                        "UNKNOWN"
+                      ]
+                    },
+                    "cancelUntilUtcIso": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Verificar contraseña actual y ejecutar solicitud o cancelación de eliminación de cuenta",
+        "tags": [
+          "organizer-account"
+        ]
+      }
+    },
+    "/api/v1/organizer/account/reauthentication/challenges": {
+      "post": {
+        "operationId": "beginOrganizerAccountReauthChallenge",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "operation",
+                  "expectedRevision"
+                ],
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "REQUEST_ACCOUNT_DELETION",
+                      "CANCEL_ACCOUNT_DELETION"
+                    ]
+                  },
+                  "accountId": {
+                    "type": "string"
+                  },
+                  "expectedRevision": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "challengeId",
+                    "expiresAtIso"
+                  ],
+                  "properties": {
+                    "challengeId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "expiresAtIso": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Iniciar desafío de reautenticación para solicitud o cancelación de eliminación de cuenta",
+        "tags": [
+          "organizer-account"
+        ]
+      }
+    },
+    "/api/v1/events": {
+      "get": {
+        "operationId": "listOrganizerEvents",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "id",
+                      "organizerId",
+                      "name",
+                      "status",
+                      "timezone",
+                      "startsAtLocal",
+                      "scheduledAt",
+                      "utcOffsetMinutes",
+                      "expiresAt",
+                      "graceEndsAt",
+                      "uploadsEnabled",
+                      "guestGalleryEnabled",
+                      "moderationMode",
+                      "pinEnabled",
+                      "createdAt",
+                      "updatedAt"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "organizerId": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "DRAFT",
+                          "SCHEDULED",
+                          "ACTIVE",
+                          "CLOSED",
+                          "GRACE_PERIOD",
+                          "SUSPENDED",
+                          "PENDING_DELETION",
+                          "ARCHIVED"
+                        ]
+                      },
+                      "timezone": {
+                        "type": "string"
+                      },
+                      "startsAtLocal": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "scheduledAt": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "utcOffsetMinutes": {
+                        "type": "number",
+                        "nullable": true
+                      },
+                      "expiresAt": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "graceEndsAt": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "uploadsEnabled": {
+                        "type": "boolean"
+                      },
+                      "guestGalleryEnabled": {
+                        "type": "boolean"
+                      },
+                      "moderationMode": {
+                        "type": "string",
+                        "enum": [
+                          "AUTO_PUBLISH",
+                          "MANUAL_REVIEW"
+                        ]
+                      },
+                      "pinEnabled": {
+                        "type": "boolean"
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Listar eventos pertenecientes al organizador autenticado (EL-TK-047)",
+        "tags": [
+          "organizer-events"
+        ]
+      }
+    },
+    "/api/v1/events/{eventId}/configuration": {
+      "get": {
+        "operationId": "getAuthorizedEventConfiguration",
+        "parameters": [
+          {
+            "name": "eventId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "event",
+                    "revision",
+                    "capabilities"
+                  ],
+                  "properties": {
+                    "event": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "organizerId",
+                        "name",
+                        "status",
+                        "timezone",
+                        "startsAtLocal",
+                        "scheduledAt",
+                        "utcOffsetMinutes",
+                        "expiresAt",
+                        "graceEndsAt",
+                        "uploadsEnabled",
+                        "guestGalleryEnabled",
+                        "moderationMode",
+                        "pinEnabled",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "organizerId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "DRAFT",
+                            "SCHEDULED",
+                            "ACTIVE",
+                            "CLOSED",
+                            "GRACE_PERIOD",
+                            "SUSPENDED",
+                            "PENDING_DELETION",
+                            "ARCHIVED"
+                          ]
+                        },
+                        "timezone": {
+                          "type": "string"
+                        },
+                        "startsAtLocal": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "scheduledAt": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "utcOffsetMinutes": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "expiresAt": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "graceEndsAt": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "uploadsEnabled": {
+                          "type": "boolean"
+                        },
+                        "guestGalleryEnabled": {
+                          "type": "boolean"
+                        },
+                        "moderationMode": {
+                          "type": "string",
+                          "enum": [
+                            "AUTO_PUBLISH",
+                            "MANUAL_REVIEW"
+                          ]
+                        },
+                        "pinEnabled": {
+                          "type": "boolean"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    },
+                    "revision": {
+                      "type": "string"
+                    },
+                    "capabilities": {
+                      "type": "object",
+                      "required": [
+                        "canEditSchedule",
+                        "canEditSettings",
+                        "canManageAccess",
+                        "canViewLifecycle",
+                        "canViewCapacity",
+                        "canPublishOrActivate"
+                      ],
+                      "properties": {
+                        "canEditSchedule": {
+                          "type": "boolean"
+                        },
+                        "canEditSettings": {
+                          "type": "boolean"
+                        },
+                        "canManageAccess": {
+                          "type": "boolean"
+                        },
+                        "canViewLifecycle": {
+                          "type": "boolean"
+                        },
+                        "canViewCapacity": {
+                          "type": "boolean"
+                        },
+                        "canPublishOrActivate": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Obtener configuración autorizada y capacidades de un evento propio (EL-TK-047)",
+        "tags": [
+          "organizer-events"
+        ]
+      }
+    },
+    "/api/v1/events/{eventId}/share-access": {
+      "get": {
+        "operationId": "getEventShareAccessSnapshot",
+        "parameters": [
+          {
+            "name": "eventId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "eventId",
+                    "lookupKey",
+                    "sharePath",
+                    "shareUrl",
+                    "generation",
+                    "pinRequired",
+                    "qrPayload",
+                    "qrSvg"
+                  ],
+                  "properties": {
+                    "eventId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "lookupKey": {
+                      "type": "string"
+                    },
+                    "sharePath": {
+                      "type": "string"
+                    },
+                    "shareUrl": {
+                      "type": "string"
+                    },
+                    "generation": {
+                      "type": "number"
+                    },
+                    "pinRequired": {
+                      "type": "boolean"
+                    },
+                    "qrPayload": {
+                      "type": "string"
+                    },
+                    "qrSvg": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Obtener enlace público /g/:lookupKey y QR SVG usando la base pública confiable del servidor (EL-TK-081, EL-TK-212)",
+        "tags": [
+          "organizer-events"
+        ]
+      }
+    },
+    "/api/v1/public/guest-entry/{lookupKey}": {
+      "get": {
+        "operationId": "resolveGuestPublicEntry",
+        "parameters": [
+          {
+            "name": "lookupKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "access",
+                    "session",
+                    "contributions"
+                  ],
+                  "properties": {
+                    "access": {
+                      "type": "object",
+                      "required": [
+                        "accessState",
+                        "eventId",
+                        "name",
+                        "status",
+                        "timezone",
+                        "generation",
+                        "pinRequired",
+                        "canViewLanding",
+                        "canUpload",
+                        "canViewGallery"
+                      ],
+                      "properties": {
+                        "accessState": {
+                          "type": "string",
+                          "enum": [
+                            "ALLOWED",
+                            "RESTRICTED",
+                            "UNAVAILABLE"
+                          ]
+                        },
+                        "eventId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "timezone": {
+                          "type": "string"
+                        },
+                        "generation": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "pinRequired": {
+                          "type": "boolean"
+                        },
+                        "canViewLanding": {
+                          "type": "boolean"
+                        },
+                        "canUpload": {
+                          "type": "boolean"
+                        },
+                        "canViewGallery": {
+                          "type": "boolean"
+                        },
+                        "restrictionReason": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "session": {
+                      "type": "object",
+                      "nullable": true,
+                      "required": [
+                        "id",
+                        "eventId",
+                        "credentialGeneration",
+                        "contributorNickname",
+                        "hasConsented",
+                        "consentVersion"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "eventId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "credentialGeneration": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "contributorNickname": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "hasConsented": {
+                          "type": "boolean"
+                        },
+                        "consentVersion": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "contributions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "attemptId",
+                          "mediaType",
+                          "status",
+                          "declaredSize",
+                          "actualSize",
+                          "detectedType",
+                          "durationSeconds",
+                          "createdAt",
+                          "rejectionReason"
+                        ],
+                        "properties": {
+                          "attemptId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "mediaType": {
+                            "type": "string",
+                            "enum": [
+                              "PHOTO",
+                              "VIDEO"
+                            ]
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "declaredSize": {
+                            "type": "integer"
+                          },
+                          "actualSize": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "detectedType": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "durationSeconds": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "rejectionReason": {
+                            "type": "string",
+                            "nullable": true
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Resolver el acceso público guest por lookupKey y recuperar recibo de sesión activa sin exponer tokens",
+        "tags": [
+          "guest-public-entry"
+        ]
+      }
+    },
+    "/api/v1/public/guest-entry/{lookupKey}/session": {
+      "post": {
+        "operationId": "createGuestEntrySession",
+        "parameters": [
+          {
+            "name": "lookupKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pin": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "session",
+                    "contributions"
+                  ],
+                  "properties": {
+                    "session": {
+                      "type": "object",
+                      "nullable": false,
+                      "required": [
+                        "id",
+                        "eventId",
+                        "credentialGeneration",
+                        "contributorNickname",
+                        "hasConsented",
+                        "consentVersion"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "eventId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "credentialGeneration": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "contributorNickname": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "hasConsented": {
+                          "type": "boolean"
+                        },
+                        "consentVersion": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "contributions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "attemptId",
+                          "mediaType",
+                          "status",
+                          "declaredSize",
+                          "actualSize",
+                          "detectedType",
+                          "durationSeconds",
+                          "createdAt",
+                          "rejectionReason"
+                        ],
+                        "properties": {
+                          "attemptId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "mediaType": {
+                            "type": "string",
+                            "enum": [
+                              "PHOTO",
+                              "VIDEO"
+                            ]
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "declaredSize": {
+                            "type": "integer"
+                          },
+                          "actualSize": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "detectedType": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "durationSeconds": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "rejectionReason": {
+                            "type": "string",
+                            "nullable": true
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Verificar PIN opcional y emitir sesión guest mediante cookie HttpOnly devolviendo recibo autoritativo",
+        "tags": [
+          "guest-public-entry"
+        ]
+      }
+    },
+    "/api/v1/public/guest-session/consent": {
+      "post": {
+        "operationId": "recordGuestSessionConsent",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "documentVersion",
+                  "accepted"
+                ],
+                "properties": {
+                  "documentVersion": {
+                    "type": "string"
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "session",
+                    "outcome"
+                  ],
+                  "properties": {
+                    "session": {
+                      "type": "object",
+                      "nullable": false,
+                      "required": [
+                        "id",
+                        "eventId",
+                        "credentialGeneration",
+                        "contributorNickname",
+                        "hasConsented",
+                        "consentVersion"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "eventId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "credentialGeneration": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "contributorNickname": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "hasConsented": {
+                          "type": "boolean"
+                        },
+                        "consentVersion": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "RECORDED",
+                        "IDEMPOTENT_REPLAY"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Registrar consentimiento explícito versionado para la sesión guest activa",
+        "tags": [
+          "guest-public-entry"
+        ]
+      }
+    },
+    "/api/v1/public/guest-session/nickname": {
+      "post": {
+        "operationId": "setGuestSessionNickname",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "nickname"
+                ],
+                "properties": {
+                  "nickname": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "session"
+                  ],
+                  "properties": {
+                    "session": {
+                      "type": "object",
+                      "nullable": false,
+                      "required": [
+                        "id",
+                        "eventId",
+                        "credentialGeneration",
+                        "contributorNickname",
+                        "hasConsented",
+                        "consentVersion"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "eventId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "credentialGeneration": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "contributorNickname": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "hasConsented": {
+                          "type": "boolean"
+                        },
+                        "consentVersion": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Guardar nombre o apodo de aportante en la sesión guest activa",
+        "tags": [
+          "guest-public-entry"
+        ]
+      }
+    },
+    "/api/v1/public/guest-session/contributions": {
+      "get": {
+        "operationId": "getGuestOwnContributions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "session",
+                    "contributions",
+                    "totalCount",
+                    "acceptedCount"
+                  ],
+                  "properties": {
+                    "session": {
+                      "type": "object",
+                      "nullable": false,
+                      "required": [
+                        "id",
+                        "eventId",
+                        "credentialGeneration",
+                        "contributorNickname",
+                        "hasConsented",
+                        "consentVersion"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "eventId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "credentialGeneration": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "contributorNickname": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "hasConsented": {
+                          "type": "boolean"
+                        },
+                        "consentVersion": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "contributions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "attemptId",
+                          "mediaType",
+                          "status",
+                          "declaredSize",
+                          "actualSize",
+                          "detectedType",
+                          "durationSeconds",
+                          "createdAt",
+                          "rejectionReason"
+                        ],
+                        "properties": {
+                          "attemptId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "mediaType": {
+                            "type": "string",
+                            "enum": [
+                              "PHOTO",
+                              "VIDEO"
+                            ]
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "declaredSize": {
+                            "type": "integer"
+                          },
+                          "actualSize": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "detectedType": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "durationSeconds": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "rejectionReason": {
+                            "type": "string",
+                            "nullable": true
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "integer"
+                    },
+                    "acceptedCount": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Consultar Mis aportes asociados exclusivamente a la sesión guest activa",
+        "tags": [
+          "guest-public-entry"
+        ]
+      }
+    },
+    "/api/v1/public/guest-entry/{lookupKey}/removal-intake": {
+      "get": {
+        "operationId": "getGuestRemovalIntakeRoute",
+        "parameters": [
+          {
+            "name": "lookupKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "eventId",
+                    "eventName",
+                    "intakePath",
+                    "disclaimer",
+                    "requiresSession"
+                  ],
+                  "properties": {
+                    "eventId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "eventName": {
+                      "type": "string"
+                    },
+                    "intakePath": {
+                      "type": "string"
+                    },
+                    "disclaimer": {
+                      "type": "string"
+                    },
+                    "requiresSession": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Consultar la derivación y aviso oficial de solicitud de retiro sin exigir ni recuperar sesión guest",
+        "tags": [
+          "guest-public-entry"
+        ]
+      }
     }
   },
   "info": {

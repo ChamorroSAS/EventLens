@@ -50,6 +50,11 @@ export {
   type OrganizerActorContext,
   type OrganizerSessionCookieSpec,
   serializeOrganizerSessionCookie,
+  type OrganizerEffectiveSessionState,
+  type OrganizerEffectiveSessionCapabilities,
+  type OrganizerProjectedAccountMetadata,
+  type OrganizerEffectiveSessionProjection,
+  type ProjectOrganizerSessionCommand,
   type OrganizerLoginCommand,
   type OrganizerLoginResult,
   type ValidateOrganizerSessionCommand,
@@ -133,7 +138,10 @@ export { EmailVerificationService } from './verification.js';
 
 export {
   OrganizerAuthenticationService,
-  type OrganizerAuthOptions
+  type OrganizerAuthOptions,
+  deriveOrganizerCsrfToken,
+  computeOrganizerEffectiveCapabilities,
+  projectOrganizerEffectiveSession
 } from './organizer-auth.js';
 
 export {
