@@ -1,3 +1,4 @@
+import { assertTestConnectionUrl, assertTestDatabase } from '@eventlens/database/testing';
 // Diagnostic safety assertions for immutable, already-published SQL.
 // This deploys only 045/056; it is NOT proof of full workspace assembly/deploy.
 import { Client } from 'pg';
@@ -10,6 +11,7 @@ import assert from 'node:assert/strict';
 
 const url = process.env.BETA_VERIFICATION_DATABASE_URL;
 if (!url) throw new Error('BETA_VERIFICATION_DATABASE_URL_REQUIRED: disposable PostgreSQL only');
+assertTestConnectionUrl(url);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const databasePackage = resolve(root, 'database');
 const identityPackage = resolve(root, 'identity');
@@ -30,6 +32,7 @@ async function scenario(name, verify, clean = false) {
   try {
     await admin.connect();
     adminConnected = true;
+    await assertTestDatabase({ query: async (sql, ...args) => (await admin.query(sql, args)).rows });
     await admin.query(`CREATE SCHEMA "${schema}"`);
     schemaCreated = true;
     const scoped = new URL(url);
@@ -79,7 +82,7 @@ async function scenario(name, verify, clean = false) {
     results.push({ name, result: 'FAIL', error: error instanceof assert.AssertionError ? error.message : 'VERIFICATION_EXECUTION_ERROR' });
   } finally {
     await client?.end();
-    if (adminConnected && schemaCreated) await admin.query(`DROP SCHEMA "${schema}" CASCADE`);
+    if (adminConnected && schemaCreated) { await assertTestDatabase({ query: async (sql, ...args) => (await admin.query(sql, args)).rows }); await admin.query(`DROP SCHEMA "${schema}" CASCADE`); }
     await admin.end();
     await rm(fixture, { recursive: true, force: true });
   }

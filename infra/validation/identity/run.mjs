@@ -1,77 +1,33 @@
-import { readFileSync, realpathSync, writeFileSync, mkdirSync } from 'node:fs';
-import { randomUUID } from 'node:crypto';
+﻿import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { createRequire } from 'node:module';
-
-const host = process.env.PGHOST ?? 'postgres';
-const user = process.env.PGUSER ?? (process.env.POSTGRES_USER ?? 'eventlens');
-let password = process.env.PGPASSWORD ?? process.env.POSTGRES_PASSWORD;
-if (!password) {
-  try {
-    password = readFileSync('/run/secrets/pg_admin', 'utf8').trim();
-  } catch {
-    password = 'eventlens-local-only';
-  }
-}
-const defaultDb = process.env.PGDATABASE ?? (process.env.POSTGRES_DB ?? 'eventlens');
-const port = Number(process.env.PGPORT ?? '5432');
-
-const require = createRequire(realpathSync('/workspace/packages/database/node_modules/@prisma/adapter-pg/package.json'));
-const { Client } = require('pg');
-const database = 'identity_' + randomUUID().replaceAll('-', '');
-const admin = new Client({ host, port, user, password, database: defaultDb });
-await admin.connect();
-await admin.query(`CREATE DATABASE "${database}"`);
-const env = { ...process.env, DATABASE_URL: `postgresql://${encodeURIComponent(user)}:${encodeURIComponent(password)}@${host}:${port}/${database}` };
-
-function run(args, allowFailure = false) {
+import { withIsolatedTestDatabase } from '../../../scripts/isolated-tests.mjs';
+import { proveAdministrativeCli } from './cli-proof.mjs';
+mkdirSync('/evidence', { recursive: true });
+function run(args, env = process.env, allowFailure = false) {
   const r = spawnSync('pnpm', args, { cwd: '/workspace', env, encoding: 'utf8' });
   process.stdout.write(r.stdout ?? '');
-  if (r.status !== 0 && !allowFailure) {
-    process.stderr.write('SCOPED_CHECK_FAILED\n');
-    throw Error('SCOPED_CHECK_FAILED');
-  }
-  return r.status;
+  if ((r.error || r.status !== 0) && !allowFailure) throw new Error('SCOPED_CHECK_FAILED');
+  return r.status ?? 1;
 }
-
-try {
-  mkdirSync('/evidence', { recursive: true });
-  run(['--filter', '@eventlens/identity', 'typecheck']);
-  run(['--filter', '@eventlens/identity', 'build']);
-  const identityExports = await import('/workspace/packages/identity/dist/index.js');
-  if (
-    typeof identityExports.AdminProvisioningService !== 'function' ||
-    typeof identityExports.AdminAuthenticationService !== 'function' ||
-    typeof identityExports.Mod001RecoveryCoordinator !== 'function' ||
-    typeof identityExports.BetaInvitationService !== 'function' ||
-    typeof identityExports.OrganizerRegistrationService !== 'function' ||
-    typeof identityExports.EmailVerificationService !== 'function' ||
-    typeof identityExports.OrganizerAuthenticationService !== 'function'
-  ) {
-    throw Error('PUBLIC_IMPORT_FAILED');
-  }
-  const exitCode = run(['--filter', '@eventlens/identity', 'exec', 'vitest', 'run', '--reporter=default', '--reporter=json', '--outputFile=/evidence/tests.json'], true);
+run(['--filter', '@eventlens/database', 'test']);
+run(['--filter', '@eventlens/identity', 'typecheck']);
+run(['--filter', '@eventlens/identity', 'build']);
+const cli = await withIsolatedTestDatabase(env => proveAdministrativeCli(env));
+writeFileSync('/evidence/cli-proof.json', JSON.stringify(cli, null, 2));
+console.log('ADMIN_CLI_PROOF_PASS: private delivery, authentication, single-use and secret-free audit');
+await withIsolatedTestDatabase(async env => {
+  const exitCode = run(['--filter', '@eventlens/identity', 'exec', 'vitest', 'run', '--no-file-parallelism', '--reporter=default', '--reporter=json', '--outputFile=/evidence/tests.json'], env, true);
   const tests = JSON.parse(readFileSync('/evidence/tests.json', 'utf8'));
   writeFileSync('/evidence/result.json', JSON.stringify({
-    ticket: 'EL-TK-013',
-    runId: database,
-    testedAt: new Date().toISOString(),
+    change: 'CR-005', tickets: ['EL-TK-215', 'EL-TK-216'],
+    runId: env.EVENTLENS_TEST_DATABASE, testedAt: new Date().toISOString(),
     result: tests.success && exitCode === 0 ? 'PASS' : 'FAIL',
-    tests: tests.numTotalTests,
-    passed: tests.numPassedTests,
-    postgresql: '16 real isolated laboratory database',
-    organizerAuthentication: 'Organizer authentication and session issuance with constant-time verification, rate-limiting and zero-secrets',
-    verification: 'Email verification and organizer account activation consuming beta invitation',
-    registration: 'Organizer registration with adult declaration, pending verification, credential protection and idempotent preservation',
-    recovery: 'MOD-001 RecoveryAuthority protocol PREPARE->SQL->ACK and post-PITR reconciliation',
-    gates: {
-      'MEDIA-001': 'NOT_EVALUATED',
-      'CAP-001': 'NOT_EVALUATED',
-      'DR-001': 'NOT_EVALUATED',
-      'EXPORT-001': 'NOT_EVALUATED'
-    }
+    tests: tests.numTotalTests, passed: tests.numPassedTests, failed: tests.numFailedTests,
+    postgresql: '16 real dedicated container, temporary database and constrained role',
+    guard: 'guard-proof.json (verified before suites)', cli: 'cli-proof.json',
+    existingDevelopmentData: 'not accessed; laboratory isolated from development network and volumes',
+    exceptionalRecovery: 'BLOCKED: no accepted external operational authorizer/adapter',
+    betaReadiness: 'NOT_EVALUATED'
   }, null, 2));
-  if (exitCode !== 0) throw Error('TESTS_FAILED');
-} finally {
-  await admin.end();
-}
+  if (exitCode !== 0) throw new Error('TESTS_FAILED');
+});

@@ -1,3 +1,4 @@
+import { IsolatedTestTransactions, assertTestDatabase } from '@eventlens/database/testing';
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { randomUUID } from 'node:crypto';
 import { createPrismaClient, PrismaTransactions } from '@eventlens/database';
@@ -10,8 +11,9 @@ const databaseUrl = process.env.DATABASE_URL;
 const describeIntegration = databaseUrl ? describe : describe.skip;
 
 describeIntegration('BetaAccessRequestService (Real PostgreSQL Integration Tests — EL-TK-008 & EL-TK-009)', () => {
+  if (!databaseUrl) return;
   const client = createPrismaClient(databaseUrl!);
-  const txs = new PrismaTransactions(client, 10000);
+  const txs = new IsolatedTestTransactions(new PrismaTransactions(client, 10000));
 
   const adminActor: AdminActorContext = {
     actorType: 'ADMIN_HUMAN',

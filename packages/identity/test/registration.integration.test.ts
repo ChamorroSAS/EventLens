@@ -1,10 +1,11 @@
+import { IsolatedTestTransactions, assertTestDatabase } from '@eventlens/database/testing';
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { createPrismaClient, PrismaTransactions } from '@eventlens/database';
 import {
   OrganizerRegistrationService,
   RegistrationError,
-  computeCredentialDigest,
+  PasswordVerifier,
   type EmailVerificationNotificationPort
 } from '../src/index.js';
 
@@ -12,8 +13,10 @@ const databaseUrl = process.env.DATABASE_URL;
 const describeIntegration = databaseUrl ? describe : describe.skip;
 
 describeIntegration('OrganizerRegistrationService (Real PostgreSQL Integration Tests — EL-TK-010)', () => {
+  if (!databaseUrl) return;
   const client = createPrismaClient(databaseUrl!);
-  const txs = new PrismaTransactions(client, 10000);
+  const txs = new IsolatedTestTransactions(new PrismaTransactions(client, 10000));
+  const verifier = new PasswordVerifier();
 
   async function sql(statement: string, ...args: unknown[]) {
     return txs.run((tx) => tx.execute(statement, ...args));
@@ -170,9 +173,7 @@ describeIntegration('OrganizerRegistrationService (Real PostgreSQL Integration T
       )
     );
     expect(credentials).toHaveLength(1);
-    expect(credentials[0].secret_digest).toBe(
-      computeCredentialDigest('ORGANIZER_AUTHENTICATION', accounts[0].id, 'RealSecurePassword2026!')
-    );
+    expect(await verifier.verifyPassword(credentials[0].secret_digest, 'RealSecurePassword2026!')).toBe(true);
 
     const intents = await txs.run((tx) =>
       tx.query<{ status: string; token_digest: string }>(
@@ -209,6 +210,11 @@ describeIntegration('OrganizerRegistrationService (Real PostgreSQL Integration T
     });
     expect(res1.outcome).toBe('REGISTERED_PENDING');
     expect(emailSendCount).toBe(1);
+    const originalCredentials = await txs.run(tx => tx.query<{ secret_digest: string }>(
+      'SELECT secret_digest FROM organizer_credential WHERE account_id = $1', res1.account.id
+    ));
+    expect(originalCredentials).toHaveLength(1);
+    expect(await verifier.verifyPassword(originalCredentials[0].secret_digest, 'OriginalPassword1!')).toBe(true);
 
     // Segundo registro repetido con diferente contraseña
     const res2 = await service.registerOrganizer({
@@ -229,9 +235,9 @@ describeIntegration('OrganizerRegistrationService (Real PostgreSQL Integration T
         res1.account.id
       )
     );
-    expect(credentials[0].secret_digest).toBe(
-      computeCredentialDigest('ORGANIZER_AUTHENTICATION', res1.account.id, 'OriginalPassword1!')
-    );
+    expect(credentials).toHaveLength(1);
+    expect(credentials[0].secret_digest).toBe(originalCredentials[0].secret_digest);
+    expect(await verifier.verifyPassword(credentials[0].secret_digest, 'DifferentPassword2!')).toBe(false);
   });
 
   it('concurrencia: llamadas simultaneas bajo SELECT FOR UPDATE no causan duplicados ni fallos transaccionales', async () => {

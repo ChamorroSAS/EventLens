@@ -111,6 +111,7 @@ export {
 } from './contracts.js';
 
 export { AdminProvisioningService } from './provisioning.js';
+export { AdminBootstrapService } from './admin-bootstrap.js';
 
 export {
   AdminAuthenticationService,

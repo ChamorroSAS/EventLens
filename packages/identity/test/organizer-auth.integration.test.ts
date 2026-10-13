@@ -1,3 +1,4 @@
+import { IsolatedTestTransactions, assertTestDatabase } from '@eventlens/database/testing';
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { createPrismaClient, PrismaTransactions, readDatabaseUrl } from '@eventlens/database';
@@ -21,8 +22,9 @@ const describeIntegration = databaseUrl ? describe : describe.skip;
 const verifier = new PasswordVerifier();
 
 describeIntegration('OrganizerAuthenticationService (Real PostgreSQL Integration Tests — EL-TK-013)', () => {
+  if (!databaseUrl) return;
   const client = createPrismaClient(databaseUrl!);
-  const txs = new PrismaTransactions(client, 10000);
+  const txs = new IsolatedTestTransactions(new PrismaTransactions(client, 10000));
 
   async function sql(statement: string, ...args: unknown[]) {
     return txs.run((tx) => tx.execute(statement, ...args));

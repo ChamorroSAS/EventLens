@@ -1,0 +1,15 @@
+{
+  "result": "PASS",
+  "testedAt": "2026-10-13T07:13:24.488Z",
+  "database": "el_test_7900de64c1984fb39874bb2f95b43870",
+  "cases": [
+    "missing policy",
+    "foreign marker",
+    "effective database mismatch",
+    "effective role mismatch",
+    "unsafe DATABASE_URL"
+  ],
+  "destructiveCallbackReached": false,
+  "sentinelRowsBefore": 1,
+  "sentinelRowsAfter": 1
+}

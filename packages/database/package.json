@@ -1,1 +1,26 @@
-{"name":"@eventlens/database","version":"0.0.0","private":true,"type":"module","exports":"./dist/index.js","scripts":{"generate":"node ../../scripts/database.mjs generate","build":"tsc -p tsconfig.build.json","typecheck":"tsc --noEmit","test":"vitest run"},"dependencies":{"@prisma/client":"7.10.0","@prisma/adapter-pg":"7.10.0"},"devDependencies":{"prisma":"7.10.0","typescript":"5.9.3","vitest":"4.0.18","@types/node":"24.10.1"}}
+{
+  "name": "@eventlens/database",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js",
+    "./testing": "./dist/testing.js"
+  },
+  "scripts": {
+    "generate": "node ../../scripts/database.mjs generate",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@prisma/client": "7.10.0",
+    "@prisma/adapter-pg": "7.10.0"
+  },
+  "devDependencies": {
+    "prisma": "7.10.0",
+    "typescript": "5.9.3",
+    "vitest": "4.0.18",
+    "@types/node": "24.10.1"
+  }
+}

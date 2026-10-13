@@ -1,3 +1,4 @@
+import { assertTestConnectionUrl, assertTestDatabase } from '@eventlens/database/testing';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
@@ -23,8 +24,7 @@ import { EndToEndObservabilityValidator } from '../src/e2e-validator.js';
 
 const databaseUrl =
   process.env.TEST_DATABASE_URL ||
-  process.env.DATABASE_URL ||
-  'postgresql://eventlens:eventlens-local-only@127.0.0.1:15432/eventlens';
+  process.env.DATABASE_URL!;
 
 describe('EndToEndObservabilityValidator (EL-TK-176 E2E Integration with PostgreSQL 16)', () => {
   let pool: Pool;
@@ -55,7 +55,9 @@ describe('EndToEndObservabilityValidator (EL-TK-176 E2E Integration with Postgre
   };
 
   beforeAll(async () => {
+    assertTestConnectionUrl(databaseUrl);
     pool = new Pool({ connectionString: databaseUrl });
+    await assertTestDatabase({ query: async (sql, ...args) => (await pool.query(sql, args)).rows });
     const res = await pool.query('SELECT version()');
     expect(res.rows[0].version).toContain('PostgreSQL 16');
 
@@ -64,7 +66,7 @@ describe('EndToEndObservabilityValidator (EL-TK-176 E2E Integration with Postgre
   });
 
   afterAll(async () => {
-    await pool.end();
+    await pool?.end();
   });
 
   beforeEach(() => {

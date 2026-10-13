@@ -1,6 +1,7 @@
 import { PrismaClient, Prisma } from './generated/prisma/client.js';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { isIP } from 'node:net';
+import { assertTestConnectionUrl, assertTestDatabase } from './testing.js';
 /** Build one connection URI without interpreting reserved characters in credentials. */
 export function readDatabaseUrl(env:NodeJS.ProcessEnv):string {
   if (env.DATABASE_URL !== undefined) {
@@ -30,7 +31,28 @@ export interface SqlTransaction {
 export interface TransactionRunner { run<T>(work: (tx: SqlTransaction) => Promise<T>): Promise<T>; }
 export interface ConnectionLimits { connectionTimeoutMillis?: number; query_timeout?: number; max?: number; }
 export function createPrismaClient(connectionString: string, limits: ConnectionLimits = {}): PrismaClient {
-  return new PrismaClient({adapter: new PrismaPg({connectionString, ...limits})});
+  const testing = process.env.VITEST !== undefined || process.env.NODE_ENV === 'test';
+  if (testing) assertTestConnectionUrl(connectionString);
+  const client = new PrismaClient({adapter: new PrismaPg({connectionString, ...limits})});
+  if (!testing) return client;
+  const verify = () => assertTestDatabase({ query: <T extends object>(sql: string, ...args: unknown[]) => client.$queryRawUnsafe<T[]>(sql, ...args) });
+  // Wrap the infrastructure surface used by domain adapters. Verification uses
+  // the original client to avoid recursion, and runs on the transaction itself.
+  const guarded = client.$extends({ query: { $allOperations: async ({ args, query }) => { await verify(); return query(args); } } });
+  return new Proxy(guarded as unknown as PrismaClient, { get(target, property) {
+    if (property === '$transaction') return async (work: unknown, options: unknown) => {
+      if (typeof work !== 'function') throw new Error('TEST_ISOLATION_CALLBACK_TRANSACTION_REQUIRED');
+      return client.$transaction(async tx => {
+        await assertTestDatabase({ query: <T extends object>(sql: string, ...args: unknown[]) => tx.$queryRawUnsafe<T[]>(sql, ...args) });
+        return work(tx);
+      }, options as Parameters<typeof client.$transaction>[1]);
+    };
+    if (['$executeRaw', '$executeRawUnsafe', '$queryRaw', '$queryRawUnsafe'].includes(String(property))) {
+      return async (...args: unknown[]) => { await verify(); return Reflect.apply(Reflect.get(target, property), target, args); };
+    }
+    const value = Reflect.get(target, property);
+    return typeof value === 'function' ? value.bind(target) : value;
+  } });
 }
 export class PrismaTransactions implements TransactionRunner {
   constructor(private readonly client: PrismaClient, private readonly timeoutMs: number) {
