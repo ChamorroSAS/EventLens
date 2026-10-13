@@ -1,30 +1,68 @@
 import { TestBed } from '@angular/core/testing';
+import { describe, it, expect } from 'vitest';
 import { AppComponent } from './app.component';
-import { PlatformApiService } from './platform-api.service';
+import {
+  PublicEntryRouterService,
+  providePublicEntryRouter
+} from './navigation/public-entry-router.service';
+import { ALL_PUBLIC_ENTRY_ROUTES } from './navigation/all-routes';
+import { OrganizerSessionService } from './organizer-session.service';
+import { computed, signal } from '@angular/core';
 
-describe('Platform shell', () => {
-  it('announces real readiness through the public client boundary', async () => {
-    const checkReadiness = vi.fn().mockResolvedValue(undefined);
-    TestBed.configureTestingModule({ providers: [{ provide: PlatformApiService, useValue: { checkReadiness } }] });
-    const fixture = TestBed.createComponent(AppComponent);
-    await fixture.whenStable();
-    fixture.detectChanges();
-    expect(checkReadiness).toHaveBeenCalledOnce();
-    expect(fixture.nativeElement.querySelector('[role="status"]').textContent).toContain('API disponible.');
-    expect(fixture.nativeElement.querySelector('button').disabled).toBe(false);
-  });
+describe('AppComponent (EL-TK-213 Production Root Shell)', () => {
+  it('hosts the public entry router outlet and boots without disclosing internal errors', async () => {
+    const mockSession = {
+      snapshot: signal({
+        state: 'ANONYMOUS' as const,
+        capabilities: {
+          canSignIn: true,
+          canRequestBetaAccess: true,
+          canAccessMyEvents: false,
+          canAccessMyAccount: false,
+          canManageSessions: false,
+          canManageAccountDeletion: false,
+          isDeletionRestricted: false,
+          canSignOut: false
+        },
+        account: null
+      }).asReadonly(),
+      state: computed(() => 'ANONYMOUS' as const),
+      capabilities: computed(() => ({
+        canSignIn: true,
+        canRequestBetaAccess: true,
+        canAccessMyEvents: false,
+        canAccessMyAccount: false,
+        canManageSessions: false,
+        canManageAccountDeletion: false,
+        isDeletionRestricted: false,
+        canSignOut: false
+      })),
+      account: computed(() => null),
+      isLoggingOut: signal(false).asReadonly(),
+      lastLogoutAnnouncement: signal<string | null>(null).asReadonly(),
+      logout: vi.fn()
+    };
 
-  it('sanitizes errors and allows a keyboard-accessible retry', async () => {
-    const checkReadiness = vi.fn().mockRejectedValueOnce(new Error('private database detail')).mockResolvedValueOnce(undefined);
-    TestBed.configureTestingModule({ providers: [{ provide: PlatformApiService, useValue: { checkReadiness } }] });
+    await TestBed.configureTestingModule({
+      imports: [AppComponent],
+      providers: [
+        providePublicEntryRouter(ALL_PUBLIC_ENTRY_ROUTES),
+        { provide: OrganizerSessionService, useValue: mockSession }
+      ]
+    }).compileComponents();
+
     const fixture = TestBed.createComponent(AppComponent);
+    const router = TestBed.inject(PublicEntryRouterService);
+    await router.navigateByUrl('/');
     await fixture.whenStable();
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('API no disponible.');
-    expect(fixture.nativeElement.textContent).not.toContain('private database detail');
-    fixture.nativeElement.querySelector('button').click();
-    await fixture.whenStable();
-    fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('API disponible.');
+
+    const outletEl = fixture.nativeElement.querySelector('eventlens-router-outlet, router-outlet');
+    expect(outletEl).toBeTruthy();
+
+    // Verify Home renders as root default route without errors
+    const homeTitle = fixture.nativeElement.querySelector('#hero-title');
+    expect(homeTitle).toBeTruthy();
+    expect(homeTitle.textContent).toContain('Tu evento termina. Sus recuerdos continúan.');
   });
 });

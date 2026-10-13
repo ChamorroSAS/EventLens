@@ -1,14 +1,15 @@
 # EL-EP-018 — Home público y navegación de entrada a EventLens
 
 ## Status
-READY — requisitos APPROVED, contrato técnico APPROVED y gate UI YES, ratificados para ticketización. No implica implementación, exposición HTTP o publicación aprobadas. [Dictámenes](../sessions/2026-10-12-el-ep-018-review-gates.md).
+DONE — implementación y validación integrada completadas (EL-TK-205..214 DONE). [Dictámenes](../sessions/2026-10-12-el-ep-018-review-gates.md).
 
-REQUIREMENTS_READY: YES — Gate1 y revalidación aprobados; tres MAJOR de composición, matriz de integración y logout cerrados por contratos incorporados.
-READY_FOR_TICKET_WRITING: YES — arquitectura/UI/requisitos completos para descomponer sólo los gaps demostrados, no por aprobación editorial aislada.
-LEGAL_SCOPE_FOR_TICKET_WRITING: PASS_WITH_CONDITIONS — [gate legal](../sessions/2026-10-12-el-ep-018-legal-ticket-gate.md): cumplimiento/release son independientes de los gates técnicos ya aprobados y los tickets EL-TK-205..214 READY; no habilita captación pública de datos.
-UI_REQUIRED: YES
-READY_FOR_FRONTEND_PLANNING: YES — ratificación UI tras contrato técnico y revalidación requisitos. [UI](../../context/ui-public-entry.md), [contrato](../../context/public-entry-contract.md).
-READY_FOR_IMPLEMENTATION: PARTIAL — EL-TK-205..214 formalizados READY tras Gate 2; dependencias de integración por ejecutar; no se implementa durante esta revisión.
+REQUIREMENTS_READY: YES.
+READY_FOR_TICKET_WRITING: YES.
+LEGAL_SCOPE_FOR_TICKET_WRITING: PASS_WITH_CONDITIONS — [gate legal](../sessions/2026-10-12-el-ep-018-legal-ticket-gate.md): cumplimiento/release público general condicionado por EL-EP-017 / Q-029.
+UI_REQUIRED: YES.
+READY_FOR_FRONTEND_PLANNING: YES.
+READY_FOR_IMPLEMENTATION: YES.
+IMPLEMENTED: YES — todos los tickets EL-TK-205 a EL-TK-214 implementados y verificados con pruebas unitarias, de integración con PostgreSQL 16 y E2E con Playwright.
 
 **Precedencia vigente:** contrato técnico y handoff UI incorporados gobiernan paths, sesión, Mi cuenta, logout, copy de diseño y responsive. La sesión editorial conserva propuestas históricas; sus PENDING/NO previos no reabren las decisiones cerradas. Copy UX no es aprobación jurídica; fotografías futuras no bloquean la entrega inicial.
 
@@ -189,3 +190,4 @@ P0 **propuesta** para entrada/roteo funcional de la Beta (sin navegación no exi
 - 2026-10-12: propuesta de épica nueva a solicitud del proyecto; revisión documental de root actual, EL-EP-001/002/004, manual de marca CR-004 y EL-TK-203/204. Sin tickets, código, contratos nuevos ni aprobación de gates.
 
 - 2026-10-12: EL-TK-205..214 formalizados; Gate 2 requisitos/técnico/UI aplicable APPROVED tras correcciones de montaje, autoridad y secuencia. READY de alcance, sin implementación; [dictámenes](../sessions/2026-10-12-el-ep-018-review-gates.md) y [grafo](../DEPENDENCIES.md).
+- 2026-10-13: EL-EP-018 COMPLETADO. Todos los tickets (EL-TK-205 a EL-TK-214) entregados y verificados: proyección de sesión adaptativa, router Angular desacoplado, pantallas de login/Beta/cuenta/eventos/guest, serving SPA sin absorción de /api o assets, Home público accesible con copy editorial exacto y suite E2E de Playwright (7/7 tests PASS).

@@ -10,6 +10,13 @@ import { EventListComponent } from './event-list.component.js';
 import { EventSettingsNavComponent } from './event-settings-nav.component.js';
 import { EventStatusBadgeComponent } from '../lifecycle/event-status-badge.component.js';
 import { OrganizerMediaLibraryComponent } from '../media/organizer-media-library.component.js';
+import {
+  APPROVED_PUBLIC_ENTRY_PATHS,
+  CANONICAL_PUBLIC_ENTRY_ROUTE_METADATA,
+  type PublicEntryRouteActivationContext,
+  type PublicEntryRouteDescriptor
+} from '../navigation/public-entry-routes.contract';
+import { OrganizerSessionService } from '../organizer-session.service';
 
 @Component({
   selector: 'eventlens-organizer-dashboard',
@@ -355,6 +362,7 @@ import { OrganizerMediaLibraryComponent } from '../media/organizer-media-library
 })
 export class OrganizerDashboardComponent implements OnInit {
   private readonly organizerService = inject(OrganizerService);
+  private readonly sessionService = inject(OrganizerSessionService, { optional: true });
 
   readonly isLoading = signal<boolean>(false);
   readonly errorMessage = signal<string | null>(null);
@@ -362,6 +370,14 @@ export class OrganizerDashboardComponent implements OnInit {
   readonly selectedEventId = signal<string | null>(null);
   readonly selectedEventConfig = signal<EventConfigurationModel | null>(null);
   readonly activeSection = signal<EventSettingsSection>('general');
+
+  constructor() {
+    this.sessionService?.registerOrganizerCacheClearer(() => {
+      this.events.set([]);
+      this.selectedEventId.set(null);
+      this.selectedEventConfig.set(null);
+    });
+  }
 
   get selectedEvent(): () => OrganizerEventModel | null {
     return () => {
@@ -382,6 +398,9 @@ export class OrganizerDashboardComponent implements OnInit {
       const items = await this.organizerService.listEvents();
       this.events.set(items);
     } catch (err) {
+      this.events.set([]);
+      this.selectedEventId.set(null);
+      this.selectedEventConfig.set(null);
       this.errorMessage.set('No fue posible cargar tus eventos. Por favor verifica tu sesión.');
     } finally {
       this.isLoading.set(false);
@@ -437,3 +456,39 @@ export class OrganizerDashboardComponent implements OnInit {
     }
   }
 }
+
+export async function organizerDashboardRouteGuard(
+  _context: PublicEntryRouteActivationContext
+): Promise<boolean | string> {
+  const sessionService = inject(OrganizerSessionService);
+  if (sessionService.state() === 'CHECKING') {
+    await sessionService.refreshSessionProjection();
+  }
+
+  const state = sessionService.state();
+  const capabilities = sessionService.capabilities();
+
+  if (
+    state === 'ORGANIZER_ACTIVE' &&
+    capabilities.canAccessMyEvents &&
+    !capabilities.isDeletionRestricted
+  ) {
+    return true;
+  }
+
+  if (state === 'ORGANIZER_RESTRICTED_DELETION') {
+    return APPROVED_PUBLIC_ENTRY_PATHS.ORGANIZER_ACCOUNT;
+  }
+
+  if (state === 'ANONYMOUS') {
+    return '/ingresar?returnUrl=%2Fmis-eventos';
+  }
+
+  return APPROVED_PUBLIC_ENTRY_PATHS.HOME;
+}
+
+export const ORGANIZER_DASHBOARD_ROUTE_DESCRIPTOR: PublicEntryRouteDescriptor = Object.freeze({
+  ...CANONICAL_PUBLIC_ENTRY_ROUTE_METADATA.ORGANIZER_DASHBOARD,
+  component: OrganizerDashboardComponent,
+  canActivate: [organizerDashboardRouteGuard]
+});

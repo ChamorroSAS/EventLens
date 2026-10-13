@@ -12,9 +12,8 @@ test('platform starts and exposes the generated public HTTP contract', async ({ 
   expect(docs.ok()).toBe(true);
 
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'EventLens', exact: true })).toBeVisible();
-  await expect(page.getByRole('status')).toHaveText('API disponible.');
-  await page.getByRole('button', { name: 'Comprobar conexión' }).focus();
-  await page.keyboard.press('Enter');
-  await expect(page.getByRole('status')).toHaveText('API disponible.');
+  await expect(page.getByRole('link', { name: /EventLens/i })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Tu evento termina. Sus recuerdos continúan.'
+  );
 });
