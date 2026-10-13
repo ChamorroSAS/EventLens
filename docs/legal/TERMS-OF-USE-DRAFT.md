@@ -82,6 +82,16 @@ La clasificación y resolución corresponden exclusivamente a administración au
 
 **Sin ampliación implícita de permisos:** verificar capacidades efectivas de EL-EP-001/012/013/014 y los estados de cuenta/evento antes de cualquier ticket o implantación. **PENDING LEGAL:** tipificación de faltas, garantías de información y contradicción, proporcionalidad, eventual retención mínima de antecedentes, criterios de prescripción y diseño contractual final. No se aprueba una tabla de penalizaciones, nuevos privilegios ni sanciones automáticas.
 
+## 8.6. Restricciones proporcionales sobre sesión o permisos de invitados — decisión funcional confirmada (2026-10-12)
+
+Ante **uso abusivo verificado o riesgo grave** asociado a la participación de un invitado (p. ej., aportes prohibidos o interferencia deliberada en el evento), la administración autorizada podrá **evaluar** una restricción proporcionada de la **sesión o permisos afectados**, con justificación y auditoría mínima. No se exige crear una cuenta de invitado ni identificarlo civilmente; el token anónimo **no prueba identidad personal**.
+
+**Límite de contratos:** reutilizar revocación de sesiones acotadas al evento prevista por EL-EP-004/DEC-083 únicamente en la medida en que el mecanismo y actor estén autorizados. DEC-083 confirma revocación de sesiones anteriores al cambiar PIN/regenerar QR, pero **no demuestra por sí misma una capacidad de revocación individual ni faculta a administradores a bloquear invitado específico**. Si tal capacidad no existe o exige nuevo estado, rol o comando, realizar análisis de impacto y aprobación antes de generar tickets; no revocar todas las sesiones del evento como sanción individual por defecto.
+
+La mera denuncia no justifica una restricción automática (DEC-088/089). La restricción no elimina fotografías ni impide indebidamente el ejercicio de derechos: preservar vías de retiro sin sesión de EL-EP-009/DEC-103..105 y condiciones de consulta propia de DEC-084 cuando exista sesión válida. No convertir IP, huella de dispositivo ni datos de navegación en identidad permanente o lista de exclusión por inferencia.
+
+**PENDING:** validar permisos/API/runtime para revocación selectiva, facultad administrativa, recuperación/revisión de medida, efectos sobre cargas en curso y exposición de URLs firmadas; análisis jurídico del fundamento y conservación de evidencia. `GUEST_ABUSE_RESTRICTION: FUNCTIONAL_CONFIRMED_WITH_TECH_GATE`; `IMPLEMENTED: NOT_VERIFIED`; `DEC_TC_ARCH_CHANGE: NONE`.
+
 ## 9. Relación con organizaciones y proveedores
 
 Un representante humano puede gestionar un evento de organización, pero los alcances de representación, instrucciones de tratamiento y rol responsable/encargado deben definirse caso a caso. Los proveedores técnicos, ubicaciones y contratos de tratamiento no se consideran finalizados por estos términos.
