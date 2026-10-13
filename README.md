@@ -1,6 +1,8 @@
-# EventLens
+# Phoeve (repositorio técnico EventLens)
 
-EventLens es un monorepo pnpm con una base común para desarrollo local. Esta base arranca PostgreSQL, la API NestJS y la aplicación Angular con Docker Compose; expone OpenAPI y genera el cliente TypeScript que consume Angular. Incluye infraestructura de MinIO para desarrollo local. La interfaz actual es un placeholder de plataforma, sin flujos de negocio.
+Phoeve es la identidad pública del producto. Los paquetes \`@eventlens/*\`, el nombre GitHub y los contratos técnicos conservan EventLens por compatibilidad. [Manual de marca Phoeve](docs/branding/PHOEVE-MANUAL-DE-MARCA.md) · [CR-006](.codex/product/changes/CR-006.md).
+
+El repositorio técnico EventLens es un monorepo pnpm con una base común para desarrollo local. Esta base arranca PostgreSQL, la API NestJS y la aplicación Angular con Docker Compose; expone OpenAPI y genera el cliente TypeScript que consume Angular. Incluye infraestructura de MinIO para desarrollo local. La interfaz actual es un placeholder de plataforma, sin flujos de negocio.
 
 ## Requisitos
 
