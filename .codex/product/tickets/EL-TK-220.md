@@ -2,7 +2,7 @@
 ## Parent epic
 EL-EP-019
 ## Status
-READY
+DONE
 ## User story
 Como organizador, quiero que las configuraciones detecten cambios concurrentes, para no sobrescribir un evento actualizado.
 ## Alcance funcional
@@ -42,9 +42,9 @@ EL-EP-019; DEC-069/070; `event-control-panels-contract.md`.
 - [x] Invariante SQL y escenarios de carrera definidos
 - [x] Dependencia persistente explícita
 - [x] Gate 2 aprobado
-REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: NO actual (PENDING_DEPENDENCIES); IMPLEMENTABLE_AFTER_DEPENDENCIES: YES. Validar depends_on antes de ejecutar; no repetir Gate2 salvo cambio material. Activación nuevas mutaciones/admin BLOCKED por EL-TK-221/222 y evidencias finales. IMPLEMENTED: NO.
+REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: YES. IMPLEMENTED: YES.
 ## Definition of Done
-CAS y revisión probados para todos los writers identificados sin lost update; capacidades granulares y recálculo propietario atómico acreditados.
+- [x] CAS y revisión probados para todos los writers identificados sin lost update; capacidades granulares y recálculo propietario atómico acreditados. (Verificado con `event-draft-revision-cas.integration.test.ts` en contenedor efímero PostgreSQL 16).
 ## Archivos candidatos
 - **read/modify:** `packages/event-management/prisma/schema.prisma`, `packages/event-management/src/event-draft.ts`, `packages/event-management/src/event-lifecycle.ts`, `packages/event-management/src/timezone.ts`.
 - **test:** `packages/event-management/test/event-draft-config.integration.test.ts`, `packages/event-management/test/event-lifecycle.integration.test.ts`, `packages/event-management/test/event-schedule.integration.test.ts`.

@@ -67,6 +67,7 @@ describeIntegration('EventDraftConfig (Real PostgreSQL Integration Tests — EL-
         welcome_message TEXT,
         idempotency_key TEXT UNIQUE,
         idempotency_payload_hash TEXT,
+        revision BIGINT NOT NULL DEFAULT 1,
         created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
       );
