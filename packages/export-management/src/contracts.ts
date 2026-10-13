@@ -11,7 +11,14 @@ export type ExportErrorCode =
   | 'EVENT_NOT_ELIGIBLE'
   | 'NO_ELIGIBLE_MEDIA'
   | 'IDEMPOTENCY_CONFLICT'
-  | 'EXPORT_IN_PROGRESS';
+  | 'EXPORT_IN_PROGRESS'
+  | 'EXPORT_NOT_FOUND'
+  | 'EXPORT_UNAVAILABLE'
+  | 'EXPORT_EXPIRED'
+  | 'EXPORT_INVALIDATED'
+  | 'EXPORT_FAILED'
+  | 'PART_NOT_FOUND'
+  | 'TEMPORARY_FAILURE';
 
 export class ExportError extends Error {
   constructor(
@@ -61,7 +68,8 @@ export interface ExportAuditEvent {
     | 'EXPORT_EXPIRED'
     | 'EXPORT_CLEANED_UP'
     | 'EXPORT_PREPARATION_FAILED'
-    | 'EXPORT_INVALIDATED';
+    | 'EXPORT_INVALIDATED'
+    | 'EXPORT_PART_GRANT_ISSUED';
   readonly eventId: string;
   readonly exportId: string;
   readonly itemCount: number;
@@ -250,4 +258,158 @@ export interface ExportCleanupConfig {
   readonly leaseMs: number;
   readonly maxAttempts: number;
   readonly retryBackoffMs: number;
+}
+
+// ==========================================
+// EL-TK-128: Invalidación ante retiro o pérdida de acceso (DEC-090)
+// ==========================================
+
+export interface ExportPartInventoryItem {
+  readonly exportId: string;
+  readonly partNumber: number;
+  readonly objectKey: string;
+  readonly versionId?: string | null;
+  readonly partKind: 'ZIP_PART' | 'MANIFEST' | 'OUTPUT_ARCHIVE' | 'STAGING';
+}
+
+export interface ExportInvalidationScopeResult {
+  readonly invalidatedExportsCount: number;
+  readonly partsInventory: readonly ExportPartInventoryItem[];
+}
+
+export interface InvalidateExportResult {
+  readonly exportId: string;
+  readonly status: 'INVALIDATED' | 'ALREADY_TERMINAL' | 'NOT_FOUND';
+  readonly invalidatedNow: boolean;
+  readonly code?: string;
+  readonly reason?: string;
+  readonly partsCount?: number;
+  readonly cleanupJobQueued?: boolean;
+}
+
+export interface RevalidateExportOutcome {
+  readonly exportId: string;
+  readonly status: string;
+  readonly ok: boolean;
+  readonly invalidatedNow: boolean;
+  readonly code?: string;
+}
+
+export interface ExportDeletionBarrierPort {
+  invalidateExportsForScope(params: {
+    readonly scopeType: 'EVENT' | 'ACCOUNT';
+    readonly scopeRef: string;
+    readonly targetEventIds: readonly string[];
+    readonly requestId: string;
+    readonly reason: string;
+  }): Promise<ExportInvalidationScopeResult>;
+}
+
+// ==========================================
+// EL-TK-129: Descarga temporal de parte de exportación
+// ==========================================
+
+export interface RequestExportPartDownloadGrantCommand {
+  readonly exportId: string;
+  readonly partNumber: number;
+  readonly organizerAccountId: string;
+  readonly ttlSeconds?: number;
+  readonly now?: Date;
+}
+
+export interface ExportPartDownloadGrant {
+  readonly grantId: string;
+  readonly exportId: string;
+  readonly eventId: string;
+  readonly partNumber: number;
+  readonly downloadUrl: string;
+  readonly expiresAt: string;
+  readonly ttlSeconds: number;
+  readonly sizeBytes: number;
+  readonly sha256?: string | null;
+  readonly fileName: string;
+}
+
+export interface ExportPartDownloadSigner {
+  createDownloadUrl(params: {
+    readonly namespace: string;
+    readonly key: string;
+    readonly ttlSeconds: number;
+    readonly forceDownload?: boolean;
+    readonly fileName?: string;
+  }): Promise<string>;
+}
+
+// ==========================================
+// EL-TK-130: Reintento y regeneración de exportaciones (DEC-047, DEC-048, DEC-090)
+// ==========================================
+
+export interface RetryExportCommand {
+  readonly exportId: string;
+  readonly organizerAccountId: string;
+  readonly idempotencyKey?: string;
+  readonly now?: Date;
+}
+
+export interface RetryExportResult {
+  readonly exportId: string;
+  readonly eventId: string;
+  readonly generation: bigint;
+  readonly status: 'REQUESTED';
+  readonly priorStatus: 'FAILED' | 'EXPIRED';
+  readonly requestedAt: string;
+  readonly replayed: boolean;
+}
+
+// ==========================================
+// EL-TK-131: Consulta de estado, partes y disponibilidad
+// ==========================================
+
+export interface ExportPartSummary {
+  readonly partNumber: number;
+  readonly status: 'PENDING' | 'READY' | 'FAILED' | 'EXPIRED' | 'INVALIDATED';
+  readonly sizeBytes: number;
+  readonly entryCount: number;
+  readonly sha256?: string | null;
+  readonly fileName: string;
+}
+
+export interface ExportProgressInfo {
+  readonly partsReady: number;
+  readonly partsTotal: number;
+  readonly percent?: number | null;
+}
+
+export interface ExportCapabilities {
+  readonly canDownload: boolean;
+  readonly canRetry: boolean;
+  readonly canRegenerate: boolean;
+  readonly canRequestNew: boolean;
+}
+
+export interface ExportStatusSnapshot {
+  readonly exportId: string;
+  readonly eventId: string;
+  readonly status: 'REQUESTED' | 'PREPARING' | 'AVAILABLE' | 'FAILED' | 'EXPIRED' | 'INVALIDATED';
+  readonly generation: bigint;
+  readonly selectedCount: number;
+  readonly selectedBytes: bigint;
+  readonly requestedAt: string;
+  readonly preparedAt?: string | null;
+  readonly availableAt?: string | null;
+  readonly expiresAt?: string | null;
+  readonly expiredAt?: string | null;
+  readonly invalidatedAt?: string | null;
+  readonly failureCode?: string | null;
+  readonly statusReason?: string | null;
+  readonly progress?: ExportProgressInfo | null;
+  readonly parts: readonly ExportPartSummary[];
+  readonly capabilities: ExportCapabilities;
+}
+
+export interface QueryExportStatusCommand {
+  readonly eventId: string;
+  readonly organizerAccountId: string;
+  readonly exportId?: string;
+  readonly now?: Date;
 }
