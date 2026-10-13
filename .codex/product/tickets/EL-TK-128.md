@@ -4,7 +4,7 @@
 EL-EP-010
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** sistema, **quiero** revalidar una exportación ante cambios de permiso o contenido, **para** evitar entregar paquetes que ya contienen contenido no autorizado.
@@ -68,3 +68,15 @@ DEC-090; EL-EP-010, EL-EP-008, EL-EP-009, EL-EP-015.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §9.1..8; sin componentes nuevos ni centros de exportación paralelos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Evidencia de implementación y verificación — 2026-10-13
+
+- **Migración `202610130001_export_invalidation`:** `invalidated_at` en `export_request`; constraint `export_part_status_check` ampliado a `INVALIDATED`; índices de búsqueda de estado `export_request_status_idx` y `export_request_event_status_idx`.
+- **Servicio `ExportInvalidationService` (`src/export-invalidation.ts`):**
+  - `revalidateExport`: revalida snapshot y acceso al evento bajo demanda; si un medio fue retirado (`MEDIA_WITHDRAWN`) o el acceso fue revocado (`EVENT_ACCESS_REVOKED`), pasa `export_request` y partes activas a `INVALIDATED`, encola job `EXPORT_CLEANUP` idempotente y audita `EXPORT_INVALIDATED`.
+  - `invalidateExport`: invalidación explícita idempotente por ID con código y razón controlados.
+  - `invalidateExportsForMedia`: invalida en bloque exportaciones activas afectadas al retirar un medio por denuncia, moderación o retiro propio (DEC-090).
+  - `invalidateExportsForScope`: implementa el contrato `ExportDeletionBarrierPort` para barreras de eliminación (EL-EP-015 / EL-TK-193), retornando el inventario físico de partes (`ZIP_PART` y `MANIFEST`).
+- **Auditoría:** emite evento `EXPORT_INVALIDATED` sanitizado con conteos y códigos de causa sin filtrar rutas ni URLs.
+- **Pruebas:** `test/export-invalidation.unit.test.ts` (9/9 unitarias PASS) y `test/export-invalidation.integration.test.ts` (PostgreSQL 16). Build de paquete `@eventlens/export-management` limpio.
+- **Desbloquea:** EL-TK-129 (grants temporales de partes), EL-TK-130 (regeneración/retry), EL-TK-131 (consulta de estado), EL-TK-132 (UI/HTTP) y EL-TK-133 (E2E).

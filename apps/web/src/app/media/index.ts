@@ -15,3 +15,6 @@ export * from './reject-media-dialog.component.js';
 export * from './trash-media-dialog.component.js';
 export * from './retention-notice.component.js';
 export * from './moderation-settings.component.js';
+export * from './download-all-action.component.js';
+export * from './export-request-dialog.component.js';
+export * from './export-status-panel.component.js';

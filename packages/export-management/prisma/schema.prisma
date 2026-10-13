@@ -25,6 +25,7 @@ model ExportRequest {
   availableAt        DateTime? @map("available_at") @db.Timestamptz
   expiresAt          DateTime? @map("expires_at") @db.Timestamptz
   expiredAt          DateTime? @map("expired_at") @db.Timestamptz
+  invalidatedAt      DateTime? @map("invalidated_at") @db.Timestamptz
   createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   items ExportRequestItem[]

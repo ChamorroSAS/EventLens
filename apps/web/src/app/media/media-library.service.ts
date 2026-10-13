@@ -4,6 +4,7 @@ import type {
   OrganizerMediaLibrarySnapshotModel,
   EventModerationSettingsModel,
   EventModerationMode,
+  ExportStatusSnapshotUI,
 } from './media.types.js';
 
 export interface QueryOrganizerMediaLibraryParams {
@@ -161,5 +162,80 @@ export class MediaLibraryService {
       throw new Error('COMMUNICATION_ERROR');
     }
     return (await res.json()) as EventModerationSettingsModel;
+  }
+
+  async requestOriginalDownload(
+    eventRef: string,
+    mediaRef: string
+  ): Promise<{ downloadUrl: string; expiresAt: string }> {
+    const endpoint = `/api/v1/events/${encodeURIComponent(eventRef)}/media/${encodeURIComponent(mediaRef)}/download-grant`;
+    const res = await fetch(endpoint, { method: 'POST' });
+    if (!res.ok) {
+      if (res.status === 403) throw new Error('ACCESS_DENIED');
+      if (res.status === 404) throw new Error('NOT_FOUND');
+      if (res.status === 422) throw new Error('SAFETY_BLOCKED');
+      throw new Error('COMMUNICATION_ERROR');
+    }
+    return (await res.json()) as { downloadUrl: string; expiresAt: string };
+  }
+
+  async getExportStatus(eventRef: string): Promise<ExportStatusSnapshotUI | null> {
+    const endpoint = `/api/v1/events/${encodeURIComponent(eventRef)}/export`;
+    const res = await fetch(endpoint);
+    if (!res.ok) {
+      if (res.status === 404) return null;
+      if (res.status === 403) throw new Error('ACCESS_DENIED');
+      throw new Error('COMMUNICATION_ERROR');
+    }
+    return (await res.json()) as ExportStatusSnapshotUI;
+  }
+
+  async requestExport(
+    eventRef: string,
+    idempotencyKey?: string
+  ): Promise<{ exportId: string; status: string }> {
+    const endpoint = `/api/v1/events/${encodeURIComponent(eventRef)}/export`;
+    const headers: Record<string, string> = {};
+    if (idempotencyKey) {
+      headers['Idempotency-Key'] = idempotencyKey;
+    }
+    const res = await fetch(endpoint, { method: 'POST', headers });
+    if (!res.ok) {
+      if (res.status === 403) throw new Error('ACCESS_DENIED');
+      if (res.status === 409) throw new Error('CONCURRENCY_CONFLICT');
+      throw new Error('COMMUNICATION_ERROR');
+    }
+    return (await res.json()) as { exportId: string; status: string };
+  }
+
+  async requestExportPartGrant(
+    eventRef: string,
+    exportId: string,
+    partNumber: number
+  ): Promise<{ downloadUrl: string; expiresAt: string }> {
+    const endpoint = `/api/v1/events/${encodeURIComponent(eventRef)}/export/${encodeURIComponent(exportId)}/parts/${partNumber}/download-grant`;
+    const res = await fetch(endpoint, { method: 'POST' });
+    if (!res.ok) {
+      if (res.status === 403) throw new Error('ACCESS_DENIED');
+      if (res.status === 404) throw new Error('NOT_FOUND');
+      if (res.status === 410) throw new Error('EXPORT_EXPIRED');
+      if (res.status === 422) throw new Error('EXPORT_INVALIDATED');
+      throw new Error('COMMUNICATION_ERROR');
+    }
+    return (await res.json()) as { downloadUrl: string; expiresAt: string };
+  }
+
+  async retryExport(
+    eventRef: string,
+    exportId: string
+  ): Promise<{ exportId: string; generation: number; status: string }> {
+    const endpoint = `/api/v1/events/${encodeURIComponent(eventRef)}/export/${encodeURIComponent(exportId)}/retry`;
+    const res = await fetch(endpoint, { method: 'POST' });
+    if (!res.ok) {
+      if (res.status === 403) throw new Error('ACCESS_DENIED');
+      if (res.status === 409) throw new Error('CONCURRENCY_CONFLICT');
+      throw new Error('COMMUNICATION_ERROR');
+    }
+    return (await res.json()) as { exportId: string; generation: number; status: string };
   }
 }

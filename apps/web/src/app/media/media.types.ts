@@ -87,3 +87,35 @@ export interface RetryCycleResponse {
   status: 'ACTIVE' | 'TERMINATED' | 'COMPLETED';
   operationId: string;
 }
+
+export interface ExportStatusSnapshotUI {
+  exportId: string;
+  eventId: string;
+  status: 'REQUESTED' | 'PREPARING' | 'AVAILABLE' | 'FAILED' | 'EXPIRED' | 'INVALIDATED';
+  generation: bigint | number | string;
+  selectedCount: number;
+  selectedBytes: bigint | number | string;
+  requestedAt: string;
+  preparedAt?: string | null;
+  availableAt?: string | null;
+  expiresAt?: string | null;
+  expiredAt?: string | null;
+  invalidatedAt?: string | null;
+  failureCode?: string | null;
+  statusReason?: string | null;
+  progress?: { partsReady: number; partsTotal: number; percent?: number | null } | null;
+  parts: Array<{
+    partNumber: number;
+    status: 'PENDING' | 'READY' | 'FAILED' | 'EXPIRED' | 'INVALIDATED';
+    sizeBytes: number;
+    entryCount: number;
+    sha256?: string | null;
+    fileName: string;
+  }>;
+  capabilities: {
+    canDownload: boolean;
+    canRetry: boolean;
+    canRegenerate: boolean;
+    canRequestNew: boolean;
+  };
+}

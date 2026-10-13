@@ -31,7 +31,7 @@
 | EL-EP-007 | Visualizar recuerdos en una galería privada móvil | MOD-004 | DONE | P0 | EL-EP-004, EL-EP-006 | [EL-EP-007](epics/EL-EP-007.md) |
 | EL-EP-008 | Moderar, ocultar y recuperar contenido del evento | MOD-004 | DONE | P0 | EL-EP-006, EL-EP-007 | [EL-EP-008](epics/EL-EP-008.md) |
 | EL-EP-009 | Atender denuncias y solicitudes de retiro sin cuenta | MOD-004 | DONE | P0 | EL-EP-004, EL-EP-007, EL-EP-014 | [EL-EP-009](epics/EL-EP-009.md) |
-| EL-EP-010 | Recuperar originales individualmente y por exportación | MOD-005 | READY | P0 | EL-EP-006, EL-EP-008, EL-EP-013 | [EL-EP-010](epics/EL-EP-010.md) |
+| EL-EP-010 | Recuperar originales individualmente y por exportación | MOD-005 | DONE | P0 | EL-EP-006, EL-EP-008, EL-EP-013 | [EL-EP-010](epics/EL-EP-010.md) |
 | EL-EP-011 | Aplicar planes BETA y ampliaciones controladas | MOD-006 | READY | P0 | EL-EP-001 | [EL-EP-011](epics/EL-EP-011.md) |
 | EL-EP-012 | Operar y dar soporte con intervención administrativa justificada | MOD-007 | READY | P0 | EL-EP-001, EL-EP-014 | [EL-EP-012](epics/EL-EP-012.md) |
 | EL-EP-013 | Informar al organizador sobre su cuenta y sus recuerdos | MOD-009 | READY | P0 | Ninguna predecesora dura | [EL-EP-013](epics/EL-EP-013.md) |
@@ -172,12 +172,12 @@
 | EL-TK-125 | Crear una solicitud de exportación con snapshot fijo de elegibles | EL-EP-010 | DONE | P0 | 098; contrato EL-EP-008 | [EL-TK-125](tickets/EL-TK-125.md) |
 | EL-TK-126 | Encolar y preparar una exportación asíncrona multipartes | EL-EP-010 | DONE | P0 | 125,055 | [EL-TK-126](tickets/EL-TK-126.md) |
 | EL-TK-127 | Publicar disponibilidad y expiración de una exportación preparada | EL-EP-010 | DONE | P0 | 126 | [EL-TK-127](tickets/EL-TK-127.md) |
-| EL-TK-128 | Invalidar exportaciones afectadas por retiro o pérdida de acceso | EL-EP-010 | READY | P0 | 125,126; contratos EL-EP-008/009/015 | [EL-TK-128](tickets/EL-TK-128.md) |
-| EL-TK-129 | Autorizar la descarga temporal de una parte de exportación | EL-EP-010 | READY | P0 | 127,128 | [EL-TK-129](tickets/EL-TK-129.md) |
-| EL-TK-130 | Reintentar o regenerar una exportación fallida o expirada cuando siga autorizada | EL-EP-010 | READY | P0 | 126,127,128 | [EL-TK-130](tickets/EL-TK-130.md) |
-| EL-TK-131 | Consultar estado, partes y disponibilidad de una exportación | EL-EP-010 | READY | P0 | 125..130 | [EL-TK-131](tickets/EL-TK-131.md) |
-| EL-TK-132 | Integrar descarga individual y exportación en la biblioteca del organizador | EL-EP-010 | READY | P0 | 100,124..131 | [EL-TK-132](tickets/EL-TK-132.md) |
-| EL-TK-133 | Validar recuperación individual y exportación de extremo a extremo | EL-EP-010 | READY | P0 | 124..132 | [EL-TK-133](tickets/EL-TK-133.md) |
+| EL-TK-128 | Invalidar exportaciones afectadas por retiro o pérdida de acceso | EL-EP-010 | DONE | P0 | 125,126; contratos EL-EP-008/009/015 | [EL-TK-128](tickets/EL-TK-128.md) |
+| EL-TK-129 | Autorizar la descarga temporal de una parte de exportación | EL-EP-010 | DONE | P0 | 127,128 | [EL-TK-129](tickets/EL-TK-129.md) |
+| EL-TK-130 | Reintentar o regenerar una exportación fallida o expirada cuando siga autorizada | EL-EP-010 | DONE | P0 | 126,127,128 | [EL-TK-130](tickets/EL-TK-130.md) |
+| EL-TK-131 | Consultar estado, partes y disponibilidad de una exportación | EL-EP-010 | DONE | P0 | 125..130 | [EL-TK-131](tickets/EL-TK-131.md) |
+| EL-TK-132 | Integrar descarga individual y exportación en la biblioteca del organizador | EL-EP-010 | DONE | P0 | 100,124..131 | [EL-TK-132](tickets/EL-TK-132.md) |
+| EL-TK-133 | Validar recuperación individual y exportación de extremo a extremo | EL-EP-010 | DONE | P0 | 124..132 | [EL-TK-133](tickets/EL-TK-133.md) |
 | EL-TK-134 | Asignar y resolver el plan BETA efectivo de un evento | EL-EP-011 | DONE | P0 | contrato EL-EP-001 | [EL-TK-134](tickets/EL-TK-134.md) |
 | EL-TK-135 | Consultar consumo comercial y capacidad disponible del evento | EL-EP-011 | DONE | P0 | 134, 136, 137 | [EL-TK-135](tickets/EL-TK-135.md) |
 | EL-TK-136 | Reservar y liberar capacidad comercial de forma atómica | EL-EP-011 | DONE | P0 | 134 | [EL-TK-136](tickets/EL-TK-136.md) |
@@ -203,7 +203,7 @@
 | EL-TK-156 | Registrar intenciones de notificación idempotentes desde hechos de dominio | EL-EP-013 | DONE | P0 | contratos de hechos propietarios | [EL-TK-156](tickets/EL-TK-156.md) |
 | EL-TK-157 | Encolar y procesar correos de notificación con proveedor desacoplado | EL-EP-013 | DONE | P0 | 156, 055; contrato JobQueue | [EL-TK-157](tickets/EL-TK-157.md) |
 | EL-TK-158 | Proyectar avisos contextuales vigentes para el panel del organizador | EL-EP-013 | DONE | P0 | 156 | [EL-TK-158](tickets/EL-TK-158.md) |
-| EL-TK-159 | Generar avisos de lifecycle, gracia y eliminación próxima | EL-EP-013 | READY | P0 | 156; contratos EL-EP-003/015 | [EL-TK-159](tickets/EL-TK-159.md) |
+| EL-TK-159 | Generar avisos de lifecycle, gracia y eliminación próxima | EL-EP-013 | DONE | P0 | 156; contratos EL-EP-003/015 | [EL-TK-159](tickets/EL-TK-159.md) |
 | EL-TK-160 | Generar avisos de capacidad al 80 y 100 por ciento | EL-EP-013 | DONE | P0 | 156; contrato 138 | [EL-TK-160](tickets/EL-TK-160.md) |
 | EL-TK-161 | Generar avisos de exportación disponible y expiración | EL-EP-013 | READY | P0 | 156; contrato EL-EP-010 | [EL-TK-161](tickets/EL-TK-161.md) |
 | EL-TK-162 | Generar avisos de cuenta, seguridad y cambios del evento | EL-EP-013 | DONE | P0 | 156; contratos EL-EP-001/003 | [EL-TK-162](tickets/EL-TK-162.md) |

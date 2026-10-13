@@ -19,6 +19,11 @@ describe('OrganizerMediaLibraryComponent & Media Integration (EL-TK-100)', () =>
     restoreMedia: ReturnType<typeof vi.fn>;
     getModerationSettings: ReturnType<typeof vi.fn>;
     updateModerationMode: ReturnType<typeof vi.fn>;
+    requestOriginalDownload: ReturnType<typeof vi.fn>;
+    getExportStatus: ReturnType<typeof vi.fn>;
+    requestExport: ReturnType<typeof vi.fn>;
+    requestExportPartGrant: ReturnType<typeof vi.fn>;
+    retryExport: ReturnType<typeof vi.fn>;
   };
   let mockProcessingService: {
     getMediaStatus: ReturnType<typeof vi.fn>;
@@ -90,6 +95,24 @@ describe('OrganizerMediaLibraryComponent & Media Integration (EL-TK-100)', () =>
       restoreMedia: vi.fn().mockResolvedValue({ status: 'RESTORED' }),
       getModerationSettings: vi.fn().mockResolvedValue({ eventRef: 'event-101', moderationMode: 'AUTO_PUBLISH' }),
       updateModerationMode: vi.fn().mockResolvedValue({ eventRef: 'event-101', moderationMode: 'ORGANIZER_REVIEW' }),
+      requestOriginalDownload: vi.fn().mockResolvedValue({
+        downloadUrl: 'https://storage.example.com/originals/ceremonia_01.jpg?signed=true',
+        expiresAt: new Date(Date.now() + 60000).toISOString(),
+      }),
+      getExportStatus: vi.fn().mockResolvedValue(null),
+      requestExport: vi.fn().mockResolvedValue({
+        exportId: 'export-test-01',
+        status: 'REQUESTED',
+      }),
+      requestExportPartGrant: vi.fn().mockResolvedValue({
+        downloadUrl: 'https://storage.example.com/exports/part1.zip?signed=true',
+        expiresAt: new Date(Date.now() + 60000).toISOString(),
+      }),
+      retryExport: vi.fn().mockResolvedValue({
+        exportId: 'export-test-01',
+        generation: 2,
+        status: 'REQUESTED',
+      }),
     };
     mockProcessingService = {
       getMediaStatus: vi.fn(),
@@ -664,6 +687,184 @@ describe('OrganizerMediaLibraryComponent & Media Integration (EL-TK-100)', () =>
       const errorAlert = fixture.nativeElement.querySelector('.alert-danger');
       expect(errorAlert).toBeTruthy();
       expect(errorAlert.textContent).toContain('Ventana vencida: El archivo ya superó los 7 días en papelera y no puede restaurarse.');
+    });
+  });
+
+  describe('Recuperación individual y exportación (EL-TK-132)', () => {
+    it('solicita URL firmada para descarga de original individual y delega la transferencia al navegador sin afirmar persistencia en dispositivo', async () => {
+      const windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+      const fixture = await createLibrary('event-101');
+
+      const downloadBtn: HTMLButtonElement = fixture.nativeElement.querySelector('.btn-download-original');
+      expect(downloadBtn).toBeTruthy();
+
+      downloadBtn.click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(mockLibraryService.requestOriginalDownload).toHaveBeenCalledWith('event-101', 'media-01');
+      expect(windowOpenSpy).toHaveBeenCalledWith(
+        'https://storage.example.com/originals/ceremonia_01.jpg?signed=true',
+        '_blank'
+      );
+
+      const successBanner = fixture.nativeElement.querySelector('.alert-success');
+      expect(successBanner).toBeTruthy();
+      expect(successBanner.textContent).toContain('Enlace de descarga para «ceremonia_01.jpg» generado.');
+      expect(successBanner.textContent).toContain('La transferencia del archivo original se gestiona a través del navegador.');
+      expect(successBanner.textContent).not.toContain('guardado en el dispositivo');
+
+      windowOpenSpy.mockRestore();
+    });
+
+    it('bloquea la descarga individual y alerta al usuario si el archivo no está autorizado por seguridad', async () => {
+      mockLibraryService.requestOriginalDownload.mockRejectedValueOnce(new Error('SAFETY_BLOCKED'));
+      const fixture = await createLibrary('event-101');
+
+      const downloadBtn: HTMLButtonElement = fixture.nativeElement.querySelector('.btn-download-original');
+      downloadBtn.click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const errorAlert = fixture.nativeElement.querySelector('.alert-danger');
+      expect(errorAlert).toBeTruthy();
+      expect(errorAlert.textContent).toContain('El archivo tiene un bloqueo de seguridad vigente');
+    });
+
+    it('abre el diálogo de solicitud de exportación al presionar Descargar todo', async () => {
+      const fixture = await createLibrary('event-101');
+
+      const downloadAllBtn: HTMLButtonElement = fixture.nativeElement.querySelector('.btn-download-all');
+      expect(downloadAllBtn).toBeTruthy();
+
+      downloadAllBtn.click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const dialog = fixture.nativeElement.querySelector('.export-dialog-card');
+      expect(dialog).toBeTruthy();
+      expect(dialog.textContent).toContain('archivos originales');
+      expect(dialog.textContent).toContain('48 horas');
+    });
+
+    it('confirma la solicitud de exportación y abre el panel de progreso asíncrono', async () => {
+      const fixture = await createLibrary('event-101');
+      fixture.componentInstance.openExportRequestDialog();
+      fixture.detectChanges();
+
+      const expStatus = {
+        exportId: 'exp-async-01',
+        eventId: 'event-101',
+        status: 'PREPARING' as const,
+        generation: 1,
+        selectedCount: 4,
+        selectedBytes: 15000000,
+        requestedAt: new Date().toISOString(),
+        progress: { partsReady: 1, partsTotal: 3, percent: 33 },
+        parts: [
+          { partNumber: 1, status: 'READY' as const, sizeBytes: 5000000, entryCount: 2, fileName: 'export-part-1.zip' },
+          { partNumber: 2, status: 'PENDING' as const, sizeBytes: 5000000, entryCount: 1, fileName: 'export-part-2.zip' },
+          { partNumber: 3, status: 'PENDING' as const, sizeBytes: 5000000, entryCount: 1, fileName: 'export-part-3.zip' },
+        ],
+        capabilities: {
+          canDownload: false,
+          canRetry: false,
+          canRegenerate: false,
+          canRequestNew: false,
+        },
+      };
+      mockLibraryService.getExportStatus.mockResolvedValue(expStatus);
+
+      await fixture.componentInstance.onConfirmExportRequest();
+      fixture.detectChanges();
+
+      expect(mockLibraryService.requestExport).toHaveBeenCalledWith('event-101', expect.any(String));
+      const statusPanel = fixture.nativeElement.querySelector('.export-panel-card');
+      expect(statusPanel).toBeTruthy();
+      expect(statusPanel.textContent).toContain('Preparando');
+      expect(statusPanel.textContent).toContain('33%');
+    });
+
+    it('permite solicitar descarga de parte cuando la exportación está disponible', async () => {
+      const windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+      mockLibraryService.getExportStatus.mockResolvedValue({
+        exportId: 'exp-avail-01',
+        eventId: 'event-101',
+        status: 'AVAILABLE',
+        generation: 1,
+        selectedCount: 4,
+        selectedBytes: 15000000,
+        requestedAt: new Date().toISOString(),
+        availableAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 172800000).toISOString(),
+        progress: { partsReady: 1, partsTotal: 1, percent: 100 },
+        parts: [
+          { partNumber: 1, status: 'READY', sizeBytes: 15000000, entryCount: 4, fileName: 'export-part-1.zip' },
+        ],
+        capabilities: {
+          canDownload: true,
+          canRetry: false,
+          canRegenerate: false,
+          canRequestNew: true,
+        },
+      });
+
+      const fixture = await createLibrary('event-101');
+      await fixture.componentInstance.loadExportStatus();
+      fixture.componentInstance.openExportStatusPanel();
+      fixture.detectChanges();
+
+      const downloadPartBtn: HTMLButtonElement = fixture.nativeElement.querySelector('.btn-download-part');
+      expect(downloadPartBtn).toBeTruthy();
+
+      downloadPartBtn.click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(mockLibraryService.requestExportPartGrant).toHaveBeenCalledWith('event-101', 'exp-avail-01', 1);
+      expect(windowOpenSpy).toHaveBeenCalledWith(
+        'https://storage.example.com/exports/part1.zip?signed=true',
+        '_blank'
+      );
+
+      windowOpenSpy.mockRestore();
+    });
+
+    it('permite reintentar una exportación fallida con incremento atómico de generación', async () => {
+      mockLibraryService.getExportStatus.mockResolvedValue({
+        exportId: 'exp-fail-01',
+        eventId: 'event-101',
+        status: 'FAILED',
+        generation: 1,
+        selectedCount: 4,
+        selectedBytes: 15000000,
+        requestedAt: new Date().toISOString(),
+        failureCode: 'STORAGE_UNAVAILABLE',
+        statusReason: 'Error temporal en el backend de almacenamiento',
+        parts: [],
+        capabilities: {
+          canDownload: false,
+          canRetry: true,
+          canRegenerate: false,
+          canRequestNew: true,
+        },
+      });
+
+      const fixture = await createLibrary('event-101');
+      await fixture.componentInstance.loadExportStatus();
+      fixture.componentInstance.openExportStatusPanel();
+      fixture.detectChanges();
+
+      const retryBtn: HTMLButtonElement = fixture.nativeElement.querySelector('.btn-retry-export');
+      expect(retryBtn).toBeTruthy();
+
+      retryBtn.click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(mockLibraryService.retryExport).toHaveBeenCalledWith('event-101', 'exp-fail-01');
+      const successBanner = fixture.nativeElement.querySelector('.alert-success');
+      expect(successBanner.textContent).toContain('Exportación reactivada para reintento.');
     });
   });
 });

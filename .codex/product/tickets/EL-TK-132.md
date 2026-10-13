@@ -4,7 +4,7 @@
 EL-EP-010
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador, **quiero** descargar originales y gestionar exportaciones desde la biblioteca, **para** recuperar recuerdos con estados y consecuencias claras.

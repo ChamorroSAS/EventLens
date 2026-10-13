@@ -15,6 +15,10 @@ import { RejectMediaDialogComponent } from './reject-media-dialog.component.js';
 import { TrashMediaDialogComponent } from './trash-media-dialog.component.js';
 import { RetentionNoticeComponent } from './retention-notice.component.js';
 import { ModerationSettingsComponent } from './moderation-settings.component.js';
+import { DownloadAllActionComponent } from './download-all-action.component.js';
+import { ExportRequestDialogComponent } from './export-request-dialog.component.js';
+import { ExportStatusPanelComponent } from './export-status-panel.component.js';
+import type { ExportStatusSnapshotUI } from './media.types.js';
 
 @Component({
   selector: 'eventlens-organizer-media-library',
@@ -28,6 +32,9 @@ import { ModerationSettingsComponent } from './moderation-settings.component.js'
     TrashMediaDialogComponent,
     RetentionNoticeComponent,
     ModerationSettingsComponent,
+    DownloadAllActionComponent,
+    ExportRequestDialogComponent,
+    ExportStatusPanelComponent,
   ],
   template: `
     <div class="organizer-media-library" [attr.aria-label]="'Biblioteca de medios del evento ' + eventRef">
@@ -45,6 +52,13 @@ import { ModerationSettingsComponent } from './moderation-settings.component.js'
         </div>
 
         <div class="header-actions">
+          <!-- BOTÓN DESCARGAR TODO / EXPORTACIÓN -->
+          <eventlens-download-all-action
+            [exportStatus]="currentExport()?.status ?? null"
+            (openDialogRequested)="openExportRequestDialog()"
+            (statusRequested)="openExportStatusPanel()"
+          />
+
           <!-- BOTÓN TOGGLE AJUSTES MODERACIÓN -->
           <button
             type="button"
@@ -256,6 +270,24 @@ import { ModerationSettingsComponent } from './moderation-settings.component.js'
         [isSubmitting]="isDialogSubmitting()"
         (confirm)="onConfirmTrash($event)"
         (cancel)="closeDialogs()"
+      />
+
+      <!-- DIÁLOGO DE SOLICITUD DE EXPORTACIÓN Y PANEL DE ESTADO -->
+      <eventlens-export-request-dialog
+        [isOpen]="isExportRequestDialogOpen()"
+        [isSubmitting]="isSubmittingExportRequest()"
+        (confirm)="onConfirmExportRequest()"
+        (cancel)="closeExportRequestDialog()"
+      />
+
+      <eventlens-export-status-panel
+        [isOpen]="isExportStatusPanelOpen()"
+        [snapshot]="currentExport()"
+        (downloadPart)="onDownloadPart($event)"
+        (retry)="onRetryExport()"
+        (regenerate)="onRegenerateExport()"
+        (requestNew)="onRequestNewExport()"
+        (close)="closeExportStatusPanel()"
       />
     </div>
   `,
@@ -551,6 +583,12 @@ export class OrganizerMediaLibraryComponent implements OnInit {
   readonly isTrashDialogOpen = signal<boolean>(false);
   readonly isDialogSubmitting = signal<boolean>(false);
 
+  // Export State & Dialogs
+  readonly currentExport = signal<ExportStatusSnapshotUI | null>(null);
+  readonly isExportRequestDialogOpen = signal<boolean>(false);
+  readonly isSubmittingExportRequest = signal<boolean>(false);
+  readonly isExportStatusPanelOpen = signal<boolean>(false);
+
   // Feedback alerts
   readonly actionSuccessMessage = signal<string | null>(null);
   readonly actionErrorMessage = signal<string | null>(null);
@@ -561,6 +599,107 @@ export class OrganizerMediaLibraryComponent implements OnInit {
     }
     await this.loadLibrary();
     await this.loadModerationSettings();
+    await this.loadExportStatus();
+  }
+
+  async loadExportStatus(): Promise<void> {
+    if (!this.eventRef) return;
+    try {
+      const status = await this.mediaLibraryService.getExportStatus(this.eventRef);
+      this.currentExport.set(status);
+    } catch {
+      // Dejar currentExport en su estado previo si la llamada falla
+    }
+  }
+
+  openExportRequestDialog(): void {
+    this.isExportRequestDialogOpen.set(true);
+  }
+
+  closeExportRequestDialog(): void {
+    this.isExportRequestDialogOpen.set(false);
+  }
+
+  openExportStatusPanel(): void {
+    this.isExportStatusPanelOpen.set(true);
+  }
+
+  closeExportStatusPanel(): void {
+    this.isExportStatusPanelOpen.set(false);
+  }
+
+  onRequestNewExport(): void {
+    this.closeExportStatusPanel();
+    this.openExportRequestDialog();
+  }
+
+  async onConfirmExportRequest(): Promise<void> {
+    this.isSubmittingExportRequest.set(true);
+    this.clearAlerts();
+    try {
+      const idempotencyKey =
+        typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `export-${Date.now()}`;
+      await this.mediaLibraryService.requestExport(this.eventRef, idempotencyKey);
+      this.closeExportRequestDialog();
+      await this.loadExportStatus();
+      this.openExportStatusPanel();
+      this.actionSuccessMessage.set(
+        'Solicitud de exportación enviada. La preparación continuará de forma asíncrona.'
+      );
+    } catch (err: unknown) {
+      this.handleActionError(err, 'solicitar la exportación');
+    } finally {
+      this.isSubmittingExportRequest.set(false);
+    }
+  }
+
+  async onDownloadPart(partNumber: number): Promise<void> {
+    const exp = this.currentExport();
+    if (!exp) return;
+    this.clearAlerts();
+    try {
+      const grant = await this.mediaLibraryService.requestExportPartGrant(
+        this.eventRef,
+        exp.exportId,
+        partNumber
+      );
+      if (typeof window !== 'undefined' && grant.downloadUrl) {
+        window.open(grant.downloadUrl, '_blank');
+      }
+      this.actionSuccessMessage.set(
+        `Enlace para descargar la parte ${partNumber} generado. La transferencia se gestiona a través del navegador.`
+      );
+    } catch (err: unknown) {
+      this.handleActionError(err, `descargar la parte ${partNumber}`);
+    }
+  }
+
+  async onRetryExport(): Promise<void> {
+    const exp = this.currentExport();
+    if (!exp) return;
+    this.clearAlerts();
+    try {
+      await this.mediaLibraryService.retryExport(this.eventRef, exp.exportId);
+      this.actionSuccessMessage.set('Exportación reactivada para reintento.');
+      await this.loadExportStatus();
+    } catch (err: unknown) {
+      this.handleActionError(err, 'reintentar la exportación');
+    }
+  }
+
+  async onRegenerateExport(): Promise<void> {
+    const exp = this.currentExport();
+    if (!exp) return;
+    this.clearAlerts();
+    try {
+      await this.mediaLibraryService.retryExport(this.eventRef, exp.exportId);
+      this.actionSuccessMessage.set('Exportación reactivada para regeneración.');
+      await this.loadExportStatus();
+    } catch (err: unknown) {
+      this.handleActionError(err, 'regenerar la exportación');
+    }
   }
 
   async loadLibrary(): Promise<void> {
@@ -644,8 +783,27 @@ export class OrganizerMediaLibraryComponent implements OnInit {
     void this.loadLibrary();
   }
 
-  onDownloadTriggered(item: MediaCardModel): void {
+  async onDownloadTriggered(item: MediaCardModel): Promise<void> {
     this.downloadItemTriggered.emit(item);
+    this.clearAlerts();
+    if (!item.capabilities?.canDownloadOriginal) {
+      this.actionErrorMessage.set('La descarga del archivo original no está permitida para este medio.');
+      return;
+    }
+    try {
+      const grant = await this.mediaLibraryService.requestOriginalDownload(
+        this.eventRef,
+        item.mediaRef
+      );
+      if (typeof window !== 'undefined' && grant.downloadUrl) {
+        window.open(grant.downloadUrl, '_blank');
+      }
+      this.actionSuccessMessage.set(
+        `Enlace de descarga para «${item.fileName}» generado. La transferencia del archivo original se gestiona a través del navegador.`
+      );
+    } catch (err: unknown) {
+      this.handleActionError(err, 'descargar el archivo original');
+    }
   }
 
   // --- ACCIONES DIRECTAS DE MODERACIÓN ---
@@ -767,6 +925,16 @@ export class OrganizerMediaLibraryComponent implements OnInit {
       this.actionErrorMessage.set('Conflicto concurrente: El archivo cambió en el servidor. Actualiza la lista.');
     } else if (code === 'RESTORE_WINDOW_EXPIRED') {
       this.actionErrorMessage.set('Ventana vencida: El archivo ya superó los 7 días en papelera y no puede restaurarse.');
+    } else if (code === 'EXPORT_EXPIRED') {
+      this.actionErrorMessage.set('La exportación ha expirado (ventana de 48h vencida). Puedes volver a generarla.');
+    } else if (code === 'EXPORT_INVALIDATED') {
+      this.actionErrorMessage.set('La exportación fue invalidada debido al retiro o cambio de acceso de archivos.');
+    } else if (code === 'EXPORT_UNAVAILABLE') {
+      this.actionErrorMessage.set('La exportación aún no está disponible para descarga.');
+    } else if (code === 'PART_NOT_FOUND') {
+      this.actionErrorMessage.set('La parte de exportación solicitada no fue encontrada.');
+    } else if (code === 'NOT_FOUND') {
+      this.actionErrorMessage.set('El recurso solicitado no fue encontrado.');
     } else if (code === 'ACCESS_DENIED') {
       this.actionErrorMessage.set(`Permiso denegado para ${actionDesc}.`);
     } else {
