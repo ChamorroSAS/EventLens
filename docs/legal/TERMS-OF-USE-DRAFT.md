@@ -92,6 +92,16 @@ La mera denuncia no justifica una restricción automática (DEC-088/089). La res
 
 **PENDING:** validar permisos/API/runtime para revocación selectiva, facultad administrativa, recuperación/revisión de medida, efectos sobre cargas en curso y exposición de URLs firmadas; análisis jurídico del fundamento y conservación de evidencia. `GUEST_ABUSE_RESTRICTION: FUNCTIONAL_CONFIRMED_WITH_TECH_GATE`; `IMPLEMENTED: NOT_VERIFIED`; `DEC_TC_ARCH_CHANGE: NONE`.
 
+## 8.7. Contenido prohibido y evaluación proporcional — decisión funcional confirmada (2026-10-12)
+
+Está prohibido aportar, difundir o utilizar el servicio para compartir **contenido ilegal, imágenes íntimas sin consentimiento, amenazas, acoso, contenido que vulnere derechos de terceros o material cuya posesión o difusión sea ilícita**. La prohibición también comprende usos destinados a intimidar, hostigar o perjudicar a participantes. La calificación jurídica específica, la redacción exacta de categorías y las obligaciones de actuación frente a material especialmente sensible requieren revisión profesional.
+
+La denuncia de una presunta infracción **no presume responsabilidad ni produce automáticamente ocultamiento, eliminación, suspensión o sanción**. Se aplica la clasificación y revisión proporcionada de EL-EP-009 y DEC-088/089, con intervención administrativa autorizada y auditable; las medidas urgentes se basan en evaluación justificada del riesgo y autoridad existente. Mantener retiro propio irreversible DEC-097, revisión de solicitudes sin sesión y preservación de derechos de las personas afectadas.
+
+La evaluación considerará gravedad, contexto, evidencia mínima, derechos de terceros y prevención de daños adicionales. No almacenar copias de contenido íntimo o presuntamente ilícito como auditoría ordinaria; cualquier excepción legal o de seguridad exige fundamento, alcance y plazo documentados. No incorporar detección por IA, monitoreo invasivo, bloqueo automático ni privilegios nuevos por esta cláusula.
+
+**Pendientes:** redacción jurídica validada, procedimientos especiales y autoridades competentes cuando la ley lo exija, controles realmente implementados y proporcionalidad de medidas. `PROHIBITED_CONTENT: FUNCTIONAL_CONFIRMED`; `EL-EP-017: NOT_READY`; `Q-029: DEFERRED`.
+
 ## 9. Relación con organizaciones y proveedores
 
 Un representante humano puede gestionar un evento de organización, pero los alcances de representación, instrucciones de tratamiento y rol responsable/encargado deben definirse caso a caso. Los proveedores técnicos, ubicaciones y contratos de tratamiento no se consideran finalizados por estos términos.
