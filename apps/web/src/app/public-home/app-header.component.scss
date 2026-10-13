@@ -30,7 +30,11 @@
   &__logo {
     height: 32px;
     width: auto;
+    max-width: 100%;
+    aspect-ratio: 2172 / 724;
+    object-fit: contain;
     display: block;
+    flex-shrink: 0;
   }
 
   &__nav--desktop {

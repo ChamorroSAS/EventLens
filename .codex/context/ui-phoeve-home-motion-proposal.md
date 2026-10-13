@@ -1,6 +1,6 @@
 # Phoeve — Propuesta visual y movimiento para Home
 
-2026-10-13. Nueva preferencia del usuario vinculada al plan CR-006. **PROPOSED / UI_REQUIRED: YES / NOT_IMPLEMENTED.** No sustituye el handoff aceptado de EL-EP-018 ni sus contratos. Extensión visual localizada en Home, sin rediseño global del producto.
+2026-10-13. Preferencia del usuario vinculada al plan CR-006. **APPROVED / UI_REQUIRED: YES / IMPLEMENTED.** No sustituye el handoff aceptado de EL-EP-018 ni sus contratos. Extensión visual y de movimiento localizada en Home con adaptación y conservación de la sección comparativa (#comparar).
 
 ## Solicitud y evidencia
 
@@ -20,7 +20,7 @@ Mantener Manrope400/500/600/700 y tokens aceptados de `_tokens.scss`: primary az
 
 Fondos claros predominantes, coral decorativo y azul para acciones. Puede proponerse un panel puntual azul con texto contrastado como composición local, sin añadir modo oscuro o recolorear el resto de la aplicación. Si su contraste o uso no cumple el handoff, conservar panel claro. No editar globalmente `_tokens.scss` para conseguir el efecto.
 
-Conservar orden, IDs de anclas, un h1 y jerarquía h2/h3: hero → beneficios → cuatro pasos → privacidad → cuatro FAQ → cierre → footer. Conservar CTA «Solicitar acceso a la Beta», contenido propio, navegación y estados de sesión. El cambio de denominación EventLens→Phoeve sigue los gates del rebranding, independientemente del movimiento. No introducir métricas, claims, campos, carruseles o llamadas comerciales nuevas. La nueva presentación no valida afirmaciones editoriales ya pendientes de revisión.
+Conservar orden, IDs de anclas, un h1 y jerarquía h2/h3: hero → beneficios → cuatro pasos → privacidad → comparar (#comparar adaptada al diseño) → cuatro FAQ → cierre → footer. Conservar CTA «Solicitar acceso a la Beta», contenido propio, navegación y estados de sesión. El cambio de denominación EventLens→Phoeve sigue los gates del rebranding, independientemente del movimiento. No introducir métricas, claims, campos, carruseles o llamadas comerciales nuevas. La nueva presentación no valida afirmaciones editoriales ya pendientes de revisión.
 
 ## Dirección por sección
 
