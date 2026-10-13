@@ -56,8 +56,16 @@ Metadata actualizada tras dictamen:20 Status READY/REQUIREMENTS_READY YES;218 RE
 
 Revisor comprobó21 nodos, cero ciclos e inconsistencias depends_on/blocks. Verificación final del orquestador:21 tickets (20READY/1BLOCKED), paralelismo recíproco y61 links locales en28 documentos nuevos/de alcance; cero referencias ausentes y whitespace limpio, resultado PASS documental. Validación estática, no PASS de seguridad runtime/recuperación/aislamiento ejecutado. Sin cambios a código, datosdev, assets, DEC/TC/ARCH ni tickets históricos.
 
-## Siguiente paso
+## Reevaluación de Ready — 2026-10-13
 
-Actualización del2026-10-13 por instrucción del usuario: retiradas las asignaciones personales del plan, los21 tickets y los registros de esta planificación. Se conservan ownership de módulos, dependencias, requisitos y gates de revisión, sin asignarlos a personas.
+Solicitud del usuario: evaluar el paso DRAFT→READY. Snapshot inspeccionado `ed82db6`, rama documental limpia al iniciar. Los20 tickets ya tenían Status READY,222 BLOCKED y la épica READY de requisitos; no se inventa una transición nueva ni se certifica implementación.
+
+Revisor independiente `ready_recheck`: APPROVED para requisitos, sin MAJOR ni nueva pregunta de producto; baseline/UI/contratos/alcance/permisos/errores/pruebas futuras/trazabilidad completos. Mantiene bloqueo operacional222 y ejecución PARTIAL con218 único habilitado. MINOR corregidos:234/235/236 separan Gate2 aprobado de autoridad pendiente;222 elimina referencia obsoleta a Gate2 pendiente. Estado de épica normalizado a línea canónica READY, con alcance y límites separados.
+
+Verificación actual del orquestador:21 tickets,20READY/1BLOCKED;21 nodos sin ciclos, dependencias inversas y paralelismo recíproco, predecesor215 DONE documentado; campos DoR/DoD/contratos/archivos y al menos3 escenarios por ticket. Sin asignaciones personales. Validación documental; no pruebas funcionales ni autoridad operacional ejecutadas. Procede iniciar218 en una ejecución posterior; no activar nuevas mutaciones/admin antes de221/222 y evidencia.
+
+## Historial de preferencia y siguiente paso
+
+Actualización previa del2026-10-13 por instrucción del usuario: retiradas las asignaciones personales del plan, los21 tickets y los registros de esta planificación. Se conservan ownership de módulos, dependencias, requisitos y gates de revisión, sin asignarlos a personas.
 
 Implementación posterior de218, luego unidades independientes siguiendo grafo y ownership.222 necesita decisión/configuración/acreditación operacional independiente PITR; no proveedor/stub aprobado, no bootstrap/recovery alternativo. Revisión crítica futura221/222 y pruebas antes activación. Plan de ejecución y propuesta de PR en [plan](../../../docs/reports/event-control-panels-backlog-2026-10-13.md). Sin commit, push ni merge en esta sesión.

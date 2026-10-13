@@ -42,6 +42,6 @@ EL-EP-019; EL-TK-217; DEC-106; `event-control-panels-contract.md`.
 ## Definition of Ready
 - [ ] Capacidad operacional/proveedor y prueba externa resueltos
 - [x] Alcance de bloqueo y fallo cerrado definido
-REQUIREMENTS_READY: NO para esta capacidad (BLOCKED por decisión operacional pendiente). READY_FOR_IMPLEMENTATION: NO hasta Gate 2 y dependencias validadas. IMPLEMENTED: NO.
+REQUIREMENTS_READY: NO para esta capacidad (BLOCKED por decisión operacional pendiente). Gate 2 del conjunto de planificación aprobado; no acredita esta capacidad. READY_FOR_IMPLEMENTATION: NO hasta resolver la decisión, configuración y validación operacional externa a PITR y sus dependencias. IMPLEMENTED: NO.
 ## Definition of Done
 Decisión aceptada, adapter real acreditado fuera de PITR y activación revisada; hasta entonces permanece BLOCKED.

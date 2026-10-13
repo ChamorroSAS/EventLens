@@ -38,7 +38,9 @@ Activación queda bloqueada por EL-TK-222.
 EL-EP-019; UI admin; EL-TK-234/235.
 ## Definition of Ready
 - [x] Estados UI y contrato read-only definidos
-- [x] Gate 2/autoridad aprobados
+- [x] Gate 2 de planificación aprobado
+## Condiciones de ejecución pendientes
+- [ ] Autoridad operacional acreditada y dependencias validadas, incluido EL-TK-222, antes de ejecutar/activar
 REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: NO actual (PENDING_DEPENDENCIES); IMPLEMENTABLE_AFTER_DEPENDENCIES: YES. Validar depends_on antes de ejecutar; no repetir Gate2 salvo cambio material. Activación nuevas mutaciones/admin BLOCKED por EL-TK-221/222 y evidencias finales. IMPLEMENTED: NO.
 ## Definition of Done
 UI read-only responsive verificada sin presentación insegura ante fallo.

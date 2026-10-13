@@ -2,7 +2,9 @@
 
 ## Status
 
-READY de requisitos y planificación del MVP. REQUIREMENTS_READY: YES. ARCHITECTURE_REVIEW: APPROVED_FOR_PLANNING. SECURITY_REVIEW: APPROVED_FOR_PLANNING. UI_REQUIRED: YES: pantallas, formularios, navegación, feedback y responsive. READY_FOR_FRONTEND_PLANNING: YES para organizador y admin read-only. READY_FOR_TICKET_WRITING: YES. GATE2: APPROVED para20 tickets de requisitos,222 BLOCKED operacional. READY_FOR_IMPLEMENTATION: PARTIAL:218 habilitado, resto espera predecesoras; ACTIVATION BLOCKED nuevas mutaciones/admin hasta autoridad real y correctivos/pruebas. No aprobación de ejecución de toda la épica. IMPLEMENTED: NO.
+READY
+
+Alcance del estado: requisitos y planificación del MVP. REQUIREMENTS_READY: YES. ARCHITECTURE_REVIEW: APPROVED_FOR_PLANNING. SECURITY_REVIEW: APPROVED_FOR_PLANNING. UI_REQUIRED: YES: pantallas, formularios, navegación, feedback y responsive. READY_FOR_FRONTEND_PLANNING: YES para organizador y admin read-only. READY_FOR_TICKET_WRITING: YES. GATE2: APPROVED para20 tickets de requisitos,222 BLOCKED operacional. READY_FOR_IMPLEMENTATION: PARTIAL:218 habilitado, resto espera predecesoras; ACTIVATION BLOCKED nuevas mutaciones/admin hasta autoridad real y correctivos/pruebas. No aprobación de ejecución de toda la épica. IMPLEMENTED: NO.
 
 ID verificado disponible en archivos/producto y origin/stage antes de registro, serie hasta018; CR-007. [Dictámenes](../sessions/2026-10-13-event-control-panels-gates.md), [contrato técnico](../../context/event-control-panels-contract.md), [handoff UI](../../context/ui-event-control-panels.md), [plan inicial histórico](../../../docs/reports/event-control-panels-implementation-plan-2026-10-13.md).
 
