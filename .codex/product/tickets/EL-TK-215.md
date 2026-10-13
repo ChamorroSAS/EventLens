@@ -1,7 +1,13 @@
 # EL-TK-215 — Aislar pruebas destructivas de PostgreSQL
 
-## Parent epic / Status / Priority
-EL-EP-001 / DONE / P0. CR-005. UI_REQUIRED: NO.
+## Parent epic
+EL-EP-001
+
+## Status
+DONE
+
+## Priority
+P0. CR-005. UI_REQUIRED: NO.
 
 ## User story
 Como desarrollador, quiero que las suites rechacen bases no pertenecientes al runner, para conservar datos de desarrollo.
