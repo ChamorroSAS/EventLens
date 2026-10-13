@@ -1,5 +1,7 @@
 # EventLens — índice de backlog de producto
 
+**PLANIFICACIÓN — EL-EP-019 / CR-007, 2026-10-13:** MVP organizador crea/configura DRAFT propio y admin entrada segura/búsqueda/detalle read-only. [Épica](epics/EL-EP-019.md), [contrato](../context/event-control-panels-contract.md), [UI](../context/ui-event-control-panels.md), [gates](sessions/2026-10-13-event-control-panels-gates.md). Requisitos/arquitectura/security planning aprobados y UI YES; ejecución PARTIAL, activación nuevas mutaciones/admin BLOCKED hasta RA real/correctivos/pruebas. Serie218..238 sin reutilizar históricos; Gate2 y orden en [plan](../../docs/reports/event-control-panels-backlog-2026-10-13.md). Sin implementación/Beta certificadas.
+
 **CONFIRMED — CR-005, 2026-10-13:** EL-TK-215/216 DONE tras aislamiento, bootstrap local y validación/revisión independientes; EL-TK-217 BLOCKED sólo para recuperación excepcional sobre base consumida. Sin reapertura de043..046 ni decisiones aceptadas. [Sesión](sessions/2026-10-13-admin-bootstrap-test-isolation.md) / [runbook](../../docs/administrative-operations.md).
 
 **HISTÓRICO — gate de ejecución EL-TK-033, 2026-10-09:** requisitos READY y dependencias032/056 DONE; el alcance completo permaneció bloqueado hasta decidir `MalwareInspection`. [Hallazgo conservado](sessions/2026-10-09-el-tk-033-security-gate.md).
@@ -9,6 +11,8 @@
 **RECOMMENDED:** primera descomposición funcional; prioridad P0 = necesaria para beta operativa segura; P1 = evaluación beta o preparación pública. Estado READY significa DoR de épica, no autorización de lanzar ni dependencias ya realizadas. NOT_READY conserva bloqueantes explícitos. Los tickets existentes se enumeran en su sección y permanecen sujetos a sus puertas de revisión.
 
 ## Planificación frontend adicional (sin certificación de Beta)
+
+**Gate2 EL-EP-019, 2026-10-13: APPROVED.**20 tickets218..221/223..238 READY de requisitos;222 BLOCKED capacidad operacional.218 listo solo para laboratorio, resto pendiente de predecesoras; activación auth no autorizada por metadata. [Dictamen](sessions/2026-10-13-event-control-panels-gates.md).
 
 | ID | Resultado | Propiedad | Gate | Documento |
 |---|---|---|---|---|

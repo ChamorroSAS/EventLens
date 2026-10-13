@@ -1,5 +1,7 @@
 # Product backlog changelog
 
+- 2026-10-13: CR-007/EL-EP-019 planificación MVP registrada; arquitectura/security planning y UI aprobados, ticketización218..238/Gate2 en sesión. Activación auth BLOCKED RA real, ejecución independiente permitida según dependencias. Sin código funcional ni reapertura DONE.
+
 - 2026-10-13: CR-005 entregado: EL-TK-215/216 DONE, EL-TK-217 BLOCKED por autorización externa; guardas/runner PostgreSQL, bootstrap atómico local y operación documentada. Evidencia aislada y revisión APPROVED; sin datos reales ni tickets históricos modificados.
 
 | Date | Change | Affected artifacts | Reason | Change request |

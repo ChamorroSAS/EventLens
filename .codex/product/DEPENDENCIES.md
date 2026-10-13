@@ -1,5 +1,9 @@
 # EventLens — dependencias funcionales
 
+## EL-EP-019 — montaje y correctivos prospectivos
+
+[Plan y grafo](../../docs/reports/event-control-panels-backlog-2026-10-13.md) / [contrato](../context/event-control-panels-contract.md).218 aislamiento;219 receipts→220 CAS;221 binding identidad;223 Router.224..227 transporte→228..232 UI mínima.222 RA real operacional BLOCKED condiciona activación nuevas mutaciones/admin.233..236 consola read-only,237/238 cierre. Detalles depends_on/blocks en218..238; sin ciclo owners ni dependencias retroactivas DONE. Métricas DEFERRED. [Gate2](sessions/2026-10-13-event-control-panels-gates.md).
+
 **RECOMMENDED:** mapa de planificación. Una dependencia dura necesita contrato/resultado previo para completar la capacidad; no significa que todo diseño deba esperar. Las referencias entre módulos describen colaboración, pueden ser bidireccionales y no equivalen a dependencias de código. Los tickets vigentes de EL-EP-001 se registran en Tickets vigentes. **HISTÓRICO CONFIRMED:** EL-TK-001..004 fueron aprobados el 2026-10-07 y ahora están SUPERSEDED; EL-TK-005..019 los reemplazaron y quedaron READY en ese dictamen. **CONFIRMED — 2026-10-08:** el [dictamen final](sessions/2026-10-08-el-ep-001-ticket-remediation-review.md) aprobó los 19 activos EL-TK-005..019 y EL-TK-043..046, READY de requisitos; READY_FOR_IMPLEMENTATION: PARTIAL.
 
 ## Modules
