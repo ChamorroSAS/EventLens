@@ -318,30 +318,30 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 12 activos READY de requisitos tras dictamen de requirements_reviewer y ui_designer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de auditoría mínima y sanitizada, consulta paginada con filtros, telemetría y health neutrales de proveedor, detección de colas/jobs degradados, alertas de infraestructura y disponibilidad agregada, backups PostgreSQL diarios con PITR (RPO≤1h/RTO≤4h), verificación de restore periódico con preservación de tombstones, redundancia/recuperación de ObjectStorage (DEC-062/063), incidentes operacionales, retención de auditoría (12m) y rotación de logs (30d) en EL-TK-184, visor contextual de auditoría en consola administrativa (AuditLogViewer/Detail, UI_REQUIRED: YES, READY_FOR_FRONTEND_PLANNING: YES) y validación integrada E2E. Superficies UI reutilizadas del catálogo canónico (ui-mvp-epic-review.md#el-ep-014), sin dashboard operacional nuevo ni nuevos componentes. Proveedores de observabilidad y storage definitivo permanecen DEFERRED bajo gate operacional DR-001.
 
-## Tickets vigentes — EL-EP-015 y correctivos propietarios (2026-10-12)
+## Tickets vigentes — EL-EP-015 y correctivos propietarios (quality gate APPROVED)
 
-**CONFIRMED — revisiones formales individuales:** EL-TK-188..202 READY tras [dictámenes015](sessions/2026-10-12-el-ep-015-ticket-readiness.md);185..187 READY tras su [revisión posterior propia](sessions/2026-10-12-el-tk-185-187-readiness.md), sin cambiar sus épicas propietarias. La [descomposición original](sessions/2026-10-12-el-ep-015-ticket-plan.md) registra los18 IDs y su DRAFT histórico. No cambiar estados DONE, DEC/ARCH ni declarar implementación/QA terminados.
+| Ticket | Depende de | Bloquea |
+|---|---|---|
+| EL-TK-185 (DONE) | 013,018,019,046; DEC-108 | 186 |
+| EL-TK-186 (DONE) | 185,013,014,046; contrato MOD-001 | 191,192,201 |
+| EL-TK-187 (DONE) | correctivos 041/042 DONE (sin reabrirlos),046 | 194 |
+| EL-TK-188 (DONE) | 046,067, DEC-091..110 | 189,190,191,194,195,197 |
+| EL-TK-189 (DONE) | 188,072 | 190,193,200 |
+| EL-TK-190 (DONE) | 189,188;193 para propagación | 200 |
+| EL-TK-191 (DONE) | 186,188 | 192,193,201 |
+| EL-TK-192 (DONE) | 191,186 | 201 |
+| EL-TK-193 (DONE) | 189,191;128 para exports | 195,200,201 |
+| EL-TK-194 (DONE) | 188,067,109,114,187;119 para casos y correctivo108 para integración papelera | 196,202 |
+| EL-TK-195 (DONE) | 188,193;128 para export inventory | 196 |
+| EL-TK-196 (DONE) | 195,197,194 para cobertura de causas | 198,202 |
+| EL-TK-197 (DONE) | 188,046,172,174 | 196,198,199 |
+| EL-TK-198 (DONE) | 196,197,137;159 avisos | 199,202 |
+| EL-TK-199 (DONE) | 197,198,172,174 | 202 |
+| EL-TK-200 (DONE) | 189,190,193; handoff UI | 202 |
+| EL-TK-201 (DONE) | 186,191,192,193; handoff UI | 202 |
+| EL-TK-202 (DONE) | 194,196,198..201 | QA final |
 
-| Ticket | Epic propietario | Depende de / consume | Bloquea |
-|---|---|---|---|
-| EL-TK-185 | EL-EP-001 | 013,018,019,046; DEC-108 | DONE (desbloqueó 186) |
-| EL-TK-186 | EL-EP-001 | 185,013,014,046; contrato MOD-001 | DONE (desbloqueó 191,192,201) |
-| EL-TK-187 | EL-EP-006 | correctivos 041/042 DONE (sin reabrirlos),046 | DONE (desbloqueó 194) |
-| EL-TK-188 | EL-EP-015 | 046,067, DEC-091..110 | 189,190,191,194,195,197 |
-| EL-TK-189 | EL-EP-015 | 188,072 | 190,193,200 |
-| EL-TK-190 | EL-EP-015 | 189,188;193 para propagación | 200 |
-| EL-TK-191 | EL-EP-015 | 186,188 | 192,193,201 |
-| EL-TK-192 | EL-EP-015 | 191,186 | 201 |
-| EL-TK-193 | EL-EP-015 | 189,191;128 para exports | 195,200,201 |
-| EL-TK-194 | EL-EP-015 | 188,067,109,114,187;119 para casos y correctivo108 para integración papelera | 196,202 |
-| EL-TK-195 | EL-EP-015 | 188,193;128 para export inventory | 196 |
-| EL-TK-196 | EL-EP-015 | 195,197,194 para cobertura de causas | 198,202 |
-| EL-TK-197 | EL-EP-015 | 188,046,172,174 | 196,198,199 |
-| EL-TK-198 | EL-EP-015 | 196,197,137;159 avisos | 199,202 |
-| EL-TK-199 | EL-EP-015 | 197,198,172,174 | 202 |
-| EL-TK-200 | EL-EP-015 | 189,190,193; handoff UI | 202 |
-| EL-TK-201 | EL-EP-015 | 186,191,192,193; handoff UI | 202 |
-| EL-TK-202 | EL-EP-015 | 194,196,198..201 | QA final |
+18 activos aprobados READY de requisitos tras [dictámenes015](sessions/2026-10-12-el-ep-015-ticket-readiness.md) y [revisión propia185..187](sessions/2026-10-12-el-tk-185-187-readiness.md) de 2026-10-12; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para sus alcances propios. Los estados DONE mostrados corresponden a los archivos vigentes de los tickets, sin otorgar PASS adicional a gates Beta. Ownership:185/186 pertenecen a EL-EP-001,187 a EL-EP-006 y188..202 a EL-EP-015. La [descomposición original](sessions/2026-10-12-el-ep-015-ticket-plan.md) conserva los18 IDs y su DRAFT histórico; sin cambios a DEC/ARCH ni a los dictámenes.
 
 **Fronteras y ejecución:** MOD-001 posee verifier/challenge/sesión restringida; MOD-003/006 corrige disposición de cuarentena; MOD-008 orquesta mediante ports y UnitOfWork, no escribe tablas ajenas. EL-TK-067,109,114,119,128,137,159,172/174 siguen con ownership original. EL-TK-108 DONE exige comprobar corrección de frontera exacta ante109. Integración exportaciones y notificaciones condicionada a productores reales; no se genera un nuevo scheduler ni RecoveryAuthority. LEGAL_OR_SECURITY_HOLD excluido (Q-029/EL-EP-017).
 
