@@ -21,6 +21,16 @@
 
 | LEG-15 | Disponibilidad y distintividad de marca | Riesgo demostrado por uso de «EventLens» en servicios de fotos de eventos mediante QR; consultar SIPI, dominios y similitud antes de nueva elección. [Evaluación de naming](../branding/NAMING-RISK-2026-10-12.md) | Producto + revisión de marca | BLOCKED_PENDING_SEARCH |
 
+**Decisiones funcionales confirmadas (2026-10-12):** organizadores naturales y organizaciones; galería privada con controles de publicación vigentes; reportes/retiro sin cuenta. [Análisis de producto](../../.codex/product/sessions/2026-10-12-el-ep-017-organizers-gallery-and-reports.md). LEG-02, LEG-07/08 mantienen aprobación jurídica y evidencia operativa PENDING. Ningún control legal se da por implementado por esta confirmación.
+
+**LEG-06 — canal y trámite funcional confirmados (2026-10-12):** correo de privacidad + funciones existentes, atención manual y trazabilidad mínima; [procedimiento preparatorio](../../.codex/product/sessions/2026-10-12-el-ep-017-data-subject-rights-manual-procedure.md). No equivale a buzón operativo, verificación de identidad/representación, calendario de plazos ni cumplimiento jurídico comprobados. Retención de expedientes PENDING; 6 meses confirmados solo para solicitudes Beta sin invitación, no para derechos de titulares.
+
+**LEG-03/LEG-08 — avances de documentación:** borradores [PTI](PRIVACY-POLICY-DRAFT.md) y [Términos](TERMS-OF-USE-DRAFT.md) redactados el 2026-10-12 como **DRAFT NO PUBLICAR**. Sin aprobación legal, identidad/URL/versiones/canales finales o prueba de autorizaciones; estados PENDING sin cambios.
+
+**Auditoría de código del 2026-10-12:** [Informe TG-01..TG-08](EL-EP-017-TECHNICAL-GAP-REVIEW-2026-10-12.md). **Bloqueos técnicos detectados:** API sin endpoints de negocio en OpenAPI, aceptación guest frontend local/version fija, solicitud Beta con correo en auditoría, ausencia de supresión/retención comprobadas. **Condicionales:** guest selectivo tiene primitiva de dominio pero no intervención admin selectiva; status `SUSPENDED` para cuenta no demuestra comando de suspensión; avisos de suspensión existen como servicio de intents sin integración de producción probada. LEG-03/04/05/06/07/09 y apertura conservan estados PENDING/BLOCKED. Esta verificación no cambia DEC/TC/ARCH ni acredita pruebas E2E.
+
+**Diseño de contratos y permisos (2026-10-12):** [Contrato API](../contracts/EL-EP-017-API-INTEGRATION-DRAFT-2026-10-12.md), [suspensión/revocación](../contracts/EL-EP-017-SUSPENSION-REVOCATION-PERMISSIONS-DRAFT-2026-10-12.md) y [auditoría Beta](BETA-EMAIL-AUDIT-POLICY-DRAFT-2026-10-12.md) están **APPROVED_TECHNICAL_BASELINE / NOT_IMPLEMENTED / LEGAL_REVIEW_PENDING** por aprobación expresa de producto el 2026-10-12. [Acta](../../.codex/product/sessions/2026-10-12-el-ep-017-approved-technical-contracts.md). Los nuevos endpoints HTTP no están expuestos en `contracts/openapi.json`; operaciones de cuenta e invitado selectivas NO autorizadas por inferencia. El saneamiento de email histórico y la conservación de `admin_audit_event` requieren verificación de integridad y revisión jurídica. **LEG-04/05/06 mantienen PENDING; BETA_FORM_PUBLIC_COLLECTION/PUBLIC_SERVICE_OPENING siguen BLOCKED.**
+
 ## Gates no intercambiables
 
 | Gate | Estado |

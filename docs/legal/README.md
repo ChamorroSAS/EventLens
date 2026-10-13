@@ -20,6 +20,14 @@ La decisión no convierte a NCH SERVICIOS S.A.S. en operadora, no constituye una
 
 **Seguridad:** no insertar automáticamente cédula, residencia personal, contraseñas, teléfonos privados u otros datos de perfil dentro de Git. Debe definirse qué dirección/canal cumple la norma y qué datos serán públicos, sin ocultar información legalmente exigida. Decreto 1074/2015 art. 2.2.2.25.3.1 exige nombre, domicilio, dirección, correo y teléfono del responsable en su política.
 
+**Decisión funcional 2026-10-12 — derechos de titulares:** usar canal de correo electrónico y funciones ya existentes, recepción manual con trazabilidad mínima. La dirección pública y su funcionamiento están pendientes de verificación y autorización; no insertar datos personales en Git. [Procedimiento preliminar](../../.codex/product/sessions/2026-10-12-el-ep-017-data-subject-rights-manual-procedure.md). Q-029/DEC-031 no cambian.
+
+**Borradores jurídicos nuevos para asesoría profesional (NO PUBLICAR):** [Política de Tratamiento de Datos](PRIVACY-POLICY-DRAFT.md) y [Términos y Condiciones](TERMS-OF-USE-DRAFT.md). No suplantan el aviso Beta ni cierran Q-029.
+
+**Informe de brechas técnicas:** [Revisión del código de `stage` y contraste con borradores](EL-EP-017-TECHNICAL-GAP-REVIEW-2026-10-12.md), 2026-10-12. Ocho hallazgos TG-01..TG-08; revisión documental, no test de runtime; política y términos aún DRAFT NO PUBLICAR.
+
+**Contratos técnicos propuestos para revisión:** [API HTTP e integración](../contracts/EL-EP-017-API-INTEGRATION-DRAFT-2026-10-12.md), [matriz de suspensión/revocación](../contracts/EL-EP-017-SUSPENSION-REVOCATION-PERMISSIONS-DRAFT-2026-10-12.md) y [política de minimización del correo Beta en auditoría](BETA-EMAIL-AUDIT-POLICY-DRAFT-2026-10-12.md). El documento de auditoría distingue los 6 meses de solicitudes sin invitación del objetivo configurable de auditoría de 12 meses; identifica que la purga existente solo cubre `audit_event`, no `admin_audit_event`. **Baseline técnico expresamente aprobado el 2026-10-12** para planificación e integración, con [acta de decisión](../../.codex/product/sessions/2026-10-12-el-ep-017-approved-technical-contracts.md). **Sin aprobación jurídica, ejecución ni nuevas facultades administrativas.**
+
 ## Documentos del expediente
 
 | Documento | Finalidad | Estado |

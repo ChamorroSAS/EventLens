@@ -17,6 +17,10 @@ La condición de responsable se analiza **por tratamiento**, según quién decid
 | Denuncias y retiro | Operador en investigación de abuso grave; organizador moderación cotidiana | Potencial responsable del expediente de denuncia | Responsable de moderación del evento | Base de datos, minimización, plazos |
 | Almacenamiento S3 y emails | Operador o contratante decide finalidad | Instruye al proveedor | No necesariamente contrata proveedor | Países, DPA, subencargados |
 
+## Decisiones funcionales vigentes, sin asignación jurídica automática
+
+**CONFIRMED 2026-10-12:** organizadores personas naturales **y organizaciones**; álbum privado visible únicamente para participantes autorizados según estado y permisos, bajo gestión ordinaria del organizador; terceros pueden denunciar o solicitar retiro sin crear cuenta. [Registro y contraste con contratos](../../.codex/product/sessions/2026-10-12-el-ep-017-organizers-gallery-and-reports.md). Una organización puede tener representantes humanos, pero **no** se presume un nuevo tipo de cuenta o registro empresarial implementado. La clasificación responsable/encargado sigue PENDING tratamiento por tratamiento.
+
 ## Riesgos jurídicos materiales
 
 1. **La autorización del uploader no equivale necesariamente al consentimiento de todas las personas que aparecen en sus fotos.** Prever reclamaciones de terceros sin cuenta.

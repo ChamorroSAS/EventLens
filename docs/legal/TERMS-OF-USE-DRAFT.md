@@ -1,0 +1,145 @@
+# Phoeve / EventLens — Términos y Condiciones de Uso
+
+> **BORRADOR — NO PUBLICAR / NO UTILIZAR COMO CONTRATO VIGENTE.** EL-EP-017, 2026-10-12. Phoeve es candidato de marca no despejado; mantener trazabilidad EventLens. Requiere revisión profesional, identificación del operador y verificación de contrato técnico vigente.
+
+## 1. Prestador, servicio y aceptación
+
+Prestador: persona natural **[IDENTIDAD, DOMICILIO, DIRECCIÓN, EMAIL Y TELÉFONO PÚBLICOS PENDIENTES]**. Servicio Beta para almacenar, procesar y compartir fotografías y videos privados de eventos mediante permisos y credenciales limitadas, sujeto a disponibilidad, restricciones y contratos de cada funcionalidad. **[URL, FECHA EFECTIVA, VERSIÓN]** pendientes.
+
+La participación de organizadores e invitados exige aceptación de condiciones aplicables y avisos/autorizaciones de tratamiento cuando correspondan; evidencias versionadas y trazables conforme DEC-041. No equiparar acceso por QR, silencio o mera navegación con consentimiento jurídico suficiente sin análisis.
+
+## 2. Elegibilidad y ámbito Beta
+
+Las cuentas organizadoras corresponden a personas adultas, tanto si organizan a título personal como si representan a una organización. Esto **no crea una cuenta corporativa nueva**. Se excluyen **eventos dirigidos principalmente a niños** durante la Beta; una boda, encuentro familiar o celebración de adultos puede contar con menores asistentes. La carga de contenido se realiza por adultos dentro de permisos aplicables; no se habilita carga autónoma de menores por inferencia.
+
+## 3. Obligaciones del organizador
+
+Configurar accesos y galería con prudencia; gestionar la comunicación a participantes y autorizaciones necesarias según el propósito de su evento, especialmente en fotografías de terceros o menores; atender las condiciones adicionales del evento sin suprimir las condiciones mínimas de la plataforma. Evitar divulgar credenciales QR/PIN indebidamente, compartir contenido fuera del alcance autorizado o usar exportaciones para finalidades incompatibles. Las instrucciones/derechos específicos del organizador como potencial responsable del tratamiento están **pendientes de acuerdo y análisis legal**.
+
+Phoeve ofrece aviso básico obligatorio y espacio configurable para información específica del organizador, según diseño pendiente de implementación; no se afirma hoy la existencia de editor legal o control técnico completado.
+
+## 4. Invitados y contenido aportado
+
+El uploader conserva sus derechos sobre las obras y otorga licencia **limitada, no exclusiva y necesaria para prestar el servicio** en los límites de DEC-015, sin concesión automática para publicidad, venta de fotografías o entrenamiento de modelos. Declara que cuenta con derechos y autorizaciones aplicables; esa declaración no prueba derechos de todos los retratados. No compartir contenidos ilícitos, íntimos no consentidos o que vulneren derechos; las denuncias se evalúan con los mecanismos y facultades vigentes.
+
+El invitado dispone de accesos event-scoped, no una cuenta permanente por defecto. No inferir facultades de descargar originales si no están previstas por contrato. La publicación y consulta privadas respetan contenido `PUBLISHED`, permisos y estados aplicables.
+
+## 5. Moderación, denuncias y solicitudes sin cuenta
+
+Reportar contenido o solicitar su retiro sin cuenta según EL-EP-009. Una denuncia **no oculta ni elimina automáticamente** por su sola presentación (DEC-088/089): administración clasifica y determina medidas. El retiro confirmado de aporte propio con sesión válida inicia la vía irreversible definida en DEC-097; solicitudes sin sesión se verifican y revisan. El organizador no puede revertir bloqueos legítimos de seguridad o intervención administrativa.
+
+Las solicitudes en representación de menores admiten recepción sin cuenta y verificación proporcional; no se exige documentación sensible indiscriminada ni se revelan datos de terceros sin legitimación acreditada. El tratamiento legal definitivo queda pendiente.
+
+## 6. Descarga, exportaciones y reutilización
+
+Solo el organizador autorizado puede descargar/exportar originales según EL-EP-010 y permisos aplicables. Podrá conservar los archivos descargados al concluir el evento. La descarga no licencia automáticamente publicaciones sociales, usos comerciales o circulación externa: el uso posterior debe respetar los derechos de los titulares y terceros; la plataforma no puede garantizar eliminación de copias externas ya entregadas.
+
+## 7. Protección de datos y conservación
+
+La Política de Tratamiento de Datos Personales **[ENLACE APROBADO PENDIENTE]** detalla tratamientos y derechos. Retención de cuentas/eventos/media y backups según contratos DEC-059/092 y dependencias correspondientes, sin prometer plazos jurídicos definitivos aún no aprobados. Solicitudes Beta sin invitación: criterio funcional de 6 meses desde última interacción; la retención de reclamaciones y logs es distinta y pendiente.
+
+## 8. Seguridad, limitaciones y medidas por incumplimiento
+
+Credenciales y URL firmadas deben protegerse. El acceso podrá restringirse por permisos, estados, medidas de seguridad y procedimientos aprobados. Las cláusulas de suspensión, responsabilidad, disponibilidad, garantías y limitaciones de responsabilidad requieren **redacción y evaluación profesional**; no insertar exenciones generales que reduzcan indebidamente derechos irrenunciables o del consumidor.
+
+## 8.1. Suspensión temporal ante riesgos graves — decisión funcional confirmada (2026-10-12)
+
+El operador podrá disponer **una suspensión temporal del acceso al evento** cuando personal o automatización de seguridad **ya autorizados por los contratos vigentes** detecten un riesgo grave de seguridad, privacidad o uso indebido. La medida exige motivo verificable, alcance proporcional, control de permisos, registro auditable y revisión por la autoridad administrativa existente; no constituye una atribución nueva de privilegios ni permite acceso indiscriminado a fotografías.
+
+La implementación deberá **reutilizar `SUSPENDED` y la consola administrativa** aceptados en DEC-017/019, sin alterar el cómputo de vigencia/gracia de DEC-078 ni las reglas de reactivación de DEC-081. Revisión de medios denunciados conforme DEC-088/089: **la mera denuncia no suspende automáticamente el evento ni oculta contenido**; se requiere evaluación competente o fundamento independiente de seguridad conforme contrato. Respétese DEC-092 para purga y holds (investigación ordinaria no equivale a autorización de retención indefinida).
+
+**PENDING:** contrastar contra permisos/rutas y pruebas reales de EL-EP-012/003/015, definir criterios operativos de gravedad y comunicación segura al organizador, y revisión jurídica de proporcionalidad y debido tratamiento. No se afirma que esté implementado ni jurídicamente aprobado.
+
+## 8.2. Comunicación de suspensiones — decisión funcional confirmada (2026-10-12)
+
+Cuando un evento sea suspendido, **Phoeve notificará al organizador** mediante los canales de comunicación de EL-EP-013, indicando el **motivo general**, las **restricciones aplicadas** y **cómo solicitar revisión**. La comunicación excluirá identidad de denunciantes, datos sensibles de terceros, evidencias privadas y detalles técnicos que comprometan seguridad. La medida y su comunicación deben quedar auditadas con minimización.
+
+**Excepción ya aceptada en EL-EP-013:** podrá diferirse u omitirse el aviso cuando exista una razón legal o de seguridad justificada. La excepción debe registrarse y revisarse; no es permiso para ocultar indefinidamente una suspensión sin fundamento.
+
+Esta decisión **reutiliza** el alcance de EL-EP-013 (correo y avisos del panel para suspensión/reactivación) y los permisos/estados de EL-EP-003/012; no crea un NotificationCenter, nueva clase de mensaje público, poderes administrativos ni altera DEC-088/089 o DEC-078/081. Confirmar plantillas, enlaces de revisión y pruebas de entrega antes de declarar implementado. **LEGAL_REVIEW_PENDING**.
+
+## 8.3. Solicitud de revisión de suspensión — decisión funcional confirmada (2026-10-12)
+
+El organizador podrá solicitar la revisión de una suspensión de su evento mediante el **canal de soporte o privacidad existente**. Podrá aportar su explicación y documentación pertinente, con medidas de minimización y acceso restringido. La administración autorizada revisará el motivo original y los elementos presentados, y registrará una resolución justificada y su comunicación al organizador, sin revelar identidades de denunciantes o datos de terceros.
+
+**La solicitud no reactiva automáticamente el evento.** Si la administración autoriza levantar la suspensión, la plataforma recalcula el estado vigente según **DEC-078 y DEC-081**, atendiendo fechas, cierre voluntario, gracia y restricciones actuales; no restaura ciegamente el estado anterior ni reactiva un evento `DELETED`. Se mantienen límites de EL-EP-009 y las medidas de seguridad justificadas.
+
+**Implementación propuesta:** reutilizar el procedimiento manual de privacidad/soporte y las capacidades administrativas de EL-EP-012, notificaciones de EL-EP-013, lifecycle de EL-EP-003 y auditoría existente. No crear un módulo de apelaciones, permisos administrativos nuevos ni un canal de seguimiento público por esta decisión. **PENDING:** verificar rutas/roles reales, condiciones de levantamiento, evidencia mínima, tiempos aplicables y revisión jurídica antes de publicar.
+
+## 8.4. Suspensión de cuenta vs. eliminación definitiva — decisión funcional confirmada (2026-10-12)
+
+La **suspensión de una cuenta de organizador por incumplimientos graves o reiterados** es una medida de restricción temporal o administrativa, distinta del **borrado definitivo de cuenta, eventos y fotografías**. El caso deberá ser evaluado por administración autorizada con motivo documentado, proporcionalidad, trazabilidad, comunicación cuando proceda y posibilidad de solicitar revisión mediante canales existentes. **Esta decisión no otorga nuevas facultades administrativas ni define automáticamente que las cuentas ya soporten un estado o comando de suspensión específico**: verificar contrato de identidad/EL-EP-001 y EL-EP-012 antes de concretar mecanismo; si requiere modificar permisos o estados aceptados, tramitar análisis de impacto y aprobación previa.
+
+La eliminación definitiva **no es sanción automática** por incumplimiento ni consecuencia inherente de una suspensión. Solo puede ejecutarse por causas y actores autorizados siguiendo EL-EP-015 y DEC-043/044/091/092/097–099 (confirmaciones, ventanas pertinentes, anclas y máximos de purga), con protección de derechos de terceros y análisis de hold legal/de seguridad excepcional. La existencia de una investigación ordinaria no habilita conservar fotografías por tiempo indefinido.
+
+**PENDING LEGAL Y TÉCNICO:** definir supuestos de incumplimiento y procedimiento sancionatorio proporcional, duración/revisión de restricciones, verificación de capacidad real de suspensión de cuenta, respuesta al organizador y obligaciones legales de eliminación o conservación. Mantener `EL-EP-017: NOT_READY`, `Q-029: DEFERRED` y políticas no publicables.
+
+## 8.5. Advertencias y restricciones proporcionales — decisión funcional confirmada (2026-10-12)
+
+Phoeve podrá **considerar la gravedad y reiteración de incumplimientos del organizador** para determinar una intervención administrativa proporcional. Entre las medidas **a evaluar dentro de facultades ya autorizadas** se encuentra la advertencia y, cuando corresponda, la restricción o suspensión prevista en los contratos vigentes. La reincidencia se valorará con contexto, evidencia, gravedad, impacto, medidas previas y posibilidad de revisión, no por un contador automático ni por un número fijo de incidentes.
+
+La clasificación y resolución corresponden exclusivamente a administración autorizada, con justificación y auditoría mínima; la medida debe comunicarse conforme a las excepciones legales o de seguridad aprobadas. **Una denuncia no prueba por sí sola un incumplimiento ni produce automáticamente sanción, ocultamiento o suspensión** (DEC-088/089). La eliminación definitiva de cuenta/contenido permanece separada y sujeta a EL-EP-015; no se añade sanción de borrado.
+
+**Sin ampliación implícita de permisos:** verificar capacidades efectivas de EL-EP-001/012/013/014 y los estados de cuenta/evento antes de cualquier ticket o implantación. **PENDING LEGAL:** tipificación de faltas, garantías de información y contradicción, proporcionalidad, eventual retención mínima de antecedentes, criterios de prescripción y diseño contractual final. No se aprueba una tabla de penalizaciones, nuevos privilegios ni sanciones automáticas.
+
+## 8.6. Restricciones proporcionales sobre sesión o permisos de invitados — decisión funcional confirmada (2026-10-12)
+
+Ante **uso abusivo verificado o riesgo grave** asociado a la participación de un invitado (p. ej., aportes prohibidos o interferencia deliberada en el evento), la administración autorizada podrá **evaluar** una restricción proporcionada de la **sesión o permisos afectados**, con justificación y auditoría mínima. No se exige crear una cuenta de invitado ni identificarlo civilmente; el token anónimo **no prueba identidad personal**.
+
+**Límite de contratos:** reutilizar revocación de sesiones acotadas al evento prevista por EL-EP-004/DEC-083 únicamente en la medida en que el mecanismo y actor estén autorizados. DEC-083 confirma revocación de sesiones anteriores al cambiar PIN/regenerar QR, pero **no demuestra por sí misma una capacidad de revocación individual ni faculta a administradores a bloquear invitado específico**. Si tal capacidad no existe o exige nuevo estado, rol o comando, realizar análisis de impacto y aprobación antes de generar tickets; no revocar todas las sesiones del evento como sanción individual por defecto.
+
+La mera denuncia no justifica una restricción automática (DEC-088/089). La restricción no elimina fotografías ni impide indebidamente el ejercicio de derechos: preservar vías de retiro sin sesión de EL-EP-009/DEC-103..105 y condiciones de consulta propia de DEC-084 cuando exista sesión válida. No convertir IP, huella de dispositivo ni datos de navegación en identidad permanente o lista de exclusión por inferencia.
+
+**PENDING:** validar permisos/API/runtime para revocación selectiva, facultad administrativa, recuperación/revisión de medida, efectos sobre cargas en curso y exposición de URLs firmadas; análisis jurídico del fundamento y conservación de evidencia. `GUEST_ABUSE_RESTRICTION: FUNCTIONAL_CONFIRMED_WITH_TECH_GATE`; `IMPLEMENTED: NOT_VERIFIED`; `DEC_TC_ARCH_CHANGE: NONE`.
+
+## 8.7. Contenido prohibido y evaluación proporcional — decisión funcional confirmada (2026-10-12)
+
+Está prohibido aportar, difundir o utilizar el servicio para compartir **contenido ilegal, imágenes íntimas sin consentimiento, amenazas, acoso, contenido que vulnere derechos de terceros o material cuya posesión o difusión sea ilícita**. La prohibición también comprende usos destinados a intimidar, hostigar o perjudicar a participantes. La calificación jurídica específica, la redacción exacta de categorías y las obligaciones de actuación frente a material especialmente sensible requieren revisión profesional.
+
+La denuncia de una presunta infracción **no presume responsabilidad ni produce automáticamente ocultamiento, eliminación, suspensión o sanción**. Se aplica la clasificación y revisión proporcionada de EL-EP-009 y DEC-088/089, con intervención administrativa autorizada y auditable; las medidas urgentes se basan en evaluación justificada del riesgo y autoridad existente. Mantener retiro propio irreversible DEC-097, revisión de solicitudes sin sesión y preservación de derechos de las personas afectadas.
+
+La evaluación considerará gravedad, contexto, evidencia mínima, derechos de terceros y prevención de daños adicionales. No almacenar copias de contenido íntimo o presuntamente ilícito como auditoría ordinaria; cualquier excepción legal o de seguridad exige fundamento, alcance y plazo documentados. No incorporar detección por IA, monitoreo invasivo, bloqueo automático ni privilegios nuevos por esta cláusula.
+
+**Pendientes:** redacción jurídica validada, procedimientos especiales y autoridades competentes cuando la ley lo exija, controles realmente implementados y proporcionalidad de medidas. `PROHIBITED_CONTENT: FUNCTIONAL_CONFIRMED`; `EL-EP-017: NOT_READY`; `Q-029: DEFERRED`.
+
+## 8.8. Reutilización comercial, publicidad e IA — decisión funcional confirmada (2026-10-12)
+
+**Phoeve no utilizará las fotografías o videos privados de los eventos para publicidad, portafolio, redes sociales, comercialización ni entrenamiento de modelos de inteligencia artificial sin una autorización específica, separada y válida para esa finalidad.** La licencia del uploader permanece limitada a la operación del servicio en los términos de DEC-015; la aceptación general de términos, el acceso por QR o la subida no constituyen esa autorización adicional. La restricción no presupone que el producto Beta implemente un mecanismo comercial ni un consentimiento separado: cualquier capacidad futura requiere análisis y aprobación.
+
+**Organizadores e invitados:** descargar o acceder a una fotografía no concede automáticamente derechos para republicarla, explotarla comercialmente, incluirla en publicidad, compartirla externamente ni tratar datos personales para fines distintos del evento. Quien reutilice imágenes fuera de Phoeve deberá contar con los derechos y autorizaciones aplicables de autores y personas retratadas, incluyendo protecciones reforzadas para menores cuando corresponda. Las copias exportadas fuera de la plataforma no se consideran eliminadas automáticamente por un retiro interno, sin perjuicio de los deberes legales de quien las trate.
+
+**Controles vigentes:** preservar DEC-015 (licencia limitada, sin publicidad/venta/training adicional), EL-EP-010 (descarga/exportación autorizada), EL-EP-009 (reclamación y retiro) y la galería privada. No introducir marketing basado en contenido privado ni cambios a DEC/TC/ARCH.
+
+**PENDING LEGAL:** alcance preciso de derechos de autor, derechos de imagen, autorización de titulares y contenido de menores en reutilizaciones externas, redacción vinculante y procedimientos de reclamación. `PRIVATE_MEDIA_COMMERCIAL_REUSE: RESTRICTED_CONFIRMED`; `PUBLICATION: BLOCKED`; `EL-EP-017: NOT_READY`; `Q-029: DEFERRED`.
+
+## 8.9. Material promocional de la Beta — decisión funcional confirmada (2026-10-12)
+
+**Durante la Beta, Phoeve no utilizará fotografías ni videos procedentes de eventos reales gestionados en la plataforma con fines de promoción, publicidad, portafolio, campañas, demostraciones públicas o redes sociales, incluso cuando el organizador ofrezca voluntariamente ese material.** No se implementará un flujo de autorización promocional de media de eventos en esta fase. La exclusión es una restricción del **alcance Beta**, adicional a la exigencia general de autorizaciones independientes establecida en 8.8, y **no concede** nuevas licencias.
+
+Para materiales comerciales de la Beta se permiten, sujeto a sus propios derechos y licencias, **ilustraciones, contenido de demostración creado específicamente para marketing y recursos gráficos licenciados** que no procedan de las galerías privadas de los eventos. No usar fotografías privadas como capturas, ejemplos o piezas de portafolio. Cualquier uso promocional futuro de media de eventos requerirá decisión de producto expresa, análisis de privacidad, autorización jurídica específica de titulares pertinentes y, cuando proceda, cambio controlado de contratos; no queda aprobado por este borrador.
+
+**Trazabilidad:** DEC-015 preservada; EL-EP-017/Q-029 sin cerrar, política DRAFT/NO PUBLICAR; sin implementación promocional ni cambio DEC/TC/ARCH.
+
+## 8.10. Versiones y comunicación de cambios — decisión funcional confirmada (2026-10-12)
+
+Se distinguirán **correcciones menores** (ortografía, claridad o forma sin cambio de derechos, finalidades, permisos u obligaciones) de **cambios sustanciales** que modifiquen derechos, condiciones de uso, responsabilidades, permisos o finalidades del tratamiento. Phoeve publicará un historial/versionado verificable de los textos aplicables y conservará la evidencia mínima pertinente.
+
+Ante cambios sustanciales, **notificará a los usuarios afectados** por los canales habilitados y **solicitará una nueva aceptación o autorización cuando resulte exigible**, respetando DEC-041 (aceptación versionada y trazable) y sin suponer que aceptar Términos equivale a consentir nuevas finalidades de tratamiento. Para invitados anónimos sin canal persistente, diseñar el aviso al siguiente acceso cuando sea apropiado, sin inventar identificadores permanentes ni atribuir identidad a una sesión.
+
+No se impone reaceptación automática ante toda corrección menor. La clasificación precisa de modificaciones, forma de notificar, fecha de entrada en vigor, evidencias y casos de consentimiento independiente deberán pasar revisión jurídica y contraste con UX/API existentes. **No activar** nuevas finalidades antes de cumplir requisitos legales y técnicos.
+
+`TERMS_CHANGE_POLICY: MINOR_VS_MATERIAL_CONFIRMED`; `DEC-041: PRESERVED`; `LEGAL_REVIEW: PENDING`; `EL-EP-017: NOT_READY`; `Q-029: DEFERRED`.
+
+## 9. Relación con organizaciones y proveedores
+
+Un representante humano puede gestionar un evento de organización, pero los alcances de representación, instrucciones de tratamiento y rol responsable/encargado deben definirse caso a caso. Los proveedores técnicos, ubicaciones y contratos de tratamiento no se consideran finalizados por estos términos.
+
+## 10. Legislación, reclamaciones y actualización
+
+Jurisdicción inicial: Colombia; régimen aplicable y mecanismos de reclamación a precisar con asesoría jurídica. Canal de privacidad **[EMAIL OPERATIVO PENDIENTE]** y canal contractual **[PENDIENTE]**. Las versiones, fechas efectivas y mecanismo de aceptación/cambios deben someterse a pruebas de UX y backend antes del lanzamiento.
+
+## Pendientes que impiden publicar
+
+Identificación pública/contactos; licencia y límites exactos revisados; roles y cláusulas organizador-operador; mecanismos verificables de información/autorización; revisión de menores; periodos y bases; proveedores; proceso de derechos operativo; texto de suspensión/limitaciones; validación jurídica profesional.
+
+**Gates:** `EL-EP-017: NOT_READY`; `Q-029: DEFERRED`; `DEC-031: LEGAL_REVIEW_PENDING`; `DEC_TC_ARCH_CHANGE: NONE`.

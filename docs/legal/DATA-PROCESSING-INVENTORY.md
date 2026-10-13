@@ -19,6 +19,10 @@ Estado: DRAFT. Datos documentados en DEC, epics y tickets existentes. **No audit
 
 Publicidad basada en fotografías; reconocimiento facial; venta de datos; entrenamiento de IA con fotos; directorio público de eventos; seguimiento comportamental mediante terceros; reutilización de media privada como marketing. Requieren evaluación propia, no consentimiento general implícito.
 
+**Verificación documental de código (2026-10-12, `stage`):** `packages/identity/src/access-request.ts` almacena solicitudes Beta en `beta_access_request` con email y registra `email_normalized` como `target_identifier` en `admin_audit_event`; sus operaciones de consulta administrativa también incluyen el correo normalizado en auditoría. En ese servicio no se verificó supresión/expiración automática ni evidencia jurídica del aviso. Actualizar DP-02/DP-10 tras inspección de migraciones, política de minimización y pruebas con PostgreSQL; no aplicar automáticamente la retención de seis meses a toda la auditoría. Ver [informe técnico](EL-EP-017-TECHNICAL-GAP-REVIEW-2026-10-12.md).
+
+**Aclaración de runtime:** `apps/api/src/app.module.ts` registra `HealthController` como único controller del composition root observado y `contracts/openapi.json` solo enumera health. Los paquetes de dominio pueden contener lógica y tests sin que el flujo HTTP completo esté operativo; no publicar avisos afirmando tratamientos de integración o funciones que todavía no existan en el servicio desplegado.
+
 ## Hallazgos
 
 - Que la cuenta organizadora requiera ser adulto no evita fotos de menores incidentales.
