@@ -27,6 +27,8 @@
 
 **LEG-03/LEG-08 — avances de documentación:** borradores [PTI](PRIVACY-POLICY-DRAFT.md) y [Términos](TERMS-OF-USE-DRAFT.md) redactados el 2026-10-12 como **DRAFT NO PUBLICAR**. Sin aprobación legal, identidad/URL/versiones/canales finales o prueba de autorizaciones; estados PENDING sin cambios.
 
+**Auditoría de código del 2026-10-12:** [Informe TG-01..TG-08](EL-EP-017-TECHNICAL-GAP-REVIEW-2026-10-12.md). **Bloqueos técnicos detectados:** API sin endpoints de negocio en OpenAPI, aceptación guest frontend local/version fija, solicitud Beta con correo en auditoría, ausencia de supresión/retención comprobadas. **Condicionales:** guest selectivo tiene primitiva de dominio pero no intervención admin selectiva; status `SUSPENDED` para cuenta no demuestra comando de suspensión; avisos de suspensión existen como servicio de intents sin integración de producción probada. LEG-03/04/05/06/07/09 y apertura conservan estados PENDING/BLOCKED. Esta verificación no cambia DEC/TC/ARCH ni acredita pruebas E2E.
+
 ## Gates no intercambiables
 
 | Gate | Estado |
