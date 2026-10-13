@@ -42,6 +42,14 @@ La Política de Tratamiento de Datos Personales **[ENLACE APROBADO PENDIENTE]** 
 
 Credenciales y URL firmadas deben protegerse. El acceso podrá restringirse por permisos, estados, medidas de seguridad y procedimientos aprobados. Las cláusulas de suspensión, responsabilidad, disponibilidad, garantías y limitaciones de responsabilidad requieren **redacción y evaluación profesional**; no insertar exenciones generales que reduzcan indebidamente derechos irrenunciables o del consumidor.
 
+## 8.1. Suspensión temporal ante riesgos graves — decisión funcional confirmada (2026-10-12)
+
+El operador podrá disponer **una suspensión temporal del acceso al evento** cuando personal o automatización de seguridad **ya autorizados por los contratos vigentes** detecten un riesgo grave de seguridad, privacidad o uso indebido. La medida exige motivo verificable, alcance proporcional, control de permisos, registro auditable y revisión por la autoridad administrativa existente; no constituye una atribución nueva de privilegios ni permite acceso indiscriminado a fotografías.
+
+La implementación deberá **reutilizar `SUSPENDED` y la consola administrativa** aceptados en DEC-017/019, sin alterar el cómputo de vigencia/gracia de DEC-078 ni las reglas de reactivación de DEC-081. Revisión de medios denunciados conforme DEC-088/089: **la mera denuncia no suspende automáticamente el evento ni oculta contenido**; se requiere evaluación competente o fundamento independiente de seguridad conforme contrato. Respétese DEC-092 para purga y holds (investigación ordinaria no equivale a autorización de retención indefinida).
+
+**PENDING:** contrastar contra permisos/rutas y pruebas reales de EL-EP-012/003/015, definir criterios operativos de gravedad y comunicación segura al organizador, y revisión jurídica de proporcionalidad y debido tratamiento. No se afirma que esté implementado ni jurídicamente aprobado.
+
 ## 9. Relación con organizaciones y proveedores
 
 Un representante humano puede gestionar un evento de organización, pero los alcances de representación, instrucciones de tratamiento y rol responsable/encargado deben definirse caso a caso. Los proveedores técnicos, ubicaciones y contratos de tratamiento no se consideran finalizados por estos términos.
