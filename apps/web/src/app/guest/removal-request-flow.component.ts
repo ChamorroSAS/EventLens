@@ -135,7 +135,7 @@ export const REMOVAL_REASON_OPTIONS: readonly RemovalReasonOption[] = [
                   <h4 class="warning-title">Consecuencia irreversible antes de continuar</h4>
                   <p class="warning-text">
                     Se retirará de visibilidad al confirmar. <strong>No podrás restaurarlo</strong>.
-                    EventLens no ofrece papelera de organizador ni ventana de cancelación para aportes retirados.
+                    Phoeve no ofrece papelera de organizador ni ventana de cancelación para aportes retirados.
                   </p>
                 </div>
               </div>
