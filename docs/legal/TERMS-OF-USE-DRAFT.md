@@ -74,6 +74,14 @@ La eliminación definitiva **no es sanción automática** por incumplimiento ni 
 
 **PENDING LEGAL Y TÉCNICO:** definir supuestos de incumplimiento y procedimiento sancionatorio proporcional, duración/revisión de restricciones, verificación de capacidad real de suspensión de cuenta, respuesta al organizador y obligaciones legales de eliminación o conservación. Mantener `EL-EP-017: NOT_READY`, `Q-029: DEFERRED` y políticas no publicables.
 
+## 8.5. Advertencias y restricciones proporcionales — decisión funcional confirmada (2026-10-12)
+
+Phoeve podrá **considerar la gravedad y reiteración de incumplimientos del organizador** para determinar una intervención administrativa proporcional. Entre las medidas **a evaluar dentro de facultades ya autorizadas** se encuentra la advertencia y, cuando corresponda, la restricción o suspensión prevista en los contratos vigentes. La reincidencia se valorará con contexto, evidencia, gravedad, impacto, medidas previas y posibilidad de revisión, no por un contador automático ni por un número fijo de incidentes.
+
+La clasificación y resolución corresponden exclusivamente a administración autorizada, con justificación y auditoría mínima; la medida debe comunicarse conforme a las excepciones legales o de seguridad aprobadas. **Una denuncia no prueba por sí sola un incumplimiento ni produce automáticamente sanción, ocultamiento o suspensión** (DEC-088/089). La eliminación definitiva de cuenta/contenido permanece separada y sujeta a EL-EP-015; no se añade sanción de borrado.
+
+**Sin ampliación implícita de permisos:** verificar capacidades efectivas de EL-EP-001/012/013/014 y los estados de cuenta/evento antes de cualquier ticket o implantación. **PENDING LEGAL:** tipificación de faltas, garantías de información y contradicción, proporcionalidad, eventual retención mínima de antecedentes, criterios de prescripción y diseño contractual final. No se aprueba una tabla de penalizaciones, nuevos privilegios ni sanciones automáticas.
+
 ## 9. Relación con organizaciones y proveedores
 
 Un representante humano puede gestionar un evento de organización, pero los alcances de representación, instrucciones de tratamiento y rol responsable/encargado deben definirse caso a caso. Los proveedores técnicos, ubicaciones y contratos de tratamiento no se consideran finalizados por estos términos.
