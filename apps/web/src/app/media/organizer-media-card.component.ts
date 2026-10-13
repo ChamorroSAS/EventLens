@@ -3,6 +3,7 @@ import type { MediaCardModel, RetryCycleResponse } from './media.types.js';
 import { ProcessingFailedPanelComponent } from './processing-failed-panel.component.js';
 import { QuarantinedMediaStateComponent } from './quarantined-media-state.component.js';
 import { MediaModerationActionsComponent } from './media-moderation-actions.component.js';
+import { DownloadOriginalActionComponent } from './download-original-action.component.js';
 
 @Component({
   selector: 'eventlens-organizer-media-card',
@@ -11,6 +12,7 @@ import { MediaModerationActionsComponent } from './media-moderation-actions.comp
     ProcessingFailedPanelComponent,
     QuarantinedMediaStateComponent,
     MediaModerationActionsComponent,
+    DownloadOriginalActionComponent,
   ],
   template: `
     <article
@@ -65,6 +67,15 @@ import { MediaModerationActionsComponent } from './media-moderation-actions.comp
 
       <div class="card-body">
         <h4 class="media-title" [title]="media.fileName">{{ media.fileName }}</h4>
+
+        @if (media.capabilities.canDownloadOriginal && media.status !== 'PROCESSING_FAILED') {
+          <div class="card-download-row">
+            <eventlens-download-original-action
+              [fileName]="media.fileName"
+              (downloadRequested)="onDownloadTriggered()"
+            />
+          </div>
+        }
 
         @if (media.status === 'PROCESSING_FAILED') {
           <eventlens-processing-failed-panel
