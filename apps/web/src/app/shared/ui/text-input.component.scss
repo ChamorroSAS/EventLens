@@ -1,0 +1,33 @@
+@use 'mixins' as m;
+
+.el-text-input {
+  inline-size: 100%;
+  box-sizing: border-box;
+  font-family: var(--el-font-family);
+  font-size: var(--el-font-size-body);
+  color: var(--el-color-text);
+  background-color: var(--el-color-surface);
+  border: 1px solid var(--el-color-border-strong);
+  border-radius: var(--el-radius-md);
+  padding: var(--el-space-sm) var(--el-space-md);
+  min-block-size: var(--el-touch-target-min);
+}
+
+.el-text-input::placeholder {
+  color: var(--el-color-text-disabled);
+}
+
+.el-text-input:focus-visible {
+  @include m.el-focus-ring;
+  border-color: var(--el-color-primary);
+}
+
+.el-text-input[aria-invalid='true'] {
+  border-color: var(--el-color-danger);
+}
+
+.el-text-input:disabled {
+  background-color: var(--el-color-surface-muted);
+  color: var(--el-color-text-disabled);
+  cursor: not-allowed;
+}

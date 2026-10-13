@@ -1,0 +1,13 @@
+.el-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--el-space-sm);
+  justify-content: flex-end;
+}
+
+.el-form-actions--sticky {
+  position: sticky;
+  inset-block-end: 0;
+  background-color: var(--el-color-surface);
+  padding-block: var(--el-space-md);
+}
