@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { SqlTransaction, TransactionRunner } from '@eventlens/database';
+import { exportJobSpec, type ExportJobPublisher } from './export-job.js';
 
 export type ExportErrorCode =
   | 'INVALID_ARGUMENT'
@@ -42,11 +43,20 @@ export interface ExportRequestResult {
 
 export interface ExportAuditEvent {
   readonly id: string;
-  readonly procedure: 'EXPORT_REQUESTED';
+  readonly procedure:
+    | 'EXPORT_REQUESTED'
+    | 'EXPORT_PART_READY'
+    | 'EXPORT_PREPARED'
+    | 'EXPORT_PREPARATION_FAILED'
+    | 'EXPORT_INVALIDATED';
   readonly eventId: string;
   readonly exportId: string;
   readonly itemCount: number;
   readonly excludedCount: number;
+  readonly partNumber?: number;
+  readonly bytes?: number;
+  /** Stable machine code only; never file names, object keys or URLs. */
+  readonly code?: string;
   readonly timestamp: Date;
 }
 
@@ -84,7 +94,9 @@ function isUniqueViolation(error: unknown): boolean {
 export class ExportRequestService {
   constructor(
     private readonly runner: TransactionRunner,
-    private readonly auditSink?: ExportAuditSink
+    private readonly auditSink?: ExportAuditSink,
+    /** When supplied, the preparation job is published in the same transaction as the request (no lost work). */
+    private readonly jobPublisher?: ExportJobPublisher
   ) {
     if (!runner) throw new ExportError('INVALID_ARGUMENT', 'TransactionRunner is required');
   }
@@ -219,6 +231,10 @@ export class ExportRequestService {
       `UPDATE export_request SET selected_count = $2, selected_bytes = $3::bigint, exclusions = $4::jsonb WHERE id = $1::uuid`,
       exportId, inserted, selectedBytes.toString(), JSON.stringify(exclusions)
     );
+
+    if (this.jobPublisher) {
+      await this.jobPublisher.publish(tx, exportJobSpec(exportId, 1n, now));
+    }
 
     if (this.auditSink) {
       await this.auditSink.record({

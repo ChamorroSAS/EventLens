@@ -12,10 +12,12 @@
     "test:integration": "vitest run test/*.integration.test.ts --no-file-parallelism"
   },
   "dependencies": {
-    "@eventlens/database": "workspace:*"
+    "@eventlens/database": "workspace:*",
+    "@eventlens/job-queue": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "24.10.1",
+    "fflate": "0.8.3",
     "typescript": "5.9.3",
     "vitest": "4.0.18"
   }

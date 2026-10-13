@@ -236,10 +236,16 @@ importers:
       '@eventlens/database':
         specifier: workspace:*
         version: link:../database
+      '@eventlens/job-queue':
+        specifier: workspace:*
+        version: link:../job-queue
     devDependencies:
       '@types/node':
         specifier: 24.10.1
         version: 24.10.1
+      fflate:
+        specifier: 0.8.3
+        version: 0.8.3
       typescript:
         specifier: 5.9.3
         version: 5.9.3
@@ -2908,6 +2914,9 @@ packages:
     peerDependenciesMeta:
       picomatch:
         optional: true
+
+  fflate@0.8.3:
+    resolution: {integrity: sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA==}
 
   file-type@22.1.1:
     resolution: {integrity: sha512-sEB0oStmeLGtpmSAD88RDNuLsvhv4iC3u0lE25CUvfCULvj49xoQ3l3K525Vn+ZzsZ6DOLajQCV6RmhwwhqiJg==}
@@ -6674,6 +6683,8 @@ snapshots:
   fdir@6.5.0(picomatch@4.0.7):
     optionalDependencies:
       picomatch: 4.0.7
+
+  fflate@0.8.3: {}
 
   file-type@22.1.1:
     dependencies:
