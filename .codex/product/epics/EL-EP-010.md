@@ -2,7 +2,7 @@
 
 ## Status
 
-READY
+DONE
 
 REQUIREMENTS_READY: YES
 READY_FOR_IMPLEMENTATION: YES
@@ -117,6 +117,7 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
+- 2026-10-13: Implementación y validación de extremo a extremo completada exitosamente (EL-TK-124..133 DONE). Épica cerrada como DONE.
 - 2026-10-10: reconciliación documental de cabecera a READY_FOR_IMPLEMENTATION: YES (alcance propio), alineado con el DoR de la épica, el dictamen de tickets EL-TK-124..133 y DEPENDENCIES.md.
 - 2026-10-10: requirements_reviewer y revisión UI/UX aprueban el paso de EL-TK-124..133 de DRAFT a READY (REQUIREMENTS_READY: YES, READY_FOR_FRONTEND_PLANNING: YES, READY_FOR_IMPLEMENTATION: YES propio). Reutilización estricta del catálogo UI/UX (§9.1..8) sin nuevos componentes ni centros de exportación paralelos.
 - 2026-10-10: ticket_writer crea EL-TK-124..133 como DRAFT para descarga individual, export snapshot/async/multipart, disponibilidad/expiración/invalidation, grants, retry, estado, UI owner y validación integrada. Pendientes de requirements_reviewer; sin implementación.
