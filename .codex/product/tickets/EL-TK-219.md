@@ -2,7 +2,7 @@
 ## Parent epic
 EL-EP-019
 ## Status
-READY
+DONE
 ## User story
 Como organizador, quiero que cada comando de creación o configuración conserve su receipt durable, para reintentar sin duplicar efectos.
 ## Alcance funcional
@@ -40,9 +40,9 @@ EL-EP-019; DEC-069; `event-control-panels-contract.md`.
 - [x] Receipt, límites, errores y owner definidos
 - [x] Dependencia de laboratorio identificada
 - [x] Gate 2 aprobado
-REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: NO actual (PENDING_DEPENDENCIES); IMPLEMENTABLE_AFTER_DEPENDENCIES: YES. Validar depends_on antes de ejecutar; no repetir Gate2 salvo cambio material. Activación nuevas mutaciones/admin BLOCKED por EL-TK-221/222 y evidencias finales. IMPLEMENTED: NO.
+REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: YES. IMPLEMENTED: YES.
 ## Definition of Done
-Receipt durable probado contra PostgreSQL aislado, migración revisada y no duplicación demostrada.
+- [x] Receipt durable probado contra PostgreSQL aislado, migración revisada y no duplicación demostrada. (Verificado con `event-draft-receipts.integration.test.ts` en contenedor efímero PostgreSQL 16).
 ## Archivos candidatos
 - **read/modify:** `packages/event-management/prisma/schema.prisma`, `packages/event-management/src/event-draft.ts`, `packages/event-management/src/contracts.ts`.
 - **test:** `packages/event-management/test/event-draft.integration.test.ts`, `packages/event-management/test/event-draft-config.integration.test.ts`.

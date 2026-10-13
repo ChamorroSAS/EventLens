@@ -32,14 +32,47 @@ describeIntegration('EventDraftService (Real PostgreSQL Integration Tests — EL
         name TEXT NOT NULL,
         status TEXT NOT NULL DEFAULT 'DRAFT',
         timezone TEXT NOT NULL DEFAULT 'America/Bogota',
+        starts_at_local TEXT,
+        scheduled_at TIMESTAMPTZ,
+        utc_offset_minutes INT,
+        expires_at TIMESTAMPTZ,
+        grace_ends_at TIMESTAMPTZ,
+        activated_at TIMESTAMPTZ,
+        closed_at TIMESTAMPTZ,
+        purge_started_at TIMESTAMPTZ,
+        suspended_at TIMESTAMPTZ,
+        suspension_reason TEXT,
+        previous_status TEXT,
+        validity_duration_days INT,
+        grace_days INT,
         uploads_enabled BOOLEAN NOT NULL DEFAULT false,
         guest_gallery_enabled BOOLEAN NOT NULL DEFAULT false,
         moderation_mode TEXT NOT NULL DEFAULT 'AUTO_PUBLISH',
         pin_enabled BOOLEAN NOT NULL DEFAULT false,
+        pin_hash TEXT,
+        pin_salt TEXT,
+        welcome_message TEXT,
+        cover_asset_id UUID,
         idempotency_key TEXT UNIQUE,
         idempotency_payload_hash TEXT,
         created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS event_command_receipt (
+        operation_id UUID PRIMARY KEY,
+        event_id UUID NOT NULL,
+        actor_id UUID NOT NULL,
+        operation TEXT NOT NULL,
+        idempotency_key TEXT NOT NULL,
+        fingerprint TEXT NOT NULL,
+        payload_hash TEXT NOT NULL,
+        applied_revision BIGINT NOT NULL DEFAULT 1,
+        outcome TEXT NOT NULL,
+        warning TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        expires_at TIMESTAMPTZ,
+        CONSTRAINT uq_event_command_receipt_actor_op_key UNIQUE (actor_id, operation, idempotency_key)
       );
 
       CREATE TABLE IF NOT EXISTS admin_audit_event (
@@ -57,12 +90,16 @@ describeIntegration('EventDraftService (Real PostgreSQL Integration Tests — EL
         ADD COLUMN IF NOT EXISTS target_principal_id UUID;
 
       ALTER TABLE event
+        ADD COLUMN IF NOT EXISTS starts_at_local TEXT,
         ADD COLUMN IF NOT EXISTS pin_hash TEXT,
-        ADD COLUMN IF NOT EXISTS pin_salt TEXT;
+        ADD COLUMN IF NOT EXISTS pin_salt TEXT,
+        ADD COLUMN IF NOT EXISTS welcome_message TEXT,
+        ADD COLUMN IF NOT EXISTS cover_asset_id UUID;
     `);
   });
 
   beforeEach(async () => {
+    await sql('DELETE FROM event_command_receipt');
     await sql('DELETE FROM event');
     await sql('DELETE FROM admin_audit_event');
   });
