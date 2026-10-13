@@ -585,183 +585,174 @@
   margin: 0;
 }
 
-/* ── Cómo funciona (Pasos) ────────────────────────────────────────────── */
+/* ── Cómo funciona (Flujo Guiado e Ilustraciones 3D) ──────────────────── */
+.el-section--steps {
+  background-color: var(--el-ui-color-background, #faf8f4);
+  padding: 5rem 0;
+  position: relative;
+  overflow: hidden;
+
+  .el-section__header {
+    text-align: center;
+    max-width: 640px;
+    margin: 0 auto 3rem;
+  }
+
+  .el-section__title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: #17202a;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.75rem;
+  }
+
+  .el-section__intro {
+    font-size: 1.125rem;
+    color: #6b7280;
+    line-height: 1.6;
+  }
+}
+
+.el-steps-journey {
+  position: relative;
+  width: 100%;
+}
+
+.el-steps-curve {
+  display: none;
+
+  @media (min-width: 1024px) {
+    display: block;
+    position: absolute;
+    top: 75px;
+    left: 4%;
+    width: 92%;
+    height: 80px;
+    z-index: 1;
+    pointer-events: none;
+
+    &__svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
 .el-steps-list {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.75rem;
-}
+  gap: 2.75rem;
+  position: relative;
+  z-index: 2;
 
-@media (min-width: 640px) {
-  .el-steps-list {
+  @media (min-width: 640px) {
     grid-template-columns: repeat(2, 1fr);
+    gap: 3rem 2rem;
   }
-}
 
-@media (min-width: 1024px) {
-  .el-steps-list {
+  @media (min-width: 1024px) {
     grid-template-columns: repeat(4, 1fr);
+    gap: 2.25rem;
   }
 }
 
 .el-step {
-  background-color: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  border-radius: 16px;
-  padding: 1.75rem 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.03);
-}
-
-.el-step__preview {
-  height: 100px;
-  background-color: #f9fafb;
-  border-radius: 12px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  border: 1px solid #f3f4f6;
-}
-
-.el-step-badge {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background-color: #17202a;
-  color: #ffffff;
-  font-size: 0.75rem;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.el-step-mockup {
-  width: 60px;
-  height: 44px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  padding: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.el-step-mockup-header {
-  height: 6px;
-  background: #e05638;
-  border-radius: 2px;
-}
-
-.el-step-mockup-line {
-  height: 4px;
-  background: #e5e7eb;
-  border-radius: 2px;
-}
-
-.el-step-mockup-line--short {
-  width: 60%;
-}
-
-.el-step-mockup--qr {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background: transparent;
   border: none;
-  position: relative;
-}
-
-.el-step-mini-qr {
-  width: 38px;
-  height: 38px;
-  background: #17202a;
-  border-radius: 4px;
-}
-
-.el-step-mockup--photos {
-  display: flex;
-  gap: 6px;
-  background: transparent;
-  border: none;
-}
-
-.el-step-mini-thumb {
-  width: 34px;
-  height: 42px;
-  border-radius: 4px;
-  background: linear-gradient(135deg, #fbcfe8, #fed7aa);
-  border: 1px solid #ffffff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-}
-
-.el-step-mockup--gallery {
-  background: transparent;
-  border: none;
-}
-
-.el-step-mini-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 3px;
-  width: 44px;
-  height: 44px;
-}
-
-.el-step-mini-grid span {
-  background: #e5e7eb;
-  border-radius: 2px;
-}
-.el-step-mini-grid span:first-child { background: #fca5a5; }
-.el-step-mini-grid span:nth-child(2) { background: #93c5fd; }
-.el-step-mini-grid span:nth-child(3) { background: #fde047; }
-.el-step-mini-grid span:nth-child(4) { background: #86efac; }
-
-.el-step__content {
+  border-radius: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  align-items: flex-start;
+  text-align: left;
+  box-shadow: none;
+
+  &__preview {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    position: relative;
+  }
+
+  &__img {
+    max-width: 190px;
+    max-height: 190px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.04));
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    &:hover {
+      transform: translateY(-8px) scale(1.04);
+    }
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  &__num {
+    font-family: var(--el-font-sans, 'Manrope', sans-serif);
+    font-size: 2.25rem;
+    font-weight: 600;
+    line-height: 1;
+    color: #cbbbae;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.15rem;
+
+    &--coral {
+      color: #e05638;
+    }
+  }
+
+  &__title {
+    font-family: var(--el-font-sans, 'Manrope', sans-serif);
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #17202a;
+    margin: 0;
+    letter-spacing: -0.01em;
+
+    &--coral {
+      color: #e05638;
+    }
+  }
+
+  &__text {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: #555e6d;
+    margin: 0;
+  }
 }
 
-.el-step__title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #17202a;
-  margin: 0;
-}
-
-.el-step__text {
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: #6b7280;
-  margin: 0;
-}
-
-/* ── Sección Comparativa (EventLens vs WhatsApp vs Drive) ──────────────── */
+/* ── Sección Comparativa (Phoeve vs WhatsApp vs Drive) ─────────────────── */
 .el-section--comparar {
   background-color: var(--el-ui-color-background, #faf8f4);
+  padding: 4.5rem 0;
 }
 
 .el-comparison-wrapper {
-  max-width: 920px;
+  max-width: 960px;
   margin: 0 auto;
   background-color: #ffffff;
-  border-radius: 20px;
-  padding: 1.5rem;
-  box-shadow: 0 12px 30px -6px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 24px;
+  padding: 2rem 2.25rem;
+  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(224, 86, 56, 0.12);
   overflow-x: auto;
+  position: relative;
 }
 
 .el-comparison-table {
@@ -773,9 +764,17 @@
 
 .el-comparison-table th,
 .el-comparison-table td {
-  padding: 1.125rem 1rem;
+  padding: 1.25rem 1.125rem;
   text-align: center;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.el-comparison-table tbody tr {
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: rgba(248, 250, 252, 0.75);
+  }
 }
 
 .el-comparison-table tr:last-child th,
@@ -787,41 +786,100 @@
 .el-td-feature {
   text-align: left !important;
   font-weight: 600;
-  color: #1f2937;
-  min-width: 200px;
+  color: #17202a;
+  min-width: 220px;
 }
 
 .el-th-brand {
-  background-color: #f0fdf4;
-  color: #15803d;
+  background-color: rgba(224, 86, 56, 0.05);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  padding: 1.25rem 1.25rem 1rem !important;
+  min-width: 160px;
+}
+
+.el-brand-pill {
+  display: inline-block;
+  font-size: 0.6875rem;
   font-weight: 800;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-  font-size: 1.0625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #ffffff;
+  background: #e05638;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  margin-bottom: 0.35rem;
+}
+
+.el-brand-name {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #17345c;
+  letter-spacing: -0.01em;
 }
 
 .el-td-brand {
-  background-color: #f0fdf4;
-  font-size: 1.25rem;
-}
-
-.el-comparison-table tr:last-child .el-td-brand {
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
-}
-
-.el-th-competitor {
-  color: #4b5563;
+  background-color: rgba(224, 86, 56, 0.05);
   font-weight: 700;
 }
 
-.el-td-other {
-  font-size: 1.25rem;
+.el-comparison-table tr:last-child .el-td-brand {
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
+
+.el-th-competitor {
+  color: #64748b;
+  font-weight: 700;
+  font-size: 1rem;
+  min-width: 140px;
 }
 
 .el-brand-icon {
-  font-size: 1rem;
-  margin-right: 0.25rem;
+  font-size: 1.125rem;
+  margin-right: 0.35rem;
+}
+
+/* Badges de comparación */
+.el-badge-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  background-color: #dcfce7;
+  color: #166534;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  box-shadow: 0 1px 3px rgba(22, 101, 52, 0.1);
+}
+
+.el-badge-neutral {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  background-color: #fef3c7;
+  color: #92400e;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+}
+
+.el-badge-cross {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  background-color: #fee2e2;
+  color: #991b1b;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
 }
 
 /* ── Privacidad ────────────────────────────────────────────────────────── */
@@ -972,3 +1030,122 @@
   color: rgba(255, 255, 255, 0.8);
   font-weight: 500;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   PHOEVE MOTION SYSTEM (EL-TK-213 / ui-phoeve-home-motion-proposal.md)
+   GPU-accelerated, 0 external dependencies, accessible, native IntersectionObserver
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Sistema de Revelado Progresivo (.el-reveal) ─────────────────────── */
+.el-reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+
+  &--visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── 2. Entradas Escalonadas (Staggered Delays) ─────────────────────────── */
+.el-grid--3 .el-card:nth-child(1) { transition-delay: 0ms; }
+.el-grid--3 .el-card:nth-child(2) { transition-delay: 80ms; }
+.el-grid--3 .el-card:nth-child(3) { transition-delay: 160ms; }
+
+.el-faq-list .el-faq-item:nth-child(1) { transition-delay: 0ms; }
+.el-faq-list .el-faq-item:nth-child(2) { transition-delay: 60ms; }
+.el-faq-list .el-faq-item:nth-child(3) { transition-delay: 120ms; }
+.el-faq-list .el-faq-item:nth-child(4) { transition-delay: 180ms; }
+
+/* ── 3. Micro-movimiento en Hero (Flotación sutil de capas) ─────────────── */
+@keyframes float-polaroid {
+  0% { transform: rotate(-5deg) translateY(0); }
+  100% { transform: rotate(-3deg) translateY(-8px); }
+}
+
+@keyframes float-tablecard {
+  0% { transform: rotate(4deg) translateY(0); }
+  100% { transform: rotate(5deg) translateY(-6px); }
+}
+
+.el-polaroid-mockup {
+  animation: float-polaroid 5s ease-in-out infinite alternate;
+}
+
+.el-tablecard-mockup {
+  animation: float-tablecard 6s ease-in-out infinite alternate;
+}
+
+/* ── 4. Compatibilidad para "Cómo Funciona" ────────────────────────────── */
+.el-steps-sticky-visual {
+  display: none;
+}
+
+/* ── 5. Panel de Privacidad Destacado (.el-privacy-box--featured) ─────────── */
+.el-privacy-box--featured {
+  background: linear-gradient(145deg, #ffffff 0%, #fdfbfa 100%);
+  border: 1px solid rgba(224, 86, 56, 0.15);
+  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: #e05638;
+  }
+
+  .el-lock-circle {
+    background: rgba(224, 86, 56, 0.1);
+    color: #e05638;
+    transition: transform 0.25s ease;
+  }
+
+  &:hover .el-lock-circle {
+    transform: scale(1.08) rotate(5deg);
+  }
+}
+
+/* ── 6. Accesibilidad y Fallback: prefers-reduced-motion: reduce ─────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .el-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .el-polaroid-mockup,
+  .el-tablecard-mockup,
+  .el-step-scene {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .el-card:hover,
+  .el-step:hover,
+  .el-btn-primary:hover,
+  .el-btn-closing:hover {
+    transform: none !important;
+  }
+
+  .el-steps-sticky-visual {
+    position: static !important;
+  }
+}
+
