@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
-import { AppComponent } from './app.component';
-import { PlatformApiService } from './platform-api.service';
+import { HomeComponent } from './home.component';
+import { PlatformApiService } from '../core/services/platform-api.service';
 
 describe('Platform shell', () => {
   it('announces real readiness through the public client boundary', async () => {
     const checkReadiness = vi.fn().mockResolvedValue(undefined);
     TestBed.configureTestingModule({ providers: [{ provide: PlatformApiService, useValue: { checkReadiness } }] });
-    const fixture = TestBed.createComponent(AppComponent);
+    const fixture = TestBed.createComponent(HomeComponent);
     await fixture.whenStable();
     fixture.detectChanges();
     expect(checkReadiness).toHaveBeenCalledOnce();
@@ -17,7 +17,7 @@ describe('Platform shell', () => {
   it('sanitizes errors and allows a keyboard-accessible retry', async () => {
     const checkReadiness = vi.fn().mockRejectedValueOnce(new Error('private database detail')).mockResolvedValueOnce(undefined);
     TestBed.configureTestingModule({ providers: [{ provide: PlatformApiService, useValue: { checkReadiness } }] });
-    const fixture = TestBed.createComponent(AppComponent);
+    const fixture = TestBed.createComponent(HomeComponent);
     await fixture.whenStable();
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('API no disponible.');
