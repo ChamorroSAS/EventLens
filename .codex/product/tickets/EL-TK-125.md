@@ -4,7 +4,7 @@
 EL-EP-010
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador propietario, **quiero** solicitar una exportación total de mis recuerdos elegibles, **para** preparar una descarga consistente aunque el evento siga cambiando.
@@ -68,3 +68,12 @@ Q-027; DEC-046, DEC-090; EL-EP-010, EL-EP-008.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §9.1..8; sin componentes nuevos ni centros de exportación paralelos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Evidencia de implementación y verificación — 2026-10-12
+
+- **Paquete nuevo (owner MOD-005):** `@eventlens/export-management` (`packages/export-management`), registrado en `config/database-modules.json`, `scripts/workspace.mjs`, scripts raíz y `pnpm-lock.yaml`. Migración `202610120053_export_request`: tablas `export_request` y `export_request_item`, con índice único parcial que permite una sola exportación no terminal por evento.
+- **Servicio:** `ExportRequestService.requestExport` (`src/export-request.ts`). Bloquea la fila del evento, valida owner y estado del evento (SUSPENDED/PENDING_DELETION/ARCHIVED/DELETED deniegan), aplica idempotencia por (organizador, clave) con huella del evento, y congela el manifiesto con un único `INSERT ... SELECT` sobre `media_catalog` limitado a PUBLISHED/HIDDEN con original completo (DEC-046/DEC-090).
+- **Resultado:** `REQUESTED` con `selectedCount`, `selectedBytes` y exclusiones por estado (más `MISSING_ORIGINAL`). Sin media elegible lanza `NO_ELIGIBLE_MEDIA` (con exclusiones) y no persiste nada. Errores: `UNAUTHORIZED` (actor ajeno/evento inexistente), `IDEMPOTENCY_CONFLICT`, `EXPORT_IN_PROGRESS`, `EVENT_NOT_ELIGIBLE`.
+- **Auditoría:** `EXPORT_REQUESTED` solo con conteos, sin contenido.
+- **Pruebas:** `test/export-request.unit.test.ts` (10/10) y `test/export-request.integration.test.ts` (7/7, PostgreSQL 16 real): manifiesto, exclusiones, snapshot sin ampliación posterior, vacío, original incompleto, idempotencia, concurrencia (una sola activa), aislamiento por organizador y evento suspendido. Build `tsc` OK.
+- **Alcance:** capacidad de dominio/paquete. Publicación del job y empaquetado quedan en EL-TK-126; permisos se revalidan en EL-TK-128; HTTP/UI en EL-TK-132.

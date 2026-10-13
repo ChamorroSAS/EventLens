@@ -1,0 +1,42 @@
+datasource db {
+  provider = "postgresql"
+}
+
+model ExportRequest {
+  id                 String   @id @db.Uuid
+  eventId            String   @map("event_id") @db.Uuid
+  organizerId        String   @map("organizer_id") @db.Uuid
+  status             String   @default("REQUESTED")
+  idempotencyKey     String   @map("idempotency_key")
+  requestFingerprint String   @map("request_fingerprint")
+  selectedCount      Int      @map("selected_count")
+  selectedBytes      BigInt   @map("selected_bytes")
+  exclusions         Json     @default("{}")
+  requestedAt        DateTime @map("requested_at") @db.Timestamptz
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  items ExportRequestItem[]
+
+  @@unique([organizerId, idempotencyKey])
+  @@index([eventId, requestedAt(sort: Desc)])
+  @@map("export_request")
+}
+
+model ExportRequestItem {
+  exportId          String @map("export_id") @db.Uuid
+  position          Int
+  mediaRef          String @map("media_ref")
+  generation        BigInt
+  revision          BigInt
+  originalNamespace String @map("original_namespace")
+  originalKey       String @map("original_key")
+  originalVersion   String @map("original_version")
+  originalSha256    String @map("original_sha256")
+  originalBytes     BigInt @map("original_bytes")
+  fileName          String? @map("file_name")
+
+  request ExportRequest @relation(fields: [exportId], references: [id])
+
+  @@id([exportId, mediaRef])
+  @@map("export_request_item")
+}
