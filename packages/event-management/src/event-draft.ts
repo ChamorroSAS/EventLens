@@ -95,8 +95,24 @@ interface EventRow {
   cover_asset_id?: string | null;
   idempotency_key?: string | null;
   idempotency_payload_hash?: string | null;
+  revision?: bigint | number | string | null;
   created_at: Date | string;
   updated_at: Date | string;
+}
+
+function validateExpectedRevision(expectedRevision?: string): void {
+  if (expectedRevision === undefined || expectedRevision === null) return;
+  if (
+    typeof expectedRevision !== 'string' ||
+    expectedRevision.trim().length === 0 ||
+    !/^[1-9]\d*$/.test(expectedRevision) ||
+    expectedRevision.length >= 13
+  ) {
+    throw new EventManagementError(
+      'INVALID_ARGUMENT',
+      'expectedRevision must be an opaque monotonic revision string, not a timestamp or invalid shape'
+    );
+  }
 }
 
 function mapRowToRecord(row: EventRow): EventRecord {
@@ -125,6 +141,7 @@ function mapRowToRecord(row: EventRow): EventRecord {
     pinEnabled: Boolean(row.pin_enabled),
     welcomeMessage: row.welcome_message ?? null,
     coverAssetId: row.cover_asset_id ?? null,
+    revision: String(row.revision ?? 1n),
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at)
   };
@@ -148,6 +165,7 @@ function mapRowToSummary(row: EventRow): OrganizerEventSummary {
     pinEnabled: Boolean(row.pin_enabled),
     welcomeMessage: row.welcome_message ?? null,
     coverAssetId: row.cover_asset_id ?? null,
+    revision: String(row.revision ?? 1n),
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at)
   };
@@ -165,7 +183,10 @@ function resolveCapabilities(status: EventStatus): EventConfigurationCapabilitie
     canManageAccess: isDraftOrScheduled || isActive || isClosedOrGrace,
     canViewLifecycle: status !== 'ARCHIVED',
     canViewCapacity: !isTerminal,
-    canPublishOrActivate: isDraftOrScheduled
+    canPublishOrActivate: isDraftOrScheduled,
+    canEditName: status === 'DRAFT',
+    canSetLocalSchedule: status === 'DRAFT',
+    canChangeTimezone: status === 'DRAFT' || status === 'SCHEDULED'
   };
 }
 
@@ -483,6 +504,7 @@ export class EventDraftService {
         pinEnabled,
         welcomeMessage: null,
         coverAssetId: null,
+        revision: '1',
         createdAt: now,
         updatedAt: now
       };
@@ -544,7 +566,7 @@ export class EventDraftService {
       throw new EventManagementError('INVALID_ARGUMENT', 'Command is required');
     }
 
-    const { actorContext, eventId, name, idempotencyKey } = command;
+    const { actorContext, eventId, name, expectedRevision, idempotencyKey } = command;
 
     if (
       !actorContext ||
@@ -560,6 +582,7 @@ export class EventDraftService {
     }
 
     validateIdempotencyKey(idempotencyKey);
+    validateExpectedRevision(expectedRevision);
 
     if (!name || typeof name !== 'string') {
       await this.auditSink?.record({
@@ -606,7 +629,7 @@ export class EventDraftService {
                 expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
                 suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
                 guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
-                idempotency_key, idempotency_payload_hash, created_at, updated_at
+                idempotency_key, idempotency_payload_hash, revision, created_at, updated_at
          FROM event
          WHERE id = $1
          FOR UPDATE`,
@@ -646,6 +669,17 @@ export class EventDraftService {
           'EVENT_NOT_IN_DRAFT',
           `Name can only be updated for events in DRAFT status, current is '${current.status}'`
         );
+      }
+
+      // Validar CAS (EL-TK-220)
+      if (expectedRevision !== undefined) {
+        const currentRevisionStr = String(current.revision ?? 1n);
+        if (currentRevisionStr !== expectedRevision) {
+          throw new EventManagementError(
+            'CONCURRENCY_CONFLICT',
+            `Event revision conflict: expected ${expectedRevision}, but current revision is ${currentRevisionStr}`
+          );
+        }
       }
 
       // Check receipt in event_command_receipt (EL-TK-219)
@@ -713,7 +747,7 @@ export class EventDraftService {
                    expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
                    suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
                    guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
-                   idempotency_key, idempotency_payload_hash, created_at, updated_at`,
+                   idempotency_key, idempotency_payload_hash, revision, created_at, updated_at`,
         trimmedName,
         idempotencyKey ?? null,
         payloadHash,
@@ -727,11 +761,12 @@ export class EventDraftService {
       if (idempotencyKey) {
         const operationId = randomUUID();
         try {
+          const appliedRev = updated.revision ?? 1n;
           await tx.execute(
             `INSERT INTO event_command_receipt (
                operation_id, event_id, actor_id, operation, idempotency_key,
                fingerprint, payload_hash, applied_revision, outcome, created_at
-             ) VALUES ($1, $2, $3, 'UPDATE_NAME', $4, $5, $6, 1, 'UPDATED', $7)
+             ) VALUES ($1, $2, $3, 'UPDATE_NAME', $4, $5, $6, $7, 'UPDATED', $8)
              ON CONFLICT (actor_id, operation, idempotency_key) DO NOTHING`,
             operationId,
             eventId,
@@ -739,6 +774,7 @@ export class EventDraftService {
             idempotencyKey,
             fingerprint,
             payloadHash,
+            appliedRev,
             now
           );
 
@@ -746,7 +782,7 @@ export class EventDraftService {
             operationId,
             eventId,
             operation: 'UPDATE_NAME',
-            appliedRevision: '1',
+            appliedRevision: String(appliedRev),
             outcome: 'UPDATED'
           };
         } catch {
@@ -1334,7 +1370,7 @@ export class EventDraftService {
       throw new EventManagementError('INVALID_ARGUMENT', 'Command is required');
     }
 
-    const { actorContext, eventId, startsAtLocal, utcOffsetMinutes, idempotencyKey } = command;
+    const { actorContext, eventId, startsAtLocal, utcOffsetMinutes, expectedRevision, idempotencyKey } = command;
 
     if (!actorContext || actorContext.actorType !== 'ORGANIZER_HUMAN' || !actorContext.accountId) {
       throw new EventManagementError('UNAUTHORIZED', 'Authenticated organizer context is required');
@@ -1343,6 +1379,9 @@ export class EventDraftService {
     if (!eventId || typeof eventId !== 'string') {
       throw new EventManagementError('INVALID_ARGUMENT', 'Valid eventId is required');
     }
+
+    validateIdempotencyKey(idempotencyKey);
+    validateExpectedRevision(expectedRevision);
 
     if (!startsAtLocal || typeof startsAtLocal !== 'string') {
       throw new EventManagementError('INVALID_DATE_TIME', 'Valid startsAtLocal string is required');
@@ -1365,7 +1404,7 @@ export class EventDraftService {
       const rows = await tx.query<EventRow>(
         `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
                 uploads_enabled, guest_gallery_enabled, moderation_mode, pin_enabled,
-                idempotency_key, idempotency_payload_hash, created_at, updated_at
+                idempotency_key, idempotency_payload_hash, revision, created_at, updated_at
          FROM event
          WHERE id = $1
          FOR UPDATE`,
@@ -1409,7 +1448,18 @@ export class EventDraftService {
         );
       }
 
-      // 4. Check idempotency
+      // 4. Validar CAS (EL-TK-220)
+      if (expectedRevision !== undefined) {
+        const currentRevisionStr = String(current.revision ?? 1n);
+        if (currentRevisionStr !== expectedRevision) {
+          throw new EventManagementError(
+            'CONCURRENCY_CONFLICT',
+            `Event revision conflict: expected ${expectedRevision}, but current revision is ${currentRevisionStr}`
+          );
+        }
+      }
+
+      // 5. Check idempotency
       if (idempotencyKey && current.idempotency_key === idempotencyKey) {
         if (current.idempotency_payload_hash === payloadHash) {
           return {
@@ -1423,7 +1473,7 @@ export class EventDraftService {
         );
       }
 
-      // 5. Resolve local time with DEC-070 DST validation
+      // 6. Resolve local time with DEC-070 DST validation
       let resolved;
       try {
         resolved = resolveScheduleLocalTime(current.timezone, startsAtLocal, utcOffsetMinutes);
@@ -1451,7 +1501,7 @@ export class EventDraftService {
         throw err;
       }
 
-      // 6. Update event in database
+      // 7. Update event in database
       const now = new Date();
       const updatedRows = await tx.query<EventRow>(
         `UPDATE event
@@ -1464,7 +1514,7 @@ export class EventDraftService {
          WHERE id = $1
          RETURNING id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
                    uploads_enabled, guest_gallery_enabled, moderation_mode, pin_enabled,
-                   idempotency_key, idempotency_payload_hash, created_at, updated_at`,
+                   idempotency_key, idempotency_payload_hash, revision, created_at, updated_at`,
         eventId,
         resolved.startsAtLocal,
         resolved.scheduledAt,
@@ -1755,7 +1805,7 @@ export class EventDraftService {
       const rows = await tx.query<EventRow>(
         `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at,
                 utc_offset_minutes, expires_at, grace_ends_at, uploads_enabled,
-                guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message, cover_asset_id, created_at, updated_at
+                guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message, cover_asset_id, revision, created_at, updated_at
          FROM event
          WHERE id = $1`,
         eventId
@@ -1773,7 +1823,7 @@ export class EventDraftService {
 
       const summary = mapRowToSummary(row);
       const capabilities = resolveCapabilities(summary.status);
-      const revision = new Date(row.updated_at).getTime().toString();
+      const revision = String(row.revision ?? 1n);
 
       return {
         event: summary,
@@ -1804,7 +1854,7 @@ export class EventDraftService {
       throw new EventManagementError('INVALID_ARGUMENT', 'Command is required');
     }
 
-    const { actorContext, eventId, timezone, utcOffsetMinutes, idempotencyKey } = command;
+    const { actorContext, eventId, timezone, utcOffsetMinutes, expectedRevision, idempotencyKey } = command;
 
     if (
       !actorContext ||
@@ -1818,6 +1868,9 @@ export class EventDraftService {
     if (!eventId || typeof eventId !== 'string') {
       throw new EventManagementError('INVALID_ARGUMENT', 'Valid eventId is required');
     }
+
+    validateIdempotencyKey(idempotencyKey);
+    validateExpectedRevision(expectedRevision);
 
     if (!timezone || typeof timezone !== 'string') {
       throw new EventManagementError('INVALID_ARGUMENT', 'Valid timezone string is required');
@@ -1857,7 +1910,7 @@ export class EventDraftService {
                 expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
                 suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
                 guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
-                idempotency_key, idempotency_payload_hash, created_at, updated_at
+                idempotency_key, idempotency_payload_hash, revision, created_at, updated_at
          FROM event
          WHERE id = $1
          FOR UPDATE`,
@@ -1897,6 +1950,17 @@ export class EventDraftService {
           'INVALID_STATE',
           `Timezone can only be changed for events in DRAFT or SCHEDULED status, current is '${current.status}'`
         );
+      }
+
+      // Validar CAS (EL-TK-220)
+      if (expectedRevision !== undefined) {
+        const currentRevisionStr = String(current.revision ?? 1n);
+        if (currentRevisionStr !== expectedRevision) {
+          throw new EventManagementError(
+            'CONCURRENCY_CONFLICT',
+            `Event revision conflict: expected ${expectedRevision}, but current revision is ${currentRevisionStr}`
+          );
+        }
       }
 
       if (idempotencyKey && current.idempotency_key === idempotencyKey) {
@@ -1968,7 +2032,7 @@ export class EventDraftService {
                    expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at,
                    suspension_reason, previous_status, validity_duration_days, grace_days, uploads_enabled,
                    guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message,
-                   idempotency_key, idempotency_payload_hash, created_at, updated_at`,
+                   idempotency_key, idempotency_payload_hash, revision, created_at, updated_at`,
         trimmedTimezone,
         newStartsAtLocal,
         newScheduledAt,

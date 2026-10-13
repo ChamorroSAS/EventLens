@@ -37,6 +37,7 @@ export interface EventRecord {
   readonly pinEnabled: boolean;
   readonly welcomeMessage?: string | null;
   readonly coverAssetId?: string | null;
+  readonly revision?: string;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -144,6 +145,7 @@ export interface UpdateEventDraftNameCommand {
   readonly actorContext: OrganizerActorContext;
   readonly eventId: string;
   readonly name: string;
+  readonly expectedRevision?: string;
   readonly idempotencyKey?: string;
 }
 
@@ -226,6 +228,7 @@ export interface ChangePreparedEventTimezoneCommand {
   readonly eventId: string;
   readonly timezone: string;
   readonly utcOffsetMinutes?: number;
+  readonly expectedRevision?: string;
   readonly idempotencyKey?: string;
 }
 
@@ -424,6 +427,7 @@ export interface SetEventScheduleCommand {
   readonly eventId: string;
   readonly startsAtLocal: string;
   readonly utcOffsetMinutes?: number;
+  readonly expectedRevision?: string;
   readonly idempotencyKey?: string;
 }
 
@@ -1245,6 +1249,7 @@ export interface OrganizerEventSummary {
   readonly pinEnabled: boolean;
   readonly welcomeMessage?: string | null;
   readonly coverAssetId?: string | null;
+  readonly revision?: string;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -1256,6 +1261,9 @@ export interface EventConfigurationCapabilities {
   readonly canViewLifecycle: boolean;
   readonly canViewCapacity: boolean;
   readonly canPublishOrActivate: boolean;
+  readonly canEditName: boolean;
+  readonly canSetLocalSchedule: boolean;
+  readonly canChangeTimezone: boolean;
 }
 
 export interface AuthorizedEventConfiguration {
