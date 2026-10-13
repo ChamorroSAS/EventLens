@@ -42,6 +42,8 @@ CONFIRMED: revisión antes de lanzamiento público, organizadores adultos, menor
 
 **DOCUMENTED DRAFT — 2026-10-12:** [Política de datos](../../../docs/legal/PRIVACY-POLICY-DRAFT.md) y [Términos de uso](../../../docs/legal/TERMS-OF-USE-DRAFT.md) preparados para revisión profesional; no aprobados ni publicables. Falta prueba de implementación de avisos y autorizaciones, roles jurídicos, proveedores, retenciones y contactos reales.
 
+**TECHNICAL CONTRACT DRAFT — 2026-10-12:** [integración REST](../../../docs/contracts/EL-EP-017-API-INTEGRATION-DRAFT-2026-10-12.md), [permisos de suspensión/revocación](../../../docs/contracts/EL-EP-017-SUSPENSION-REVOCATION-PERMISSIONS-DRAFT-2026-10-12.md), [minimización de email Beta en auditoría](../../../docs/legal/BETA-EMAIL-AUDIT-POLICY-DRAFT-2026-10-12.md). Se contrastó fuente en `stage`, no se ejecutó suite ni se agregó endpoint, rol o nueva DEC. **EL-EP-017 NOT_READY, Q-029 DEFERRED**.
+
 ## Main scenarios
 
 Profesional revisa políticas y flujo; validar avisos/consentimientos; acordar derechos y retención; identificar ajustes previos al go-live público.
