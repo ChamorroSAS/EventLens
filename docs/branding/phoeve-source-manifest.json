@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "status": "CANDIDATES_ONLY_NOT_APPROVED_FOR_IMPLEMENTATION",
+  "registeredOn": "2026-10-13",
+  "sourceOfTruth": "docs/branding/assets/phoeve",
+  "authority": "Explicit user instruction: only these four repository files are graphic source candidates for planning; preserve original names.",
+  "supersedes": "Previous external graphic references and Downloads versions for planning only.",
+  "provenance": {
+    "registration": "Read directly from repository working tree at the paths listed below; no import, conversion or image modification was performed.",
+    "selection": "Four repository files selected explicitly by the user on 2026-10-13.",
+    "upstreamCreator": "NOT_VERIFIED",
+    "rightsAndOwnership": "NOT_VERIFIED",
+    "originalFileNamesPreserved": true
+  },
+  "restrictions": {
+    "implementationAuthorized": false,
+    "modifyVectorizeRecolorOrReplace": "Requires subsequent user approval",
+    "historicalEventLensAssets": "Preserved",
+    "technicalIdentifiers": "Preserved"
+  },
+  "assets": [
+    {
+      "originalName": "logo_phoeve.png",
+      "path": "docs/branding/assets/phoeve/logo_phoeve.png",
+      "sha256": "8a6570fa1455b9e7c461f70e6b6ab295ecfcd1dc5629e4a329451211e191d662",
+      "bytes": 286360,
+      "width": 2172,
+      "height": 724,
+      "format": "PNG",
+      "bitDepth": 8,
+      "colorType": 6,
+      "hasAlphaChannel": true,
+      "transparentPixelContent": "NOT_VERIFIED"
+    },
+    {
+      "originalName": "fondo oscuro.png",
+      "path": "docs/branding/assets/phoeve/fondo oscuro.png",
+      "sha256": "8fd8d3f4234a9626aab5f9e618c1ef66b13426923d371e9a81e0af9e82975bf4",
+      "bytes": 283221,
+      "width": 2172,
+      "height": 724,
+      "format": "PNG",
+      "bitDepth": 8,
+      "colorType": 6,
+      "hasAlphaChannel": true,
+      "transparentPixelContent": "NOT_VERIFIED"
+    },
+    {
+      "originalName": "logo_favicon.png",
+      "path": "docs/branding/assets/phoeve/logo_favicon.png",
+      "sha256": "f899bf6bfba49c1a21cf7a6be2d51785985c8daa8190e29f6f1250745d780799",
+      "bytes": 374816,
+      "width": 1254,
+      "height": 1254,
+      "format": "PNG",
+      "bitDepth": 8,
+      "colorType": 6,
+      "hasAlphaChannel": true,
+      "transparentPixelContent": "NOT_VERIFIED"
+    },
+    {
+      "originalName": "escala de grises.png",
+      "path": "docs/branding/assets/phoeve/escala de grises.png",
+      "sha256": "1109330d9770b37988cc89c99dc0b65216004a66fa02f8069e30d03c0314fb7d",
+      "bytes": 279911,
+      "width": 2172,
+      "height": 724,
+      "format": "PNG",
+      "bitDepth": 8,
+      "colorType": 6,
+      "hasAlphaChannel": true,
+      "transparentPixelContent": "NOT_VERIFIED"
+    }
+  ]
+}

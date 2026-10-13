@@ -2,11 +2,13 @@
 
 Fecha: 2026-10-13. Referencia: borrador externo CR-006. Estado: **PLAN PROPUESTO / NOT_IMPLEMENTED**. Rama de planificación: `planning/phoeve-rebranding`, desde `stage` en `2510f07`.
 
+**Actualización del usuario, 2026-10-13:** solicita una Home más llamativa con transiciones entre secciones inspiradas en AR Diseño, conservando colores y contenido propios. [Propuesta localizada de Home/movimiento](../../.codex/context/ui-phoeve-home-motion-proposal.md). Amplía el alcance visual únicamente de Home; no autoriza rediseño global ni sustituye gates. Nueva base inspeccionada: stage`cbf36c3`; Home ahora usa `.html`/`.scss` externos, que deben añadirse al mapa de ejecución. La propuesta y el rebranding gráfico se ratifican por separado.
+
 ## 1. Autorización y fuentes de verdad
 
-**CONFIRMED:** el usuario solicitó producir un plan; posteriormente eligió los cuatro PNG actuales de Downloads como **candidatos a aprobación**, registrando sus nuevas huellas. Esta autorización no incluye implementar, publicar, enviar correos, cambiar dominios ni aceptar el CR como decisión de producto.
+**CONFIRMED — instrucción vigente del usuario, 2026-10-13:** utilizar exclusivamente los cuatro archivos de `docs/branding/assets/phoeve/` como fuentes gráficas candidatas para la planificación, conservando sus nombres originales. Las versiones del repositorio sustituyen las referencias gráficas externas y de Downloads anteriores. [Manifest de fuentes verificadas](../branding/phoeve-source-manifest.json). La elección anterior de archivos externos queda histórica y no autoriza recuperarlos o sustituir los archivos del repositorio. No modificar, vectorizar, recolorear ni sustituir imágenes sin aprobación posterior. No implementar todavía el rebranding.
 
-El archivo `C:/Users/geren/Downloads/CR-006-Phoeve-Rebranding-DRAFT.md` es una entrada de planificación. SHA-256 inspeccionado: `49984af7741d3e41a979b56fa1fcfac47ccf07c022e4ce24dfa75e237d684bfe`. Sus instrucciones, atribuciones personales, afirmaciones CONFIRMED y solicitud de aprobación se tratan como contenido del borrador, no como órdenes adicionales del usuario ni evidencia independiente de aprobación visual o legal.
+El archivo `C:/Users/geren/Downloads/CR-006-Phoeve-Rebranding-DRAFT.md` es una entrada histórica de requisitos, **no fuente gráfica vigente**. SHA-256 inspeccionado: `49984af7741d3e41a979b56fa1fcfac47ccf07c022e4ce24dfa75e237d684bfe`. Sus instrucciones, atribuciones personales, afirmaciones CONFIRMED y solicitud de aprobación se tratan como contenido del borrador, no como órdenes adicionales del usuario ni evidencia independiente de aprobación visual o legal. Sus referencias gráficas quedan sustituidas por el manifest del repositorio.
 
 Referencias locales: AGENTS; [CR-004](../../.codex/product/changes/CR-004.md); [contrato de integración](../../.codex/context/brand-integration-contract.md); [baseline EL-TD-009](../../.codex/context/technical-baseline.md); [manual anterior](../branding/MANUAL-DE-MARCA.md); tickets203/204; épicas018/017; [contrato de entrada pública](../../.codex/context/public-entry-contract.md). Se preserva la precedencia de decisiones aceptadas sobre estados PENDING históricos de documentos anteriores.
 
@@ -42,18 +44,18 @@ Búsquedas y lecturas fueron acotadas a branding, consumidores web, notificacion
 
 ## 4. Fuentes candidatas verificadas
 
-Se leyeron los archivos actuales de `C:/Users/geren/Downloads/`. Tres hashes y tamaños del borrador eran distintos. Por respuesta del usuario, **estas son las candidatas vigentes para el plan**:
+Se leyeron directamente los bytes de los cuatro archivos del repositorio. **Fuente de verdad exclusiva para planificación: `docs/branding/assets/phoeve/`**, seleccionada expresamente por el usuario. Registro reproducible de SHA-256, dimensiones, tamaños y procedencia en [phoeve-source-manifest.json](../branding/phoeve-source-manifest.json). No se importaron ni transformaron imágenes durante esta actualización.
 
-| Archivo | Dimensiones reales | SHA-256 calculado | Coincide con borrador | Rol pendiente de ratificación |
-|---|---:|---|---|---|
-|`logo_phoeve.png`|2172×724|`3407bbd7f6ece2987e51ca877f56741e69178779c97ffee5fabc6f87d7a0a587`|No|Principal claro|
-|`fondo oscuro.png`|2172×724|`dd69a2aeb805e4ee73ff6b47ed27babff94ce8d0ba766e753eb7d9a255004e93`|No|Negativo/oscuro|
-|`logo_favicon.png`|1254×1254|`c20f5587864a5e42f3b37f639369c90defa1904015775d26ab4d62584feb517a`|Sí|Monograma/favicon|
-|`escala de grises.png`|2172×724|`56262c257a1af238af33315ad8e59cf4be450a33cd08c7e775ebe7a44c0bbbcb`|No|Grises|
+| Ruta fuente del repositorio | Dimensiones reales | SHA-256 calculado | Rol pendiente de ratificación |
+|---|---:|---|---|
+|`docs/branding/assets/phoeve/logo_phoeve.png`|2172×724|`8a6570fa1455b9e7c461f70e6b6ab295ecfcd1dc5629e4a329451211e191d662`|Principal claro|
+|`docs/branding/assets/phoeve/fondo oscuro.png`|2172×724|`8fd8d3f4234a9626aab5f9e618c1ef66b13426923d371e9a81e0af9e82975bf4`|Negativo/oscuro|
+|`docs/branding/assets/phoeve/logo_favicon.png`|1254×1254|`f899bf6bfba49c1a21cf7a6be2d51785985c8daa8190e29f6f1250745d780799`|Monograma/favicon|
+|`docs/branding/assets/phoeve/escala de grises.png`|2172×724|`1109330d9770b37988cc89c99dc0b65216004a66fa02f8069e30d03c0314fb7d`|Grises|
 
-Los cuatro PNG tienen profundidad8, tipo de color2 (RGB), sin chunk `tRNS`: no contienen transparencia PNG. No se realizó aprobación visual de geometría, paleta, derechos o legibilidad. No se suministró un maestro vectorial en los archivos examinados. No asignar números de imagen ambiguos; ratificar variantes por nombre y hash.
+Los cuatro PNG declaran profundidad8 y tipo de color6 (RGBA), con canal alfa. Esto sustituye la descripción RGB sin transparencia de las versiones externas; no acredita por sí solo cuántos píxeles transparentes contienen ni aprueba su aspecto en los fondos de uso. No se realizó aprobación visual de geometría, paleta, derechos o legibilidad. Procedencia comprobada: rutas del árbol de trabajo y selección explícita del usuario; autor creativo, titularidad y derechos de uso **NOT_VERIFIED**. Ratificar variantes por nombre y hash, no por números ambiguos.
 
-**PENDING:** maestro SVG/AI con procedencia o aprobación explícita de vectorización supervisada; tratamiento del fondo; colores digitales finales, áreas libres y mínimos. Eliminar fondo, recortar, vectorizar o recolorear son transformaciones que requieren comparación y ratificación. No renombrar PNG como SVG ni envolverlo en SVG para presentarlo como vector.
+**PENDING:** ratificación visual de estos PNG, fondos de uso, colores digitales finales, áreas libres y mínimos. Obtener un SVG/AI no es una precondición impuesta por este plan: las candidatas actuales son exclusivamente estos cuatro PNG. Eliminar fondo, recortar, redimensionar archivos, vectorizar, recolorear o sustituir fuentes requiere aprobación posterior específica. No proponer una transformación como trabajo ya autorizado ni renombrar PNG como SVG.
 
 ## 5. Secuencia, dependencias y puertas de salida
 
@@ -63,13 +65,13 @@ Los bloques siguientes son paquetes de trabajo propuestos, **no IDs de tickets**
 |---|---|---|---|
 |A. Congelar alcance y fuentes|backlog_manager + product_discovery; puede avanzar ahora|Inventario completo por categoría, manifest de candidatas, decisiones pendientes y diferencias del borrador|Cada entrada tiene archivo/línea, superficie, tratamiento y responsable; hashes iguales a bytes seleccionados; scope y excepciones explícitos. |
 |B. Revisión de requisitos y baseline|requirements_reviewer → architect; dependeA|Gate1 del CR; verificación EL-TD-001/004/005/006/008/009 y contratos de navegación/branding|No nuevo dominio/API/persistencia/proveedor; desacuerdos resueltos o bloqueados por capacidad; ninguna aprobación ficticia. |
-|C. Ratificación gráfica y UX|responsable producto + ui_designer; dependeA/B y material aprobado|Matriz por hash, maestro/exports, dimensiones proporcionales, fallback, variantes y manual propuesto|Ratificación humana versionada; `READY_FOR_FRONTEND_PLANNING: YES`; arte aceptado para cada contexto sin rediseño implícito. |
+|C. Ratificación gráfica y UX|responsable producto + ui_designer; dependeA/B y material aprobado|Matriz de los cuatro PNG del repositorio por hash, dimensiones proporcionales, fallback, variantes y manual propuesto|Ratificación humana versionada; `READY_FOR_FRONTEND_PLANNING: YES`; arte aceptado para cada contexto. Transformaciones o sustituciones siguen sin autorizarse. |
 |D. Formalizar ejecución|ticket_writer → requirements_reviewer; sólo después deB/C|Paquetes atómicos nuevos para activos/manual, textos/consumidores y validación final; permisos/errors/dependencias|IDs comprobados en serie vigente, sin reutilizar217 ni históricos; Gate2 READY de cada ticket aplicable. No se crean en esta planificación. |
-|E. Aplicar incrementalmente|planner → implementer; sólo tickets READY|Primero fuentes/exports y manifest; luego catálogo/consumidores/textos; después avisos y docs vigentes|Cada paso es revisable/reversible; no referencia assets inexistentes; sólo archivos del inventario aprobados. |
+|E. Aplicar incrementalmente|planner → implementer; sólo tras autorización posterior y tickets READY|Primero manifest y publicación de copias idénticas de los PNG ratificados; luego catálogo/consumidores/textos; después avisos y docs vigentes|Cada paso es revisable/reversible; no referencia assets inexistentes. Nombres originales preservados; ningún derivado/transformación sin aprobación específica. |
 |F. Validar y revisar|tester → reviewer → documenter; dependeE|Builds, tests, comparación visual, evidencia por SHA de commit y propuesta PR hacia stage|Checks de sección7 ejecutados y sin bloqueantes; documentación coincide con resultado final; aprobación visual concreta. |
 |G. Publicar identidad|responsable humano/operación/legal; independiente del cierre técnico|Decisión de release y, cuando corresponda, habilitación de entregas|Clearance de nombre/uso, leyendas/titular, gates de Home/Beta y servicio público cerrados por sus owners. No release ni merge automático. |
 
-Se puede completar inventario y preparar pruebas/criterios mientras el vector o una leyenda estén pendientes. No puede aplicarse frontend ni considerarse ejecutable su plan detallado antes del gate UI; no confundir una hoja de ruta condicional con un ticket READY. La búsqueda legal específica de Phoeve es trabajo independiente antes de lanzamiento; no se ejecutó durante esta tarea.
+Se puede completar inventario y preparar pruebas/criterios mientras la ratificación de PNG o una leyenda estén pendientes. No puede aplicarse frontend ni considerarse ejecutable su plan detallado antes de autorización y gate UI; no confundir una hoja de ruta condicional con un ticket READY. La búsqueda legal específica de Phoeve es trabajo independiente antes de lanzamiento; no se ejecutó durante esta tarea.
 
 ## 6. Mapa de impacto y archivos candidatos
 
@@ -77,8 +79,8 @@ Este mapa identifica responsabilidades para la futura ejecución, sin aprobar mo
 
 | Paquete / archivos | Cambio candidato | Evidencia asociada |
 |---|---|---|
-|`docs/branding/assets/phoeve/` (nuevo), `docs/branding/PHOEVE-MANUAL-DE-MARCA.md` (nuevo)|Preservar originales, maestro y exports con manifest; documentar paleta/fondos/mínimos ratificados|Hashes fuente/derivados, comando/herramienta/versión de export, comparación visual, aprobación. |
-|`apps/web/public/assets/branding/phoeve/` (nuevo)|Publicar sólo exports aprobados; conservar anteriores durante transición|Correspondencia manifest↔bytes publicados, MIME/carga, ausencia de maestros privados/documentales. |
+|`docs/branding/assets/phoeve/` (existente), `docs/branding/phoeve-source-manifest.json`, manual Phoeve futuro|Las cuatro imágenes son las fuentes candidatas, con nombres originales. Registrar metadata sin alterar sus bytes; documentar fondos/mínimos sólo tras ratificación|Hash/tamaño/dimensión leídos del repositorio; procedencia explícita. Nuevos maestros o derivados fuera de alcance hasta aprobación posterior. |
+|`apps/web/public/assets/branding/phoeve/` (futuro, no creado)|Tras autorización, publicar copias idénticas de los PNG ratificados con nombres originales; conservar EventLens histórico|Manifest↔bytes publicados, nombres exactos, MIME PNG y URLs correctamente codificadas para espacios; ninguna publicación durante planificación. |
 |`branding/branding-assets.ts`, `.spec.ts`|Actualizar marca activa, rutas y procedencia sin simular `sourcePage`; preservar resolver y contexto histórico|Catálogo↔manifest y archivos reales; URL relativa a base href. No hace falta framework multibrand ni paquete nuevo. |
 |`src/index.html`, `navigation/public-entry-routes.contract.ts`|Nombre inicial, favicon y siete títulos dinámicos; sólo textos|DOM construido y títulos tras navegar; paths, IDs, lookup keys y canonicalización idénticos. |
 |`public-home/{app-header,legal-footer,public-home}.component.ts` y pruebas|Phoeve visible/alt/aria; referencias relativas y proporción del arte aprobado|Capturas y DOM real; copyright bloqueado hasta texto/titular ratificados; interacción de sesión y anchors preservada. |
@@ -95,7 +97,7 @@ Este mapa identifica responsabilidades para la futura ejecución, sin aprobar mo
 
 | ID de criterio del plan | Prueba / resultado exigido | Evidencia mínima |
 |---|---|---|
-|V1 Fuentes|Recalcular4 hashes y comparar con manifest aprobado; original y export se distinguen|Manifest JSON con hash/tamaño/rol/aprobación de cada fuente y salida. |
+|V1 Fuentes|Recalcular los4 hashes del repositorio y comparar con manifest; verificar nombres y dimensiones. Copias runtime futuras idénticas si se autorizan|Manifest JSON de candidatas con hash/tamaño/rol pendiente/procedencia; aprobación de uso separada, no implícita. |
 |V2 Arte|16/32/48CSSpx en fondo claro/oscuro, wordmark a tamaño de uso, geometría/proporción sin distorsión|Capturas etiquetadas, viewport/DPR/browser, límites aceptados y ratificación humana; no texto PASS fijo. |
 |V3 Serving|Builds separados con base`/` y `/phoeve-preview/`; servidor SPA existente con `PUBLIC_BASE_HREF` coincidente|Requests200 y MIME correcto, image naturalWidth>0, favicon obtenido del head real; asset faltante404 sin devolver indexHTML; ausencia de errores404 inesperados. |
 |V4 Marca visible|Cada fila visible del inventario cambia o tiene excepción explícita; títulos de todos los descriptores servidos correctos|Asserts DOM/accessible names/document.title y reporte de apariciones pendientes; no criterio «cero EventLens en repo». |
@@ -138,7 +140,7 @@ Para regresión integrada, preferir fixtures/test doubles de red o entorno compl
 | Decisión | Owner propuesto | Bloquea |
 |---|---|---|
 |Ratificar los cuatro roles por hash, lettering y usos|Producto / responsable de arte|C/D/E visual. Las candidatas ya están seleccionadas, no aprobadas. |
-|Maestro vectorial o proceso supervisado aprobado; fondo/transparencia|Responsable de arte|Exports finales y gate UI. Raster temporal sólo si se aprueba explícitamente un alcance provisional y sus limitaciones. |
+|Fondos/transparencia y uso de los PNG seleccionados|Producto / responsable de arte|Aceptación visual en cada contexto. No exigir vector ni fabricar uno; cualquier modificación, vectorización, recolor o sustitución es una aprobación posterior independiente. |
 |Paleta exacta, dimensiones de uso, márgenes/mínimos|Producto / UI|Manual definitivo y aceptación visual; no cambio automático de tokens UI. |
 |Leyenda de copyright/titular/contacto|Producto / revisión legal|Footer/copia jurídica publicable. No inferir operador legal del nombre comercial. |
 |Avisos/intents históricos o ya pendientes de envío|Producto / ownerMOD-009|Cutover de entregas: decidir si se conservan como históricos; nunca barrido de filas/cola por este CR. |
@@ -148,7 +150,7 @@ Gates reportados por borrador/referencias que se mantienen pendientes: BRAND_NAM
 
 ## 9. PRs recomendados y criterio final
 
-Tras los gates, se recomienda separar cambios por responsabilidad: primero fuentes aprobadas/manifest/manual y activos servibles; segundo consumidores web/copia/títulos/avisos y validadores con sus pruebas. No activar rutas Phoeve antes de que los assets estén presentes. El segundo PR cita la versión/hashes del primero; la revisión puede optar por un único PR si mantiene esa dependencia en commits y obtiene toda la evidencia antes de merge.
+Tras autorización posterior y gates, se recomienda separar cambios por responsabilidad: primero fuentes ratificadas/manifest/manual y copias idénticas servibles; segundo consumidores web/copia/títulos/avisos y validadores con sus pruebas. No activar rutas Phoeve antes de que los assets estén presentes. El segundo PR cita la versión/hashes del primero; la revisión puede optar por un único PR si mantiene esa dependencia en commits y obtiene toda la evidencia antes de merge. No modificar ni renombrar las cuatro candidatas en ninguno de estos pasos; una transformación necesita aprobación adicional específica.
 
 Propuesta de título posterior: `feat(branding): adoptar Phoeve en la identidad pública conservando contratos EventLens`. Base `stage`, rama semántica propia. Body: problema/conducta final, matriz de superficies, hashes/ratificación, comandos ejecutados, capturas raíz/prefijo, exclusiones comprobadas, rollback y gates de release pendientes. Sin push/merge/publicación automática por este plan.
 
@@ -156,6 +158,6 @@ El trabajo de implementación se cierra sólo cuando V1..V10 del alcance aprobad
 
 ## 10. Verificación realizada para este plan
 
-**EJECUTADO:** estado Git/HEAD y rama limpios al inicio; lectura del borrador y contratos, búsquedas acotadas, ruta real de arranque, hashes y metadata PNG, estados locales203/204/018/017/215/216. Ningún código de aplicación, imagen, decisión/ticket histórico o base de datos fue modificado para producir este plan.
+**EJECUTADO:** estado Git/HEAD y rama limpios al inicio de la planificación original; lectura del borrador y contratos, búsquedas acotadas, ruta real de arranque, estados locales203/204/018/017/215/216. Actualización de fuentes: SHA-256, tamaños y metadata PNG recalculados exclusivamente sobre los cuatro archivos del repositorio; el manifest registra procedencia y restricciones. Se preservaron los cambios de planificación existentes y los archivos aportados por el usuario. Ningún código de aplicación, imagen, decisión/ticket histórico o base de datos fue modificado para producir este plan.
 
 **NOT_EXECUTED:** build/tests del rebranding, inspección visual aprobatoria, render de Phoeve en aplicación, búsqueda/clearance legal, vectorización, nuevos tickets, PR de implementación o publicación. El estado es plan verificable propuesto, no IMPLEMENTED ni PASS de branding.
