@@ -112,6 +112,14 @@ La evaluación considerará gravedad, contexto, evidencia mínima, derechos de t
 
 **PENDING LEGAL:** alcance preciso de derechos de autor, derechos de imagen, autorización de titulares y contenido de menores en reutilizaciones externas, redacción vinculante y procedimientos de reclamación. `PRIVATE_MEDIA_COMMERCIAL_REUSE: RESTRICTED_CONFIRMED`; `PUBLICATION: BLOCKED`; `EL-EP-017: NOT_READY`; `Q-029: DEFERRED`.
 
+## 8.9. Material promocional de la Beta — decisión funcional confirmada (2026-10-12)
+
+**Durante la Beta, Phoeve no utilizará fotografías ni videos procedentes de eventos reales gestionados en la plataforma con fines de promoción, publicidad, portafolio, campañas, demostraciones públicas o redes sociales, incluso cuando el organizador ofrezca voluntariamente ese material.** No se implementará un flujo de autorización promocional de media de eventos en esta fase. La exclusión es una restricción del **alcance Beta**, adicional a la exigencia general de autorizaciones independientes establecida en 8.8, y **no concede** nuevas licencias.
+
+Para materiales comerciales de la Beta se permiten, sujeto a sus propios derechos y licencias, **ilustraciones, contenido de demostración creado específicamente para marketing y recursos gráficos licenciados** que no procedan de las galerías privadas de los eventos. No usar fotografías privadas como capturas, ejemplos o piezas de portafolio. Cualquier uso promocional futuro de media de eventos requerirá decisión de producto expresa, análisis de privacidad, autorización jurídica específica de titulares pertinentes y, cuando proceda, cambio controlado de contratos; no queda aprobado por este borrador.
+
+**Trazabilidad:** DEC-015 preservada; EL-EP-017/Q-029 sin cerrar, política DRAFT/NO PUBLICAR; sin implementación promocional ni cambio DEC/TC/ARCH.
+
 ## 9. Relación con organizaciones y proveedores
 
 Un representante humano puede gestionar un evento de organización, pero los alcances de representación, instrucciones de tratamiento y rol responsable/encargado deben definirse caso a caso. Los proveedores técnicos, ubicaciones y contratos de tratamiento no se consideran finalizados por estos términos.
