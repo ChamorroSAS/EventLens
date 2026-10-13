@@ -293,6 +293,21 @@ model DeletionPurgeEvidence {
   @@map("deletion_purge_evidence")
 }
 
+model EventCommandReceipt {
+  operationId     String    @id @map("operation_id") @db.Uuid
+  eventId         String    @map("event_id") @db.Uuid
+  actorId         String    @map("actor_id") @db.Uuid
+  operation       String
+  idempotencyKey  String    @map("idempotency_key")
+  fingerprint     String
+  payloadHash     String    @map("payload_hash")
+  appliedRevision BigInt    @default(1) @map("applied_revision")
+  outcome         String
+  warning         String?
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  expiresAt       DateTime? @map("expires_at") @db.Timestamptz
 
-
-
+  @@unique([actorId, operation, idempotencyKey])
+  @@index([eventId])
+  @@map("event_command_receipt")
+}
