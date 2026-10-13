@@ -1,6 +1,6 @@
 # EL-EP-017 — Contratos HTTP de integración transversales
 
-**Fecha:** 2026-10-12. **Estado:** CONTRACT_PROPOSED / NOT_IMPLEMENTED / LEGAL_GATE_BLOCKED. Documento de diseño; no reemplaza `contracts/openapi.json` generado ni autoriza nuevos permisos.
+**Fecha:** 2026-10-12. **Estado:** TECHNICAL_BASELINE_APPROVED / NOT_IMPLEMENTED / LEGAL_GATE_BLOCKED. **Aprobado expresamente por producto el 2026-10-12** como contrato técnico de integración; [acta](../../.codex/product/sessions/2026-10-12-el-ep-017-approved-technical-contracts.md). No reemplaza `contracts/openapi.json` generado, no confirma rutas ni permisos implementados, y no constituye aprobación jurídica. El sufijo `DRAFT` en la ruta se conserva por estabilidad de enlaces.
 
 ## Evidencia de baseline en `stage`
 
