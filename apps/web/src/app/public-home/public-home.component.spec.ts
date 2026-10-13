@@ -133,17 +133,17 @@ describe('PublicHomePageComponent & AppHeaderComponent (EL-TK-213)', () => {
     const footer = element.querySelector('footer.el-footer');
     expect(footer).toBeTruthy();
     expect(footer?.textContent).toContain('Los recuerdos de cada celebración, reunidos en un solo lugar');
-    expect(footer?.textContent).toContain('Phoeve · Beta privada');
+    expect(footer?.textContent).toContain('2026 EventLens. Todos los derechos reservados.');
   });
 
-  it('cabecera anónima: muestra enlaces públicos, Iniciar sesión y Solicitar Beta, ocultando acciones privadas', () => {
+  it('cabecera anónima: muestra enlaces públicos e Iniciar sesión, sin botón Beta en header y ocultando acciones privadas', () => {
     sessionStateSignal.set(createSnapshot('ANONYMOUS'));
     fixture.detectChanges();
 
     const desktopActions = element.querySelector('.el-header__actions--desktop');
     expect(desktopActions).toBeTruthy();
     expect(desktopActions?.textContent).toContain('Iniciar sesión');
-    expect(desktopActions?.textContent).toContain('Solicitar acceso a la Beta');
+    expect(desktopActions?.textContent).not.toContain('Solicitar acceso a la Beta');
     expect(desktopActions?.textContent).not.toContain('Mis eventos');
     expect(desktopActions?.textContent).not.toContain('Mi cuenta');
     expect(desktopActions?.textContent).not.toContain('Cerrar sesión');

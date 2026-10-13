@@ -60,8 +60,8 @@ describe('OrganizerAppShellComponent (EL-TK-204 Visual Foundation & Pilot)', () 
 
     const logoImg = brandTitle?.querySelector('img.brand-logo') as HTMLImageElement;
     expect(logoImg).not.toBeNull();
-    expect(logoImg.getAttribute('src')).toBe('assets/branding/phoeve/logo-primary.svg');
-    expect(logoImg.getAttribute('alt')).toBe('Phoeve');
+    expect(logoImg.getAttribute('src')).toBe('assets/branding/logo-primary.svg');
+    expect(logoImg.getAttribute('alt')).toBe('EventLens');
 
     const brandBadge = element.querySelector('.brand-badge');
     expect(brandBadge?.textContent?.trim()).toBe('Organizador');
@@ -72,7 +72,7 @@ describe('OrganizerAppShellComponent (EL-TK-204 Visual Foundation & Pilot)', () 
 
     // Footer is rendered
     const footerText = element.querySelector('.footer-text');
-    expect(footerText?.textContent).toContain('Phoeve BETA');
+    expect(footerText?.textContent).toContain('EventLens BETA');
   });
 
   it('Escenario 2: Renderiza región de contexto del evento activo y emite exitContext al accionar Mis eventos', () => {
@@ -130,7 +130,7 @@ describe('OrganizerAppShellComponent (EL-TK-204 Visual Foundation & Pilot)', () 
 
     const fallbackText = element.querySelector('.brand-fallback-text');
     expect(fallbackText).not.toBeNull();
-    expect(fallbackText?.textContent?.trim()).toBe('Phoeve');
+    expect(fallbackText?.textContent?.trim()).toBe('EventLens');
   });
 
   it('Escenario 4: Nombres largos sin espacios permanecen completos en la región de contexto', () => {

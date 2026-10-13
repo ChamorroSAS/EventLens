@@ -164,12 +164,12 @@ const compContent = fs.readFileSync(shellCompFile, 'utf8');
 const shellStyles = fs.readFileSync(shellStylesFile, 'utf8');
 
 // Logo runtime asset and fallback
-if (!compContent.includes('assets/branding/phoeve/logo-primary.svg')) {
-  console.error('[FAIL] Component does not reference assets/branding/phoeve/logo-primary.svg');
+if (!compContent.includes('assets/branding/logo-primary.svg')) {
+  console.error('[FAIL] Component does not reference assets/branding/logo-primary.svg');
   process.exit(1);
 }
-if (!compContent.includes('alt="Phoeve"') || !compContent.includes('brand-fallback-text')) {
-  console.error('[FAIL] Component does not implement accessible logo fallback for Phoeve');
+if (!compContent.includes('alt="EventLens"') || !compContent.includes('brand-fallback-text')) {
+  console.error('[FAIL] Component does not implement accessible logo fallback for EventLens');
   process.exit(1);
 }
 console.log('[PASS] Shell wordmark and accessible fallback text verified');

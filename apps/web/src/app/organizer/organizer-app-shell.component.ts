@@ -14,15 +14,15 @@ import { EventStatusBadgeComponent } from '../lifecycle/event-status-badge.compo
             <h1 class="brand-title">
               @if (!logoFailed) {
                 <img
-                  src="assets/branding/phoeve/logo-primary.svg"
-                  alt="Phoeve"
+                  src="assets/branding/logo-primary.svg"
+                  alt="EventLens"
                   class="brand-logo"
                   width="160"
-                  height="29"
+                  height="25"
                   (error)="onLogoError()"
                 />
               } @else {
-                <span class="brand-fallback-text">Phoeve</span>
+                <span class="brand-fallback-text">EventLens</span>
               }
             </h1>
             <span class="brand-badge">Organizador</span>
@@ -54,7 +54,7 @@ import { EventStatusBadgeComponent } from '../lifecycle/event-status-badge.compo
 
       <footer class="shell-footer" role="contentinfo">
         <div class="shell-container footer-inner">
-          <p class="footer-text">Phoeve BETA — Plataforma segura de recuerdos colaborativos.</p>
+          <p class="footer-text">EventLens BETA — Plataforma segura de recuerdos colaborativos.</p>
         </div>
       </footer>
     </div>
