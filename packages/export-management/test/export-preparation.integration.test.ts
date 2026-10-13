@@ -13,7 +13,7 @@ import {
   ExportResourcePolicy,
   ExportStorageError
 } from '../src/index.js';
-import { MemoryStorage, TestAuthority } from './support/memory-storage.js';
+import { MemoryStorage, TestAuthority } from './memory-storage.js';
 
 const databaseUrl = process.env.DATABASE_URL;
 const describeIntegration = databaseUrl ? describe : describe.skip;

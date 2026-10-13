@@ -1,52 +1,17 @@
 import { randomUUID } from 'node:crypto';
 import type { SqlTransaction, TransactionRunner } from '@eventlens/database';
-import { exportCleanupJobSpec, type ExportJobPublisher } from './export-job.js';
-import type { ExportAuditSink } from './export-request.js';
+import { exportCleanupJobSpec } from './export-job.js';
+import {
+  ExportAvailabilityError,
+  type ExportAuditSink,
+  type ExportAvailability,
+  type ExportExpiryResult,
+  type ExportJobPublisher,
+  type ExportLifecycleNotifier
+} from './contracts.js';
 
 /** DEC-048: export links/parts stay available for 48 hours from availability. */
 export const EXPORT_AVAILABILITY_HOURS = 48;
-
-export type ExportAvailabilityErrorCode =
-  | 'EXPORT_NOT_FOUND'
-  | 'NOT_PUBLISHABLE'
-  | 'PARTS_INCOMPLETE'
-  | 'MANIFEST_INCONSISTENT';
-
-export class ExportAvailabilityError extends Error {
-  constructor(readonly code: ExportAvailabilityErrorCode) {
-    super(code);
-    this.name = 'ExportAvailabilityError';
-  }
-}
-
-export interface ExportAvailability {
-  readonly exportId: string;
-  readonly eventId: string;
-  readonly organizerId: string;
-  readonly partCount: number;
-  readonly totalBytes: number;
-  readonly availableAt: Date;
-  readonly expiresAt: Date;
-  /** False when the export was already AVAILABLE: a replay never moves the window. */
-  readonly publishedNow: boolean;
-}
-
-export interface ExportLifecycleNotice {
-  readonly exportId: string;
-  readonly eventId: string;
-  readonly organizerId: string;
-  readonly partCount: number;
-  readonly expiresAt: Date;
-}
-
-/**
- * Notice contract towards EL-EP-013. Called inside the publishing transaction so the intent commits (or rolls back)
- * with the state change. This package neither sends email nor depends on the notifications package.
- */
-export interface ExportLifecycleNotifier {
-  exportAvailable(tx: SqlTransaction, notice: ExportLifecycleNotice): Promise<void>;
-  exportExpired?(tx: SqlTransaction, notice: ExportLifecycleNotice): Promise<void>;
-}
 
 /** Pure rule for grant issuers (EL-TK-129): expiry blocks new grants even if the reconciler is late. */
 export function isExportAvailable(row: { status: string; expiresAt: Date | string | null }, now: Date): boolean {
@@ -173,10 +138,6 @@ export async function recordAvailabilityAudit(sink: ExportAuditSink | undefined,
   } catch {
     // auditing never changes the durable state
   }
-}
-
-export interface ExportExpiryResult {
-  readonly expiredExportIds: readonly string[];
 }
 
 /**

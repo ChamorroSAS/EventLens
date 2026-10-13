@@ -1,4 +1,4 @@
-import { ExportStorageError, type ExportObjectRef, type ExportObjectStorage, type ExportOriginalRef } from '../../src/index.js';
+import { ExportStorageError, type ExportObjectRef, type ExportObjectStorage, type ExportOriginalRef } from '../src/index.js';
 import type { RecoveryAuthority } from '@eventlens/job-queue';
 
 export class TestAuthority implements RecoveryAuthority {

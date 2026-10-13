@@ -1,23 +1,6 @@
 import { createHash } from 'node:crypto';
 import { crc32 as zlibCrc32 } from 'node:zlib';
-import { ExportStorageError } from './storage.js';
-
-export class ZipSourceError extends Error {
-  constructor(readonly code: 'SOURCE_MISSING' | 'SOURCE_SIZE_MISMATCH' | 'SOURCE_CHECKSUM_MISMATCH' | 'ABORTED') {
-    super(code);
-    this.name = 'ZipSourceError';
-  }
-}
-
-export interface ZipEntry {
-  /** Already sanitized, relative, forward-slash entry name. */
-  readonly name: string;
-  /** Exact original size from the frozen manifest. */
-  readonly expectedBytes: number;
-  /** Exact original SHA-256 from the frozen manifest, verified while streaming. */
-  readonly expectedSha256: string;
-  open(signal: AbortSignal): AsyncIterable<Uint8Array>;
-}
+import { ExportStorageError, ZipSourceError, type ZipEntry } from './contracts.js';
 
 /** Estimated bytes one entry adds on top of its stored data (headers, descriptor, central directory, zip64 extras). */
 export function zipEntryOverhead(nameBytes: number): number {

@@ -2,23 +2,13 @@ import { randomUUID } from 'node:crypto';
 import type { TransactionRunner } from '@eventlens/database';
 import { QueueError, type Execution, type JobQueuePostgres, type SqlTransaction } from '@eventlens/job-queue';
 import { EXPORT_CLEANUP_QUEUE, parseExportCleanupResourceRef } from './export-job.js';
-import type { ExportAuditSink } from './export-request.js';
-import type { ExportObjectRef, ExportObjectStorage } from './storage.js';
-
-export type ExportCleanupResult = 'CLEANED' | 'RETRYING' | 'DEAD' | 'ABANDONED';
-
-export interface ExportCleanupOutcome {
-  readonly exportId: string;
-  readonly result: ExportCleanupResult;
-  readonly deletedObjects?: number;
-}
-
-export interface ExportCleanupConfig {
-  readonly owner: string;
-  readonly leaseMs: number;
-  readonly maxAttempts: number;
-  readonly retryBackoffMs: number;
-}
+import type {
+  ExportAuditSink,
+  ExportCleanupConfig,
+  ExportCleanupOutcome,
+  ExportObjectRef,
+  ExportObjectStorage
+} from './contracts.js';
 
 type CleanupQueue = Pick<JobQueuePostgres, 'reserve' | 'heartbeat' | 'complete' | 'retry'>;
 

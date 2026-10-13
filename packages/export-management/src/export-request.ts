@@ -1,75 +1,14 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { SqlTransaction, TransactionRunner } from '@eventlens/database';
-import { exportJobSpec, type ExportJobPublisher } from './export-job.js';
+import {
+  ExportError,
+  type ExportAuditSink,
+  type ExportJobPublisher,
+  type ExportRequestResult,
+  type RequestExportCommand
+} from './contracts.js';
+import { exportJobSpec } from './export-job.js';
 
-export type ExportErrorCode =
-  | 'INVALID_ARGUMENT'
-  | 'UNAUTHORIZED'
-  | 'EVENT_NOT_ELIGIBLE'
-  | 'NO_ELIGIBLE_MEDIA'
-  | 'IDEMPOTENCY_CONFLICT'
-  | 'EXPORT_IN_PROGRESS';
-
-export class ExportError extends Error {
-  constructor(
-    readonly code: ExportErrorCode,
-    message?: string,
-    readonly exclusions?: Readonly<Record<string, number>>
-  ) {
-    super(message ?? code);
-    this.name = 'ExportError';
-  }
-}
-
-export interface RequestExportCommand {
-  readonly eventId: string;
-  readonly organizerAccountId: string;
-  /** Stable per user intent; replays return the original request instead of creating another. */
-  readonly idempotencyKey: string;
-  readonly now?: Date;
-}
-
-export interface ExportRequestResult {
-  readonly exportId: string;
-  readonly eventId: string;
-  readonly status: 'REQUESTED';
-  readonly selectedCount: number;
-  readonly selectedBytes: bigint;
-  /** Media of the event left out of the snapshot, counted by catalog status (or MISSING_ORIGINAL). */
-  readonly exclusions: Readonly<Record<string, number>>;
-  readonly requestedAt: string;
-  readonly replayed: boolean;
-}
-
-export interface ExportAuditEvent {
-  readonly id: string;
-  readonly procedure:
-    | 'EXPORT_REQUESTED'
-    | 'EXPORT_PART_READY'
-    | 'EXPORT_PREPARED'
-    | 'EXPORT_AVAILABLE'
-    | 'EXPORT_EXPIRED'
-    | 'EXPORT_CLEANED_UP'
-    | 'EXPORT_PREPARATION_FAILED'
-    | 'EXPORT_INVALIDATED';
-  readonly eventId: string;
-  readonly exportId: string;
-  readonly itemCount: number;
-  readonly excludedCount: number;
-  readonly partNumber?: number;
-  readonly partCount?: number;
-  readonly bytes?: number;
-  /** Stable machine code only; never file names, object keys or URLs. */
-  readonly code?: string;
-  readonly timestamp: Date;
-}
-
-export interface ExportAuditSink {
-  record(event: ExportAuditEvent): Promise<void>;
-}
-
-/** DEC-046: total download covers PUBLISHED and HIDDEN originals by default. */
-export const EXPORT_ELIGIBLE_STATUSES = ['PUBLISHED', 'HIDDEN'] as const;
 const BLOCKED_EVENT_STATUSES = ['SUSPENDED', 'PENDING_DELETION', 'ARCHIVED', 'DELETED'];
 
 interface RawEventRow { status: string; organizer_id: string; }

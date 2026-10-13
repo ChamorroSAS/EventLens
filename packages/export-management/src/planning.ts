@@ -1,16 +1,5 @@
+import type { PlannableItem, PlannedPart } from './contracts.js';
 import { ZIP_FIXED_OVERHEAD, zipEntryOverhead } from './zip.js';
-
-export interface PlannableItem {
-  readonly position: number;
-  readonly entryName: string;
-  readonly bytes: number;
-}
-
-export interface PlannedPart {
-  readonly partNumber: number;
-  readonly positions: readonly number[];
-  readonly plannedBytes: number;
-}
 
 /** Defaults to DEC-049's ~5 GB, in decimal units (DEC-079). */
 export const DEFAULT_TARGET_PART_BYTES = 5_000_000_000;

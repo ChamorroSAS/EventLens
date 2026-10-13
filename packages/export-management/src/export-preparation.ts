@@ -1,53 +1,26 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { TransactionRunner } from '@eventlens/database';
 import { QueueError, type Execution, type JobQueuePostgres, type SqlTransaction } from '@eventlens/job-queue';
-import { EXPORT_QUEUE, parseExportResourceRef } from './export-job.js';
 import {
   ExportAvailabilityError,
-  publishExportAvailability,
-  recordAvailabilityAudit,
+  ZipSourceError,
+  type ExportAuditSink,
   type ExportAvailability,
-  type ExportLifecycleNotifier
-} from './export-availability.js';
-import type { ExportAuditSink } from './export-request.js';
+  type ExportLifecycleNotifier,
+  type ExportObjectRef,
+  type ExportObjectStorage,
+  type ExportPreparationConfig,
+  type ExportPreparationDeps,
+  type ExportPreparationOutcome,
+  type ExportRevalidationTarget,
+  type ExportRevalidator,
+  type RevalidationVerdict,
+  type ZipEntry
+} from './contracts.js';
+import { EXPORT_QUEUE, parseExportResourceRef } from './export-job.js';
+import { publishExportAvailability, recordAvailabilityAudit } from './export-availability.js';
 import { DEFAULT_TARGET_PART_BYTES, entryNameFor, planParts } from './planning.js';
-import type { ExportObjectRef, ExportObjectStorage } from './storage.js';
-import { streamZip, ZipSourceError, type ZipEntry } from './zip.js';
-
-export type ExportPreparationResult = 'PREPARED' | 'RETRYING' | 'FAILED' | 'DEAD' | 'INVALIDATED' | 'ABANDONED';
-
-export interface ExportPreparationOutcome {
-  readonly exportId: string;
-  readonly result: ExportPreparationResult;
-  readonly partsReady?: number;
-  readonly code?: string;
-}
-
-export interface ExportPreparationConfig {
-  readonly owner: string;
-  /** Private namespace for export outputs, separate from originals and derivatives (DEC-063). */
-  readonly exportNamespace: string;
-  readonly leaseMs: number;
-  readonly heartbeatMs: number;
-  /** Total automatic attempts including the first (DEC-064). */
-  readonly maxAttempts: number;
-  readonly retryBackoffMs: number;
-  /** Target size per ZIP part; defaults to ~5 GB (DEC-049). Operational storage, not commercial quota (DEC-079). */
-  readonly targetPartBytes?: number;
-}
-
-export type RevalidationVerdict = { readonly ok: true } | { readonly ok: false; readonly code: string };
-
-export interface ExportRevalidationTarget {
-  readonly exportId: string;
-  readonly eventId: string;
-  readonly organizerId: string;
-}
-
-/** Current-permission check run before preparing and again before promoting an output (DEC-090). */
-export interface ExportRevalidator {
-  revalidate(tx: SqlTransaction, target: ExportRevalidationTarget): Promise<RevalidationVerdict>;
-}
+import { streamZip } from './zip.js';
 
 const BLOCKED_EVENT_STATUSES = ['SUSPENDED', 'PENDING_DELETION', 'ARCHIVED', 'DELETED'];
 
@@ -121,14 +94,6 @@ const pad = (n: number, width: number) => String(n).padStart(width, '0');
  * parts in the private exports namespace. Outputs are unique per attempt, parts are promoted by fenced checkpoints,
  * valid parts are reused on replay, and nothing is declared available here (EL-TK-127 owns availability).
  */
-export interface ExportPreparationDeps {
-  readonly revalidator?: ExportRevalidator;
-  readonly auditSink?: ExportAuditSink;
-  /** Notice contract towards EL-EP-013; runs in the same transaction that publishes availability. */
-  readonly notifier?: ExportLifecycleNotifier;
-  readonly clock?: () => Date;
-}
-
 export class ExportPreparationWorker {
   private readonly revalidator: ExportRevalidator;
   private readonly auditSink?: ExportAuditSink;

@@ -6,10 +6,6 @@ export const EXPORT_HANDLER_VERSION = '1';
 export const EXPORT_CLEANUP_QUEUE = 'exports-cleanup';
 export const EXPORT_CLEANUP_JOB_TYPE = 'EXPORT_CLEANUP';
 
-export interface ExportJobPublisher {
-  publish(tx: SqlTransaction, spec: JobSpec): Promise<string>;
-}
-
 export const exportResourceRef = (exportId: string): string => `export:${exportId}`;
 
 export const exportCleanupResourceRef = (exportId: string): string => `export-cleanup:${exportId}`;
