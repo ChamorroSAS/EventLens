@@ -53,6 +53,55 @@ describe('BetaAccessRequestService (Unit Tests — EL-TK-008 & EL-TK-009)', () =
   };
 
   describe('EL-TK-008: Solicitar acceso a la BETA (público sin enumeración)', () => {
+    function scriptedRunner(responses: { id: string }[][]) {
+      const queries: string[] = [];
+      const audits: unknown[][] = [];
+      const runner: TransactionRunner = {
+        run: (work) => work({
+          query: async <R extends object>(sql: string): Promise<R[]> => {
+            queries.push(sql);
+            const response = responses.shift();
+            if (!response) throw new Error('Unexpected query after scripted responses');
+            return response as unknown as R[];
+          },
+          execute: async (_sql, ...args) => { audits.push(args); return 1; }
+        })
+      };
+      return { runner, queries, audits };
+    }
+
+    it('retries when a conflicting row disappears, then resolves the identifier before auditing', async () => {
+      const id = randomUUID();
+      const script = scriptedRunner([[], [], [{ id }]]);
+      const result = await new BetaAccessRequestService(script.runner).requestAccess({ email: 'vanishing@example.com' });
+      expect(result.requestId).toBe(id);
+      expect(script.queries).toHaveLength(3);
+      expect(script.queries[0]).toContain('INSERT INTO beta_access_request');
+      expect(script.queries[1]).toContain('SELECT id FROM beta_access_request');
+      expect(script.queries[2]).toContain('INSERT INTO beta_access_request');
+      expect(script.audits).toHaveLength(1);
+      expect(script.audits[0]).toContain(id);
+    });
+
+    it('fails after exactly three unresolved attempts and never emits a success audit', async () => {
+      const script = scriptedRunner([[], [], [], [], [], []]);
+      await expect(new BetaAccessRequestService(script.runner).requestAccess({ email: 'unresolved@example.com' }))
+        .rejects.toThrow('Failed to deterministically resolve beta access request identifier');
+      expect(script.queries.filter((sql) => sql.includes('INSERT INTO beta_access_request'))).toHaveLength(3);
+      expect(script.queries.filter((sql) => sql.includes('SELECT id FROM beta_access_request'))).toHaveLength(3);
+      expect(script.audits).toEqual([]);
+    });
+
+    it('resolves a surviving conflict on a later retry without inventing a new identifier', async () => {
+      const id = randomUUID();
+      const script = scriptedRunner([[], [], [], [{ id }]]);
+      const result = await new BetaAccessRequestService(script.runner).requestAccess({ email: 'surviving@example.com' });
+      expect(result.requestId).toBe(id);
+      expect(script.queries).toHaveLength(4);
+      expect(script.audits).toHaveLength(1);
+      expect(script.audits[0]).toContain(id);
+    });
+
     it('rejects invalid email formats without creating records', async () => {
       const runner = new MockTransactionRunner();
       const service = new BetaAccessRequestService(runner);
