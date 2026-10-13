@@ -32,6 +32,12 @@ El correo necesario para gestionar invitación y solicitud puede permanecer **so
 4. **Logs técnicos:** objetivo 30 días configurable según EL-EP-014; asegurar que no retengan emails, IPs crudas ni cuerpos de formularios innecesarios.
 5. **Expedientes de derechos y holds:** retención y fundamento aún PENDING jurídico; no asimilar a solicitudes Beta ni retener indefinidamente registros por investigación ordinaria.
 
+### Reconciliaciones adicionales antes del algoritmo de purga
+
+- El modelo `BetaAccessRequest` solo conoce `PENDING_REVIEW/REVIEWED`; **no** modela `INVITED`. La determinación de «sin invitación» necesita contraste transaccional con `beta_invitation` y registros reales de emisión/entrega, sin presuponer que invitación emitida equivale a recibida. En caso de ambigüedad **no aplicar purga automática** hasta definir clasificación y tratamiento de expedientes relacionados.
+- La implementación de EL-TK-184 usa por defecto **365 días** para `audit_event`, mientras el documento de EL-EP-014 expresa «12 meses» como objetivo configurable. La equivalencia jurídica/calendario y el nuevo alcance a `admin_audit_event` requieren decisión documentada y tests de frontera; no migrar períodos en silencio.
+- En el scheduler, comprobar la interacción de retención ordinaria con backups/restauraciones y evidencia excepcional autorizada; **no** conservar datos indefinidamente por mera investigación ni anular derechos de supresión por existir un audit log.
+
 ## Orden de remediación y datos históricos
 
 1. **Cerrar nuevas filtraciones primero:** sustituir email por `requestId` en las escrituras auditadas de solicitud y detalle; conservar transacción SQL junto al registro; ajustar tests que buscan email en audit y agregar test negativo contra emails en todas las escrituras.
