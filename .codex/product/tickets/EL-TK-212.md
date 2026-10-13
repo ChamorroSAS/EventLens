@@ -4,7 +4,7 @@
 EL-EP-018
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** persona que abre una URL de EventLens, **quiero** que las rutas web y los enlaces guest se sirvan de forma segura, **para** refrescar la aplicación sin exponer APIs, media ni credenciales.
@@ -52,6 +52,11 @@ EL-EP-018; EL-EP-017/Q-029; `public-entry-contract.md`; EL-TD-005/006.
 
 - [x] Gate 2 de requisitos, técnico y UI aplicable aprobado
 
-REQUIREMENTS_READY: YES. IMPLEMENTABLE: YES. TECHNICAL_GATE: APPROVED. UI_REQUIRED: NO. READY_FOR_FRONTEND_PLANNING: NOT_APPLICABLE. READY_FOR_IMPLEMENTATION: YES para el alcance aprobado. EXECUTION_READY: CONDITIONAL — verificar entregas y contratos de todas las predecesoras antes de iniciar. IMPLEMENTED: NO.
+REQUIREMENTS_READY: YES. IMPLEMENTABLE: YES. TECHNICAL_GATE: APPROVED. UI_REQUIRED: NO. READY_FOR_FRONTEND_PLANNING: NOT_APPLICABLE. READY_FOR_IMPLEMENTATION: YES para el alcance aprobado. EXECUTION_READY: YES. IMPLEMENTED: YES.
 
 Gate 2 aprobado: [dictámenes y secuencia](../sessions/2026-10-12-el-ep-018-review-gates.md).
+
+## Evidencia de entrega
+- Servidor SPA (`apps/web/spa-server.mjs`) configurado con fallback controlado exclusivamente para rutas SPA aprobadas (`/`, `/ingresar`, `/solicitar-acceso`, `/mi-cuenta`, `/mis-eventos`, `/g/:lookupKey`), denegando fallback a rutas `/api/*` (404 JSON), media o assets inexistentes.
+- Redacción estricta de `lookupKey` (`***redacted***`) en logs HTTP del servidor SPA y validación de `PUBLIC_BASE_URL` en `apps/api/src/platform/config/public-entry-serving.ts`.
+- Pruebas unitarias de serving y redacción en `apps/api/test/public-entry-serving.test.ts`: 5/5 tests PASS.

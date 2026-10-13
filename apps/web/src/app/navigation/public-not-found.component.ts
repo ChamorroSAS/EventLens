@@ -1,5 +1,9 @@
 import { Component, ElementRef, OnInit, inject } from '@angular/core';
-import { APPROVED_PUBLIC_ENTRY_PATHS } from './public-entry-routes.contract';
+import {
+  APPROVED_PUBLIC_ENTRY_PATHS,
+  CANONICAL_PUBLIC_ENTRY_ROUTE_METADATA,
+  type PublicEntryRouteDescriptor
+} from './public-entry-routes.contract';
 import { PublicEntryRouterService } from './public-entry-router.service';
 
 @Component({
@@ -45,3 +49,9 @@ export class PublicNotFoundComponent implements OnInit {
     void this.router.navigateByUrl(APPROVED_PUBLIC_ENTRY_PATHS.HOME);
   }
 }
+
+export const PUBLIC_NOT_FOUND_ROUTE_DESCRIPTOR: PublicEntryRouteDescriptor = Object.freeze({
+  ...CANONICAL_PUBLIC_ENTRY_ROUTE_METADATA.NOT_FOUND,
+  component: PublicNotFoundComponent
+});
+

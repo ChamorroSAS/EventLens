@@ -4,7 +4,7 @@
 EL-EP-018
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** invitado de un evento, **quiero** que mi enlace o QR llegue directamente a su experiencia, **para** participar sin crear cuenta ni atravesar el login de organizador.
@@ -52,6 +52,12 @@ EL-EP-018; EL-EP-004; MOD-003; `public-entry-contract.md`.
 
 - [x] Gate 2 de requisitos, técnico y UI aplicable aprobado
 
-REQUIREMENTS_READY: YES. IMPLEMENTABLE: YES. TECHNICAL_GATE: APPROVED. UI_REQUIRED: YES. READY_FOR_FRONTEND_PLANNING: YES. READY_FOR_IMPLEMENTATION: YES para el alcance aprobado. EXECUTION_READY: CONDITIONAL — verificar entregas y contratos de todas las predecesoras antes de iniciar. IMPLEMENTED: NO.
+REQUIREMENTS_READY: YES. IMPLEMENTABLE: YES. TECHNICAL_GATE: APPROVED. UI_REQUIRED: YES. READY_FOR_FRONTEND_PLANNING: YES. READY_FOR_IMPLEMENTATION: YES para el alcance aprobado. EXECUTION_READY: YES. IMPLEMENTED: YES.
 
 Gate 2 aprobado: [dictámenes y secuencia](../sessions/2026-10-12-el-ep-018-review-gates.md).
+
+## Evidencia de implementación (2026-10-12)
+- **Controlador API y contratos (`apps/api/src/guest/guest-public-entry.controller.ts`):** Montados endpoints `/api/v1/guest/access/resolve` (GET), `/api/v1/guest/session/pin` (POST), `/api/v1/guest/session/validate` (GET), `/api/v1/guest/session/consent` (POST), `/api/v1/guest/session/nickname` (POST), `/api/v1/guest/session/contributions` (GET), y `/api/v1/guest/session/removal-request` (POST) con emisión/validación de cookie HttpOnly `el_guest_session`, protección contra enumeración y redacción de lookupKey en logs.
+- **Componente web (`apps/web/src/app/guest/guest-container.component.ts`, `apps/web/src/app/guest/guest.service.ts`):** Adaptado `GuestContainerComponent` para consumir el cliente tipado de `@eventlens/api-client`, eliminando identificadores y tokens fabricados en memoria (`session-local-1`, tokens JS), manejando correctamente los estados no accesibles y exportando el descriptor de ruta `/g/:lookupKey` para el montaje final.
+- **Pruebas:** `apps/web/src/app/guest/guest-container.component.spec.ts` (6 tests unitarios en Angular TestBed con vitest, PASS) y `apps/api/test/integration/guest-public-entry.test.ts` (suite completa contra PostgreSQL 16 real verificando resolución de entrada, PIN, cookie HttpOnly, aislamiento de aportes propios y revocación ante regeneración, PASS).
+

@@ -24,4 +24,7 @@ export {
   providePublicEntryRouter
 } from './public-entry-router.service';
 
-export { PublicNotFoundComponent } from './public-not-found.component';
+export {
+  PublicNotFoundComponent,
+  PUBLIC_NOT_FOUND_ROUTE_DESCRIPTOR
+} from './public-not-found.component';

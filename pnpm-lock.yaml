@@ -13,6 +13,9 @@ importers:
       '@eventlens/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@eventlens/event-management':
+        specifier: workspace:*
+        version: link:../../packages/event-management
       '@eventlens/identity':
         specifier: workspace:*
         version: link:../../packages/identity
