@@ -1,32 +1,25 @@
 import { CORPORATE_BRAND_ASSETS, resolveBrandAssetUrl } from './branding-assets';
 
-describe('Phoeve corporate branding assets (CR-006)', () => {
-  it('defines four transparent SVG derivatives with verifiable PNG source metadata', () => {
-    expect(CORPORATE_BRAND_ASSETS).toHaveLength(4);
-    expect(CORPORATE_BRAND_ASSETS.map(a => a.name)).toEqual([
-      'logo-primary.svg', 'logo-dark.svg', 'logo-grayscale.svg', 'favicon.svg'
+describe('Phoeve active brand assets (CR-006)', () => {
+  it('references exactly the four canonical PNGs and their immutable source hashes', () => {
+    expect(CORPORATE_BRAND_ASSETS.map(x => x.name)).toEqual([
+      'logo-primary.png', 'logo-dark.png', 'logo-grayscale.png', 'favicon.png'
     ]);
-    expect(CORPORATE_BRAND_ASSETS.map(a => a.sourceFile)).toEqual([
+    expect(CORPORATE_BRAND_ASSETS.map(x => x.sourceFile)).toEqual([
       'logo_phoeve.png', 'fondo oscuro.png', 'escala de grises.png', 'logo_favicon.png'
     ]);
     for (const asset of CORPORATE_BRAND_ASSETS) {
       expect(asset.path).toBe(`assets/branding/phoeve/${asset.name}`);
-      expect(asset.sourceSha256).toMatch(/^[0-9a-f]{64}$/);
+      expect(asset.sourceSha256).toMatch(/^[a-f0-9]{64}$/);
     }
   });
 
-  it('resolves Phoeve artwork relative to root or prefix base href', () => {
-    expect(resolveBrandAssetUrl('assets/branding/phoeve/favicon.svg', '/'))
-      .toBe('/assets/branding/phoeve/favicon.svg');
-    expect(resolveBrandAssetUrl('assets/branding/phoeve/logo-primary.svg', '/phoeve-preview/'))
-      .toBe('/phoeve-preview/assets/branding/phoeve/logo-primary.svg');
-    expect(resolveBrandAssetUrl('assets/branding/phoeve/favicon.svg', '/phoeve-preview'))
-      .toBe('/phoeve-preview/assets/branding/phoeve/favicon.svg');
-  });
-
-  it('keeps SVG favicon URL base-relative, without absolute leading slash', () => {
-    const linkTag = '<link rel="icon" type="image/svg+xml" href="assets/branding/phoeve/favicon.svg">';
-    expect(linkTag).toContain('href="assets/branding/phoeve/favicon.svg"');
-    expect(linkTag).not.toContain('href="/assets/');
+  it('resolves image URL with root and prefixed base href', () => {
+    expect(resolveBrandAssetUrl('assets/branding/phoeve/favicon.png', '/'))
+      .toBe('/assets/branding/phoeve/favicon.png');
+    expect(resolveBrandAssetUrl('assets/branding/phoeve/logo-primary.png', '/phoeve-preview/'))
+      .toBe('/phoeve-preview/assets/branding/phoeve/logo-primary.png');
+    expect(resolveBrandAssetUrl('assets/branding/phoeve/favicon.png', '/phoeve-preview'))
+      .toBe('/phoeve-preview/assets/branding/phoeve/favicon.png');
   });
 });

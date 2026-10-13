@@ -1,45 +1,31 @@
-# Phoeve — Manual de identidad visual (versión candidata)
+# Phoeve — Manual de identidad visual (candidato de implementación)
 
-**Estado:** IMPLEMENTATION_CANDIDATE / VISUAL_APPROVAL_PENDING / BRAND_CLEARANCE_PENDING. Fecha 2026-10-13. Cambio trazable: [CR-006](../../.codex/product/changes/CR-006.md). Este documento define uso de los derivados en aplicación, **no** certifica geometría/vector maestro o derechos de marca.
+**Estado:** CANONICAL_PNGS_REGISTERED / IMPLEMENTED_ON_DRAFT_BRANCH / VISUAL_APPROVAL_PENDING.  
+**Referencia:** [CR-006](../../.codex/product/changes/CR-006.md) · [manifiesto fuente](phoeve-source-manifest.json). La identidad pública adoptada para el entorno de revisión es Phoeve; el nombre técnico del repositorio y los registros históricos permanecen EventLens.
 
-## Identidad
+## Fuente de verdad y procedencia
 
-Phoeve es el nombre comercial visible de una plataforma de recuerdos compartidos de eventos. Dirección: geométrica, minimalista, cercana, legible. Las letras geométricas segmentadas son parte de la propuesta visual; no sustituir por tipografía genérica. No insertar obturadores, cámaras, gradientes o adornos no presentes en el arte.
+Los cuatro PNG bajo `docs/branding/assets/phoeve/` son las fuentes **vigentes del repositorio** y no deben reemplazarse por exportaciones de Downloads, versiones conversacionales ni vectores reconstruidos. El manifiesto canónico registra los hashes SHA-256, dimensiones, tamaño y procedencia de cada original. Estos archivos tienen canal alfa PNG, pero su transparencia efectiva y limpieza visual requieren inspección específica; el manifiesto NO certifica esa cualidad.
 
-La identidad técnica de ingeniería se mantiene como EventLens (paquetes, selectores, tokens, identificadores y registro histórico).
-
-## Referencias gráficas por nombre, no por número de imagen
-
-| Rol | PNG de referencia (sin transparencia) | Dimensiones | SHA-256 original |
-|---|---|---|---|
-| Principal, fondo claro | `logo_phoeve.png` | 2048×682 | `3ebbda2aac74546cb8efec0cbc6c4ee53b4c7b9ad86e513913b2c824100b36ba` |
-| Negativo, fondos oscuros | `fondo oscuro.png` | 2048×682 | `1a67252429c007d4fff7d3006abc28a80ad2856e1691ca32d50abae83a38dfd5` |
-| Monograma PE/favicons | `logo_favicon.png` | 1254×1254 | `c20f5587864a5e42f3b37f639369c90defa1904015775d26ab4d62584feb517a` |
-| Escala de grises | `escala de grises.png` | 2048×682 | `4f3ec255220aa04d11d9a61e3458f39602015c7a917df7a573e826cd52182473` |
-
-Los hashes corresponden a los **adjuntos de esta conversación**. Las versiones alternas de Downloads con otros hashes no se sustituyen silenciosamente. Deben incorporarse los originales a `docs/branding/assets/phoeve/` para que el repositorio tenga fuente raster reproducible. Los SVG del runtime son **trazados interpretativos** de esos raster, con fondo transparente; es obligatorio revisarlos frente a los originales antes de aprobación final.
-
-## Variantes de uso
-
-| Variante runtime | Uso permitido | Evitar |
+| Uso | Fuente canónica | Copia publicada (mismos bytes) |
 |---|---|---|
-| `assets/branding/phoeve/logo-primary.svg` | Home, header, footer, organizador sobre fondos claros | fondos azules sin contraste |
-| `assets/branding/phoeve/logo-dark.svg` | elementos existentes sobre fondo oscuro | texto blanco sobre claro |
-| `assets/branding/phoeve/favicon.svg` | pestaña, isotipo PE, tamaños compactos sujetos a prueba | forzarlo como wordmark en encabezados amplios |
-| `assets/branding/phoeve/logo-grayscale.svg` | impresión o piezas monocromáticas | sustituir la marca principal sin necesidad |
+| Principal para claro | `logo_phoeve.png` | `assets/branding/phoeve/logo-primary.png` |
+| Fondo oscuro | `fondo oscuro.png` | `assets/branding/phoeve/logo-dark.png` |
+| Monograma PE/favicon | `logo_favicon.png` | `assets/branding/phoeve/favicon.png` |
+| Escala de grises | `escala de grises.png` | `assets/branding/phoeve/logo-grayscale.png` |
 
-El arte derivado utiliza provisionalmente rellenos planos muestreados: navy `#0D264F`, coral `#FF654E`, blanco `#FFFFFF`, gris oscuro `#252525`, gris `#898989`. **No son colores finales ratificados.** No modificar la paleta de diseño de interfaz (`--el-*`, colores semánticos/contraste) ni Manrope por estos valores.
+No se incorpora un master SVG/AI ficticio ni se vectorizan los PNG automáticamente. Los antiguos `docs/branding/MANUAL-DE-MARCA.md`, `docs/brand/brand-manual.md` y `docs/branding/assets/EventLens-logo.pdf` siguen disponibles como historia documental.
 
-## Legibilidad y accesibilidad
+## Principios gráficos y de UI
 
-- Mantener proporción intrínseca; nunca estirar ni distorsionar SVG. Header/footer usan texto alternativo `Phoeve`.
-- Utilizar favicon monograma; comprobar 16, 32 y 48 CSS px en fondos claro y oscuro, con DPR y navegadores pertinentes.
-- Ancho mínimo, área de reserva, geometría de contornos y espacios se ratifican visualmente, **no se infieren de estas capturas**.
-- `logo-dark.svg` no habilita modo oscuro global.
-- Las reglas de contraste aplican a texto e interacción de la UI; inspeccionar el logo visualmente en los fondos de uso.
+Marca geométrica, simple y legible; conservar lettering «PHOEVE», sus dos colores en las variantes principales y el monograma PE. Evitar sombras, degradados añadidos, símbolos fotográficos ajenos o cambios ópticos no ratificados. Mantener proporciones intrínsecas de los PNG, sin estiramiento.
 
-## Producción e historia
+No asumir aún HEX oficiales, tamaños mínimos o área libre basándose sólo en renders; requieren acta de aprobación visual. Los tokens actuales de interfaz `--el-*`, la paleta semántica, SCSS, la tipografía Manrope y el modo claro vigente no cambian con esta etapa. No activar modo oscuro por tener una variante negativa.
 
-Publicar sólo derivados corporativos de uso web. Los PNG maestros no pertenecen a `apps/web/public`. Preservar `docs/branding/MANUAL-DE-MARCA.md` y `docs/branding/assets/EventLens-logo.pdf` como identidad **histórica**, con sus hashes.
+Usar `alt="Phoeve"` en imagen de marca cuando sea informativa, foco y contraste de controles conforme al UI baseline. El favicon debe probarse a 16/32/48 px y sobre claro/oscuro antes de aprobarlo. Los assets públicos representan sólo marca corporativa, jamás fotos/vídeos privados de un evento.
 
-La portada pública, contenido jurídico, copyright, dominios, remitentes y comunicaciones definitivas requieren revisión por su owner; esta propuesta no constituye aprobación legal ni release comercial.
+## Uso en aplicación
+
+Los consumidores servidos utilizan rutas `assets/branding/phoeve/...` relativas al `base href` de Angular. Los títulos y textos visibles pasan a Phoeve; los selectores `eventlens-*`, scope de módulos `@eventlens/*` e IDs de negocio quedan intactos. Las plantillas de nuevos avisos pueden mencionar Phoeve sin modificar mensajes ya enviados o almacenados.
+
+La verificación automática puede constatar identidad de bytes y presencia de referencias, pero NO equivale a revisión visual, disponibilidad registral ni autorización de lanzamiento.

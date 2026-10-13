@@ -14,7 +14,7 @@ import { EventStatusBadgeComponent } from '../lifecycle/event-status-badge.compo
             <h1 class="brand-title">
               @if (!logoFailed) {
                 <img
-                  src="assets/branding/phoeve/logo-primary.svg"
+                  src="assets/branding/phoeve/logo-primary.png"
                   alt="Phoeve"
                   class="brand-logo"
                   width="160"

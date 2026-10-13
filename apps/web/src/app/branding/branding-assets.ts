@@ -1,4 +1,4 @@
-/** Catálogo de identidad pública Phoeve. Los identificadores técnicos EventLens no cambian. */
+/** Marca pública Phoeve. Los identificadores técnicos @eventlens/* permanecen. */
 export interface CorporateBrandAsset {
   readonly name: string;
   readonly path: string;
@@ -8,39 +8,39 @@ export interface CorporateBrandAsset {
   readonly description: string;
 }
 
-/** Contornos SVG transparentes derivados de PNG recibidos; aprobación visual definitiva pendiente. */
+/** PNGs publicados bit a bit desde los originales de docs/branding/assets/phoeve/. */
 export const CORPORATE_BRAND_ASSETS: readonly CorporateBrandAsset[] = [
   {
-    name: 'logo-primary.svg',
-    path: 'assets/branding/phoeve/logo-primary.svg',
+    name: 'logo-primary.png',
+    path: 'assets/branding/phoeve/logo-primary.png',
     role: 'primary',
     sourceFile: 'logo_phoeve.png',
-    sourceSha256: '3ebbda2aac74546cb8efec0cbc6c4ee53b4c7b9ad86e513913b2c824100b36ba',
-    description: 'Phoeve principal sobre fondos claros'
+    sourceSha256: '8a6570fa1455b9e7c461f70e6b6ab295ecfcd1dc5629e4a329451211e191d662',
+    description: 'Phoeve en azul y coral para fondos claros'
   },
   {
-    name: 'logo-dark.svg',
-    path: 'assets/branding/phoeve/logo-dark.svg',
+    name: 'logo-dark.png',
+    path: 'assets/branding/phoeve/logo-dark.png',
     role: 'dark',
     sourceFile: 'fondo oscuro.png',
-    sourceSha256: '1a67252429c007d4fff7d3006abc28a80ad2856e1691ca32d50abae83a38dfd5',
-    description: 'Phoeve en blanco y coral sobre fondos oscuros'
+    sourceSha256: '8fd8d3f4234a9626aab5f9e618c1ef66b13426923d371e9a81e0af9e82975bf4',
+    description: 'Phoeve blanco y coral para fondos oscuros'
   },
   {
-    name: 'logo-grayscale.svg',
-    path: 'assets/branding/phoeve/logo-grayscale.svg',
+    name: 'logo-grayscale.png',
+    path: 'assets/branding/phoeve/logo-grayscale.png',
     role: 'grayscale',
     sourceFile: 'escala de grises.png',
-    sourceSha256: '4f3ec255220aa04d11d9a61e3458f39602015c7a917df7a573e826cd52182473',
+    sourceSha256: '1109330d9770b37988cc89c99dc0b65216004a66fa02f8069e30d03c0314fb7d',
     description: 'Phoeve en escala de grises'
   },
   {
-    name: 'favicon.svg',
-    path: 'assets/branding/phoeve/favicon.svg',
+    name: 'favicon.png',
+    path: 'assets/branding/phoeve/favicon.png',
     role: 'favicon',
     sourceFile: 'logo_favicon.png',
-    sourceSha256: 'c20f5587864a5e42f3b37f639369c90defa1904015775d26ab4d62584feb517a',
-    description: 'Monograma PE compacto de Phoeve'
+    sourceSha256: 'f899bf6bfba49c1a21cf7a6be2d51785985c8daa8190e29f6f1250745d780799',
+    description: 'Monograma PE candidato para favicon'
   }
 ];
 

@@ -60,7 +60,7 @@ describe('OrganizerAppShellComponent (EL-TK-204 Visual Foundation & Pilot)', () 
 
     const logoImg = brandTitle?.querySelector('img.brand-logo') as HTMLImageElement;
     expect(logoImg).not.toBeNull();
-    expect(logoImg.getAttribute('src')).toBe('assets/branding/phoeve/logo-primary.svg');
+    expect(logoImg.getAttribute('src')).toBe('assets/branding/phoeve/logo-primary.png');
     expect(logoImg.getAttribute('alt')).toBe('Phoeve');
 
     const brandBadge = element.querySelector('.brand-badge');
