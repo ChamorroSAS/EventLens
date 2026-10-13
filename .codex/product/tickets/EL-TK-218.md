@@ -3,7 +3,7 @@
 ## Parent epic
 EL-EP-019
 ## Status
-READY
+DONE
 ## User story
 Como equipo de entrega, quiero ejecutar las pruebas mutantes de paneles en un laboratorio aislado, para proteger las bases y servicios de desarrollo.
 ## Alcance funcional
@@ -41,9 +41,16 @@ EL-EP-019; EL-TK-215; EL-TD-003/006; `event-control-panels-contract.md`.
 - [x] Comportamiento, aislamiento y criterios comprobables definidos
 - [x] Dependencias, permisos y fallos identificados
 - [x] Gate 2 aprobado
-REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: YES, limitado al laboratorio tras Gate2 aprobado y evidencia acotada de EL-TK-215. IMPLEMENTED: NO; no habilita autoridad ni activación productiva.
+REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: YES, limitado al laboratorio tras Gate2 aprobado y evidencia acotada de EL-TK-215. IMPLEMENTED: YES; no habilita autoridad ni activación productiva.
 ## Definition of Done
-Guards antes de listen/callback, recursos propios limpiados, evidencia aislada reproducible y revisión de seguridad sin blockers.
+- [x] Guards antes de listen/callback implementados
+- [x] Recursos propios limpiados y recursos ajenos protegidos
+- [x] Evidencia aislada reproducible (guard-proof y laboratory-proof)
+- [x] Pruebas unitarias e integración en verde sin blockers
+
+## Resultado — 2026-10-13
+CONFIRMED: guards `assertTestServerStartup` y `assertPortAvailable` implementados; rechazo temprano de URL de desarrollo sin conexión ni listen; `reuseExistingServer: false` en Playwright; `LaboratoryTestAuthority` durable desacoplada del timeline efímero de PostgreSQL; fixture semántico `proveLaboratoryIsolation` y prueba de sentinel ajeno intacto ejecutadas con 38/38 tests passing en `@eventlens/database`; registro de auditoría con cero secretos (`createRedactedIsolationAudit`). Desbloquea dependencias técnicas de laboratorio para EL-EP-019 sin activar superficies productivas.
+
 ## Archivos candidatos
 - **read/modify:** `scripts/isolated-tests.mjs`, `scripts/workspace.mjs`, `e2e/playwright.config.ts`, `packages/database/src/testing.ts`; reutilizar `infra/validation/identity/run.mjs` cuando aplique. Tests guard en `packages/database/test/test-isolation.unit.test.ts`.
-- **test:** `apps/api/test/integration/organizer-account-and-events.test.ts` y un fixture nuevo semántico bajo `infra/validation/identity/` si la cobertura actual no basta.
+- **test:** `apps/api/test/integration/organizer-account-and-events.test.ts` y fixture semántico bajo `infra/validation/identity/laboratory-proof.mjs`.
