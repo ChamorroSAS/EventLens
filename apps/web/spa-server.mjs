@@ -201,3 +201,14 @@ export function createSpaStaticServer(options = {}) {
 
   return server;
 }
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const port = Number.parseInt(process.env.SPA_PORT || process.env.PORT || '4201', 10);
+  const host = process.env.SPA_HOST || '127.0.0.1';
+  const defaultDist = resolve(join(fileURLToPath(new URL('.', import.meta.url)), 'dist/web/browser'));
+  const distDir = resolve(process.env.SPA_DIST_DIR || defaultDist);
+  const server = createSpaStaticServer({ distDir, baseHref: '/' });
+  server.listen(port, host, () => {
+    console.log(`EventLens SPA Server listening at http://${host}:${port}`);
+  });
+}

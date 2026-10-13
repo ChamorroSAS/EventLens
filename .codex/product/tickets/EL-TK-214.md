@@ -4,7 +4,7 @@
 EL-EP-018
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** equipo de producto, **quiero** verificar la entrada pública integrada contra sus contratos, **para** detectar rutas, permisos, sesiones y serving que no funcionan en conjunto.
@@ -52,6 +52,26 @@ EL-EP-018; `public-entry-contract.md`; `ui-public-entry.md`; EL-TD-004/006; EL-E
 
 - [x] Gate 2 de requisitos, técnico y UI aplicable aprobado
 
-REQUIREMENTS_READY: YES. IMPLEMENTABLE: YES. TECHNICAL_GATE: APPROVED. UI_REQUIRED: NO. READY_FOR_FRONTEND_PLANNING: NOT_APPLICABLE. READY_FOR_IMPLEMENTATION: YES para el alcance aprobado. EXECUTION_READY: CONDITIONAL — verificar entregas y contratos de todas las predecesoras antes de iniciar. IMPLEMENTED: NO.
+REQUIREMENTS_READY: YES. IMPLEMENTABLE: YES. TECHNICAL_GATE: APPROVED. UI_REQUIRED: NO. READY_FOR_FRONTEND_PLANNING: NOT_APPLICABLE. READY_FOR_IMPLEMENTATION: YES para el alcance aprobado. EXECUTION_READY: YES. IMPLEMENTED: YES.
 
 Gate 2 aprobado: [dictámenes y secuencia](../sessions/2026-10-12-el-ep-018-review-gates.md).
+
+## Evidencia de entrega y validación integrada
+1. **Contratos y OpenAPI / Cliente Tipado:**
+   - OpenAPI generado sincronizado (`apps/api/dist/export-openapi.js --check` PASS).
+   - Cliente TypeScript `@eventlens/api-client` generado sincronizado y compilado (`scripts/api-client.mjs --check` PASS).
+2. **Pruebas de Integración de API contra PostgreSQL 16 real:**
+   - `test/integration/guest-public-entry.test.ts`: 1/1 test PASS (resolución de lookupKey, PIN, cookies HttpOnly, revocación por regeneración).
+   - `test/integration/organizer-session.test.ts`: 2/2 tests PASS (sesiones anónima, activa, restringida y logout con CSRF/Origin).
+   - `test/integration/organizer-account-and-events.test.ts`: 2/2 tests PASS (gestión de sesiones, anti-enumeración 404, reautenticación).
+   - `test/integration/beta-access-request.test.ts`: 1/1 test PASS (solicitud de Beta pública sin enumeración ni colisión).
+   - `test/integration/unavailable.test.ts` & `health.test.ts`: 3/3 tests PASS.
+   - Total suite de integración de API: **6/6 suites PASS (9/9 tests PASS)**.
+3. **Pruebas Unitarias y de Componentes de Frontend (`@eventlens/web`):**
+   - 27/27 suites PASS, **154/154 tests PASS**.
+   - Build de producción `ng build` exitoso sin advertencias ni errores (95.38 kB total bundle).
+4. **Validación E2E Integrada con Playwright (`e2e/tests/`):**
+   - Servidor SPA (`apps/web/spa-server.mjs`) ejecutado como runtime real con `createSpaStaticServer`.
+   - `platform.spec.ts`: PASS (readiness, openapi.json, docs, y carga del Home con marca y H1 editorial).
+   - `public-entry-integrated.spec.ts`: 6/6 tests PASS (Home público, navegación anónima hacia Iniciar sesión y Solicitar acceso, guest direct entry `/g/:lookupKey`, 404 de aplicación para rutas SPA desconocidas, rechazo 404 JSON sin absorción SPA para `/api/*`, y accesibilidad de menú móvil con `aria-expanded` y tecla `Escape`).
+   - Total Playwright: **7/7 tests PASS (2.7s)**.

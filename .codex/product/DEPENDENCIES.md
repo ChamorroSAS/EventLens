@@ -566,13 +566,29 @@ TB-01/TB-02 dejan de bloquear.033/035/036/041/042/056 YES propio;058 NO ejecuci�
 
 
 
-## Propuesta sin aprobar — EL-EP-018 (Home y navegación)
+## Épica completada — EL-EP-018 (Home público y navegación de entrada)
 
-**DRAFT 2026-10-12 — NO ALTERA EL MAPA DE ÉPICAS ACEPTADAS.** [Propuesta](epics/EL-EP-018.md). No se crea módulo funcional nuevo ni ciclo con identidad/eventos. La navegación consume capacidades existentes, con fronteras:
-- `EL-EP-001`/`EL-TK-008` para login, cuenta y solicitud Beta; no registro abierto.
-- `EL-EP-002` para Mis eventos/OrganizerAppShell; no segundo dashboard.
-- `EL-EP-004` para acceso guest por QR/deep link; no directorio público de eventos.
-- `EL-EP-015` para sesión de eliminación restringida/gestión de cuenta; no nuevas políticas.
-- `EL-TK-203/204` para assets/foundation ya definidos; cambios visuales acotados, sin rediseño total.
-- `EL-EP-017` conserva gate jurídico antes de apertura pública; no impide propuesta documental.
-- Antes de tickets: auditar rutas Angular/runtime/guard, aprobar navegación y copy, `ui_designer`, `requirements_reviewer`, `architect`. Ningún DONE histórico se reabre sin correctivo nuevo explícito.
+**CONFIRMED — EL-EP-018 DONE, 2026-10-13:** [Épica](epics/EL-EP-018.md). Implementación y validación integrada de todos los tickets (EL-TK-205..214):
+- **EL-TK-205 (DONE):** Proyección de sesión y capabilities de organizador en backend (`/api/v1/organizer/session`) y frontend (`OrganizerSessionService`).
+- **EL-TK-206 (DONE):** Servicio desacoplado de navegación y router seguro (`PublicEntryRouterService`, `PublicEntryRouterOutletComponent`, `PublicNotFoundComponent`).
+- **EL-TK-207 (DONE):** Entrada y login de organizador (`/ingresar`, `OrganizerLoginComponent`) con retorno seguro y aislamiento de sesión.
+- **EL-TK-208 (DONE):** Solicitud pública de acceso a la Beta (`/solicitar-acceso`, `BetaAccessRequestComponent`) con idempotencia y sin enumeración.
+- **EL-TK-209 (DONE):** Pantalla de cuenta de organizador (`/mi-cuenta`, `OrganizerAccountComponent`) con gestión de sesiones y zona de eliminación protegida por reautenticación (EL-TK-201).
+- **EL-TK-210 (DONE):** Destino seguro de eventos (`/mis-eventos`, `OrganizerDashboardComponent`) con shell de marca y guards de sesión.
+- **EL-TK-211 (DONE):** Entrada pública y acceso guest directo (`/g/:lookupKey`, `GuestContainerComponent` y endpoints API con cookies HttpOnly y PIN).
+- **EL-TK-212 (DONE):** Servidor y configuración de serving SPA (`apps/web/spa-server.mjs`) con fallback restringido a rutas SPA aprobadas y 404 estricto para `/api/*` y assets.
+- **EL-TK-213 (DONE):** Composición del Home público (`PublicHomePageComponent`), cabecera sensible a capacidades (`AppHeaderComponent`), footer legal (`LegalFooterComponent`) y activación del router productivo en `main.ts` y `AppComponent`.
+- **EL-TK-214 (DONE):** Validación integrada E2E (Playwright 7/7 tests PASS, API PostgreSQL 16 9/9 tests PASS, Web 154/154 tests PASS, OpenAPI y client check PASS).
+
+| Ticket | Depende de | Bloquea | Estado |
+|---|---|---|---|
+| EL-TK-205 | — | EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-213 | DONE |
+| EL-TK-206 | — | EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211, EL-TK-212, EL-TK-213 | DONE |
+| EL-TK-207 | EL-TK-205, EL-TK-206 | EL-TK-213, EL-TK-214 | DONE |
+| EL-TK-208 | EL-TK-205, EL-TK-206 | EL-TK-213, EL-TK-214 | DONE |
+| EL-TK-209 | EL-TK-205, EL-TK-206 | EL-TK-213, EL-TK-214 | DONE |
+| EL-TK-210 | EL-TK-205, EL-TK-206 | EL-TK-213, EL-TK-214 | DONE |
+| EL-TK-211 | EL-TK-206 | EL-TK-212, EL-TK-213, EL-TK-214 | DONE |
+| EL-TK-212 | EL-TK-206, EL-TK-211 | EL-TK-214 | DONE |
+| EL-TK-213 | EL-TK-204..211 | EL-TK-214 | DONE |
+| EL-TK-214 | EL-TK-207..213 | — | DONE |
