@@ -4,7 +4,7 @@
 EL-EP-013
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** sistema, **quiero** programar avisos temporales del evento, **para** advertir al organizador antes de hitos de vigencia y eliminación cuando sea posible.
@@ -68,3 +68,22 @@ Q-018; DEC-021, DEC-077, DEC-078, DEC-082, DEC-092; EL-EP-013.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §EL-EP-013; sin componentes nuevos ni NotificationCenter obligatorio).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Cierre de implementación — 2026-10-13
+
+**CONFIRMED — EL-TK-159 DONE:** Implementación de `LifecycleNoticeService` completada en `@eventlens/notifications` (`packages/notifications/src/lifecycle-notice-service.ts`).
+
+1. **Programación de Hitos de Lifecycle (Escenario 1):**
+   - Consume el timeline canónico (`scheduledAt`, `expiresAt`, `graceEndsAt`, `timezone`) procedente de EL-EP-003/015 sin recalcular ni alterar fechas.
+   - Genera intenciones idempotentes (`NotificationIntent`) para los 7 hitos: `LIFECYCLE_EVENT_UPCOMING_24H`, `LIFECYCLE_EXPIRY_WARNING_7D`, `LIFECYCLE_EXPIRY_WARNING_3D`, `LIFECYCLE_EXPIRY_WARNING_1D`, `LIFECYCLE_GRACE_ENTERED`, `LIFECYCLE_DELETION_UPCOMING` y `LIFECYCLE_DELETED`.
+   - Deduplicación estricta por `windowKey:milestone`: reevaluaciones de jobs repetidos o concurrentes retornan `IDEMPOTENT_REPLAY` sin duplicar intenciones.
+2. **Reevaluación tras Extensión de Vigencia (Escenario 2):**
+   - `rescheduleAfterExtension` / `scheduleLifecycleNotices(..., priorWindowKeys)` marca atómicamente como `SUPERSEDED` las intenciones de ventanas de vigencia anteriores cuando `expiresAt` / `graceEndsAt` se extienden, programando las nuevas intenciones con las fechas canónicas vigentes.
+3. **Eventos de Vigencia Corta (Escenario 3):**
+   - Hitos cuya ventana ya venció (`now >= applicableBefore` o `effectiveAt >= applicableBefore`) se omiten limpiamente con `SKIPPED_WINDOW_TOO_SHORT`, generando únicamente los avisos física y temporalmente posibles sin duplicar ni fallar.
+4. **Observabilidad y Quality Gates:**
+   - Registro de auditoría sanitizado `LIFECYCLE_NOTICES_SCHEDULED` con conteos `scheduledCount`, `skippedCount` y `supersededCount`.
+   - Pruebas unitarias: 19/19 PASS (`test/lifecycle-notice.unit.test.ts`).
+   - Pruebas de integración contra PostgreSQL 16 real: 5/5 PASS (`test/lifecycle-notice.integration.test.ts`).
+   - Suite completa `@eventlens/notifications`: 93/93 PASS (14 archivos de prueba); `typecheck` y `build` con 0 errores.
+

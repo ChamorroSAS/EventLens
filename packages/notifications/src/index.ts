@@ -7,3 +7,4 @@ export * from './notice-projection-service.js';
 export * from './account-event-notice-service.js';
 export * from './capacity-notice-service.js';
 export * from './case-notice-service.js';
+export * from './lifecycle-notice-service.js';
