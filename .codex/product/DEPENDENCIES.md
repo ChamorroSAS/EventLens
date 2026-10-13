@@ -369,18 +369,18 @@ NOT_READY. Q-029 y revisión jurídica profesional siguen siendo blocker explíc
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
-| EL-TK-205 (READY) | EL-TK-013, EL-TK-185 | EL-TK-207, EL-TK-209, EL-TK-210, EL-TK-213 |
-| EL-TK-206 (READY) | EL-TK-204 | EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211, EL-TK-212, EL-TK-213 |
-| EL-TK-207 (READY) | EL-TK-205, EL-TK-206, EL-TK-013, EL-TK-015, EL-TK-185 | EL-TK-213, EL-TK-214 |
-| EL-TK-208 (READY) | EL-TK-008, EL-TK-206 | EL-TK-213, EL-TK-214 |
-| EL-TK-209 (READY) | EL-TK-205, EL-TK-206, EL-TK-014, EL-TK-016, EL-TK-017, EL-TK-201 | EL-TK-213, EL-TK-214 |
-| EL-TK-210 (READY) | EL-TK-205, EL-TK-206, EL-TK-047, EL-TK-048 | EL-TK-213, EL-TK-214 |
-| EL-TK-211 (READY) | EL-TK-206, EL-TK-074, EL-TK-075, EL-TK-076, EL-TK-077, EL-TK-078, EL-TK-082, EL-TK-083, EL-TK-084 | EL-TK-212, EL-TK-213, EL-TK-214 |
-| EL-TK-212 (READY) | EL-TK-206, EL-TK-211 | EL-TK-214 |
-| EL-TK-213 (READY) | EL-TK-204, EL-TK-205, EL-TK-206, EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211 | EL-TK-214 |
-| EL-TK-214 (READY) | EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211, EL-TK-212, EL-TK-213 | — |
+| EL-TK-205 (DONE) | EL-TK-013, EL-TK-185 | EL-TK-207, EL-TK-209, EL-TK-210, EL-TK-213 |
+| EL-TK-206 (DONE) | EL-TK-204 | EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211, EL-TK-212, EL-TK-213 |
+| EL-TK-207 (DONE) | EL-TK-205, EL-TK-206, EL-TK-013, EL-TK-015, EL-TK-185 | EL-TK-213, EL-TK-214 |
+| EL-TK-208 (DONE) | EL-TK-008, EL-TK-206 | EL-TK-213, EL-TK-214 |
+| EL-TK-209 (DONE) | EL-TK-205, EL-TK-206, EL-TK-014, EL-TK-016, EL-TK-017, EL-TK-201 | EL-TK-213, EL-TK-214 |
+| EL-TK-210 (DONE) | EL-TK-205, EL-TK-206, EL-TK-047, EL-TK-048 | EL-TK-213, EL-TK-214 |
+| EL-TK-211 (DONE) | EL-TK-206, EL-TK-074, EL-TK-075, EL-TK-076, EL-TK-077, EL-TK-078, EL-TK-082, EL-TK-083, EL-TK-084 | EL-TK-212, EL-TK-213, EL-TK-214 |
+| EL-TK-212 (DONE) | EL-TK-206, EL-TK-211 | EL-TK-214 |
+| EL-TK-213 (DONE) | EL-TK-204, EL-TK-205, EL-TK-206, EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211 | EL-TK-214 |
+| EL-TK-214 (DONE) | EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211, EL-TK-212, EL-TK-213 | — |
 
-**READY de requisitos, 2026-10-12; arquitectura/UI aprobadas.** [Épica](epics/EL-EP-018.md) / [gates](sessions/2026-10-12-el-ep-018-review-gates.md). Sin módulo funcional nuevo ni ciclo con identidad/eventos; esta revisión no certifica implementación, APIs montadas o Beta. La navegación consume capacidades existentes, con fronteras:
+**CONFIRMED — EL-EP-018 DONE, 2026-10-13.** [Épica](epics/EL-EP-018.md) / [gates](sessions/2026-10-12-el-ep-018-review-gates.md). Implementación y validación integrada completadas (EL-TK-205..214 DONE). Sin módulo funcional nuevo ni ciclo con identidad/eventos. La navegación consume capacidades existentes, con fronteras:
 - `EL-EP-001`/`EL-TK-008` para login, cuenta y solicitud Beta; no registro abierto.
 - `EL-EP-002` para Mis eventos/OrganizerAppShell; no segundo dashboard.
 - `EL-EP-004` para acceso guest por QR/deep link; no directorio público de eventos.
@@ -566,29 +566,4 @@ TB-01/TB-02 dejan de bloquear.033/035/036/041/042/056 YES propio;058 NO ejecuci�
 
 
 
-## Épica completada — EL-EP-018 (Home público y navegación de entrada)
-
-**CONFIRMED — EL-EP-018 DONE, 2026-10-13:** [Épica](epics/EL-EP-018.md). Implementación y validación integrada de todos los tickets (EL-TK-205..214):
-- **EL-TK-205 (DONE):** Proyección de sesión y capabilities de organizador en backend (`/api/v1/organizer/session`) y frontend (`OrganizerSessionService`).
-- **EL-TK-206 (DONE):** Servicio desacoplado de navegación y router seguro (`PublicEntryRouterService`, `PublicEntryRouterOutletComponent`, `PublicNotFoundComponent`).
-- **EL-TK-207 (DONE):** Entrada y login de organizador (`/ingresar`, `OrganizerLoginComponent`) con retorno seguro y aislamiento de sesión.
-- **EL-TK-208 (DONE):** Solicitud pública de acceso a la Beta (`/solicitar-acceso`, `BetaAccessRequestComponent`) con idempotencia y sin enumeración.
-- **EL-TK-209 (DONE):** Pantalla de cuenta de organizador (`/mi-cuenta`, `OrganizerAccountComponent`) con gestión de sesiones y zona de eliminación protegida por reautenticación (EL-TK-201).
-- **EL-TK-210 (DONE):** Destino seguro de eventos (`/mis-eventos`, `OrganizerDashboardComponent`) con shell de marca y guards de sesión.
-- **EL-TK-211 (DONE):** Entrada pública y acceso guest directo (`/g/:lookupKey`, `GuestContainerComponent` y endpoints API con cookies HttpOnly y PIN).
-- **EL-TK-212 (DONE):** Servidor y configuración de serving SPA (`apps/web/spa-server.mjs`) con fallback restringido a rutas SPA aprobadas y 404 estricto para `/api/*` y assets.
-- **EL-TK-213 (DONE):** Composición del Home público (`PublicHomePageComponent`), cabecera sensible a capacidades (`AppHeaderComponent`), footer legal (`LegalFooterComponent`) y activación del router productivo en `main.ts` y `AppComponent`.
-- **EL-TK-214 (DONE):** Validación integrada E2E (Playwright 7/7 tests PASS, API PostgreSQL 16 9/9 tests PASS, Web 154/154 tests PASS, OpenAPI y client check PASS).
-
-| Ticket | Depende de | Bloquea | Estado |
-|---|---|---|---|
-| EL-TK-205 | — | EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-213 | DONE |
-| EL-TK-206 | — | EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211, EL-TK-212, EL-TK-213 | DONE |
-| EL-TK-207 | EL-TK-205, EL-TK-206 | EL-TK-213, EL-TK-214 | DONE |
-| EL-TK-208 | EL-TK-205, EL-TK-206 | EL-TK-213, EL-TK-214 | DONE |
-| EL-TK-209 | EL-TK-205, EL-TK-206 | EL-TK-213, EL-TK-214 | DONE |
-| EL-TK-210 | EL-TK-205, EL-TK-206 | EL-TK-213, EL-TK-214 | DONE |
-| EL-TK-211 | EL-TK-206 | EL-TK-212, EL-TK-213, EL-TK-214 | DONE |
-| EL-TK-212 | EL-TK-206, EL-TK-211 | EL-TK-214 | DONE |
-| EL-TK-213 | EL-TK-204..211 | EL-TK-214 | DONE |
-| EL-TK-214 | EL-TK-207..213 | — | DONE |
+**CONFIRMED — EL-EP-018 DONE, 2026-10-13:** [Épica](epics/EL-EP-018.md). Implementación y validación integrada de todos los tickets EL-TK-205..214: proyección de sesión adaptativa (205), router desacoplado y 404 (206), login organizador (207), solicitud Beta pública (208), cuenta y reautenticación Argon2id (209), Mis eventos (210), guest entry directo por QR/deep link (211), serving SPA y redacción (212), Home público oficial y cabecera accesible (213), y validación integrada E2E (214). Suites completas PASS: Web 154/154, API PostgreSQL 16 9/9, Playwright 7/7, OpenAPI y cliente tipado sincronizados. Véase la [sesión de cierre](sessions/2026-10-13-el-ep-018-closure.md).
