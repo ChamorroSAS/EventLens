@@ -50,6 +50,14 @@ La implementación deberá **reutilizar `SUSPENDED` y la consola administrativa*
 
 **PENDING:** contrastar contra permisos/rutas y pruebas reales de EL-EP-012/003/015, definir criterios operativos de gravedad y comunicación segura al organizador, y revisión jurídica de proporcionalidad y debido tratamiento. No se afirma que esté implementado ni jurídicamente aprobado.
 
+## 8.2. Comunicación de suspensiones — decisión funcional confirmada (2026-10-12)
+
+Cuando un evento sea suspendido, **Phoeve notificará al organizador** mediante los canales de comunicación de EL-EP-013, indicando el **motivo general**, las **restricciones aplicadas** y **cómo solicitar revisión**. La comunicación excluirá identidad de denunciantes, datos sensibles de terceros, evidencias privadas y detalles técnicos que comprometan seguridad. La medida y su comunicación deben quedar auditadas con minimización.
+
+**Excepción ya aceptada en EL-EP-013:** podrá diferirse u omitirse el aviso cuando exista una razón legal o de seguridad justificada. La excepción debe registrarse y revisarse; no es permiso para ocultar indefinidamente una suspensión sin fundamento.
+
+Esta decisión **reutiliza** el alcance de EL-EP-013 (correo y avisos del panel para suspensión/reactivación) y los permisos/estados de EL-EP-003/012; no crea un NotificationCenter, nueva clase de mensaje público, poderes administrativos ni altera DEC-088/089 o DEC-078/081. Confirmar plantillas, enlaces de revisión y pruebas de entrega antes de declarar implementado. **LEGAL_REVIEW_PENDING**.
+
 ## 9. Relación con organizaciones y proveedores
 
 Un representante humano puede gestionar un evento de organización, pero los alcances de representación, instrucciones de tratamiento y rol responsable/encargado deben definirse caso a caso. Los proveedores técnicos, ubicaciones y contratos de tratamiento no se consideran finalizados por estos términos.
