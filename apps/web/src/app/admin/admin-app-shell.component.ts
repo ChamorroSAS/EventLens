@@ -178,6 +178,16 @@ export type AdminConsoleTab = 'search' | 'detail' | 'jobs' | 'audit' | 'moderati
 })
 export class AdminAppShellComponent {
   @Input() callerActorId?: string;
+  @Input() set eventId(id: string | undefined) {
+    if (id) {
+      this.selectedEventId.set(id);
+      this.activeTab.set('detail');
+      this.announcerMessage.set(`Detalle del evento ${id} abierto.`);
+    } else {
+      this.selectedEventId.set(null);
+      this.activeTab.set('search');
+    }
+  }
 
   readonly activeTab = signal<AdminConsoleTab>('search');
   readonly selectedEventId = signal<string | null>(null);
