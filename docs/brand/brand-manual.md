@@ -1,3 +1,5 @@
+> **Identidad pública actual en evaluación:** [Phoeve — manual candidato](../branding/PHOEVE-MANUAL-DE-MARCA.md). El texto siguiente conserva la referencia histórica de EventLens (CR-004).
+
 # EventLens — referencia al manual de marca vigente
 
 El manual canónico es [Manual de marca consolidado v1.1](../branding/MANUAL-DE-MARCA.md). El PDF y sus derivados documentales permanecen en `docs/branding/assets/`.

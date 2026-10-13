@@ -1,3 +1,5 @@
+> **Nota de transición de marca (CR-006, 2026-10-13):** Phoeve es el nombre público elegido para implementación privada; EventLens se conserva como identificador técnico y como denominación histórica de los requisitos a continuación. La revisión registral y el release comercial siguen pendientes.
+
 # EventLens — descubrimiento de producto
 
 ## Identification

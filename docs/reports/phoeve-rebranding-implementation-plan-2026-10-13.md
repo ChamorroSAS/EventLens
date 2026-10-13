@@ -1,3 +1,5 @@
+> **Addendum de implementación (2026-10-13):** el producto autorizó implementar Phoeve en una rama privada. Referencia ejecutable: [CR-006](../../.codex/product/changes/CR-006.md), [manual candidato](../branding/PHOEVE-MANUAL-DE-MARCA.md) y la rama `feat/phoeve-public-rebrand-20261013`. Los cuatro PNG adjuntos originalmente a la conversación quedan seleccionados como fuentes candidatas con hashes de dicho manual; **no** los PNG de Downloads con hashes distintos descritos abajo. Los SVG trazados son candidatos, no arte final aprobado. Las fases y gates históricos siguientes describen el diagnóstico inicial y no sustituyen esta actualización. No hay autorización de lanzamiento público.
+
 # Phoeve — Plan de implementación verificable
 
 Fecha: 2026-10-13. Referencia: borrador externo CR-006. Estado: **PLAN PROPUESTO / NOT_IMPLEMENTED**. Rama de planificación: `planning/phoeve-rebranding`, desde `stage` en `2510f07`.

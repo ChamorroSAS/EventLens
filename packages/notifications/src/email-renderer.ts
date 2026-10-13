@@ -14,7 +14,7 @@ function escapeHtml(text: string): string {
 }
 
 /**
- * Standard email template renderer for EventLens notifications (EL-TK-157).
+ * Standard email template renderer for Phoeve notifications (EL-TK-157).
  * Renders both accessible HTML and accessible plain text.
  * Strictly sanitizes output: never leaks raw credentials, secrets, or internal stack traces.
  */
@@ -29,15 +29,15 @@ export class EmailRenderer {
     }
 
     const payload = intent.payload || {};
-    let subject = 'Notificación del sistema — EventLens';
-    let heading = 'Notificación de EventLens';
+    let subject = 'Notificación del sistema — Phoeve';
+    let heading = 'Notificación de Phoeve';
     let message = 'Has recibido una actualización relevante en tu cuenta o evento.';
     let actionUrl = typeof payload.actionUrl === 'string' ? payload.actionUrl : '';
-    let actionLabel = 'Ir a EventLens';
+    let actionLabel = 'Ir a Phoeve';
 
     switch (intent.notificationType) {
       case 'ACCOUNT_SECURITY':
-        subject = 'Alerta de seguridad en tu cuenta EventLens';
+        subject = 'Alerta de seguridad en tu cuenta Phoeve';
         heading = 'Actividad de seguridad en tu cuenta';
         message =
           'Hemos detectado un evento de seguridad relevante en tu cuenta (ej. nuevo inicio de sesión o cambio de credenciales). Si no reconoces esta acción, protege tu cuenta de inmediato.';
@@ -45,7 +45,7 @@ export class EmailRenderer {
         break;
 
       case 'ACCOUNT_RECOVERY':
-        subject = 'Recuperación de acceso a tu cuenta EventLens';
+        subject = 'Recuperación de acceso a tu cuenta Phoeve';
         heading = 'Solicitud de recuperación de cuenta';
         message =
           'Has solicitado recuperar el acceso a tu cuenta. Sigue las instrucciones seguras en la plataforma para restablecer tu acceso.';
@@ -54,7 +54,7 @@ export class EmailRenderer {
 
       case 'EVENT_UPCOMING': {
         const eventName = typeof payload.eventName === 'string' ? payload.eventName : 'tu evento';
-        subject = `Tu evento "${eventName}" está próximo a comenzar — EventLens`;
+        subject = `Tu evento "${eventName}" está próximo a comenzar — Phoeve`;
         heading = 'Tu evento está por iniciar';
         message = `Faltan pocas horas para que comience "${escapeHtml(
           eventName
@@ -64,7 +64,7 @@ export class EmailRenderer {
       }
 
       case 'EVENT_SUSPENDED': {
-        subject = 'Notificación importante sobre el estado de tu evento — EventLens';
+        subject = 'Notificación importante sobre el estado de tu evento — Phoeve';
         heading = 'Tu evento ha sido suspendido temporalmente';
         message =
           'Tu evento se encuentra en estado de suspensión administrativa. Las cargas y accesos públicos han sido pausados mientras se revisa la situación.';
@@ -73,7 +73,7 @@ export class EmailRenderer {
       }
 
       case 'EVENT_REACTIVATED': {
-        subject = 'Tu evento ha sido reactivado — EventLens';
+        subject = 'Tu evento ha sido reactivado — Phoeve';
         heading = 'Tu evento está activo nuevamente';
         message =
           'La revisión de tu evento ha concluido y el acceso normal ha sido restablecido.';
@@ -91,7 +91,7 @@ export class EmailRenderer {
       }
 
       case 'CAPACITY_EXCEEDED_100': {
-        subject = 'Límite de capacidad alcanzado (100%) — EventLens';
+        subject = 'Límite de capacidad alcanzado (100%) — Phoeve';
         heading = 'Límite de almacenamiento alcanzado';
         message =
           'Tu evento ha alcanzado el 100% de la capacidad contratada. Las nuevas cargas de fotos y videos han sido pausadas hasta que se amplíe la cuota.';
@@ -100,7 +100,7 @@ export class EmailRenderer {
       }
 
       case 'EXPORT_AVAILABLE': {
-        subject = 'Tu exportación de recuerdos está lista para descargar — EventLens';
+        subject = 'Tu exportación de recuerdos está lista para descargar — Phoeve';
         heading = 'Descarga de recuerdos disponible';
         message =
           'El archivo comprimido con los recuerdos originales de tu evento está listo. El enlace privado estará disponible durante 48 horas.';
@@ -109,7 +109,7 @@ export class EmailRenderer {
       }
 
       case 'EXPORT_EXPIRED': {
-        subject = 'El enlace de descarga de tu exportación ha caducado — EventLens';
+        subject = 'El enlace de descarga de tu exportación ha caducado — Phoeve';
         heading = 'Enlace de exportación caducado';
         message =
           'La ventana de 48 horas para descargar tu paquete de exportación ha expirado por motivos de seguridad. Puedes generar una nueva solicitud desde tu biblioteca.';
@@ -118,7 +118,7 @@ export class EmailRenderer {
       }
 
       case 'EXPORT_INVALIDATED': {
-        subject = 'Tu paquete de exportación ha sido invalidado — EventLens';
+        subject = 'Tu paquete de exportación ha sido invalidado — Phoeve';
         heading = 'Exportación no disponible por cambios de privacidad o permisos';
         message =
           'Se han actualizado permisos o se retiró contenido incluido en la exportación anterior. Por motivos de privacidad y seguridad (DEC-090), puedes solicitar una nueva exportación con el contenido vigente.';
@@ -127,7 +127,7 @@ export class EmailRenderer {
       }
 
       case 'CASE_CRITICAL_ALERT': {
-        subject = 'Alerta prioritaria de moderación — EventLens';
+        subject = 'Alerta prioritaria de moderación — Phoeve';
         heading = 'Alerta prioritaria de moderación';
         message =
           'Se ha registrado un reporte de severidad crítica en la plataforma que requiere atención administrativa inmediata.';
@@ -137,7 +137,7 @@ export class EmailRenderer {
 
       case 'CASE_RESOLUTION_NOTICE':
       case 'REPORT_RESOLVED': {
-        subject = 'Actualización sobre una moderación o reporte — EventLens';
+        subject = 'Actualización sobre una moderación o reporte — Phoeve';
         heading = 'Resolución de caso';
         message =
           'Se ha completado la revisión de un reporte sobre contenido en tu evento. La moderación ha sido aplicada de conformidad con los términos y políticas.';
@@ -146,19 +146,19 @@ export class EmailRenderer {
       }
 
       case 'ADMIN_INTERVENTION': {
-        subject = 'Aviso de intervención administrativa en tu evento — EventLens';
+        subject = 'Aviso de intervención administrativa en tu evento — Phoeve';
         heading = 'Acción administrativa registrada';
         message =
-          'El equipo de administración de EventLens ha aplicado una actualización operativa sobre tu evento de acuerdo con las políticas del servicio.';
+          'El equipo de administración de Phoeve ha aplicado una actualización operativa sobre tu evento de acuerdo con las políticas del servicio.';
         actionLabel = 'Ver panel';
         break;
       }
 
       case 'TEAM_INVITATION': {
         const inviterName = typeof payload.inviterName === 'string' ? payload.inviterName : 'Un organizador';
-        subject = `Invitación para colaborar en EventLens — ${inviterName}`;
+        subject = `Invitación para colaborar en Phoeve — ${inviterName}`;
         heading = 'Has recibido una invitación de equipo';
-        message = `${escapeHtml(inviterName)} te ha invitado a unirte como colaborador en EventLens.`;
+        message = `${escapeHtml(inviterName)} te ha invitado a unirte como colaborador en Phoeve.`;
         actionLabel = 'Ver invitación';
         break;
       }
@@ -198,7 +198,7 @@ export class EmailRenderer {
         : ''
     }
     <div class="footer">
-      <p>EventLens — Preservando recuerdos auténticos y compartidos.</p>
+      <p>Phoeve — Preservando recuerdos auténticos y compartidos.</p>
     </div>
   </div>
 </body>
@@ -208,7 +208,7 @@ export class EmailRenderer {
 
 ${message}
 
-${actionUrl ? `${actionLabel}: ${actionUrl}\n\n` : ''}EventLens — Preservando recuerdos auténticos y compartidos.`;
+${actionUrl ? `${actionLabel}: ${actionUrl}\n\n` : ''}Phoeve — Preservando recuerdos auténticos y compartidos.`;
 
     return {
       to,

@@ -55,7 +55,7 @@ export class AccountEventNoticeService {
     }
 
     let title = 'Alerta de seguridad en tu cuenta';
-    let message = 'Se ha registrado actividad de seguridad relevante en tu cuenta EventLens.';
+    let message = 'Se ha registrado actividad de seguridad relevante en tu cuenta Phoeve.';
     const notificationType = fact.eventType === 'RECOVERY_REQUESTED' ? 'ACCOUNT_RECOVERY' : 'ACCOUNT_SECURITY';
 
     switch (fact.eventType) {
@@ -65,7 +65,7 @@ export class AccountEventNoticeService {
         break;
       case 'PASSWORD_CHANGED':
         title = 'Contraseña actualizada';
-        message = 'La contraseña de tu cuenta EventLens ha sido modificada satisfactoriamente.';
+        message = 'La contraseña de tu cuenta Phoeve ha sido modificada satisfactoriamente.';
         break;
       case 'SESSION_REVOKED':
         title = 'Sesiones cerradas';
