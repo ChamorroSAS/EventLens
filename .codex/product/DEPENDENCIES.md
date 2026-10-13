@@ -399,6 +399,38 @@ READY describe el alcance revisado, no predecesoras ejecutadas. Cada salida debe
 
 Orden:205 y206 independientes →207/208/209/210/211 según sus propias predecesoras →212 y213 →214.209 espera también201, aún READY.206 no activa bootstrap ni importa componentes futuros;213 ensambla descriptores reales una vez entregados207..211.212 puede avanzar junto a213 tras211;214 requiere ambos. Todo paralelo está sujeto a dependencias y propiedad de archivos sin solapamiento. EP017/Q029 conserva aprobación de apertura pública separada.
 
+## Tickets vigentes — EL-EP-019 (quality gate APPROVED)
+
+| Ticket | Depende de | Bloquea |
+|---|---|---|
+| [EL-TK-218](tickets/EL-TK-218.md) (READY) | EL-TK-215 | EL-TK-219, EL-TK-221, EL-TK-222, EL-TK-223, EL-TK-237, EL-TK-238 |
+| [EL-TK-219](tickets/EL-TK-219.md) (READY) | EL-TK-218 | EL-TK-220, EL-TK-224, EL-TK-225, EL-TK-226, EL-TK-227, EL-TK-237 |
+| [EL-TK-220](tickets/EL-TK-220.md) (READY) | EL-TK-219 | EL-TK-224, EL-TK-225, EL-TK-226, EL-TK-227, EL-TK-228, EL-TK-237 |
+| [EL-TK-221](tickets/EL-TK-221.md) (READY) | EL-TK-218 | EL-TK-222, EL-TK-224, EL-TK-225, EL-TK-226, EL-TK-227, EL-TK-228, EL-TK-233, EL-TK-237, EL-TK-238 |
+| [EL-TK-222](tickets/EL-TK-222.md) (BLOCKED) | EL-TK-218, EL-TK-221 | EL-TK-233, EL-TK-237, EL-TK-238 |
+| [EL-TK-223](tickets/EL-TK-223.md) (READY) | EL-TK-218, EL-TK-210, EL-TK-213 | EL-TK-228, EL-TK-235, EL-TK-237 |
+| [EL-TK-224](tickets/EL-TK-224.md) (READY) | EL-TK-219, EL-TK-220, EL-TK-221 | EL-TK-229, EL-TK-237 |
+| [EL-TK-225](tickets/EL-TK-225.md) (READY) | EL-TK-219, EL-TK-220, EL-TK-221 | EL-TK-230, EL-TK-237 |
+| [EL-TK-226](tickets/EL-TK-226.md) (READY) | EL-TK-219, EL-TK-220, EL-TK-221 | EL-TK-231, EL-TK-237 |
+| [EL-TK-227](tickets/EL-TK-227.md) (READY) | EL-TK-219, EL-TK-220, EL-TK-221 | EL-TK-232, EL-TK-237 |
+| [EL-TK-228](tickets/EL-TK-228.md) (READY) | EL-TK-223, EL-TK-220, EL-TK-221 | EL-TK-229, EL-TK-230, EL-TK-231, EL-TK-232, EL-TK-237 |
+| [EL-TK-229](tickets/EL-TK-229.md) (READY) | EL-TK-224, EL-TK-228 | EL-TK-237 |
+| [EL-TK-230](tickets/EL-TK-230.md) (READY) | EL-TK-225, EL-TK-228 | EL-TK-237 |
+| [EL-TK-231](tickets/EL-TK-231.md) (READY) | EL-TK-226, EL-TK-228 | EL-TK-232, EL-TK-237 |
+| [EL-TK-232](tickets/EL-TK-232.md) (READY) | EL-TK-227, EL-TK-228, EL-TK-231 | EL-TK-237 |
+| [EL-TK-233](tickets/EL-TK-233.md) (READY) | EL-TK-221, EL-TK-222 | EL-TK-234, EL-TK-235, EL-TK-238 |
+| [EL-TK-234](tickets/EL-TK-234.md) (READY) | EL-TK-233 | EL-TK-236, EL-TK-238 |
+| [EL-TK-235](tickets/EL-TK-235.md) (READY) | EL-TK-223, EL-TK-233 | EL-TK-236, EL-TK-238 |
+| [EL-TK-236](tickets/EL-TK-236.md) (READY) | EL-TK-234, EL-TK-235 | EL-TK-238 |
+| [EL-TK-237](tickets/EL-TK-237.md) (READY) | EL-TK-218, EL-TK-219, EL-TK-220, EL-TK-221, EL-TK-222, EL-TK-223, EL-TK-224, EL-TK-225, EL-TK-226, EL-TK-227, EL-TK-228, EL-TK-229, EL-TK-230, EL-TK-231, EL-TK-232 | EL-TK-238 |
+| [EL-TK-238](tickets/EL-TK-238.md) (READY) | EL-TK-218, EL-TK-221, EL-TK-222, EL-TK-233, EL-TK-234, EL-TK-235, EL-TK-236, EL-TK-237 | — |
+
+**CONFIRMED — planificación revisada, 2026-10-13:** [Épica](epics/EL-EP-019.md) / [gates](sessions/2026-10-13-event-control-panels-gates.md) / [contrato](../context/event-control-panels-contract.md) / [plan](../../docs/reports/event-control-panels-backlog-2026-10-13.md). Veinte tickets READY de requisitos y EL-TK-222 BLOCKED por decisión, configuración y acreditación de RecoveryAuthority durable externa a PITR. READY no implica predecesoras ejecutadas ni activación productiva. EL-TK-218 es el primer ticket habilitado; los demás esperan sus dependencias validadas.
+
+Orden: EL-TK-218 → EL-TK-219/221/223 según sus predecesoras; EL-TK-219 → EL-TK-220; EL-TK-224/225/226/227 consumen los mismos correctivos de dominio e identidad, sin una cadena artificial entre comandos. Las superficies de organizador EL-TK-228..232 y admin EL-TK-233..236 siguen la tabla; EL-TK-237/238 cierran la validación integrada. EL-TK-222 condiciona la activación de nuevas mutaciones y administración, sin bloquear las unidades independientes de laboratorio, receipts, CAS y router.
+
+Paralelismo explícito: EL-TK-219 con EL-TK-221, tras separar archivos y migraciones propietarias. Toda integración de OpenAPI/cliente y archivos compartidos se coordina secuencialmente; el resto conserva `can_parallelize_with` de sus tickets. No asignaciones personales, dependencias retroactivas sobre DONE ni nuevas capacidades de recuperación excepcional EL-TK-217. Métricas y herramientas posteriores siguen diferidas.
+
 ## Tickets vigentes — EL-EP-006 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
