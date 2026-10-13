@@ -20,11 +20,11 @@ import { OrganizerSessionService } from '../organizer-session.service';
           class="el-header__brand"
           [attr.href]="homePath"
           (click)="onNavigateHome($event)"
-          aria-label="EventLens — Inicio"
+          aria-label="Phoeve — Inicio"
         >
           <img
-            src="/assets/branding/logo-primary.svg"
-            alt="EventLens"
+            src="assets/branding/phoeve/logo-primary.svg"
+            alt="Phoeve"
             class="el-header__logo"
             width="128"
             height="32"
