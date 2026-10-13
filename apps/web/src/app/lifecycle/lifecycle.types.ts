@@ -6,6 +6,7 @@ export type EventStatus =
   | 'GRACE_PERIOD'
   | 'PENDING_DELETION'
   | 'SUSPENDED'
+  | 'ARCHIVED'
   | 'DELETED';
 
 export interface LifecycleCapabilities {

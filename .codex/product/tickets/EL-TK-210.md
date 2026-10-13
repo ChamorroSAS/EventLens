@@ -4,7 +4,7 @@
 EL-EP-018
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador ordinario, **quiero** abrir Mis eventos desde la navegación, **para** llegar al shell y dashboard existentes sin crear otra experiencia de gestión.
@@ -44,6 +44,6 @@ EL-EP-018; MOD-002; EL-TK-047/048; `public-entry-contract.md`.
 
 - [x] Gate 2 de requisitos, técnico y UI aplicable aprobado
 
-REQUIREMENTS_READY: YES. IMPLEMENTABLE: YES. TECHNICAL_GATE: APPROVED. UI_REQUIRED: YES. READY_FOR_FRONTEND_PLANNING: YES. READY_FOR_IMPLEMENTATION: YES para el alcance aprobado. EXECUTION_READY: CONDITIONAL — verificar entregas y contratos de todas las predecesoras antes de iniciar. IMPLEMENTED: NO.
+REQUIREMENTS_READY: YES. IMPLEMENTABLE: YES. TECHNICAL_GATE: APPROVED. UI_REQUIRED: YES. READY_FOR_FRONTEND_PLANNING: YES. READY_FOR_IMPLEMENTATION: YES para el alcance aprobado. EXECUTION_READY: YES. IMPLEMENTED: YES.
 
 Gate 2 aprobado: [dictámenes y secuencia](../sessions/2026-10-12-el-ep-018-review-gates.md).

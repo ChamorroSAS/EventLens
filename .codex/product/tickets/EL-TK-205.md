@@ -4,7 +4,7 @@
 EL-EP-018
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** aplicación web, **quiero** recibir una proyección efectiva y mínima de la sesión de organizador, **para** componer navegación sin inferir autoridad desde el navegador.
@@ -59,6 +59,12 @@ EL-EP-018; `public-entry-contract.md`; EL-TD-004/006; EL-TK-185/186/201.
 
 - [x] Gate 2 de requisitos, técnico y UI aplicable aprobado
 
-REQUIREMENTS_READY: YES. IMPLEMENTABLE: YES. TECHNICAL_GATE: APPROVED. UI_REQUIRED: NO. READY_FOR_FRONTEND_PLANNING: NOT_APPLICABLE. READY_FOR_IMPLEMENTATION: YES para el alcance aprobado. EXECUTION_READY: CONDITIONAL — verificar entregas y contratos de todas las predecesoras antes de iniciar. IMPLEMENTED: NO.
+REQUIREMENTS_READY: YES. IMPLEMENTABLE: YES. TECHNICAL_GATE: APPROVED. UI_REQUIRED: NO. READY_FOR_FRONTEND_PLANNING: NOT_APPLICABLE. READY_FOR_IMPLEMENTATION: YES para el alcance aprobado. EXECUTION_READY: YES. IMPLEMENTED: YES.
 
 Gate 2 aprobado: [dictámenes y secuencia](../sessions/2026-10-12-el-ep-018-review-gates.md).
+
+## Evidencia de implementación (2026-10-12)
+- **Dominio (`@eventlens/identity`):** Corregido `OrganizerAuthenticationService.login()` y `validateSession()` en `packages/identity/src/organizer-auth.ts` para conservar el estado real `PENDING_DELETION` de la cuenta, proyectar `restrictedContext: 'DELETION_MANAGEMENT_ONLY'`, derivar/validar token CSRF con `timingSafeEqual`, bloquear operaciones ordinarias (`listSessions`, `revokeSpecificSession`, `revokeOtherSessions`) con `FORBIDDEN` cuando la cuenta está en `PENDING_DELETION`, y exponer `projectSession()` / `projectOrganizerEffectiveSession()` / `computeOrganizerEffectiveCapabilities()`.
+- **API y contratos (`@eventlens/api`, `contracts/openapi.json`, `@eventlens/api-client`):** Creados `OrganizerSessionService` y `OrganizerSessionController` (`GET /api/v1/organizer/session`, `operationId: 'getOrganizerSessionProjection'`) con `Cache-Control: no-store`, cabecera `X-CSRF-Token` transitoria para sesiones autenticadas, y validación de `Origin` + `X-CSRF-Token` en mutaciones. Regenerados `contracts/openapi.json` y `packages/api-client/src/schema.ts`.
+- **Consumidor web (`@eventlens/web`):** Creado `OrganizerSessionService` en `apps/web/src/app/organizer-session.service.ts` distinguiendo `CHECKING`, `ANONYMOUS`, `ORGANIZER_ACTIVE`, `ORGANIZER_RESTRICTED_DELETION` y `UNAVAILABLE` sin otorgar capacidades privadas ante fallos de autoridad.
+- **Pruebas:** `packages/identity/test/organizer-session-projection.unit.test.ts` (PASS), `packages/identity/test/organizer-auth.integration.test.ts` en PostgreSQL 16 real (PASS), `apps/api/test/organizer-session.test.ts` (PASS), `apps/api/test/integration/organizer-session.test.ts` en PostgreSQL 16 real (PASS), y `apps/web/src/app/organizer-session.service.spec.ts` (PASS).

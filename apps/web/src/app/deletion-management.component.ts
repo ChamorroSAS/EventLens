@@ -1,7 +1,21 @@
-import { Component, InjectionToken, inject, signal } from '@angular/core';
+import { Component, EventEmitter, InjectionToken, Input, Output, inject, signal } from '@angular/core';
 
 export interface EventDeletionUiAdapter {
   getEventState(eventId: string): Promise<{
+    eventId: string;
+    eventName: string;
+    eventTimezone: string;
+    status: string;
+    revision: number;
+    canRequestDeletion: boolean;
+    canCancelDeletion: boolean;
+    isIrreversible: boolean;
+    isUncertainAck: boolean;
+    cancelUntilLocalIso: string;
+    countdownSummary: string | null;
+    mainPurgeSummary: string;
+    residualRetentionNotice: string;
+  } | {
     eventId: string;
     eventName: string;
     eventTimezone: string;
@@ -50,6 +64,7 @@ export interface AccountDeletionUiAdapter {
     canCancelDeletion: boolean;
     cancelUntilUtcIso: string | null;
     isUncertainAck: boolean;
+    isIrreversible?: boolean;
   }>;
   beginReauthChallenge(params: {
     operation: 'REQUEST_ACCOUNT_DELETION' | 'CANCEL_ACCOUNT_DELETION';
@@ -83,7 +98,9 @@ export const ACCOUNT_DELETION_UI_ADAPTER = new InjectionToken<AccountDeletionUiA
 
 @Component({
   selector: 'eventlens-deletion-management',
+  standalone: true,
   template: `
+    @if (mode !== 'ACCOUNT_ONLY') {
     <section aria-labelledby="event-lifecycle-heading" data-testid="event-lifecycle-panel">
       <h2 id="event-lifecycle-heading">Ciclo de vida y retención del evento</h2>
       <p data-testid="event-status-badge">Estado: {{ eventStatus() }}</p>
@@ -165,14 +182,17 @@ export const ACCOUNT_DELETION_UI_ADAPTER = new InjectionToken<AccountDeletionUiA
         </div>
       }
     </section>
+    }
 
     <section aria-labelledby="account-security-heading" data-testid="account-security-section">
       <h2 id="account-security-heading">Seguridad y eliminación de cuenta</h2>
 
       @if (ordinaryFeaturesVisible()) {
-        <nav aria-label="Funciones ordinarias de organizador" data-testid="ordinary-organizer-nav">
-          <span>Mis eventos y galería activa</span>
-        </nav>
+        @if (mode !== 'ACCOUNT_ONLY') {
+          <nav aria-label="Funciones ordinarias de organizador" data-testid="ordinary-organizer-nav">
+            <span>Mis eventos y galería activa</span>
+          </nav>
+        }
       } @else {
         <p data-testid="restricted-session-notice">
           Sesión restringida: sólo puedes consultar o cancelar la eliminación pendiente de tu cuenta.
@@ -287,6 +307,30 @@ export const ACCOUNT_DELETION_UI_ADAPTER = new InjectionToken<AccountDeletionUiA
   `,
 })
 export class DeletionManagementComponent {
+  @Input() mode: 'FULL' | 'ACCOUNT_ONLY' = 'FULL';
+  @Input() set accountSnapshot(
+    snap:
+      | {
+          accountId: string;
+          accountStatus: 'ACTIVE' | 'PENDING_DELETION' | 'DELETED';
+          sessionMode: 'ORDINARY' | 'DELETION_MANAGEMENT_ONLY';
+          revision: number;
+          affectedEventsCount: number;
+          canRequestDeletion: boolean;
+          canCancelDeletion: boolean;
+          cancelUntilUtcIso: string | null;
+          isUncertainAck: boolean;
+          isIrreversible?: boolean;
+        }
+      | null
+      | undefined
+  ) {
+    if (snap) {
+      this.applyAccountSnapshot(snap);
+    }
+  }
+  @Output() accountStateChanged = new EventEmitter<'ACTIVE' | 'PENDING_DELETION' | 'DELETED'>();
+
   private readonly eventAdapter = inject(EVENT_DELETION_UI_ADAPTER, { optional: true });
   private readonly accountAdapter = inject(ACCOUNT_DELETION_UI_ADAPTER, { optional: true });
 
@@ -351,6 +395,21 @@ export class DeletionManagementComponent {
   async loadAccount(accountId: string): Promise<void> {
     if (!this.accountAdapter) return;
     const snap = await this.accountAdapter.getAccountState(accountId);
+    this.applyAccountSnapshot(snap);
+  }
+
+  applyAccountSnapshot(snap: {
+    accountId: string;
+    accountStatus: 'ACTIVE' | 'PENDING_DELETION' | 'DELETED';
+    sessionMode: 'ORDINARY' | 'DELETION_MANAGEMENT_ONLY';
+    revision: number;
+    affectedEventsCount: number;
+    canRequestDeletion: boolean;
+    canCancelDeletion: boolean;
+    cancelUntilUtcIso: string | null;
+    isUncertainAck: boolean;
+    isIrreversible?: boolean;
+  }): void {
     this.accountId.set(snap.accountId);
     this.accountStatus.set(snap.accountStatus);
     this.sessionMode.set(snap.sessionMode);
@@ -529,6 +588,7 @@ export class DeletionManagementComponent {
           this.canCancelAccountDeletion.set(false);
         }
         this.statusAnnouncement.set(res.message);
+        this.accountStateChanged.emit(res.accountStatus);
       }
     } catch {
       this.wipeSecrets();

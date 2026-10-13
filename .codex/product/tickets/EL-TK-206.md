@@ -4,7 +4,7 @@
 EL-EP-018
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** equipo web, **quiero** infraestructura y contratos seguros de montaje Router, **para** incorporar superficies propietarias después de entregarlas sin imports futuros, ciclos o rutas ficticias.
@@ -56,6 +56,12 @@ EL-EP-018; `public-entry-contract.md`; `ui-public-entry.md`; EL-TD-001/004/006.
 
 - [x] Gate 2 de requisitos, técnico y UI aplicable aprobado
 
-REQUIREMENTS_READY: YES. IMPLEMENTABLE: YES. TECHNICAL_GATE: APPROVED. UI_REQUIRED: YES. READY_FOR_FRONTEND_PLANNING: YES. READY_FOR_IMPLEMENTATION: YES para el alcance aprobado. EXECUTION_READY: CONDITIONAL — verificar entregas y contratos de todas las predecesoras antes de iniciar. IMPLEMENTED: NO.
+REQUIREMENTS_READY: YES. IMPLEMENTABLE: YES. TECHNICAL_GATE: APPROVED. UI_REQUIRED: YES. READY_FOR_FRONTEND_PLANNING: YES. READY_FOR_IMPLEMENTATION: YES para el alcance aprobado. EXECUTION_READY: YES. IMPLEMENTED: YES.
 
 Gate 2 aprobado: [dictámenes y secuencia](../sessions/2026-10-12-el-ep-018-review-gates.md).
+
+## Evidencia de implementación (2026-10-12)
+- **Contratos y descriptores (`apps/web/src/app/navigation/public-entry-routes.contract.ts`):** Definidos `APPROVED_PUBLIC_ENTRY_PATHS`, `CANONICAL_PUBLIC_ENTRY_ROUTE_METADATA`, `PublicEntryRouteDescriptor`, `PublicEntryRouteGuard` y `PUBLIC_HOME_ANCHORS`.
+- **Canonicalización pura (`apps/web/src/app/navigation/return-url.canonicalizer.ts`):** Implementado `canonicalizeInternalReturnUrl()` puro que sólo permite destinos internos autorizables (`/`, `/mi-cuenta`, `/mis-eventos`) y rechaza externos, protocol-relative, esquemas, codificaciones peligrosas, traversal, `/api`, media/assets, `/g/:lookupKey`, `/admin` y ciclos de autenticación (`/ingresar`, `/solicitar-acceso`) con fallback `/`.
+- **Infraestructura Router y 404 neutro (`public-entry-router.service.ts`, `public-not-found.component.ts`):** Implementados `PublicEntryRouterService`, `PublicEntryRouterOutletComponent`, `providePublicEntryRouter` (con redacción de `:lookupKey` en `safePathname` y gestión de foco `h1`/`h2`) y `PublicNotFoundComponent` (`ErrorState/404` neutro con «Volver al inicio»), sin modificar `main.ts` ni `AppComponent`.
+- **Pruebas:** `apps/web/src/app/navigation/public-entry-router.spec.ts` (6 tests en harness Angular exclusivo de pruebas, PASS) y `pnpm --filter @eventlens/web build` sin incluir el harness en el bundle productivo.

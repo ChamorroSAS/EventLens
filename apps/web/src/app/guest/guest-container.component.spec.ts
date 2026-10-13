@@ -1,13 +1,22 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { describe, it, expect, beforeEach } from 'vitest';
-import { GuestContainerComponent } from './guest-container.component.js';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import {
+  GUEST_EVENT_ENTRY_ROUTE_DESCRIPTOR,
+  GuestContainerComponent
+} from './guest-container.component.js';
 import { GuestService } from './guest.service.js';
 import { PublicAccessView } from './guest.types.js';
+import {
+  PublicEntryRouterOutletComponent,
+  PublicEntryRouterService,
+  providePublicEntryRouter
+} from '../navigation/public-entry-router.service.js';
 
-describe('GuestContainerComponent (EL-TK-083)', () => {
+describe('GuestContainerComponent (EL-TK-083 & EL-TK-211)', () => {
   let guestService: GuestService;
 
   const mockAccessView: PublicAccessView = {
+    accessState: 'ALLOWED',
     eventId: 'event-wedding-1',
     name: 'Boda Carlos y Sofia',
     status: 'ACTIVE',
@@ -29,13 +38,17 @@ describe('GuestContainerComponent (EL-TK-083)', () => {
     guestService.clearSession();
   });
 
-  function createComponent(accessView: PublicAccessView = mockAccessView): {
+  function createComponent(
+    accessView: PublicAccessView | null = mockAccessView,
+    lookupKey = 'lk_valid_wedding_key_123456'
+  ): {
     fixture: ComponentFixture<GuestContainerComponent>;
     component: GuestContainerComponent;
   } {
     const fixture = TestBed.createComponent(GuestContainerComponent);
     const component = fixture.componentInstance;
-    component.accessView = { ...accessView };
+    component.lookupKey = lookupKey;
+    component.accessView = accessView ? { ...accessView } : null;
     return { fixture, component };
   }
 
@@ -50,17 +63,73 @@ describe('GuestContainerComponent (EL-TK-083)', () => {
     expect(pinForm).toBeTruthy();
   });
 
-  it('Escenario 2: presenta ConsentSheet y luego GuestIdentityForm antes de habilitar la carga', async () => {
+  it('Escenario 2 (EL-TK-211): verifica PIN y confirma ConsentSheet + GuestIdentityForm mediante transporte owner real sin fabricar session-local-1 ni tokens JS', async () => {
+    vi.spyOn(guestService, 'submitPin').mockImplementation(async (_key, pin) => {
+      if (pin !== '123456') {
+        return {
+          ok: false,
+          status: 401,
+          code: 'INVALID_PIN',
+          message: 'El código PIN ingresado es incorrecto.'
+        };
+      }
+      const receipt = {
+        id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d',
+        eventId: 'event-wedding-1',
+        credentialGeneration: 1,
+        contributorNickname: null,
+        hasConsented: false,
+        consentVersion: null
+      };
+      guestService.setSession(receipt);
+      guestService.setContributions([]);
+      return { ok: true, session: receipt, contributions: [] };
+    });
+
+    vi.spyOn(guestService, 'confirmConsent').mockImplementation(async (version) => {
+      const updated = {
+        id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d',
+        eventId: 'event-wedding-1',
+        credentialGeneration: 1,
+        contributorNickname: null,
+        hasConsented: true,
+        consentVersion: version
+      };
+      guestService.setSession(updated);
+      return { ok: true, session: updated };
+    });
+
+    vi.spyOn(guestService, 'saveContributorNickname').mockImplementation(async (nickname) => {
+      const updated = {
+        id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d',
+        eventId: 'event-wedding-1',
+        credentialGeneration: 1,
+        contributorNickname: nickname.trim(),
+        hasConsented: true,
+        consentVersion: 'v1.0'
+      };
+      guestService.setSession(updated);
+      return { ok: true, session: updated };
+    });
+
     const { fixture, component } = createComponent();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    // 1. Submit PIN
-    component.onPinSubmitted('123456');
+    // Intento con PIN incorrecto no fabrica sesión local
+    await component.onPinSubmitted('000000');
+    fixture.detectChanges();
+    expect(component.hasActiveSession).toBe(false);
+    expect(component.pinErrorMessage()).toContain('incorrecto');
+
+    // 1. Submit PIN correcto
+    await component.onPinSubmitted('123456');
     await fixture.whenStable();
     fixture.detectChanges();
 
     expect(component.hasActiveSession).toBe(true);
+    expect(guestService.getSession()?.id).not.toBe('session-local-1');
+    expect(guestService.getSession()?.token).toBeUndefined();
 
     // 2. Trigger upload flow without prior consent
     component.startUploadFlow();
@@ -69,7 +138,7 @@ describe('GuestContainerComponent (EL-TK-083)', () => {
     expect(component.showConsentSheet()).toBe(true);
 
     // 3. Accept consent
-    component.onConsentAccepted('v1.0');
+    await component.onConsentAccepted('v1.0');
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -77,7 +146,7 @@ describe('GuestContainerComponent (EL-TK-083)', () => {
     expect(component.showIdentityForm()).toBe(true);
 
     // 4. Submit nickname
-    component.onNicknameSaved('Juan Pérez');
+    await component.onNicknameSaved('Juan Pérez');
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -85,11 +154,10 @@ describe('GuestContainerComponent (EL-TK-083)', () => {
     expect(guestService.isReadyToUpload()).toBe(true);
   });
 
-  it('Escenario 3: muestra Mis aportes con los recuerdos asociados a la sesión guest', async () => {
+  it('Escenario 3: muestra Mis aportes con los recuerdos asociados a la sesión guest y retira capacidades si la sesión es revocada (401)', async () => {
     guestService.setSession({
       id: 'sess-1',
       eventId: 'event-wedding-1',
-      token: 'tok-1',
       credentialGeneration: 1,
       contributorNickname: 'Andrea',
       hasConsented: true,
@@ -117,14 +185,44 @@ describe('GuestContainerComponent (EL-TK-083)', () => {
     expect(contributionsList).toBeTruthy();
     expect(component.contributions.length).toBe(1);
     expect(component.contributions[0].mediaType).toBe('PHOTO');
+
+    // Simular revocación de sesión desde el servidor (401)
+    vi.spyOn(guestService, 'refreshOwnContributions').mockImplementation(async () => {
+      guestService.clearSession();
+      return {
+        ok: false,
+        status: 401,
+        code: 'GUEST_SESSION_INVALID',
+        message: 'Tu sesión de invitado ha expirado o fue revocada.'
+      };
+    });
+
+    await component.refreshContributions();
+    fixture.detectChanges();
+
+    expect(component.hasActiveSession).toBe(false);
+    expect(component.contributions.length).toBe(0);
+    expect(component.sessionErrorMessage()).toContain('revocada');
   });
 
-  it('Escenario 4: deriva a solicitud de retiro mostrando modal informativo con disclaimer oficial', async () => {
+  it('Escenario 4: deriva a solicitud de retiro mediante transporte owner sin recuperar sesión ni eliminar automáticamente', async () => {
+    vi.spyOn(guestService, 'resolveRemovalIntake').mockResolvedValue({
+      ok: true,
+      intake: {
+        eventId: 'event-wedding-1',
+        eventName: 'Boda Carlos y Sofia',
+        intakePath: '/removal-request?eventId=event-wedding-1',
+        disclaimer:
+          'La recepción de esta solicitud no constituye una eliminación automática ni inmediata del contenido. El organizador o administrador del evento revisará la solicitud conforme a las políticas vigentes.',
+        requiresSession: false
+      }
+    });
+
     const { fixture, component } = createComponent();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    component.onRequestRemoval();
+    await component.onRequestRemoval();
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -132,6 +230,7 @@ describe('GuestContainerComponent (EL-TK-083)', () => {
     expect(component.removalIntakeView()?.disclaimer).toContain(
       'La recepción de esta solicitud no constituye una eliminación automática'
     );
+    expect(component.hasActiveSession).toBe(false);
 
     const removalModal = fixture.nativeElement.querySelector('.removal-modal-backdrop');
     expect(removalModal).toBeTruthy();
@@ -140,6 +239,38 @@ describe('GuestContainerComponent (EL-TK-083)', () => {
     await fixture.whenStable();
     fixture.detectChanges();
     expect(component.removalIntakeView()).toBeNull();
+  });
+
+  it('Escenario 5 (EL-TK-211): resuelve entrada directa /g/:lookupKey en el Router y maneja enlace revocado sin enumerar el evento', async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [PublicEntryRouterOutletComponent],
+      providers: [
+        GuestService,
+        providePublicEntryRouter([GUEST_EVENT_ENTRY_ROUTE_DESCRIPTOR])
+      ]
+    }).compileComponents();
+
+    const router = TestBed.inject(PublicEntryRouterService);
+    const service = TestBed.inject(GuestService);
+
+    vi.spyOn(service, 'resolvePublicEntry').mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      code: 'GUEST_ENTRY_NOT_FOUND',
+      message: 'El enlace de acceso no es válido o ha sido revocado.'
+    });
+
+    await router.navigateByUrl('/g/revoked_key_999');
+    const fixture = TestBed.createComponent(PublicEntryRouterOutletComponent);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Enlace no disponible');
+    expect(text).toContain('El enlace de acceso no es válido o ha sido revocado.');
+    expect(text).not.toContain('Boda Carlos y Sofia');
+    expect(router.currentSafePath()).toBe('/g/[redacted]');
   });
 
   it('cumple con accesibilidad WCAG 2.2 AA (regiones principales, roles y botones interactivos)', async () => {

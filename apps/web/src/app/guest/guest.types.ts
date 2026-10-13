@@ -1,6 +1,7 @@
 export type PublicAccessStatus = 'ALLOWED' | 'RESTRICTED' | 'UNAVAILABLE';
 
 export interface PublicAccessView {
+  accessState?: PublicAccessStatus;
   eventId: string;
   name: string;
   status: string;
@@ -16,7 +17,7 @@ export interface PublicAccessView {
 export interface GuestSessionState {
   id: string;
   eventId: string;
-  token: string;
+  token?: string;
   credentialGeneration: number;
   contributorNickname: string | null;
   hasConsented: boolean;
@@ -78,4 +79,3 @@ export interface GuestIntakeResult {
   readonly status: 'PENDING_REVIEW';
   readonly message: string;
 }
-

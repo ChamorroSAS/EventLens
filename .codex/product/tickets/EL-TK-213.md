@@ -4,7 +4,7 @@
 EL-EP-018
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** visitante u organizador, **quiero** una portada clara con acciones coherentes con mi sesión, **para** comprender EventLens y llegar a las capacidades autorizadas.
@@ -55,6 +55,18 @@ EL-EP-018; `ui-public-entry.md`; `public-entry-contract.md`; CR-004; EL-TK-203/2
 
 - [x] Gate 2 de requisitos, técnico y UI aplicable aprobado
 
-REQUIREMENTS_READY: YES. IMPLEMENTABLE: YES. TECHNICAL_GATE: APPROVED. UI_REQUIRED: YES. READY_FOR_FRONTEND_PLANNING: YES. READY_FOR_IMPLEMENTATION: YES para el alcance aprobado. EXECUTION_READY: CONDITIONAL — verificar entregas y contratos de todas las predecesoras antes de iniciar. IMPLEMENTED: NO.
+REQUIREMENTS_READY: YES. IMPLEMENTABLE: YES. TECHNICAL_GATE: APPROVED. UI_REQUIRED: YES. READY_FOR_FRONTEND_PLANNING: YES. READY_FOR_IMPLEMENTATION: YES para el alcance aprobado. EXECUTION_READY: YES. IMPLEMENTED: YES.
 
 Gate 2 aprobado: [dictámenes y secuencia](../sessions/2026-10-12-el-ep-018-review-gates.md).
+
+## Evidencia de entrega
+- Implementado `PublicHomePageComponent` en `apps/web/src/app/public-home/public-home.component.ts` con hero H1 `Tu evento termina. Sus recuerdos continúan.`, secciones de beneficios, 4 pasos ("Cómo funciona"), compromiso de privacidad, FAQ canónica acorde al handoff y cierre emocional.
+- Implementado `AppHeaderComponent` en `apps/web/src/app/public-home/app-header.component.ts` con navegación adaptativa a sesión (anónima, organizador activo, organizador restringido), anclas con scroll suave y menú móvil accesible con gestión de foco, `aria-expanded` y cierre por `Escape`.
+- Implementado `LegalFooterComponent` en `apps/web/src/app/public-home/legal-footer.component.ts` con branding minimalista y copyright 2026.
+- Ensamblado `ALL_PUBLIC_ENTRY_ROUTES` en `apps/web/src/app/navigation/all-routes.ts` conectando `/`, `/ingresar`, `/solicitar-acceso`, `/mi-cuenta`, `/mis-eventos`, `/g/:lookupKey` y wildcard 404.
+- Router productivo activado en `apps/web/src/main.ts` y `apps/web/src/app/app.component.ts` con `<eventlens-router-outlet>`.
+- Pruebas unitarias de Angular:
+  - `public-home.component.spec.ts`: 8/8 tests PASS.
+  - `app.component.spec.ts`: 1/1 test PASS.
+  - Suite completa `@eventlens/web`: 27/27 suites PASS, 154/154 tests PASS.
+- Compilación de producción: `ng build` exitoso con tamaño de bundle total de 95.38 kB.

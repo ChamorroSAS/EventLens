@@ -188,4 +188,88 @@ describe('OrganizerDashboardComponent & Organizer Navigation (EL-TK-048)', () =>
     expect(fixture.componentInstance.selectedEventConfig()).toBeNull();
     expect(fixture.nativeElement.querySelectorAll('eventlens-event-card').length).toBe(2);
   });
+
+  it('EL-TK-210: allows ordinary organizer on /mis-eventos, redirects restricted PENDING_DELETION to /mi-cuenta, and clears cached events on logout', async () => {
+    const { OrganizerSessionService } = await import('../organizer-session.service');
+    const { organizerDashboardRouteGuard, ORGANIZER_DASHBOARD_ROUTE_DESCRIPTOR } = await import(
+      './organizer-dashboard.component.js'
+    );
+
+    expect(ORGANIZER_DASHBOARD_ROUTE_DESCRIPTOR.path).toBe('/mis-eventos');
+
+    const sessionService = TestBed.inject(OrganizerSessionService);
+    sessionService.applyServerProjection(
+      {
+        state: 'ORGANIZER_ACTIVE',
+        capabilities: {
+          canSignIn: false,
+          canRequestBetaAccess: true,
+          canAccessMyEvents: true,
+          canAccessMyAccount: true,
+          canManageSessions: true,
+          canManageAccountDeletion: true,
+          isDeletionRestricted: false,
+          canSignOut: true
+        },
+        account: {
+          email: 'org@eventlens.test',
+          emailVerified: true,
+          accountStatus: 'ACTIVE'
+        }
+      },
+      'csrf-1'
+    );
+
+    const allowed = await TestBed.runInInjectionContext(() =>
+      organizerDashboardRouteGuard({
+        pathname: '/mis-eventos',
+        safePathname: '/mis-eventos',
+        params: {},
+        queryParams: {},
+        fragment: null
+      })
+    );
+    expect(allowed).toBe(true);
+
+    const fixture = await createDashboard();
+    expect(fixture.componentInstance.events().length).toBe(2);
+
+    // Clearing local session projection wipes cached events
+    sessionService.clearLocalSessionProjection('ANONYMOUS');
+    expect(fixture.componentInstance.events().length).toBe(0);
+
+    // Restricted PENDING_DELETION redirects to /mi-cuenta
+    sessionService.applyServerProjection(
+      {
+        state: 'ORGANIZER_RESTRICTED_DELETION',
+        capabilities: {
+          canSignIn: false,
+          canRequestBetaAccess: true,
+          canAccessMyEvents: false,
+          canAccessMyAccount: true,
+          canManageSessions: false,
+          canManageAccountDeletion: true,
+          isDeletionRestricted: true,
+          canSignOut: true
+        },
+        account: {
+          email: 'restricted@eventlens.test',
+          emailVerified: true,
+          accountStatus: 'PENDING_DELETION'
+        }
+      },
+      'csrf-2'
+    );
+
+    const restrictedRedirect = await TestBed.runInInjectionContext(() =>
+      organizerDashboardRouteGuard({
+        pathname: '/mis-eventos',
+        safePathname: '/mis-eventos',
+        params: {},
+        queryParams: {},
+        fragment: null
+      })
+    );
+    expect(restrictedRedirect).toBe('/mi-cuenta');
+  });
 });
