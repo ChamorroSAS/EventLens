@@ -162,6 +162,28 @@ export class AdminAuthenticationService {
     }
   }
 
+  private async assertRecoveryAuthorityOperational(scope: string = 'MOD-001'): Promise<bigint> {
+    if (!this.recoveryAuthority) {
+      throw new AuthenticationError('AUTHORITY_UNAVAILABLE', 'RecoveryAuthority is null or unavailable');
+    }
+    try {
+      const epoch = await this.recoveryAuthority.getRecoveryEpoch();
+      if (epoch === null || epoch === undefined) {
+        throw new AuthenticationError('AUTHORITY_UNAVAILABLE', 'RecoveryAuthority epoch is invalid');
+      }
+      if (this.recoveryAuthority.isRecoveryBarrierActive) {
+        const barrier = await this.recoveryAuthority.isRecoveryBarrierActive(epoch, scope);
+        if (barrier) {
+          throw new AuthenticationError('AUTHORITY_UNAVAILABLE', `Recovery barrier active for scope ${scope}`);
+        }
+      }
+      return epoch;
+    } catch (err) {
+      if (err instanceof AuthenticationError) throw err;
+      throw new AuthenticationError('AUTHORITY_UNAVAILABLE', `RecoveryAuthority unavailable: ${(err as Error).message}`);
+    }
+  }
+
   /**
    * Registers a 256-bit administrative credential for an existing principal.
    * Credential delivery and lifecycle belong to 043/045; this method encapsulates canonical hashing.
@@ -292,30 +314,37 @@ export class AdminAuthenticationService {
       throw new AuthenticationError('UNAUTHENTICATED', 'Invalid administrative credentials');
     }
 
-    // 5. RecoveryAuthority checks (AQR-001, TB-03)
-    let recoveryEpoch = 1n;
-    let authWatermark = 1n;
-    if (this.recoveryAuthority) {
-      recoveryEpoch = await this.recoveryAuthority.getRecoveryEpoch();
-      authWatermark = await this.recoveryAuthority.getAdminAuthWatermark(principal.id);
-      const authorityRevision = await this.recoveryAuthority.getCredentialRevision(principal.id);
+    // 5. RecoveryAuthority checks (AQR-001, TB-03, EL-TK-221)
+    const recoveryEpoch = await this.assertRecoveryAuthorityOperational('MOD-001');
+    let authWatermark: bigint;
+    let authorityRevision: bigint | null;
+    try {
+      authWatermark = await this.recoveryAuthority!.getAdminAuthWatermark(principal.id);
+      authorityRevision = await this.recoveryAuthority!.getCredentialRevision(principal.id);
+    } catch (err) {
+      if (err instanceof AuthenticationError) throw err;
+      throw new AuthenticationError('AUTHORITY_UNAVAILABLE', `RecoveryAuthority unavailable: ${(err as Error).message}`);
+    }
 
-      // Snapshot restore prevention: fail-closed if authority revision is strictly newer
-      if (authorityRevision !== null && authorityRevision > BigInt(credential.revision)) {
-        await this.transactions.run(async (tx) => {
-          await this.emitAudit(tx, {
-            id: randomUUID(),
-            procedure: 'ADMIN_LOGIN',
-            actorId: principal.id,
-            targetIdentifier: normalizedIdentifier,
-            targetPrincipalId: principal.id,
-            result: 'REJECTED_UNAUTHENTICATED',
-            details: 'Credential revision superseded by recovery authority',
-            timestamp: new Date()
-          });
+    if (authWatermark === null || authWatermark === undefined) {
+      throw new AuthenticationError('AUTHORITY_UNAVAILABLE', 'Recovery authority watermark unavailable');
+    }
+
+    // Snapshot restore prevention: fail-closed if authority revision is strictly newer
+    if (authorityRevision !== null && authorityRevision > BigInt(credential.revision)) {
+      await this.transactions.run(async (tx) => {
+        await this.emitAudit(tx, {
+          id: randomUUID(),
+          procedure: 'ADMIN_LOGIN',
+          actorId: principal.id,
+          targetIdentifier: normalizedIdentifier,
+          targetPrincipalId: principal.id,
+          result: 'REJECTED_UNAUTHENTICATED',
+          details: 'Credential revision superseded by recovery authority',
+          timestamp: new Date()
         });
-        throw new AuthenticationError('UNAUTHENTICATED', 'Invalid administrative credentials');
-      }
+      });
+      throw new AuthenticationError('UNAUTHENTICATED', 'Invalid administrative credentials');
     }
 
     // 6. Generate 256-bit random opaque tokens (TB-03)
@@ -370,7 +399,7 @@ export class AdminAuthenticationService {
         await this.recoveryAuthority.ackSessionOperation(preparedReceipt);
       } catch {
         // Fail-closed if ACK fails
-        throw new AuthenticationError('TEMPORARY_FAILURE', 'Failed to confirm session emission with recovery authority');
+        throw new AuthenticationError('AUTHORITY_UNAVAILABLE', 'Failed to confirm session emission with recovery authority');
       }
     }
 
@@ -424,7 +453,8 @@ export class AdminAuthenticationService {
                 created_at, expires_at, last_active_at, idle_expires_at,
                 revoked_at, revocation_reason, session_watermark
          FROM admin_session
-         WHERE token_digest = $1`,
+         WHERE token_digest = $1
+         FOR UPDATE`,
         tokenDigest
       );
 
@@ -436,6 +466,23 @@ export class AdminAuthenticationService {
 
       if (session.revoked_at !== null) {
         throw new AuthenticationError('SESSION_REVOKED', `Session has been revoked: ${session.revocation_reason ?? 'REVOKED'}`);
+      }
+
+      // Check legacy session without verifiable binding (EL-TK-221)
+      if (
+        session.session_watermark === null ||
+        session.session_watermark === undefined ||
+        BigInt(session.session_watermark) <= 0n ||
+        !session.auth_time ||
+        !session.token_digest ||
+        !session.csrf_token_digest
+      ) {
+        await tx.execute(
+          `UPDATE admin_session SET revoked_at = $1, revocation_reason = 'LEGACY_UNVERIFIABLE' WHERE id = $2 AND revoked_at IS NULL`,
+          now,
+          session.id
+        );
+        throw new AuthenticationError('SESSION_REVOKED', 'Legacy session without verifiable binding invalidated');
       }
 
       // Check absolute expiration (8 hours)
@@ -470,20 +517,51 @@ export class AdminAuthenticationService {
 
       const principal = principalRows[0];
 
-      // RecoveryAuthority verification
-      let recoveryEpoch = 1n;
-      if (this.recoveryAuthority) {
-        recoveryEpoch = await this.recoveryAuthority.getRecoveryEpoch();
-        const watermark = await this.recoveryAuthority.getAdminAuthWatermark(principal.id);
+      // Credential ACTIVE check (EL-TK-221)
+      const credRows = await tx.query<CredentialRow>(
+        `SELECT id, revision, status
+         FROM admin_credential
+         WHERE principal_id = $1 AND purpose = 'ADMIN_AUTHENTICATION' AND status = 'ACTIVE'
+         ORDER BY revision DESC
+         LIMIT 1`,
+        session.principal_id
+      );
 
-        if (watermark > BigInt(session.session_watermark)) {
-          await tx.execute(
-            `UPDATE admin_session SET revoked_at = $1, revocation_reason = 'WATERMARK_SUPERSEDED' WHERE id = $2 AND revoked_at IS NULL`,
-            now,
-            session.id
-          );
-          throw new AuthenticationError('SESSION_REVOKED', 'Session invalidated by revocation watermark');
-        }
+      if (credRows.length === 0 || credRows[0].status !== 'ACTIVE') {
+        throw new AuthenticationError('UNAUTHENTICATED', 'Administrative credential is not active or missing');
+      }
+
+      const currentCredRev = BigInt(credRows[0].revision);
+      const sessionWatermark = BigInt(session.session_watermark);
+
+      if (currentCredRev > sessionWatermark) {
+        await tx.execute(
+          `UPDATE admin_session SET revoked_at = $1, revocation_reason = 'CREDENTIAL_ROTATED' WHERE id = $2 AND revoked_at IS NULL`,
+          now,
+          session.id
+        );
+        throw new AuthenticationError('SESSION_REVOKED', 'Session invalidated due to subsequent credential rotation');
+      }
+
+      // RecoveryAuthority verification (EL-TK-221)
+      const recoveryEpoch = await this.assertRecoveryAuthorityOperational('MOD-001');
+      let watermark: bigint;
+      let authorityRevision: bigint | null;
+      try {
+        watermark = await this.recoveryAuthority!.getAdminAuthWatermark(principal.id);
+        authorityRevision = await this.recoveryAuthority!.getCredentialRevision(principal.id);
+      } catch (err) {
+        if (err instanceof AuthenticationError) throw err;
+        throw new AuthenticationError('AUTHORITY_UNAVAILABLE', `RecoveryAuthority unavailable: ${(err as Error).message}`);
+      }
+
+      if (watermark > sessionWatermark || (authorityRevision !== null && authorityRevision > sessionWatermark)) {
+        await tx.execute(
+          `UPDATE admin_session SET revoked_at = $1, revocation_reason = 'WATERMARK_SUPERSEDED' WHERE id = $2 AND revoked_at IS NULL`,
+          now,
+          session.id
+        );
+        throw new AuthenticationError('SESSION_REVOKED', 'Session invalidated by revocation watermark');
       }
 
       // Monotonic activity update: advances idle expiration up to the absolute limit, never beyond
@@ -524,9 +602,9 @@ export class AdminAuthenticationService {
         identifier: principal.identifier,
         sessionId: session.id,
         authTime: session.auth_time,
-        credentialRevision: BigInt(principal.auth_revision),
+        credentialRevision: currentCredRev,
         adminAuthRevision: BigInt(principal.auth_revision),
-        sessionWatermark: BigInt(session.session_watermark),
+        sessionWatermark,
         recoveryEpoch
       };
     });
@@ -552,7 +630,8 @@ export class AdminAuthenticationService {
       const sessionRows = await tx.query<SessionRow>(
         `SELECT id, principal_id, csrf_token_digest, expires_at, idle_expires_at, revoked_at, session_watermark
          FROM admin_session
-         WHERE token_digest = $1`,
+         WHERE token_digest = $1
+         FOR UPDATE`,
         tokenDigest
       );
 
@@ -619,6 +698,19 @@ export class AdminAuthenticationService {
         throw new AuthenticationError('UNAUTHENTICATED', 'Invalid administrative credentials');
       }
 
+      // RecoveryAuthority verification (EL-TK-221)
+      const recoveryEpoch = await this.assertRecoveryAuthorityOperational('MOD-001');
+      let watermark: bigint;
+      try {
+        watermark = await this.recoveryAuthority!.getAdminAuthWatermark(principal.id);
+      } catch (err) {
+        if (err instanceof AuthenticationError) throw err;
+        throw new AuthenticationError('AUTHORITY_UNAVAILABLE', `RecoveryAuthority unavailable: ${(err as Error).message}`);
+      }
+      if (watermark > BigInt(oldSession.session_watermark)) {
+        throw new AuthenticationError('SESSION_REVOKED', 'Session invalidated by revocation watermark');
+      }
+
       // 4. Revoke previous session
       await tx.execute(
         `UPDATE admin_session
@@ -683,7 +775,7 @@ export class AdminAuthenticationService {
         credentialRevision: BigInt(credential.revision),
         adminAuthRevision: BigInt(principal.auth_revision),
         sessionWatermark: BigInt(oldSession.session_watermark),
-        recoveryEpoch: 1n
+        recoveryEpoch
       };
 
       return {
@@ -706,6 +798,8 @@ export class AdminAuthenticationService {
       throw new AuthenticationError('INVALID_ARGUMENT', 'Session token and CSRF token are required');
     }
 
+    await this.assertRecoveryAuthorityOperational('MOD-001');
+
     const tokenDigest = hashToken(command.sessionToken);
     const now = new Date();
 
@@ -713,7 +807,8 @@ export class AdminAuthenticationService {
       const sessionRows = await tx.query<SessionRow>(
         `SELECT id, principal_id, csrf_token_digest, revoked_at
          FROM admin_session
-         WHERE token_digest = $1`,
+         WHERE token_digest = $1
+         FOR UPDATE`,
         tokenDigest
       );
 

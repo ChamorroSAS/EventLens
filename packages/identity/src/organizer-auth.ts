@@ -217,6 +217,28 @@ export class OrganizerAuthenticationService {
     this.failedAttempts.delete(key);
   }
 
+  private async assertRecoveryAuthorityOperational(scope: string = 'MOD-001'): Promise<bigint> {
+    if (!this.recoveryAuthority) {
+      throw new AuthenticationError('AUTHORITY_UNAVAILABLE', 'RecoveryAuthority is null or unavailable');
+    }
+    try {
+      const epoch = await this.recoveryAuthority.getRecoveryEpoch();
+      if (epoch === null || epoch === undefined) {
+        throw new AuthenticationError('AUTHORITY_UNAVAILABLE', 'RecoveryAuthority epoch is invalid');
+      }
+      if (this.recoveryAuthority.isRecoveryBarrierActive) {
+        const barrier = await this.recoveryAuthority.isRecoveryBarrierActive(epoch, scope);
+        if (barrier) {
+          throw new AuthenticationError('AUTHORITY_UNAVAILABLE', `Recovery barrier is active for scope ${scope}`);
+        }
+      }
+      return epoch;
+    } catch (err) {
+      if (err instanceof AuthenticationError) throw err;
+      throw new AuthenticationError('AUTHORITY_UNAVAILABLE', `RecoveryAuthority unavailable: ${(err as Error).message}`);
+    }
+  }
+
   /**
    * Logs in a verified organizer and emits a secure session (EL-TK-013).
    */
@@ -347,10 +369,30 @@ export class OrganizerAuthenticationService {
         throw new AuthenticationError('UNAUTHENTICATED', 'Invalid credentials');
       }
 
-      // 5. Validar con RecoveryAuthorityPort (AQR-001, EL-TK-046, DEC-108)
-      // Exige concordancia exacta con la autoridad y falla cerrado si es null o no coincide.
-      const epoch = await this.recoveryAuthority.getRecoveryEpoch();
-      const currentRevision = await this.recoveryAuthority.getCredentialRevision(account.id);
+      // 5. Validar con RecoveryAuthorityPort (AQR-001, EL-TK-046, DEC-108, EL-TK-221)
+      // Exige concordancia exacta con la autoridad y falla cerrado con 503 si es null, falla o barrera activa.
+      if (!this.recoveryAuthority) {
+        throw new AuthenticationError('AUTHORITY_UNAVAILABLE', 'RecoveryAuthority is null or unavailable');
+      }
+      let epoch: bigint;
+      let currentRevision: bigint | null;
+      try {
+        epoch = await this.recoveryAuthority.getRecoveryEpoch();
+        if (epoch === null || epoch === undefined) {
+          throw new AuthenticationError('AUTHORITY_UNAVAILABLE', 'RecoveryAuthority epoch is invalid');
+        }
+        if (this.recoveryAuthority.isRecoveryBarrierActive) {
+          const barrier = await this.recoveryAuthority.isRecoveryBarrierActive(epoch, 'MOD-001');
+          if (barrier) {
+            throw new AuthenticationError('AUTHORITY_UNAVAILABLE', 'Recovery barrier is active for scope MOD-001');
+          }
+        }
+        currentRevision = await this.recoveryAuthority.getCredentialRevision(account.id);
+      } catch (err) {
+        if (err instanceof AuthenticationError) throw err;
+        this.recordFailedAttempt(emailNormalized);
+        throw new AuthenticationError('AUTHORITY_UNAVAILABLE', `RecoveryAuthority unavailable: ${(err as Error).message}`);
+      }
       let credRevBigInt = BigInt(credential.revision);
 
       if (currentRevision === null || currentRevision !== credRevBigInt) {
@@ -448,10 +490,16 @@ export class OrganizerAuthenticationService {
         credRevBigInt = nextRevision;
         watermark = nextRevision;
       } else {
-        const authWatermark = await this.recoveryAuthority.getAdminAuthWatermark(account.id);
+        let authWatermark: bigint;
+        try {
+          authWatermark = await this.recoveryAuthority.getAdminAuthWatermark(account.id);
+        } catch (err) {
+          this.recordFailedAttempt(emailNormalized);
+          throw new AuthenticationError('AUTHORITY_UNAVAILABLE', `RecoveryAuthority unavailable: ${(err as Error).message}`);
+        }
         if (authWatermark === null || authWatermark === undefined) {
           this.recordFailedAttempt(emailNormalized);
-          throw new AuthenticationError('UNAUTHENTICATED', 'Recovery authority watermark unavailable');
+          throw new AuthenticationError('AUTHORITY_UNAVAILABLE', 'Recovery authority watermark unavailable');
         }
         watermark = authWatermark;
       }
@@ -574,6 +622,9 @@ export class OrganizerAuthenticationService {
       });
     } catch (err) {
       if (err instanceof AuthenticationError) {
+        if (err.code === 'AUTHORITY_UNAVAILABLE' || err.code === 'TEMPORARY_FAILURE') {
+          throw err;
+        }
         return projectOrganizerEffectiveSession({ actorContext: null });
       }
       throw err;
@@ -616,6 +667,23 @@ export class OrganizerAuthenticationService {
         throw new AuthenticationError('SESSION_REVOKED', `Session has been revoked: ${session.revocation_reason ?? 'REVOKED'}`);
       }
 
+      // Invalidate legacy session lacking verifiable binding conservatively (EL-TK-221)
+      if (
+        session.session_watermark === null ||
+        session.session_watermark === undefined ||
+        BigInt(session.session_watermark) <= 0n ||
+        !session.auth_time ||
+        !session.token_digest ||
+        !session.csrf_token_digest
+      ) {
+        await tx.execute(
+          `UPDATE organizer_session SET revoked_at = $1, revocation_reason = 'LEGACY_UNVERIFIABLE' WHERE id = $2 AND revoked_at IS NULL`,
+          now,
+          session.id
+        );
+        throw new AuthenticationError('SESSION_REVOKED', 'Legacy session without verifiable binding invalidated');
+      }
+
       const absoluteExpiry = new Date(session.expires_at).getTime();
       const idleExpiry = new Date(session.idle_expires_at).getTime();
 
@@ -646,7 +714,7 @@ export class OrganizerAuthenticationService {
 
       const sessionWatermark = BigInt(session.session_watermark);
 
-      // Invalidate if credential has been rotated post-session issuance
+      // Credential ACTIVE check (EL-TK-221)
       const credRows = await tx.query<OrganizerCredentialRow>(
         `SELECT id, account_id, purpose, secret_digest, revision, status
          FROM organizer_credential
@@ -656,20 +724,55 @@ export class OrganizerAuthenticationService {
         session.account_id
       );
 
-      let currentCredRev = sessionWatermark;
-      if (credRows.length > 0) {
-        currentCredRev = BigInt(credRows[0].revision);
-        if (currentCredRev > sessionWatermark) {
-          throw new AuthenticationError('SESSION_REVOKED', 'Session invalidated due to subsequent credential rotation');
-        }
+      if (credRows.length === 0 || credRows[0].status !== 'ACTIVE') {
+        throw new AuthenticationError('UNAUTHENTICATED', 'Organizer credential is not active or missing');
       }
 
-      const authRev = await this.recoveryAuthority.getCredentialRevision(session.account_id);
+      const currentCredRev = BigInt(credRows[0].revision);
+      if (currentCredRev > sessionWatermark) {
+        await tx.execute(
+          `UPDATE organizer_session
+           SET revoked_at = $1, revocation_reason = 'CREDENTIAL_ROTATED'
+           WHERE id = $2 AND revoked_at IS NULL`,
+          now,
+          session.id
+        );
+        throw new AuthenticationError('SESSION_REVOKED', 'Session invalidated due to subsequent credential rotation');
+      }
+
+      // RecoveryAuthority verification (EL-TK-221)
+      if (!this.recoveryAuthority) {
+        throw new AuthenticationError('AUTHORITY_UNAVAILABLE', 'RecoveryAuthority is null or unavailable');
+      }
+      let epoch: bigint;
+      let authRev: bigint | null;
+      try {
+        epoch = await this.recoveryAuthority.getRecoveryEpoch();
+        if (epoch === null || epoch === undefined) {
+          throw new AuthenticationError('AUTHORITY_UNAVAILABLE', 'RecoveryAuthority epoch is invalid');
+        }
+        if (this.recoveryAuthority.isRecoveryBarrierActive) {
+          const barrier = await this.recoveryAuthority.isRecoveryBarrierActive(epoch, 'MOD-001');
+          if (barrier) {
+            throw new AuthenticationError('AUTHORITY_UNAVAILABLE', 'Recovery barrier is active for scope MOD-001');
+          }
+        }
+        authRev = await this.recoveryAuthority.getCredentialRevision(session.account_id);
+      } catch (err) {
+        if (err instanceof AuthenticationError) throw err;
+        throw new AuthenticationError('AUTHORITY_UNAVAILABLE', `RecoveryAuthority unavailable: ${(err as Error).message}`);
+      }
+
       if (authRev !== null && authRev > sessionWatermark) {
+        await tx.execute(
+          `UPDATE organizer_session
+           SET revoked_at = $1, revocation_reason = 'RECOVERY_AUTHORITY_REVISION'
+           WHERE id = $2 AND revoked_at IS NULL`,
+          now,
+          session.id
+        );
         throw new AuthenticationError('SESSION_REVOKED', 'Session invalidated due to recovery authority credential revision');
       }
-
-      const epoch = await this.recoveryAuthority.getRecoveryEpoch();
 
       // Actualizar actividad de manera monótona
       const newIdleExpiresAt = new Date(Math.min(now.getTime() + 30 * 60 * 1000, absoluteExpiry));
@@ -812,6 +915,8 @@ export class OrganizerAuthenticationService {
     const { actorContext } = command;
     const now = new Date();
 
+    await this.assertRecoveryAuthorityOperational('MOD-001');
+
     return this.runner.run(async (tx: SqlTransaction) => {
       const rows = await tx.query<OrganizerSessionRow>(
         `SELECT id, account_id, revoked_at, expires_at, idle_expires_at
@@ -889,6 +994,8 @@ export class OrganizerAuthenticationService {
 
     const { actorContext, targetSessionId } = command;
     const now = new Date();
+
+    await this.assertRecoveryAuthorityOperational('MOD-001');
 
     return this.runner.run(async (tx: SqlTransaction) => {
       // 1. Ensure caller's current session is active and not revoked
@@ -1003,6 +1110,8 @@ export class OrganizerAuthenticationService {
 
     const { actorContext } = command;
     const now = new Date();
+
+    await this.assertRecoveryAuthorityOperational('MOD-001');
 
     return this.runner.run(async (tx: SqlTransaction) => {
       // 1. Verify caller's current session is active and not revoked
