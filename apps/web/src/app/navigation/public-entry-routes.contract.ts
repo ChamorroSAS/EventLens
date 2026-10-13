@@ -51,43 +51,43 @@ export const CANONICAL_PUBLIC_ENTRY_ROUTE_METADATA: Readonly<
   PUBLIC_HOME: {
     id: 'PUBLIC_HOME',
     path: APPROVED_PUBLIC_ENTRY_PATHS.HOME,
-    title: 'EventLens — Tus recuerdos de celebración en un solo lugar',
+    title: 'Phoeve — Tus recuerdos de celebración en un solo lugar',
     context: 'PUBLIC'
   },
   ORGANIZER_LOGIN: {
     id: 'ORGANIZER_LOGIN',
     path: APPROVED_PUBLIC_ENTRY_PATHS.LOGIN,
-    title: 'Iniciar sesión — EventLens',
+    title: 'Iniciar sesión — Phoeve',
     context: 'AUTH_ENTRY'
   },
   BETA_ACCESS_REQUEST: {
     id: 'BETA_ACCESS_REQUEST',
     path: APPROVED_PUBLIC_ENTRY_PATHS.BETA_ACCESS,
-    title: 'Solicitar acceso a la Beta — EventLens',
+    title: 'Solicitar acceso a la Beta — Phoeve',
     context: 'PUBLIC_FORM'
   },
   ORGANIZER_ACCOUNT: {
     id: 'ORGANIZER_ACCOUNT',
     path: APPROVED_PUBLIC_ENTRY_PATHS.ORGANIZER_ACCOUNT,
-    title: 'Mi cuenta — EventLens',
+    title: 'Mi cuenta — Phoeve',
     context: 'ORGANIZER_ACCOUNT'
   },
   ORGANIZER_DASHBOARD: {
     id: 'ORGANIZER_DASHBOARD',
     path: APPROVED_PUBLIC_ENTRY_PATHS.ORGANIZER_DASHBOARD,
-    title: 'Mis eventos — EventLens',
+    title: 'Mis eventos — Phoeve',
     context: 'ORGANIZER_OPERATIONS'
   },
   GUEST_EVENT_ENTRY: {
     id: 'GUEST_EVENT_ENTRY',
     path: APPROVED_PUBLIC_ENTRY_PATHS.GUEST_PATTERN,
-    title: 'Acceso al evento — EventLens',
+    title: 'Acceso al evento — Phoeve',
     context: 'GUEST'
   },
   NOT_FOUND: {
     id: 'NOT_FOUND',
     path: APPROVED_PUBLIC_ENTRY_PATHS.WILDCARD,
-    title: 'Página no encontrada — EventLens',
+    title: 'Página no encontrada — Phoeve',
     context: 'PUBLIC_ERROR'
   }
 });
