@@ -1,0 +1,213 @@
+<header class="el-header" role="banner">
+  <div class="el-header__container">
+    <!-- Logo de marca -->
+    <a
+      class="el-header__brand"
+      [attr.href]="homePath"
+      (click)="onNavigateHome($event)"
+      aria-label="EventLens — Inicio"
+    >
+      <img
+        src="/assets/branding/logo-primary.svg"
+        alt="EventLens"
+        class="el-header__logo"
+        width="132"
+        height="32"
+      />
+    </a>
+
+    <!-- Navegación desktop limpia y centrada -->
+    <nav class="el-header__nav el-header__nav--desktop" aria-label="Navegación principal">
+      <ul class="el-nav-list">
+        <li class="el-nav-item">
+          <a [attr.href]="'/#como-funciona'" (click)="onAnchorClick($event, 'como-funciona')">
+            Cómo funciona
+          </a>
+        </li>
+        <li class="el-nav-item">
+          <a [attr.href]="'/#beneficios'" (click)="onAnchorClick($event, 'beneficios')">
+            Beneficios
+          </a>
+        </li>
+        <li class="el-nav-item">
+          <a [attr.href]="'/#preguntas-frecuentes'" (click)="onAnchorClick($event, 'preguntas-frecuentes')">
+            Preguntas frecuentes
+          </a>
+        </li>
+        <li class="el-nav-item">
+          <a [attr.href]="'/#comparar'" (click)="onAnchorClick($event, 'comparar')">
+            Comparar
+          </a>
+        </li>
+        <li class="el-nav-item">
+          <a [attr.href]="'/#privacidad'" (click)="onAnchorClick($event, 'privacidad')">
+            Privacidad
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Acciones adaptativas según estado de sesión -->
+    <div class="el-header__actions el-header__actions--desktop">
+      @if (sessionService.state() === 'ORGANIZER_ACTIVE') {
+        <a
+          class="el-btn-nav"
+          [attr.href]="eventsPath"
+          (click)="onNavigate($event, eventsPath)"
+        >
+          Mis eventos
+        </a>
+        <a
+          class="el-btn-nav"
+          [attr.href]="accountPath"
+          (click)="onNavigate($event, accountPath)"
+        >
+          Mi cuenta
+        </a>
+        <button
+          type="button"
+          class="el-btn-secondary"
+          (click)="onLogout()"
+          [disabled]="sessionService.isLoggingOut()"
+        >
+          Cerrar sesión
+        </button>
+      } @else if (sessionService.state() === 'ORGANIZER_RESTRICTED_DELETION') {
+        <a
+          class="el-btn-nav"
+          [attr.href]="accountPath"
+          (click)="onNavigate($event, accountPath)"
+        >
+          Mi cuenta
+        </a>
+        <button
+          type="button"
+          class="el-btn-secondary"
+          (click)="onLogout()"
+          [disabled]="sessionService.isLoggingOut()"
+        >
+          Cerrar sesión
+        </button>
+      } @else {
+        <!-- Estado anónimo: solo Iniciar sesión (sin botón beta en el header) -->
+        <a
+          class="el-btn-login"
+          [attr.href]="loginPath"
+          (click)="onNavigate($event, loginPath)"
+        >
+          Iniciar sesión
+        </a>
+      }
+    </div>
+
+    <!-- Botón toggle de menú móvil -->
+    <button
+      type="button"
+      class="el-header__menu-btn"
+      [attr.aria-expanded]="mobileMenuOpen()"
+      aria-controls="mobile-navigation"
+      aria-label="Menú principal de navegación"
+      (click)="toggleMobileMenu()"
+    >
+      <span class="el-menu-icon" aria-hidden="true">
+        @if (mobileMenuOpen()) {
+          &times;
+        } @else {
+          &#9776;
+        }
+      </span>
+    </button>
+  </div>
+
+  <!-- Menú móvil desplegable -->
+  @if (mobileMenuOpen()) {
+    <div
+      id="mobile-navigation"
+      class="el-mobile-menu"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Menú móvil"
+    >
+      <nav aria-label="Navegación móvil">
+        <ul class="el-mobile-menu__list">
+          <li>
+            <a [attr.href]="'/#como-funciona'" (click)="onAnchorClick($event, 'como-funciona')">
+              Cómo funciona
+            </a>
+          </li>
+          <li>
+            <a [attr.href]="'/#beneficios'" (click)="onAnchorClick($event, 'beneficios')">
+              Beneficios
+            </a>
+          </li>
+          <li>
+            <a [attr.href]="'/#preguntas-frecuentes'" (click)="onAnchorClick($event, 'preguntas-frecuentes')">
+              Preguntas frecuentes
+            </a>
+          </li>
+          <li>
+            <a [attr.href]="'/#comparar'" (click)="onAnchorClick($event, 'comparar')">
+              Comparar
+            </a>
+          </li>
+          <li>
+            <a [attr.href]="'/#privacidad'" (click)="onAnchorClick($event, 'privacidad')">
+              Privacidad
+            </a>
+          </li>
+        </ul>
+
+        <div class="el-mobile-menu__actions">
+          @if (sessionService.state() === 'ORGANIZER_ACTIVE') {
+            <a
+              class="el-mobile-btn"
+              [attr.href]="eventsPath"
+              (click)="onNavigate($event, eventsPath)"
+            >
+              Mis eventos
+            </a>
+            <a
+              class="el-mobile-btn"
+              [attr.href]="accountPath"
+              (click)="onNavigate($event, accountPath)"
+            >
+              Mi cuenta
+            </a>
+            <button
+              type="button"
+              class="el-mobile-btn el-mobile-btn--secondary"
+              (click)="onLogout()"
+              [disabled]="sessionService.isLoggingOut()"
+            >
+              Cerrar sesión
+            </button>
+          } @else if (sessionService.state() === 'ORGANIZER_RESTRICTED_DELETION') {
+            <a
+              class="el-mobile-btn"
+              [attr.href]="accountPath"
+              (click)="onNavigate($event, accountPath)"
+            >
+              Mi cuenta
+            </a>
+            <button
+              type="button"
+              class="el-mobile-btn el-mobile-btn--secondary"
+              (click)="onLogout()"
+              [disabled]="sessionService.isLoggingOut()"
+            >
+              Cerrar sesión
+            </button>
+          } @else {
+            <a
+              class="el-mobile-btn el-mobile-btn--login"
+              [attr.href]="loginPath"
+              (click)="onNavigate($event, loginPath)"
+            >
+              Iniciar sesión
+            </a>
+          }
+        </div>
+      </nav>
+    </div>
+  }
+</header>
