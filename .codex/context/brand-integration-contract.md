@@ -10,7 +10,7 @@ Maestro/derivados documentales en `docs/branding/assets/`. Publicar sólo deriva
 
 Manrope autoalojada en `apps/web/public/assets/fonts/manrope/`; WOFF2 estáticos con pesos reales400/500/600/700 o variable que los cubra. Registrar procedencia, versión/commit disponible, hashes y licencia de redistribución; incluir licencia. Si no se acredita licencia o pesos, no incorporar ese archivo ni certificar DONE; obtener distribución válida de la misma Manrope, sin elegir otra tipografía. `font-display: swap`; familia `Manrope, system-ui, sans-serif`. Sin petición obligatoria a proveedor remoto.
 
-Archivo único `apps/web/src/styles/ui-foundation.css`, registrado en styles Angular. Global sólo `@font-face` y custom properties `--el-ui-*` en `:root` con roles UI vigentes. Declaraciones inertes fuera de consumidores; sin reset, body/button/a globales, reglas universales, utilities, personalización mutable o sustitución por colores del arte.
+Foundation SCSS en `apps/web/src/styles`: partials `_tokens`, `_breakpoints`, `_mixins`, `_fonts`, `_reset`, `_typography` y `styles.scss` como único entrypoint global registrado en styles Angular, que emite los custom properties `--el-*` en `:root` y las capas globales `fonts`/`reset`/`typography`. Los componentes consumen tokens sólo por `var(--el-*)` (herencia a través de la encapsulación Emulated); `@angular/build` compila SCSS con `inlineStyleLanguage: scss` y `stylePreprocessorOptions.includePaths: ["src/styles"]`. Los colores semánticos no se usan como texto (fallan AA). Esta foundation sustituye el archivo único inerte `ui-foundation.css` y las variables `--el-ui-*` del piloto CR-004, retirados por [EL-TD-009](technical-baseline.md#el-td-009--frontend-styling-strategy)/DEC-111.
 
 ## Piloto encapsulado
 
@@ -22,6 +22,6 @@ Vitest monta el componente real y prueba entradas/salidas/contexto/proyección. 
 
 Verificar: paths y base href; disponibilidad real assets/favicon/fuentes; procedencia/hashes/licencia; fidelidad PDF; tamaños reales y límites del arte; carga efectiva de Manrope/pesos y fallback forzando fallo; contraste/foco/teclado/reflow/nombres largos; con/sin evento, exitContext y proyección; ausencia de recolor en externos/proyectados y de harness en build producción; build/typecheck/pruebas pertinentes. No certificar auth/routing/API/Beta ni dispositivos no usados.
 
-Baseline aplicable ACCEPTED: EL-TD-001/005/006/007; EL-TD-004 preservado. Sin persistencia, API, transacciones, recovery ni permisos nuevos. Reversión de referencias/CSS no requiere migración de datos. CSS actual+custom properties es mecanismo local de este alcance, no resolución de estrategia general DEFERRED.
+Baseline aplicable ACCEPTED: EL-TD-001/005/006/007/009; EL-TD-004 preservado. Sin persistencia, API, transacciones, recovery ni permisos nuevos. Reversión de referencias/CSS no requiere migración de datos. La estrategia de estilos es ahora general (Sass/SCSS + CSS custom properties `--el-*`), resuelta en [EL-TD-009](technical-baseline.md#el-td-009--frontend-styling-strategy)/DEC-111; el piloto CR-004 queda superseded.
 
 Readiness técnico propio suficiente; gate UI YES y revisión final203/204 APPROVED registrados.203 listo para comenzar;204 espera salidas203 validadas. Sin implementación acreditada. [Registro de gates](../product/sessions/2026-10-12-brand-planning-gates.md).

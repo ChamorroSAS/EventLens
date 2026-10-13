@@ -43,6 +43,64 @@ Success: #278C63
 Warning: #D98A26
 Danger: #C94A4A
 
+Surface Muted: #F4F4F1
+Text Disabled: #9AA0A6
+Border Strong: #D2D2CC
+
+Success Soft: #E7F4EE
+Warning Soft: #FBF1E2
+Danger Soft: #F8E6E6
+
+Info: #2E6BB0
+Info Soft: #E8F0FA
+
+Focus: #17345C
+
+Los colores semánticos (`Success`, `Warning`, `Danger`, `Accent`) NO cumplen contraste AA como texto sobre fondos claros: el texto usa `Text Primary`/`Text Secondary` y los semánticos se reservan para bordes, rellenos y badges. No depender únicamente del color.
+
+## Escala tipográfica
+
+Display: 2rem
+Heading 1: 1.5rem
+Heading 2: 1.25rem
+Heading 3: 1.125rem
+Body: 1rem
+Body small: 0.875rem
+Label: 0.875rem
+Caption: 0.75rem
+Button: 0.9375rem
+
+Altura de línea: compacta 1.2, normal 1.5, relajada 1.6.
+Pesos: regular 400, medium 500, semibold 600, bold 700.
+
+## Espaciado
+
+XS: 0.25rem
+SM: 0.5rem
+MD: 1rem
+LG: 1.5rem
+XL: 2rem
+2XL: 3rem
+
+## Radio
+
+SM: 4px
+MD: 8px
+LG: 12px
+Pill: 999px
+
+## Elevación
+
+Subtle: 0 1px 3px rgba(0, 0, 0, 0.06)
+Overlay: 0 8px 24px rgba(0, 0, 0, 0.12)
+Sin sombra por defecto (`none`).
+
+## Breakpoints
+
+Mobile: < 640px
+Tablet: >= 640px
+Desktop: >= 1024px
+
 ## Forma
 
 - bordes moderadamente redondeados
@@ -51,9 +109,9 @@ Danger: #C94A4A
 - controles táctiles amplios
 - jerarquía visual sencilla
 
-## Piloto de foundation CR-004
+## Estrategia de estilos (EL-TD-009)
 
-Especificación acotada adoptada en [ui-brand-foundation.md](ui-brand-foundation.md); mecanismo local en [brand-integration-contract.md](brand-integration-contract.md). Manrope/pesos/HEX anteriores permanecen vigentes. Variables --el-ui-* inertes; consumo sólo hojas propias de OrganizerAppShell, sin reset, recolor global, herencia nueva hacia proyección o cambios de badge hijo. Medidas piloto y160CSSpx de ensayo del wordmark no son mínimos oficiales de marca. No resolución de estrategia CSS/UI/iconos general DEFERRED ni evidencia de implementación. Los principios siguientes siguen vigentes.
+Resuelta en [EL-TD-009](technical-baseline.md#el-td-009--frontend-styling-strategy) y [DEC-111](../product/DECISIONS.md): Sass (SCSS) compilado por el build de Angular más CSS custom properties `--el-*` como capa de tokens en runtime. Partials en `apps/web/src/styles` (`_tokens`, `_breakpoints`, `_mixins`, `_fonts`, `_reset`, `_typography`) con `styles.scss` como único entrypoint global que emite `:root`. Los componentes consumen tokens sólo por `var(--el-*)`; los colores semánticos no se usan como texto (fallan AA). Sustituye el piloto histórico CR-004 y sus variables `--el-ui-*`, que quedan retiradas. Manrope/pesos/HEX anteriores permanecen vigentes. Librerías externa de componentes e iconos siguen `DEFERRED`. Los principios siguientes siguen vigentes.
 
 ## Principios
 
