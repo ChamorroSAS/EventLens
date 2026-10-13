@@ -46,7 +46,7 @@ import { PublicEntryRouterService } from '../navigation/public-entry-router.serv
               [attr.href]="homePath"
               (click)="onNavigateHome($event)"
             >
-              Ir al inicio de EventLens
+              Ir al inicio de Phoeve
             </a>
           </div>
         </section>
