@@ -367,3 +367,27 @@ it('EL-TK-210: lists own events, serves authorized event configuration, enforces
   });
   expect(alienConfigRes.status).toBe(404);
 });
+
+it('EL-TK-218: verifica guardas de aislamiento de laboratorio antes de listen', async () => {
+  const { assertTestServerStartup } = await import('@eventlens/database/testing');
+  // 1. Rechazo temprano con URL de desarrollo sin abrir conexión
+  await expect(
+    assertTestServerStartup({
+      env: {
+        ...process.env,
+        DATABASE_URL: 'postgresql://eventlens:secret@127.0.0.1:5432/eventlens'
+      },
+      checkPort: false
+    })
+  ).rejects.toThrow('TEST_ISOLATION_CONNECTION_REJECTED');
+
+  // 2. Acepta el entorno actual aislado de pruebas
+  if (process.env.EVENTLENS_TEST_DATABASE) {
+    await expect(
+      assertTestServerStartup({
+        env: process.env,
+        checkPort: false
+      })
+    ).resolves.toBeUndefined();
+  }
+});

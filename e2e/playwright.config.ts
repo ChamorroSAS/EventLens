@@ -14,7 +14,7 @@ export default defineConfig({
   webServer: {
     command: 'node ../apps/web/spa-server.mjs',
     url: webBaseUrl,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     env: {
       SPA_PORT: webPort,
       SPA_HOST: '127.0.0.1',
