@@ -1,1 +1,1 @@
-{"schemaVersion":1,"owners":["packages/job-queue","packages/media-execution","packages/media-acceptance","packages/media-inspection","packages/identity","packages/event-management","packages/capacity-management","packages/notifications","packages/observability"]}
+{"schemaVersion":1,"owners":["packages/job-queue","packages/media-execution","packages/media-acceptance","packages/media-inspection","packages/identity","packages/event-management","packages/export-management","packages/capacity-management","packages/notifications","packages/observability"]}
