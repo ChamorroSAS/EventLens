@@ -201,9 +201,16 @@ function createInMemoryRunner(db: InMemoryDb): TransactionRunner {
             let id: string;
 
             if (params.length === 2) {
-              // SET revoked_at = $1, revocation_reason = 'USER_LOGOUT' WHERE id = $2
               [revoked_at, id] = params as [Date, string];
-              revocation_reason = 'USER_LOGOUT';
+              if (normalized.includes("'LEGACY_UNVERIFIABLE'")) {
+                revocation_reason = 'LEGACY_UNVERIFIABLE';
+              } else if (normalized.includes("'CREDENTIAL_ROTATED'")) {
+                revocation_reason = 'CREDENTIAL_ROTATED';
+              } else if (normalized.includes("'RECOVERY_AUTHORITY_REVISION'")) {
+                revocation_reason = 'RECOVERY_AUTHORITY_REVISION';
+              } else {
+                revocation_reason = 'USER_LOGOUT';
+              }
             } else {
               // SET revoked_at = $1, revocation_reason = $2 WHERE id = $3
               [revoked_at, revocation_reason, id] = params as [Date, string, string];
@@ -802,5 +809,94 @@ describe('EL-TK-013: OrganizerAuthenticationService (Unit Tests)', () => {
       ).rejects.toMatchObject({ code: 'UNAUTHENTICATED' });
     });
   });
+
+  describe('EL-TK-221: Session Binding, Credential Invalidation, and Recovery Authority Outages (Organizer)', () => {
+    it('falla con UNAUTHENTICATED si la credencial del organizador no está activa o fue revocada', async () => {
+      const fixture = seedOrganizerFixture({ status: 'ACTIVE' });
+      const loginRes = await service.login({ email: fixture.email, password: fixture.password });
+
+      // Marcar credencial como REVOKED en la base de datos
+      const cred = [...db.credentials.values()].find((c) => c.account_id === fixture.accountId);
+      cred.status = 'REVOKED';
+
+      await expect(
+        service.validateSession({ sessionToken: loginRes.sessionToken })
+      ).rejects.toMatchObject({
+        code: 'UNAUTHENTICATED'
+      });
+    });
+
+    it('invalida conservadoramente sesiones legacy sin enlace verificable (watermark <= 0 o digests faltantes)', async () => {
+      const fixture = seedOrganizerFixture({ status: 'ACTIVE' });
+      const loginRes = await service.login({ email: fixture.email, password: fixture.password });
+
+      // Simular sesión legacy corrompiendo su watermark a 0n
+      const tokenDigest = createHash('sha256').update(loginRes.sessionToken).digest('hex');
+      const session = db.sessions.get(tokenDigest);
+      session.session_watermark = 0n;
+
+      await expect(
+        service.validateSession({ sessionToken: loginRes.sessionToken })
+      ).rejects.toMatchObject({
+        code: 'SESSION_REVOKED'
+      });
+
+      expect(session.revoked_at).toBeInstanceOf(Date);
+      expect(session.revocation_reason).toBe('LEGACY_UNVERIFIABLE');
+    });
+
+    it('falla cerrado con AUTHORITY_UNAVAILABLE si la autoridad de recuperación experimenta una caída', async () => {
+      const fixture = seedOrganizerFixture({ status: 'ACTIVE' });
+      const loginRes = await service.login({ email: fixture.email, password: fixture.password });
+
+      (recoveryAuthority.getRecoveryEpoch as any).mockRejectedValueOnce(new Error('Recovery cluster timeout'));
+
+      await expect(
+        service.validateSession({ sessionToken: loginRes.sessionToken })
+      ).rejects.toMatchObject({
+        code: 'AUTHORITY_UNAVAILABLE'
+      });
+    });
+
+    it('falla cerrado con AUTHORITY_UNAVAILABLE si la barrera de recuperación está activa en MOD-001', async () => {
+      const fixture = seedOrganizerFixture({ status: 'ACTIVE' });
+      const loginRes = await service.login({ email: fixture.email, password: fixture.password });
+
+      recoveryAuthority.isRecoveryBarrierActive = vi.fn().mockResolvedValue(true);
+
+      await expect(
+        service.validateSession({ sessionToken: loginRes.sessionToken })
+      ).rejects.toMatchObject({
+        code: 'AUTHORITY_UNAVAILABLE'
+      });
+    });
+
+    it('projectSession propaga AUTHORITY_UNAVAILABLE en lugar de degradar a ANONYMOUS ante caídas de la autoridad', async () => {
+      const fixture = seedOrganizerFixture({ status: 'ACTIVE' });
+      const loginRes = await service.login({ email: fixture.email, password: fixture.password });
+
+      (recoveryAuthority.getRecoveryEpoch as any).mockRejectedValueOnce(new Error('Database replication lag'));
+
+      await expect(
+        service.projectSession({ sessionToken: loginRes.sessionToken })
+      ).rejects.toMatchObject({
+        code: 'AUTHORITY_UNAVAILABLE'
+      });
+    });
+
+    it('logout revalida el estado operativo de la autoridad y falla cerrado ante indisponibilidad', async () => {
+      const fixture = seedOrganizerFixture({ status: 'ACTIVE' });
+      const loginRes = await service.login({ email: fixture.email, password: fixture.password });
+
+      (recoveryAuthority.getRecoveryEpoch as any).mockRejectedValueOnce(new Error('Network partition'));
+
+      await expect(
+        service.logout({ actorContext: loginRes.actorContext })
+      ).rejects.toMatchObject({
+        code: 'AUTHORITY_UNAVAILABLE'
+      });
+    });
+  });
 });
+
 
