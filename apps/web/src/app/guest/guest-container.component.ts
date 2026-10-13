@@ -56,105 +56,124 @@ import { PublicEntryRouterService } from '../navigation/public-entry-router.serv
             <span class="status-badge" [ngClass]="'status-' + (accessView?.status?.toLowerCase() || 'draft')">
               {{ getStatusLabel(accessView?.status) }}
             </span>
-            <span *ngIf="accessView?.timezone" class="timezone-chip">{{ accessView?.timezone }}</span>
+            @if (accessView?.timezone) {
+              <span class="timezone-chip">{{ accessView?.timezone }}</span>
+            }
           </div>
           <h1 id="event-title" class="event-title">{{ accessView?.name || 'Evento' }}</h1>
-          <p *ngIf="accessView?.restrictionReason" class="restriction-banner" role="alert">
-            {{ accessView?.restrictionReason }}
-          </p>
-          <p *ngIf="sessionErrorMessage()" class="restriction-banner" role="alert">
-            {{ sessionErrorMessage() }}
-          </p>
+          @if (accessView?.restrictionReason) {
+            <p class="restriction-banner" role="alert">
+              {{ accessView?.restrictionReason }}
+            </p>
+          }
+          @if (sessionErrorMessage()) {
+            <p class="restriction-banner" role="alert">
+              {{ sessionErrorMessage() }}
+            </p>
+          }
         </header>
 
         <!-- Escenario 1: PIN requerido cuando aún no hay sesión y el evento es accesible -->
-        <section *ngIf="needsPinVerification" class="step-section">
-          <el-pin-access-form
-            [submitting]="isSubmittingPin()"
-            [errorMessage]="pinErrorMessage()"
-            (pinSubmit)="onPinSubmitted($event)"
-          ></el-pin-access-form>
-        </section>
+        @if (needsPinVerification) {
+          <section class="step-section">
+            <el-pin-access-form
+              [submitting]="isSubmittingPin()"
+              [errorMessage]="pinErrorMessage()"
+              (pinSubmit)="onPinSubmitted($event)"
+            ></el-pin-access-form>
+          </section>
+        }
 
         <!-- Escenario 2: Consentimiento requerido antes de cargar -->
-        <el-consent-sheet
-          *ngIf="showConsentSheet()"
-          [documentVersion]="'v1.0'"
-          [submitting]="isSubmittingConsent()"
-          (consentAccepted)="onConsentAccepted($event)"
-          (consentCancelled)="onConsentCancelled()"
-        ></el-consent-sheet>
+        @if (showConsentSheet()) {
+          <el-consent-sheet
+            [documentVersion]="'v1.0'"
+            [submitting]="isSubmittingConsent()"
+            (consentAccepted)="onConsentAccepted($event)"
+            (consentCancelled)="onConsentCancelled()"
+          ></el-consent-sheet>
+        }
 
         <!-- Escenario 2: Identidad requerida tras consentimiento -->
-        <section *ngIf="showIdentityForm()" class="step-section">
-          <el-guest-identity-form
-            [submitting]="isSubmittingIdentity()"
-            [errorMessage]="identityErrorMessage()"
-            (nicknameSaved)="onNicknameSaved($event)"
-          ></el-guest-identity-form>
-        </section>
+        @if (showIdentityForm()) {
+          <section class="step-section">
+            <el-guest-identity-form
+              [submitting]="isSubmittingIdentity()"
+              [errorMessage]="identityErrorMessage()"
+              (nicknameSaved)="onNicknameSaved($event)"
+            ></el-guest-identity-form>
+          </section>
+        }
 
         <!-- Escenario 3: Sesión activa y Mis aportes -->
-        <section *ngIf="hasActiveSession && !showIdentityForm() && !isUnavailableAccess" class="active-session-content">
-          <div class="guest-bar">
-            <span class="welcome-text">
-              Participando como <strong>{{ currentSession?.contributorNickname || 'Invitado' }}</strong>
-            </span>
-            <button
-              *ngIf="canUpload"
-              type="button"
-              class="upload-trigger-btn"
-              (click)="startUploadFlow()"
-              aria-label="Cargar fotos o videos"
-            >
-              Subir recuerdos
-            </button>
-          </div>
+        @if (hasActiveSession && !showIdentityForm() && !isUnavailableAccess) {
+          <section class="active-session-content">
+            <div class="guest-bar">
+              <span class="welcome-text">
+                Participando como <strong>{{ currentSession?.contributorNickname || 'Invitado' }}</strong>
+              </span>
+              @if (canUpload) {
+                <button
+                  type="button"
+                  class="upload-trigger-btn"
+                  (click)="startUploadFlow()"
+                  aria-label="Cargar fotos o videos"
+                >
+                  Subir recuerdos
+                </button>
+              }
+            </div>
 
-          <el-my-contributions-list
-            [contributions]="contributions"
-            (requestRemoval)="onRequestRemoval()"
-          ></el-my-contributions-list>
-        </section>
+            <el-my-contributions-list
+              [contributions]="contributions"
+              (requestRemoval)="onRequestRemoval()"
+            ></el-my-contributions-list>
+          </section>
+        }
 
         <!-- Acceso directo a derivación de retiro sin exigir sesión cuando el evento está restringido -->
-        <section *ngIf="!hasActiveSession && !needsPinVerification && !isUnavailableAccess" class="step-section">
-          <div class="guest-bar">
-            <span class="welcome-text">¿Necesitas solicitar el retiro de un recuerdo?</span>
-            <button
-              type="button"
-              class="close-removal-btn"
-              (click)="onRequestRemoval()"
-            >
-              Solicitar retiro de recuerdo
-            </button>
-          </div>
-        </section>
+        @if (!hasActiveSession && !needsPinVerification && !isUnavailableAccess) {
+          <section class="step-section">
+            <div class="guest-bar">
+              <span class="welcome-text">¿Necesitas solicitar el retiro de un recuerdo?</span>
+              <button
+                type="button"
+                class="close-removal-btn"
+                (click)="onRequestRemoval()"
+              >
+                Solicitar retiro de recuerdo
+              </button>
+            </div>
+          </section>
+        }
 
         <!-- Escenario 4: Modal o aviso de derivación a retiro sin sesión -->
-        <div *ngIf="removalIntakeView()" class="removal-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="removal-title">
-          <div class="removal-card">
-            <h3 id="removal-title" class="removal-title">Solicitud de retiro de recuerdo</h3>
-            <p class="removal-disclaimer">{{ removalIntakeView()?.disclaimer }}</p>
-            <div class="removal-actions">
-              <button type="button" class="close-removal-btn" (click)="closeRemovalModal()">Cerrar</button>
-              <button type="button" class="intake-link-btn" (click)="openIntakeFlow()">Ir al formulario de solicitud</button>
+        @if (removalIntakeView()) {
+          <div class="removal-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="removal-title">
+            <div class="removal-card">
+              <h3 id="removal-title" class="removal-title">Solicitud de retiro de recuerdo</h3>
+              <p class="removal-disclaimer">{{ removalIntakeView()?.disclaimer }}</p>
+              <div class="removal-actions">
+                <button type="button" class="close-removal-btn" (click)="closeRemovalModal()">Cerrar</button>
+                <button type="button" class="intake-link-btn" (click)="openIntakeFlow()">Ir al formulario de solicitud</button>
+              </div>
             </div>
           </div>
-        </div>
+        }
 
         <!-- Escenario 4 & EL-TK-121: Flujo interactivo de retiro y denuncia -->
-        <el-removal-request-flow
-          *ngIf="showRemovalFlow()"
-          [isOpen]="showRemovalFlow()"
-          [variant]="removalFlowVariant()"
-          [eventId]="accessView?.eventId || ''"
-          [eventName]="accessView?.name || 'Evento'"
-          [mediaId]="targetMediaId()"
-          [sessionToken]="currentSession?.token || ''"
-          (close)="onCloseRemovalFlow()"
-          (removed)="onContributionRemoved($event)"
-        ></el-removal-request-flow>
+        @if (showRemovalFlow()) {
+          <el-removal-request-flow
+            [isOpen]="showRemovalFlow()"
+            [variant]="removalFlowVariant()"
+            [eventId]="accessView?.eventId || ''"
+            [eventName]="accessView?.name || 'Evento'"
+            [mediaId]="targetMediaId()"
+            [sessionToken]="currentSession?.token || ''"
+            (close)="onCloseRemovalFlow()"
+            (removed)="onContributionRemoved($event)"
+          ></el-removal-request-flow>
+        }
       }
     </main>
   `,

@@ -1,0 +1,36 @@
+// Self-hosted Manrope (SIL Open Font License 1.1), latin subset.
+// Files live in apps/web/public/assets/fonts/manrope and are served from
+// /assets/fonts/manrope. Weights per ui-design-system.md: 400 body, 500 label,
+// 600 heading/button, 700 display.
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/manrope/manrope-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/assets/fonts/manrope/manrope-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/assets/fonts/manrope/manrope-600.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/assets/fonts/manrope/manrope-700.woff2') format('woff2');
+}

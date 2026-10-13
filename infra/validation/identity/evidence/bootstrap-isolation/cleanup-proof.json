@@ -1,0 +1,7 @@
+{
+  "result": "PASS",
+  "temporaryDatabasesRemaining": 0,
+  "temporaryRolesRemaining": 0,
+  "scope": "dedicated test PostgreSQL only",
+  "verification": "Executed after all laboratory runs; no development database was inspected."
+}

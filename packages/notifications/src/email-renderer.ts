@@ -117,6 +117,15 @@ export class EmailRenderer {
         break;
       }
 
+      case 'EXPORT_INVALIDATED': {
+        subject = 'Tu paquete de exportación ha sido invalidado — EventLens';
+        heading = 'Exportación no disponible por cambios de privacidad o permisos';
+        message =
+          'Se han actualizado permisos o se retiró contenido incluido en la exportación anterior. Por motivos de privacidad y seguridad (DEC-090), puedes solicitar una nueva exportación con el contenido vigente.';
+        actionLabel = 'Ir a la biblioteca';
+        break;
+      }
+
       case 'CASE_CRITICAL_ALERT': {
         subject = 'Alerta prioritaria de moderación — EventLens';
         heading = 'Alerta prioritaria de moderación';

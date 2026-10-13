@@ -1,3 +1,4 @@
+import { IsolatedTestTransactions, assertTestDatabase } from '@eventlens/database/testing';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { randomUUID } from 'node:crypto';
 import { Client } from 'pg';
@@ -19,7 +20,7 @@ integration('Beta access request: isolated PostgreSQL READ COMMITTED proof', () 
   const schema = `beta_verification_${randomUUID().replaceAll('-', '')}`;
   let observer: Client;
   let prisma: ReturnType<typeof createPrismaClient>;
-  let transactions: PrismaTransactions;
+  let transactions: IsolatedTestTransactions;
   let schemaCreated = false;
 
   beforeAll(async () => {
@@ -29,6 +30,7 @@ integration('Beta access request: isolated PostgreSQL READ COMMITTED proof', () 
     url.searchParams.set('options', `-c search_path=${schema}`);
     observer = new Client({ connectionString: url.toString() });
     await observer.connect();
+    await assertTestDatabase({ query: async (sql, ...args) => (await observer.query(sql, args)).rows });
     await observer.query(`CREATE SCHEMA "${schema}"`);
     schemaCreated = true;
     // Focused service fixture only: no claim that this replaces migration testing.
@@ -45,7 +47,7 @@ integration('Beta access request: isolated PostgreSQL READ COMMITTED proof', () 
       );
     `);
     prisma = createPrismaClient(url.toString(), { max: 24 });
-    transactions = new PrismaTransactions(prisma, 15000);
+    transactions = new IsolatedTestTransactions(new PrismaTransactions(prisma, 15000));
     await transactions.run(async (tx) => {
       expect(await tx.query('SHOW transaction_isolation')).toEqual([{ transaction_isolation: 'read committed' }]);
       expect(await tx.query('SHOW search_path')).toEqual([{ search_path: schema }]);
@@ -56,7 +58,7 @@ integration('Beta access request: isolated PostgreSQL READ COMMITTED proof', () 
     await prisma?.$disconnect();
     try {
       // schema is generated locally and contains only fixed prefix + UUID hex.
-      if (schemaCreated) await observer.query(`DROP SCHEMA "${schema}" CASCADE`);
+      if (schemaCreated) { await assertTestDatabase({ query: async (sql, ...args) => (await observer.query(sql, args)).rows }); await observer.query(`DROP SCHEMA "${schema}" CASCADE`); }
     } finally {
       await observer?.end();
     }

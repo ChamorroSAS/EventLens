@@ -1,47 +1,53 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ButtonComponent, FormActionsComponent, FormFieldComponent } from '../shared/ui/index.js';
 
 @Component({
   selector: 'el-guest-identity-form',
   standalone: true,
-  imports: [CommonModule],
+  imports: [ButtonComponent, FormActionsComponent, FormFieldComponent],
   template: `
     <section class="identity-card" aria-labelledby="identity-heading">
       <h3 id="identity-heading" class="identity-title">¿Cómo te gustaría identificarte?</h3>
       <p class="identity-desc">Tu nombre o apodo acompañará tus recuerdos para que el organizador sepa quién los compartió.</p>
 
       <form (submit)="onFormSubmit($event)" class="identity-form" novalidate>
-        <div class="field-group">
-          <label for="nicknameInput" class="field-label">Nombre o apodo</label>
-          <input
-            id="nicknameInput"
-            name="nickname"
-            type="text"
-            [value]="nicknameValue"
-            (input)="onNicknameInput($event)"
-            [disabled]="submitting"
-            required
-            maxlength="60"
-            class="nickname-input"
-            [attr.aria-invalid]="errorMessage ? 'true' : 'false'"
-            [attr.aria-describedby]="errorMessage ? 'nickname-error' : null"
-            placeholder="Ej: Camila, Tío Pedro"
-          />
-          <span class="char-counter">{{ trimmedLength }}/60</span>
-        </div>
-
-        <div *ngIf="errorMessage" id="nickname-error" class="error-banner" role="alert" aria-live="polite">
-          {{ errorMessage }}
-        </div>
-
-        <button
-          type="submit"
-          class="submit-button"
-          [disabled]="!isValid || submitting"
+        <eventlens-form-field
+          label="Nombre o apodo"
+          inputId="nicknameInput"
+          [required]="true"
+          [errorText]="errorMessage ?? ''"
         >
-          <span *ngIf="!submitting">Guardar nombre y continuar</span>
-          <span *ngIf="submitting" aria-live="assertive">Guardando...</span>
-        </button>
+          <div class="field-group">
+            <input
+              id="nicknameInput"
+              name="nickname"
+              type="text"
+              [value]="nicknameValue"
+              (input)="onNicknameInput($event)"
+              [disabled]="submitting"
+              required
+              maxlength="60"
+              class="nickname-input"
+              [attr.aria-invalid]="errorMessage ? 'true' : 'false'"
+              [attr.aria-describedby]="errorMessage ? 'nicknameInput-error' : null"
+              placeholder="Ej: Camila, Tío Pedro"
+            />
+            <span class="char-counter" aria-hidden="true">{{ trimmedLength }}/60</span>
+          </div>
+        </eventlens-form-field>
+
+        <eventlens-form-actions>
+          <eventlens-button
+            type="submit"
+            variant="primary"
+            size="large"
+            [block]="true"
+            [disabled]="!isValid || submitting"
+            [loading]="submitting"
+          >
+            {{ submitting ? 'Guardando...' : 'Guardar nombre y continuar' }}
+          </eventlens-button>
+        </eventlens-form-actions>
       </form>
     </section>
   `,
@@ -65,16 +71,16 @@ import { CommonModule } from '@angular/common';
       color: #4a5568;
       margin-bottom: 1.25rem;
     }
+    .identity-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    eventlens-button {
+      flex: 1;
+    }
     .field-group {
       position: relative;
-      margin-bottom: 1rem;
-    }
-    .field-label {
-      display: block;
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: #2d3748;
-      margin-bottom: 0.5rem;
     }
     .nickname-input {
       width: 100%;
@@ -93,33 +99,9 @@ import { CommonModule } from '@angular/common';
     .char-counter {
       position: absolute;
       right: 0.75rem;
-      top: 2.25rem;
+      top: 0.9rem;
       font-size: 0.75rem;
       color: #718096;
-    }
-    .error-banner {
-      background: #fff5f5;
-      color: #c53030;
-      border: 1px solid #feb2b2;
-      border-radius: 6px;
-      padding: 0.5rem 0.75rem;
-      font-size: 0.875rem;
-      margin-bottom: 1rem;
-    }
-    .submit-button {
-      width: 100%;
-      min-height: 48px;
-      background: #3182ce;
-      color: #ffffff;
-      font-size: 1rem;
-      font-weight: 600;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    .submit-button:disabled {
-      background: #a0aec0;
-      cursor: not-allowed;
     }
   `]
 })

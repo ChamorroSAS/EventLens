@@ -5,7 +5,6 @@ import {
   signal,
   computed
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import type {
   GalleryMediaItem,
   MediaViewGrant
@@ -21,7 +20,6 @@ import { ReportContentDialogComponent } from './report-content-dialog.component.
   selector: 'el-gallery',
   standalone: true,
   imports: [
-    CommonModule,
     GalleryMediaCardComponent,
     GalleryEmptyStateComponent,
     GalleryDisabledStateComponent,
@@ -31,104 +29,117 @@ import { ReportContentDialogComponent } from './report-content-dialog.component.
   template: `
     <section class="gallery-root" aria-label="Galería de recuerdos">
       <!-- Escenario 2: Galería Deshabilitada -->
-      <el-gallery-disabled-state *ngIf="!guestGalleryEnabled"></el-gallery-disabled-state>
+      @if (!guestGalleryEnabled) {
+        <el-gallery-disabled-state></el-gallery-disabled-state>
+      }
 
       <!-- Galería Habilitada -->
-      <ng-container *ngIf="guestGalleryEnabled">
+      @if (guestGalleryEnabled) {
         <!-- Loading Inicial -->
-        <div *ngIf="isLoadingInitial()" class="gallery-loading" aria-live="polite">
-          <div class="spinner" aria-hidden="true"></div>
-          <p class="loading-label">Cargando recuerdos...</p>
-        </div>
+        @if (isLoadingInitial()) {
+          <div class="gallery-loading" aria-live="polite">
+            <div class="spinner" aria-hidden="true"></div>
+            <p class="loading-label">Cargando recuerdos...</p>
+          </div>
+        }
 
         <!-- Error Inicial con Retry -->
-        <div *ngIf="initialError() && !isLoadingInitial()" class="gallery-error-banner" role="alert">
-          <p class="error-text">{{ initialError() }}</p>
-          <button type="button" class="retry-btn" (click)="loadInitial()">
-            Reintentar
-          </button>
-        </div>
-
-        <!-- Escenario 2: Galería Vacía (claramente distinguible) -->
-        <el-gallery-empty-state
-          *ngIf="!isLoadingInitial() && !initialError() && items().length === 0"
-        ></el-gallery-empty-state>
-
-        <!-- Escenario 1: Grid de Recuerdos -->
-        <div
-          *ngIf="items().length > 0"
-          class="gallery-grid"
-          role="region"
-          aria-label="Recuerdos publicados"
-        >
-          <el-gallery-media-card
-            *ngFor="let item of items(); trackBy: trackByMediaId"
-            [media]="item"
-            [thumbnailUrl]="item.thumbnailUrl || (thumbnailGrants().get(item.mediaId)?.downloadUrl)"
-            (openViewer)="onOpenViewer($event)"
-          ></el-gallery-media-card>
-        </div>
-
-        <!-- Escenario 3: Paginación y Carga Incremental -->
-        <div *ngIf="hasMore() && items().length > 0" class="pagination-area">
-          <!-- Botón de carga incremental -->
-          <button
-            *ngIf="!isLoadingMore() && !incrementalError()"
-            type="button"
-            class="load-more-btn"
-            (click)="loadMore()"
-            aria-label="Cargar más recuerdos"
-          >
-            Cargar más recuerdos
-          </button>
-
-          <!-- Spinner durante carga incremental -->
-          <div *ngIf="isLoadingMore()" class="incremental-loading" aria-live="polite">
-            <div class="mini-spinner" aria-hidden="true"></div>
-            <span>Cargando más recuerdos...</span>
-          </div>
-
-          <!-- Escenario 3: Error incremental que conserva items previos y permite retry accesible -->
-          <div *ngIf="incrementalError()" class="incremental-error" role="alert">
-            <p class="error-msg">{{ incrementalError() }}</p>
-            <button
-              type="button"
-              class="incremental-retry-btn"
-              (click)="loadMore()"
-              aria-label="Reintentar cargar más recuerdos"
-            >
-              Reintentar carga
+        @if (initialError() && !isLoadingInitial()) {
+          <div class="gallery-error-banner" role="alert">
+            <p class="error-text">{{ initialError() }}</p>
+            <button type="button" class="retry-btn" (click)="loadInitial()">
+              Reintentar
             </button>
           </div>
-        </div>
-      </ng-container>
+        }
+
+        <!-- Escenario 2: Galería Vacía (claramente distinguible) -->
+        @if (!isLoadingInitial() && !initialError() && items().length === 0) {
+          <el-gallery-empty-state></el-gallery-empty-state>
+        }
+
+        <!-- Escenario 1: Grid de Recuerdos -->
+        @if (items().length > 0) {
+          <div class="gallery-grid" role="region" aria-label="Recuerdos publicados">
+            @for (item of items(); track item.mediaId) {
+              <el-gallery-media-card
+                [media]="item"
+                [thumbnailUrl]="item.thumbnailUrl || (thumbnailGrants().get(item.mediaId)?.downloadUrl)"
+                (openViewer)="onOpenViewer($event)"
+              ></el-gallery-media-card>
+            }
+          </div>
+        }
+
+        <!-- Escenario 3: Paginación y Carga Incremental -->
+        @if (hasMore() && items().length > 0) {
+          <div class="pagination-area">
+            <!-- Botón de carga incremental -->
+            @if (!isLoadingMore() && !incrementalError()) {
+              <button
+                type="button"
+                class="load-more-btn"
+                (click)="loadMore()"
+                aria-label="Cargar más recuerdos"
+              >
+                Cargar más recuerdos
+              </button>
+            }
+
+            <!-- Spinner durante carga incremental -->
+            @if (isLoadingMore()) {
+              <div class="incremental-loading" aria-live="polite">
+                <div class="mini-spinner" aria-hidden="true"></div>
+                <span>Cargando más recuerdos...</span>
+              </div>
+            }
+
+            <!-- Escenario 3: Error incremental que conserva items previos y permite retry accesible -->
+            @if (incrementalError()) {
+              <div class="incremental-error" role="alert">
+                <p class="error-msg">{{ incrementalError() }}</p>
+                <button
+                  type="button"
+                  class="incremental-retry-btn"
+                  (click)="loadMore()"
+                  aria-label="Reintentar cargar más recuerdos"
+                >
+                  Reintentar carga
+                </button>
+              </div>
+            }
+          </div>
+        }
+      }
 
       <!-- Escenario 1 & 4: Visor Modal de Recuerdos -->
-      <el-gallery-viewer
-        *ngIf="activeViewerItem()"
-        [item]="activeViewerItem()!"
-        [currentIndex]="currentViewerIndex()"
-        [totalCount]="items().length"
-        [hasPrevious]="currentViewerIndex() > 0"
-        [hasNext]="currentViewerIndex() < items().length - 1"
-        [viewGrant]="activeGrant()"
-        [isLoadingGrant]="isLoadingGrant()"
-        [grantError]="grantError()"
-        (close)="onCloseViewer()"
-        (previous)="onViewerPrevious()"
-        (next)="onViewerNext()"
-        (report)="onReportTriggered($event)"
-        (retryGrant)="retryCurrentGrant()"
-      ></el-gallery-viewer>
+      @if (activeViewerItem()) {
+        <el-gallery-viewer
+          [item]="activeViewerItem()!"
+          [currentIndex]="currentViewerIndex()"
+          [totalCount]="items().length"
+          [hasPrevious]="currentViewerIndex() > 0"
+          [hasNext]="currentViewerIndex() < items().length - 1"
+          [viewGrant]="activeGrant()"
+          [isLoadingGrant]="isLoadingGrant()"
+          [grantError]="grantError()"
+          (close)="onCloseViewer()"
+          (previous)="onViewerPrevious()"
+          (next)="onViewerNext()"
+          (report)="onReportTriggered($event)"
+          (retryGrant)="retryCurrentGrant()"
+        ></el-gallery-viewer>
+      }
 
       <!-- Diálogo de Reporte de Contenido (EL-TK-121 / DEC-088) -->
-      <el-report-content-dialog
-        *ngIf="reportingMediaId()"
-        [isOpen]="reportingMediaId() !== null"
-        [mediaId]="reportingMediaId()!"
-        [eventId]="eventId"
-        (close)="onCloseReportDialog()"
-      ></el-report-content-dialog>
+      @if (reportingMediaId()) {
+        <el-report-content-dialog
+          [isOpen]="reportingMediaId() !== null"
+          [mediaId]="reportingMediaId()!"
+          [eventId]="eventId"
+          (close)="onCloseReportDialog()"
+        ></el-report-content-dialog>
+      }
     </section>
   `,
   styles: [`
@@ -459,9 +470,5 @@ export class GalleryComponent implements OnInit {
     } finally {
       this.isLoadingGrant.set(false);
     }
-  }
-
-  public trackByMediaId(_index: number, item: GalleryMediaItem): string {
-    return item.mediaId;
   }
 }

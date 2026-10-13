@@ -1,11 +1,9 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import type { GalleryMediaItem } from './gallery.types.js';
 
 @Component({
   selector: 'el-gallery-media-card',
   standalone: true,
-  imports: [CommonModule],
   template: `
     <button
       type="button"
@@ -15,38 +13,48 @@ import type { GalleryMediaItem } from './gallery.types.js';
       [attr.aria-label]="getAriaLabel()"
     >
       <div class="thumbnail-wrapper">
-        <img
-          *ngIf="thumbnailUrl; else placeholderTpl"
-          [src]="thumbnailUrl"
-          [alt]="getAriaLabel()"
-          class="card-img"
-          loading="lazy"
-        />
-        <ng-template #placeholderTpl>
+        @if (thumbnailUrl) {
+          <img
+            [src]="thumbnailUrl"
+            [alt]="getAriaLabel()"
+            class="card-img"
+            loading="lazy"
+          />
+        } @else {
           <div class="card-placeholder" aria-hidden="true">
-            <svg *ngIf="media.mediaType === 'PHOTO'" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.75">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              <circle cx="8.5" cy="8.5" r="1.5"></circle>
-              <polyline points="21 15 16 10 5 21"></polyline>
-            </svg>
-            <svg *ngIf="media.mediaType === 'VIDEO'" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.75">
-              <polygon points="5 3 19 12 5 21 5 3"></polygon>
-            </svg>
+            @if (media.mediaType === 'PHOTO') {
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.75">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+            }
+            @if (media.mediaType === 'VIDEO') {
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.75">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+            }
           </div>
-        </ng-template>
+        }
 
         <!-- Video badge with duration -->
-        <div *ngIf="media.mediaType === 'VIDEO'" class="video-badge" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-          </svg>
-          <span *ngIf="media.durationSeconds">{{ formatDuration(media.durationSeconds) }}</span>
-        </div>
+        @if (media.mediaType === 'VIDEO') {
+          <div class="video-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            @if (media.durationSeconds) {
+              <span>{{ formatDuration(media.durationSeconds) }}</span>
+            }
+          </div>
+        }
 
         <!-- Contributor nickname chip -->
-        <div *ngIf="media.contributorNickname" class="contributor-chip" aria-hidden="true">
-          {{ media.contributorNickname }}
-        </div>
+        @if (media.contributorNickname) {
+          <div class="contributor-chip" aria-hidden="true">
+            {{ media.contributorNickname }}
+          </div>
+        }
       </div>
     </button>
   `,

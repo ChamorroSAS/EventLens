@@ -291,11 +291,11 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-158 (DONE) | 156 | 164,165 |
 | EL-TK-159 (DONE) | 156; contratos EL-EP-003/015 | 164,165 |
 | EL-TK-160 (DONE) | 156; contrato 138 | 164,165 |
-| EL-TK-161 | 156; contrato EL-EP-010 | 164,165 |
+| EL-TK-161 (DONE) | 156; contrato EL-EP-010 | 164,165 |
 | EL-TK-162 (DONE) | 156; hechos de dominio EL-EP-001/003 | 164,165 |
 | EL-TK-163 (DONE) | 156; hechos de dominio EL-EP-009; contrato EL-EP-014 | 164,165 |
-| EL-TK-164 | 157..163 | 165 |
-| EL-TK-165 | 156..164 | validación EL-EP-013 |
+| EL-TK-164 (DONE) | 157..163 | 165 |
+| EL-TK-165 (DONE) | 156..164 | validación EL-EP-013 |
 
 10 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de persistencia de NotificationIntent idempotente a partir de hechos de dominio confirmados, procesamiento asíncrono de correos con puerto desacoplado mediante JobQueue durable (DEC-021, DEC-061..064), proyección de avisos contextuales vigentes para el panel del organizador sin duplicados ni avisos obsoletos, generación de avisos de lifecycle/gracia/eliminación próxima, capacidad al 80% y 100%, exportación disponible/expirada, cuenta/seguridad/cambios, denuncias e intervenciones según severidad, e integración UI de avisos y plantillas de correo accesibles. Superficies UI reutilizadas del catálogo canónico (ui-mvp-epic-review.md §EL-EP-013), sin NotificationCenter obligatorio ni nuevos componentes. Proveedor de correo desacoplado por puerto.
 
@@ -575,3 +575,10 @@ TB-01/TB-02 dejan de bloquear.033/035/036/041/042/056 YES propio;058 NO ejecuci�
 
 
 **CONFIRMED — EL-EP-018 DONE, 2026-10-13:** [Épica](epics/EL-EP-018.md). Implementación y validación integrada de todos los tickets EL-TK-205..214: proyección de sesión adaptativa (205), router desacoplado y 404 (206), login organizador (207), solicitud Beta pública (208), cuenta y reautenticación Argon2id (209), Mis eventos (210), guest entry directo por QR/deep link (211), serving SPA y redacción (212), Home público oficial y cabecera accesible (213), y validación integrada E2E (214). Suites completas PASS: Web 154/154, API PostgreSQL 16 9/9, Playwright 7/7, OpenAPI y cliente tipado sincronizados. Véase la [sesión de cierre](sessions/2026-10-13-el-ep-018-closure.md).
+
+**CONFIRMED — EL-EP-013 CIERRE DEFINITIVO, 2026-10-13:** [Épica](epics/EL-EP-013.md). Implementación y validación integrada de todos los tickets EL-TK-156..165 completada (10/10 tickets DONE):
+- **EL-TK-161 DONE:** Servicio de avisos de exportación (`ExportNoticeService`) para disponibilidad, expiración e invalidación atómica ante retiros (DEC-090). 5/5 pruebas unitarias PASS.
+- **EL-TK-164 DONE:** Integración de avisos contextuales WCAG 2.2 AA (`InAppNoticeComponent` en `apps/web`) y plantillas responsive/accesibles (`EmailRenderer`). 5/5 pruebas unitarias frontend PASS, 167/167 tests web PASS.
+- **EL-TK-165 DONE:** Suite de integración E2E transversal (`packages/notifications/test/notifications-epic-e2e.test.ts`) con 4/4 escenarios PASS: hechos repetidos con deduplicación/idempotencia, obsolescencia previa a entrega, tolerancia a fallos de proveedor de email y orquestación multi-dominio sin fuga de secretos en auditoría.
+- Todas las dependencias de notificación para organizadores quedan satisfechas y operativas. Véase la [sesión de cierre](sessions/2026-10-13-el-ep-013-closure.md).
+

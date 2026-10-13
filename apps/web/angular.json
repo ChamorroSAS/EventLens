@@ -14,8 +14,10 @@
             "assets": [
               { "glob": "**/*", "input": "public" }
             ],
+            "inlineStyleLanguage": "scss",
+            "stylePreprocessorOptions": { "includePaths": ["src/styles"] },
             "styles": [
-              "src/styles/ui-foundation.css"
+              "src/styles/styles.scss"
             ]
           },
           "configurations": {

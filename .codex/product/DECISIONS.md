@@ -208,3 +208,9 @@ Fuente completa de esta respuesta y precisiones posteriores en DEC-103..105. Rev
 
 **SUPERSEDED PARA BETA:** la exigencia de PostgreSQL físicamente fuera del servidor app de DEC-061. Su fila y CR-002 se conservan como registro histórico; DEC-106 prevalece únicamente en este alcance. El resto de DEC-061..064 permanece vigente, incluidos límites, storage multimedia Beta externo y recuperación.
 
+## Estrategia de estilos del frontend — 2026-10-12
+
+| ID | Fecha | Estado | Decisión | Motivo | Alternativas no elegidas | Impacto | Fuente |
+|---|---|---|---|---|---|---|---|
+| DEC-111 | 2026-10-12 | ACCEPTED | Estilos del frontend con Sass (SCSS) compilado por el build de Angular más una capa de tokens en CSS custom properties `--el-*`. Tipografía Manrope autoalojada (woff2, subset latin, pesos 400/500/600/700). Partials en `apps/web/src/styles` (`_tokens`, `_breakpoints`, `_mixins`, `_fonts`, `_reset`, `_typography`) con `styles.scss` como único entrypoint global que emite `:root`. Sustituye el piloto CR-004 (`ui-foundation.css` y `--el-ui-*`), retirados. No se selecciona librería externa de componentes ni de iconos. Fuente completa: [EL-TD-009](../context/technical-baseline.md#el-td-009--frontend-styling-strategy). | Resolver el ítem DEFERRED de estrategia de estilos y evitar duplicación de estilos/tokens en el frontend. | Tailwind, librería externa de componentes o de iconos no elegidas. | Frontend EL-TD-001; resuelve `CSS/styling implementation strategy` de Deferred Decisions. Los componentes consumen tokens sólo por CSS custom properties (la encapsulación Emulated no aplica selectores globales entre componentes; los custom properties sí heredan). Colores semánticos no se usan como texto (fallan AA); el texto usa `--el-color-text`/`--el-color-text-secondary`. Librería de componentes e iconos siguen DEFERRED. | Decisión explícita del usuario |
+

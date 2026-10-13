@@ -7,33 +7,38 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   template: `
     <div class="video-player-container">
-      <div *ngIf="isLoading()" class="player-loading" aria-live="polite">
-        <div class="spinner" aria-hidden="true"></div>
-        <span class="sr-only">Cargando video...</span>
-      </div>
+      @if (isLoading()) {
+        <div class="player-loading" aria-live="polite">
+          <div class="spinner" aria-hidden="true"></div>
+          <span class="sr-only">Cargando video...</span>
+        </div>
+      }
 
-      <div *ngIf="hasError()" class="player-error" role="alert">
-        <p class="error-msg">No se pudo reproducir el video.</p>
-        <button type="button" class="retry-btn" (click)="onRetry()">
-          Reintentar
-        </button>
-      </div>
+      @if (hasError()) {
+        <div class="player-error" role="alert">
+          <p class="error-msg">No se pudo reproducir el video.</p>
+          <button type="button" class="retry-btn" (click)="onRetry()">
+            Reintentar
+          </button>
+        </div>
+      }
 
       <!-- NO autoplay por accesibilidad WCAG 2.2 AA y DEC rules -->
-      <video
-        *ngIf="!hasError()"
-        [src]="src"
-        [poster]="poster"
-        controls
-        playsinline
-        preload="metadata"
-        class="player-video"
-        [ngClass]="{ 'video-visible': !isLoading() }"
-        (loadeddata)="onVideoLoaded()"
-        (error)="onVideoError()"
-      >
-        <p>Tu navegador no soporta reproducción de video HTML5.</p>
-      </video>
+      @if (!hasError()) {
+        <video
+          [src]="src"
+          [poster]="poster"
+          controls
+          playsinline
+          preload="metadata"
+          class="player-video"
+          [ngClass]="{ 'video-visible': !isLoading() }"
+          (loadeddata)="onVideoLoaded()"
+          (error)="onVideoError()"
+        >
+          <p>Tu navegador no soporta reproducción de video HTML5.</p>
+        </video>
+      }
     </div>
   `,
   styles: [`

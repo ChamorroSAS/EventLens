@@ -8,12 +8,10 @@ import {
   ViewChild,
   AfterViewInit
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'el-regenerate-access-dialog',
   standalone: true,
-  imports: [CommonModule],
   template: `
     <div
       class="dialog-backdrop"
@@ -56,8 +54,12 @@ import { CommonModule } from '@angular/common';
             [disabled]="submitting"
             aria-label="Confirmar regeneración de enlace e invalidación del anterior"
           >
-            <span *ngIf="!submitting">Sí, regenerar acceso</span>
-            <span *ngIf="submitting" aria-live="assertive">Regenerando...</span>
+            @if (!submitting) {
+              <span>Sí, regenerar acceso</span>
+            }
+            @if (submitting) {
+              <span aria-live="assertive">Regenerando...</span>
+            }
           </button>
         </footer>
       </div>

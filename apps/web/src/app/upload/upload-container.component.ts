@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FilePickerComponent } from './file-picker.component.js';
 import { UploadFileItemComponent } from './upload-file-item.component.js';
 import { UploadProgressSummaryComponent } from './upload-progress-summary.component.js';
@@ -11,7 +10,6 @@ import type { UploadLocalFile, UploadBatchSummary } from './upload.types.js';
   selector: 'eventlens-upload-container',
   standalone: true,
   imports: [
-    CommonModule,
     FilePickerComponent,
     UploadFileItemComponent,
     UploadProgressSummaryComponent,

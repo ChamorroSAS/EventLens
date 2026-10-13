@@ -1,7 +1,6 @@
 import { Component, Input, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { AuditApiService } from './audit-api.service.js';
 import { AuditLogDetailComponent } from './audit-log-detail.component.js';
+import { AuditApiService } from './audit-api.service.js';
 import type {
   AuditEventPage,
   AuditEventRecord,
@@ -14,7 +13,7 @@ import type {
 @Component({
   selector: 'eventlens-audit-log-viewer',
   standalone: true,
-  imports: [CommonModule, AuditLogDetailComponent],
+  imports: [AuditLogDetailComponent],
   template: `
     <section class="audit-viewer-container" aria-labelledby="audit-viewer-heading">
       <header class="viewer-header">

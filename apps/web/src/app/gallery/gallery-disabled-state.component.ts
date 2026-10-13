@@ -1,10 +1,8 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'el-gallery-disabled-state',
   standalone: true,
-  imports: [CommonModule],
   template: `
     <div class="disabled-state-card" role="alert" aria-live="polite">
       <div class="disabled-icon" aria-hidden="true">

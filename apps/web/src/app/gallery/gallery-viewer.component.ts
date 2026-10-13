@@ -8,7 +8,6 @@ import {
   AfterViewInit,
   ViewChild
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import type { GalleryMediaItem, MediaViewGrant } from './gallery.types.js';
 import { MediaViewerComponent } from './media-viewer.component.js';
 import { ReportContentActionComponent } from './report-content-action.component.js';
@@ -16,7 +15,7 @@ import { ReportContentActionComponent } from './report-content-action.component.
 @Component({
   selector: 'el-gallery-viewer',
   standalone: true,
-  imports: [CommonModule, MediaViewerComponent, ReportContentActionComponent],
+  imports: [MediaViewerComponent, ReportContentActionComponent],
   host: {
     'role': 'dialog',
     'aria-modal': 'true',

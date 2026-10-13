@@ -1,12 +1,10 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ShareAccessSnapshot } from './access.types.js';
 
 @Component({
   selector: 'el-event-share-panel',
   standalone: true,
-  imports: [CommonModule],
   template: `
     <section class="share-panel-card" aria-labelledby="share-panel-title">
       <header class="panel-header">
@@ -17,7 +15,9 @@ import { ShareAccessSnapshot } from './access.types.js';
       <div class="panel-content">
         <!-- QR Visual Area -->
         <div class="qr-preview-area">
-          <div class="qr-box" *ngIf="safeQrSvg" [innerHTML]="safeQrSvg" role="img" [attr.aria-label]="'Código QR para: ' + (snapshot?.shareUrl || '')"></div>
+          @if (safeQrSvg) {
+            <div class="qr-box" [innerHTML]="safeQrSvg" role="img" [attr.aria-label]="'Código QR para: ' + (snapshot?.shareUrl || '')"></div>
+          }
           <div class="qr-actions">
             <button
               type="button"
@@ -51,9 +51,11 @@ import { ShareAccessSnapshot } from './access.types.js';
             </button>
           </div>
 
-          <div *ngIf="copyAnnouncement" class="sr-only" role="status" aria-live="polite">
-            {{ copyAnnouncement }}
-          </div>
+          @if (copyAnnouncement) {
+            <div class="sr-only" role="status" aria-live="polite">
+              {{ copyAnnouncement }}
+            </div>
+          }
 
           <div class="danger-zone">
             <p class="danger-desc">

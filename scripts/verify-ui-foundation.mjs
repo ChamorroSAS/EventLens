@@ -3,13 +3,19 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import http from 'node:http';
 
-console.log('--- Verifying UI Brand Foundation & Shell Pilot (EL-TK-204) ---');
+console.log('--- Verifying UI Brand Foundation (SCSS) & Shell Pilot ---');
 
 const repoRoot = process.cwd();
 const fontsDir = path.join(repoRoot, 'apps/web/public/assets/fonts/manrope');
-const stylesFile = path.join(repoRoot, 'apps/web/src/styles/ui-foundation.css');
+const stylesDir = path.join(repoRoot, 'apps/web/src/styles');
+const entryFile = path.join(stylesDir, 'styles.scss');
+const tokensFile = path.join(stylesDir, '_tokens.scss');
+const fontsPartialFile = path.join(stylesDir, '_fonts.scss');
+const resetFile = path.join(stylesDir, '_reset.scss');
+const typographyFile = path.join(stylesDir, '_typography.scss');
 const angularJsonFile = path.join(repoRoot, 'apps/web/angular.json');
 const shellCompFile = path.join(repoRoot, 'apps/web/src/app/organizer/organizer-app-shell.component.ts');
+const shellStylesFile = path.join(repoRoot, 'apps/web/src/app/organizer/organizer-app-shell.component.scss');
 const distBrowserDir = path.join(repoRoot, 'apps/web/dist/web/browser');
 
 // 1. Verify font files and provenance
@@ -55,66 +61,107 @@ if (!oflContent.includes('SIL OPEN FONT LICENSE Version 1.1')) {
 }
 console.log('[PASS] SIL Open Font License 1.1 verified');
 
-// 3. Verify ui-foundation.css
-if (!fs.existsSync(stylesFile)) {
-  console.error('[FAIL] ui-foundation.css not found:', stylesFile);
-  process.exit(1);
-}
-const stylesContent = fs.readFileSync(stylesFile, 'utf8');
-
-// Check @font-face rules
-for (const w of requiredWeights) {
-  if (!stylesContent.includes(`font-weight: ${w}`)) {
-    console.error(`[FAIL] @font-face for weight ${w} not found in ui-foundation.css`);
+// 3. Verify the SCSS foundation entrypoint and partials
+for (const [label, file] of [
+  ['entrypoint', entryFile],
+  ['tokens partial', tokensFile],
+  ['fonts partial', fontsPartialFile],
+  ['reset partial', resetFile],
+  ['typography partial', typographyFile]
+]) {
+  if (!fs.existsSync(file)) {
+    console.error(`[FAIL] SCSS ${label} not found:`, file);
     process.exit(1);
   }
 }
-if (!stylesContent.includes('font-display: swap')) {
-  console.error('[FAIL] font-display: swap missing in ui-foundation.css');
+console.log('[PASS] SCSS foundation partials present (styles.scss + _tokens/_fonts/_reset/_typography)');
+
+// The entrypoint must compose the global layers
+const entryContent = fs.readFileSync(entryFile, 'utf8');
+for (const layer of ['@use \'tokens\'', '@use \'fonts\'', '@use \'reset\'', '@use \'typography\'']) {
+  if (!entryContent.includes(layer)) {
+    console.error(`[FAIL] styles.scss does not load required layer: ${layer}`);
+    process.exit(1);
+  }
+}
+if (!/:root\s*\{/.test(entryContent)) {
+  console.error('[FAIL] styles.scss must emit :root custom properties');
   process.exit(1);
 }
-console.log('[PASS] @font-face rules with weights 400, 500, 600, 700 and font-display: swap verified');
+console.log('[PASS] styles.scss composes fonts/reset/typography and emits :root');
 
-// Check inert :root variables
+// 4. Verify @font-face rules live in the fonts partial
+const fontsContent = fs.readFileSync(fontsPartialFile, 'utf8');
+for (const w of requiredWeights) {
+  if (!fontsContent.includes(`font-weight: ${w}`)) {
+    console.error(`[FAIL] @font-face for weight ${w} not found in _fonts.scss`);
+    process.exit(1);
+  }
+}
+if (!fontsContent.includes('font-display: swap')) {
+  console.error('[FAIL] font-display: swap missing in _fonts.scss');
+  process.exit(1);
+}
+if (!fontsContent.includes('/assets/fonts/manrope/')) {
+  console.error('[FAIL] _fonts.scss must reference self-hosted /assets/fonts/manrope/ files');
+  process.exit(1);
+}
+console.log('[PASS] @font-face rules with weights 400, 500, 600, 700, font-display: swap and self-hosted URLs verified');
+
+// 5. Verify tokens: values in _tokens.scss and custom properties emitted in styles.scss
+const tokensContent = fs.readFileSync(tokensFile, 'utf8');
 const requiredTokens = [
-  '--el-ui-font-family-base',
-  '--el-ui-font-family-fallback',
-  '--el-ui-color-primary',
-  '--el-ui-color-primary-hover',
-  '--el-ui-color-accent',
-  '--el-ui-color-accent-soft',
-  '--el-ui-color-background',
-  '--el-ui-color-surface',
-  '--el-ui-color-text-primary',
-  '--el-ui-color-text-secondary',
-  '--el-ui-color-border',
-  '--el-ui-focus-outline-color'
+  'primary',
+  'primary-hover',
+  'accent',
+  'accent-soft',
+  'background',
+  'surface',
+  'surface-muted',
+  'text',
+  'text-secondary',
+  'text-disabled',
+  'border',
+  'border-strong',
+  'success',
+  'warning',
+  'danger',
+  'info',
+  'focus'
 ];
 for (const tok of requiredTokens) {
-  if (!stylesContent.includes(tok)) {
-    console.error(`[FAIL] Missing required token in ui-foundation.css: ${tok}`);
+  if (!tokensContent.includes(`$el-color-${tok}:`)) {
+    console.error(`[FAIL] Missing color token in _tokens.scss: $el-color-${tok}`);
+    process.exit(1);
+  }
+  if (!entryContent.includes(`--el-color-${tok}:`)) {
+    console.error(`[FAIL] styles.scss does not emit custom property: --el-color-${tok}`);
     process.exit(1);
   }
 }
+console.log('[PASS] Color tokens defined once and emitted as --el-* custom properties');
 
-// Ensure no global reset or body/button/a leaking rules
-if (/^\s*(body|html|\*|a|button)\s*\{/m.test(stylesContent)) {
-  console.error('[FAIL] ui-foundation.css must not contain global selector resets or un-namespaced rules');
-  process.exit(1);
-}
-console.log('[PASS] Inerte :root custom properties verified without global leaks or resets');
-
-// 4. Verify angular.json registration
+// 6. Verify angular.json registration
 const angularJson = JSON.parse(fs.readFileSync(angularJsonFile, 'utf8'));
-const buildStyles = angularJson.projects.web.architect.build.options.styles;
-if (!Array.isArray(buildStyles) || !buildStyles.includes('src/styles/ui-foundation.css')) {
-  console.error('[FAIL] angular.json does not register src/styles/ui-foundation.css in styles');
+const buildOptions = angularJson.projects.web.architect.build.options;
+if (!Array.isArray(buildOptions.styles) || !buildOptions.styles.includes('src/styles/styles.scss')) {
+  console.error('[FAIL] angular.json does not register src/styles/styles.scss in styles');
   process.exit(1);
 }
-console.log('[PASS] angular.json registers src/styles/ui-foundation.css');
+if (buildOptions.inlineStyleLanguage !== 'scss') {
+  console.error('[FAIL] angular.json must set inlineStyleLanguage to "scss"');
+  process.exit(1);
+}
+if (!Array.isArray(buildOptions.stylePreprocessorOptions?.includePaths) ||
+    !buildOptions.stylePreprocessorOptions.includePaths.includes('src/styles')) {
+  console.error('[FAIL] angular.json must expose src/styles via stylePreprocessorOptions.includePaths');
+  process.exit(1);
+}
+console.log('[PASS] angular.json registers styles.scss, scss inline language and src/styles include path');
 
-// 5. Verify OrganizerAppShellComponent implementation
+// 7. Verify OrganizerAppShellComponent implementation
 const compContent = fs.readFileSync(shellCompFile, 'utf8');
+const shellStyles = fs.readFileSync(shellStylesFile, 'utf8');
 
 // Logo runtime asset and fallback
 if (!compContent.includes('assets/branding/logo-primary.svg')) {
@@ -127,32 +174,47 @@ if (!compContent.includes('alt="EventLens"') || !compContent.includes('brand-fal
 }
 console.log('[PASS] Shell wordmark and accessible fallback text verified');
 
+// External SCSS and token consumption
+if (!compContent.includes('styleUrl') || !compContent.includes('organizer-app-shell.component.scss')) {
+  console.error('[FAIL] Shell component must reference its external SCSS via styleUrl');
+  process.exit(1);
+}
+if (shellStyles.includes('--el-ui-')) {
+  console.error('[FAIL] Shell styles must not keep the legacy --el-ui-* namespace');
+  process.exit(1);
+}
+if (!shellStyles.includes('var(--el-color-primary)')) {
+  console.error('[FAIL] Shell styles must consume --el-* tokens');
+  process.exit(1);
+}
+console.log('[PASS] Shell styles externalized and consuming --el-* tokens');
+
 // Target size 44x44px for Mis eventos
-if (!compContent.includes('min-width: 44px') || !compContent.includes('min-height: 44px')) {
+if (!shellStyles.includes('min-inline-size: 44px') || !shellStyles.includes('min-block-size: 44px')) {
   console.error('[FAIL] Button .btn-exit-context must enforce minimum target size 44x44px');
   process.exit(1);
 }
 console.log('[PASS] Minimum interactive target size 44x44px verified');
 
 // Long names without spaces / no ellipsis truncation
-if (compContent.includes('text-overflow: ellipsis')) {
-  console.error('[FAIL] Component still has text-overflow: ellipsis restricting event name');
+if (shellStyles.includes('text-overflow: ellipsis')) {
+  console.error('[FAIL] Shell styles still restrict event name with text-overflow: ellipsis');
   process.exit(1);
 }
-if (!compContent.includes('word-break: break-word') && !compContent.includes('overflow-wrap: anywhere')) {
-  console.error('[FAIL] Component must support multiline long names without truncation');
+if (!shellStyles.includes('overflow-wrap: anywhere')) {
+  console.error('[FAIL] Shell styles must support multiline long names without truncation');
   process.exit(1);
 }
 console.log('[PASS] Event name wrapping without truncation verified');
 
 // Sticky on desktop only, static on mobile
-if (!compContent.includes('@media (max-width: 768px)') || !compContent.includes('position: static')) {
+if (!shellStyles.includes('position: static')) {
   console.error('[FAIL] Shell header must be static on mobile to avoid obscuring viewport/focus');
   process.exit(1);
 }
 console.log('[PASS] Responsive header positioning (desktop sticky, mobile static) verified');
 
-// 6. WCAG 2.2 AA Contrast ratio mathematical verification
+// 8. WCAG 2.2 AA Contrast ratio mathematical verification
 function srgbToLinear(c) {
   const s = c / 255;
   return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
@@ -172,7 +234,7 @@ function contrastRatio(hex1, hex2) {
 }
 
 const colorChecks = [
-  { name: 'Text Primary on Surface', fg: '#17202A', bg: '#FFFFFF', min: 4.5 },
+  { name: 'Text on Surface', fg: '#17202A', bg: '#FFFFFF', min: 4.5 },
   { name: 'Text Secondary on Surface', fg: '#667085', bg: '#FFFFFF', min: 4.5 },
   { name: 'Organizer Badge (Primary on Accent-soft)', fg: '#17345C', bg: '#FFF1ED', min: 4.5 },
   { name: 'Mis eventos Button (Primary on Surface)', fg: '#17345C', bg: '#FFFFFF', min: 4.5 },
@@ -188,7 +250,7 @@ for (const c of colorChecks) {
   console.log(`[PASS] Contrast ${c.name}: ${ratio.toFixed(2)}:1 (exceeds ${c.min}:1 requirement)`);
 }
 
-// 7. Test HTTP server resolution for fonts
+// 9. Test HTTP server resolution for fonts
 const server = http.createServer((req, res) => {
   const urlPath = req.url || '';
   if (urlPath.startsWith('/assets/fonts/manrope/')) {
@@ -218,7 +280,7 @@ for (const w of requiredWeights) {
 server.close();
 console.log('[PASS] HTTP font serving verified 200 OK for all weights');
 
-// 8. Verify production build output does not leak test harness or mock routes
+// 10. Verify production build output does not leak test harness or mock routes
 if (fs.existsSync(distBrowserDir)) {
   const distFiles = fs.readdirSync(distBrowserDir, { recursive: true });
   const forbiddenNames = ['harness', 'test-fixture', 'mock-route', 'test-host'];
@@ -234,4 +296,4 @@ if (fs.existsSync(distBrowserDir)) {
   console.log('[PASS] Production bundle verified free of test harnesses or mock routes');
 }
 
-console.log('--- All EL-TK-204 verifications PASSED successfully ---');
+console.log('--- All UI foundation verifications PASSED successfully ---');

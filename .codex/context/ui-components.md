@@ -2,7 +2,7 @@
 
 > Documento de especificación UI/UX neutral respecto al framework.
 >
-> Este archivo es la fuente de verdad del catálogo de componentes visuales y de interacción reutilizables de EventLens. Angular + TypeScript está aprobado en [technical-baseline.md](technical-baseline.md), EL-TD-001. La estrategia concreta de styling permanece `DEFERRED`; este catálogo especifica UX sin seleccionar CSS, SCSS, Tailwind ni librerías concretas.
+> Este archivo es la fuente de verdad del catálogo de componentes visuales y de interacción reutilizables de EventLens. Angular + TypeScript está aprobado en [technical-baseline.md](technical-baseline.md), EL-TD-001. La estrategia de styling está resuelta en [EL-TD-009](technical-baseline.md#el-td-009--frontend-styling-strategy): Sass (SCSS) + CSS custom properties `--el-*`; la librería externa de componentes y la de iconos permanecen `DEFERRED`.
 >
 > Estado: `DRAFT_BASELINE`
 >
@@ -1031,16 +1031,12 @@ La inclusión en este catálogo no implica READY.
 
 Pendientes antes de implementación cuando sean relevantes:
 
-Las extensiones o ajustes a tokens y tipografía se resuelven en [ui-design-system.md](ui-design-system.md); sus valores existentes no vuelven a quedar pendientes por este catálogo.
+Resueltos en [ui-design-system.md](ui-design-system.md) y [EL-TD-009](technical-baseline.md#el-td-009--frontend-styling-strategy): escala tipográfica, spacing exacto, breakpoints y estrategia de estilos (Sass/SCSS + CSS custom properties `--el-*`). Sus valores no vuelven a quedar pendientes por este catálogo.
 
-- escala tipográfica;
-- spacing exacto;
-- breakpoints;
 - librería de iconos (`DEFERRED`);
 - responsive gallery: especificado para el alcance MVP en [EL-EP-007](ui-mvp-epic-review.md#el-ep-007); valores cosméticos pueden seguir PROPOSED.
 - modal vs bottom sheet;
 - infinite scroll vs paginación;
-- estrategia concreta de estilos CSS/SCSS/Tailwind (`DEFERRED`);
 - librería externa de componentes (`DEFERRED`).
 
 Estas decisiones no cambian el catálogo funcional.

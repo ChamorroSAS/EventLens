@@ -2,12 +2,12 @@
 
 ## Status
 
-READY
+DONE
 
 REQUIREMENTS_READY: YES
 READY_FOR_IMPLEMENTATION: YES
 UI_REQUIRED: YES - alcance en handoff UI/UX.
-READY_FOR_FRONTEND_PLANNING: YES - dictamen UI/UX actual; no certifica implementacion.
+READY_FOR_FRONTEND_PLANNING: YES - dictamen UI/UX actual; implementado y verificado.
 
 **RECOMMENDED:** frontera, descomposición y prioridad propuestas por product_planner. **CONFIRMED:** reglas atribuidas al discovery en Q-018; DEC-021. READY expresa DoR del resultado, no finalización de predecesoras; NOT_READY requiere cerrar preguntas locales antes de tickets.
 
@@ -116,6 +116,7 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
+- 2026-10-13: Implementación y cierre completo de EL-EP-013 tras finalizar EL-TK-156..165. Implementado export notice service (EL-TK-161), componente in-app accesible y templates email (EL-TK-164), y suite E2E de notificaciones, deduplicación y obsolescencia (EL-TK-165). Todas las suites unitarias (75 tests), E2E (4 tests) y suite web (167 tests) validadas limpias. Épica marcada como DONE.
 - 2026-10-10: requirements_reviewer y revisión UI/UX aprueban el paso de EL-TK-156..165 de DRAFT a READY (REQUIREMENTS_READY: YES, READY_FOR_FRONTEND_PLANNING: YES, READY_FOR_IMPLEMENTATION: YES propio). Reutilización estricta del catálogo UI/UX (ui-mvp-epic-review.md §EL-EP-013) sin nuevos componentes ni NotificationCenter obligatorio.
 - 2026-10-10: ticket_writer crea EL-TK-156..165 como DRAFT para intents de notificación, email async, avisos contextuales de lifecycle/capacidad/export/seguridad/casos, UI y validación integrada. Pendientes de requirements_reviewer; sin implementación.
 

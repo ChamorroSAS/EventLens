@@ -1,3 +1,5 @@
+import { IsolatedTestTransactions, assertTestDatabase } from '@eventlens/database/testing';
+import { readFile } from 'node:fs/promises';
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { createPrismaClient, PrismaTransactions } from '@eventlens/database';
 import {
@@ -9,8 +11,9 @@ const databaseUrl = process.env.DATABASE_URL;
 const describeIntegration = databaseUrl ? describe : describe.skip;
 
 describeIntegration('AdminProvisioningService (Real PostgreSQL Integration Tests)', () => {
+  if (!databaseUrl) return;
   const client = createPrismaClient(databaseUrl!);
-  const txs = new PrismaTransactions(client, 10000);
+  const txs = new IsolatedTestTransactions(new PrismaTransactions(client, 10000));
   const secret = 'real-pg-bootstrap-secret-token';
   const service = new AdminProvisioningService(txs, secret);
 
@@ -67,6 +70,17 @@ describeIntegration('AdminProvisioningService (Real PostgreSQL Integration Tests
         CONSTRAINT "admin_audit_event_pkey" PRIMARY KEY ("id")
       );
     `);
+    // Revocation/bootstrap fixtures require the owner authentication tables even in a standalone run.
+    const authenticationMigration = await readFile(new URL('../../database/prisma/migrations/202610110021_admin_authentication/migration.sql', import.meta.url), 'utf8');
+    await txs.run(async tx => {
+      const existing = await tx.query<{ name: string }>(`SELECT table_name AS name FROM information_schema.tables
+        WHERE table_schema = current_schema() AND table_name IN ('admin_credential', 'admin_session')`);
+      if (existing.length === 2) return;
+      if (existing.length !== 0) throw new Error('Incomplete administrative authentication fixture');
+      for (const statement of authenticationMigration.split(';').map(value => value.trim()).filter(Boolean)) {
+        await tx.execute(statement);
+      }
+    });
   });
 
   afterAll(async () => {

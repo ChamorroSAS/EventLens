@@ -1,0 +1,21 @@
+# Opt-in local override for live frontend editing.
+#
+# Usage: pnpm dev:watch
+#   -> docker compose -f compose.yaml -f compose.dev.yaml up -d --wait
+#
+# Scope is intentionally narrow: only the Angular application source and its
+# public assets are bind-mounted (read-only) over the image. node_modules,
+# the apps/web/.angular cache and the workspace packages stay in the image, so
+# native modules, cache permissions and the generated @eventlens/api-client are
+# never shadowed by host files.
+#
+# If the API contract or a workspace package changes, rebuild the base image
+# with `pnpm dev:up` so the in-image dependencies stay current.
+services:
+  web:
+    # Docker Desktop on Windows does not propagate host filesystem events into
+    # the container, so the dev server must poll to detect edits.
+    command: ["pnpm", "--filter", "@eventlens/web", "start", "--port", "4200", "--poll", "1000"]
+    volumes:
+      - ./apps/web/src:/workspace/apps/web/src:ro
+      - ./apps/web/public:/workspace/apps/web/public:ro

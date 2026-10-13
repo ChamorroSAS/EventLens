@@ -1,0 +1,17 @@
+{
+  "change": "CR-005",
+  "date": "2026-10-13",
+  "databaseUnits": { "result": "PASS", "passed": 25, "executed": true },
+  "identity": { "result": "PASS", "passed": 198, "unit": 143, "integration": 55, "report": "tests.json" },
+  "inventoryGuard": { "result": "PASS", "passed": 5, "runtime": "Node 24.21, container without network", "report": "inventory-tests.json" },
+  "apiIntegration": { "result": "PASS", "passed": 9, "files": 6, "executed": true, "command": "docker compose -f compose.test.yaml run --rm --no-deps --volume ./apps/api/test/integration/unavailable.test.ts:/workspace/apps/api/test/integration/unavailable.test.ts:ro workspace-tests node scripts/isolated-tests.mjs api" },
+  "apiFinalSecretAssertion": { "result": "PASS", "passed": 1, "report": "api-unavailable-tests.json" },
+  "guard": "guard-proof.json",
+  "cliFinalProof": "cli-proof.json",
+  "cleanup": "cleanup-proof.json",
+  "build": "PASS: frozen-lockfile and all owner packages, API and api-client workspace preparation",
+  "review": "APPROVED: no actionable findings remain in EL-TK-215/216",
+  "exceptionalRecovery": "BLOCKED: EL-TK-217 requires an accepted external operational authorizer and durable RecoveryAuthority adapter",
+  "productionOrBetaReadiness": "NOT_EVALUATED",
+  "traceability": "Suite and final CLI proof are separate executions; identifiers and timestamps recorded in the session."
+}

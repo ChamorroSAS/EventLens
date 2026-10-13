@@ -1,10 +1,8 @@
 import { Component, EventEmitter, Input, Output, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'el-consent-sheet',
   standalone: true,
-  imports: [CommonModule],
   template: `
     <div
       class="backdrop"
@@ -59,8 +57,12 @@ import { CommonModule } from '@angular/common';
               class="confirm-button"
               [disabled]="!accepted || submitting"
             >
-              <span *ngIf="!submitting">Aceptar y continuar</span>
-              <span *ngIf="submitting" aria-live="assertive">Guardando...</span>
+              @if (!submitting) {
+                <span>Aceptar y continuar</span>
+              }
+              @if (submitting) {
+                <span aria-live="assertive">Guardando...</span>
+              }
             </button>
           </div>
         </form>

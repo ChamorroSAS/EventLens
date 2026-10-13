@@ -1,0 +1,204 @@
+@use 'mixins' as m;
+
+.dashboard-container {
+  inline-size: 100%;
+}
+
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--el-space-md);
+  margin-block-end: var(--el-space-xl);
+  flex-wrap: wrap;
+}
+
+.dashboard-title {
+  margin: 0 0 var(--el-space-xs) 0;
+  font-size: var(--el-font-size-h1);
+  font-weight: var(--el-font-weight-bold);
+  color: var(--el-color-text);
+}
+
+.dashboard-subtitle {
+  margin: 0;
+  font-size: var(--el-font-size-button);
+  color: var(--el-color-text-secondary);
+}
+
+.btn-create,
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--el-touch-target-min);
+  padding: var(--el-space-sm) 1.25rem;
+  border-radius: var(--el-radius-md);
+  background-color: var(--el-color-primary);
+  color: #ffffff;
+  font-size: var(--el-font-size-button);
+  font-weight: var(--el-font-weight-semibold);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.btn-create:hover,
+.btn-primary:hover {
+  background-color: var(--el-color-primary-hover);
+}
+
+.btn-create:focus-visible,
+.btn-primary:focus-visible {
+  @include m.el-focus-ring;
+}
+
+.state-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--el-space-2xl) var(--el-space-lg);
+  background-color: var(--el-color-surface);
+  border: 1px solid var(--el-color-border);
+  border-radius: var(--el-radius-lg);
+  text-align: center;
+  gap: var(--el-space-md);
+}
+
+.empty-icon,
+.alert-icon {
+  font-size: 2.5rem;
+}
+
+.empty-state h3,
+.error-state h3 {
+  margin: 0;
+  font-size: var(--el-font-size-h2);
+  color: var(--el-color-text);
+}
+
+.empty-state p,
+.error-state p {
+  margin: 0;
+  color: var(--el-color-text-secondary);
+  max-inline-size: 480px;
+}
+
+.btn-retry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--el-touch-target-min);
+  padding: var(--el-space-sm) var(--el-space-md);
+  border-radius: var(--el-radius-md);
+  background-color: var(--el-color-danger);
+  color: #ffffff;
+  font-weight: var(--el-font-weight-semibold);
+  border: none;
+  cursor: pointer;
+}
+
+.btn-retry:hover {
+  filter: brightness(0.92);
+}
+
+.btn-retry:focus-visible {
+  @include m.el-focus-ring;
+}
+
+.event-workspace {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--el-space-lg);
+}
+
+@media (min-width: 768px) {
+  .event-workspace {
+    grid-template-columns: 280px 1fr;
+  }
+}
+
+.workspace-content {
+  background-color: var(--el-color-surface);
+  border: 1px solid var(--el-color-border);
+  border-radius: var(--el-radius-lg);
+  padding: var(--el-space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--el-space-lg);
+}
+
+.section-header {
+  padding-block-end: var(--el-space-md);
+  border-block-end: 1px solid var(--el-color-border);
+}
+
+.section-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-block-end: var(--el-space-xs);
+}
+
+.section-title {
+  margin: 0;
+  font-size: var(--el-font-size-h2);
+  font-weight: var(--el-font-weight-bold);
+  color: var(--el-color-text);
+}
+
+.section-description {
+  margin: 0;
+  font-size: var(--el-font-size-body-small);
+  color: var(--el-color-text-secondary);
+}
+
+.section-card {
+  background-color: var(--el-color-surface-muted);
+  border: 1px solid var(--el-color-border);
+  border-radius: var(--el-radius-md);
+  padding: 1.25rem;
+}
+
+.section-card h3 {
+  margin-block-start: 0;
+  margin-block-end: var(--el-space-md);
+  font-size: var(--el-font-size-body);
+  color: var(--el-color-text);
+}
+
+.detail-list {
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--el-font-size-body-small);
+}
+
+.detail-item dt {
+  color: var(--el-color-text-secondary);
+  font-weight: var(--el-font-weight-medium);
+}
+
+.detail-item dd {
+  margin: 0;
+  font-weight: var(--el-font-weight-semibold);
+  color: var(--el-color-text);
+}
+
+.capability-notice {
+  color: var(--el-color-text);
+  font-weight: var(--el-font-weight-medium);
+  margin: var(--el-space-sm) 0 0 0;
+}
+
+.capability-disabled {
+  color: var(--el-color-text-secondary);
+  font-weight: var(--el-font-weight-medium);
+  margin: var(--el-space-sm) 0 0 0;
+}

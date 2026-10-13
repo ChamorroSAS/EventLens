@@ -1,5 +1,4 @@
 import { Component, ElementRef, Input, ViewChild, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { EventAccessSettings, ShareAccessSnapshot, UpdatePinCommandPayload } from './access.types.js';
 import { EventAccessSettingsComponent } from './event-access-settings.component.js';
 import { EventSharePanelComponent } from './event-share-panel.component.js';
@@ -9,7 +8,6 @@ import { RegenerateAccessDialogComponent } from './regenerate-access-dialog.comp
   selector: 'el-event-access-container',
   standalone: true,
   imports: [
-    CommonModule,
     EventAccessSettingsComponent,
     EventSharePanelComponent,
     RegenerateAccessDialogComponent
@@ -35,12 +33,13 @@ import { RegenerateAccessDialogComponent } from './regenerate-access-dialog.comp
       ></el-event-share-panel>
 
       <!-- Modal accesible de regeneración -->
-      <el-regenerate-access-dialog
-        *ngIf="showRegenerateDialog()"
-        [submitting]="isRegenerating()"
-        (confirm)="onConfirmRegenerate()"
-        (cancel)="onCloseRegenerateDialog()"
-      ></el-regenerate-access-dialog>
+      @if (showRegenerateDialog()) {
+        <el-regenerate-access-dialog
+          [submitting]="isRegenerating()"
+          (confirm)="onConfirmRegenerate()"
+          (cancel)="onCloseRegenerateDialog()"
+        ></el-regenerate-access-dialog>
+      }
     </section>
   `,
   styles: [`

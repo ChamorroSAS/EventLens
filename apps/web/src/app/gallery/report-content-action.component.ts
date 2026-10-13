@@ -1,10 +1,8 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'el-report-content-action',
   standalone: true,
-  imports: [CommonModule],
   template: `
     <button
       type="button"

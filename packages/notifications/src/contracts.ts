@@ -378,3 +378,28 @@ export interface ScheduleLifecycleNoticesResult {
   skippedCount: number;
   supersededCount: number;
 }
+
+/**
+ * Contracts for export availability, expiration and invalidation notices (EL-TK-161, DEC-021, DEC-048, DEC-090).
+ * Consumes verified facts from Export Management (EL-EP-010 / EL-TK-127..131).
+ */
+export type ExportNoticeType =
+  | 'EXPORT_AVAILABLE'
+  | 'EXPORT_EXPIRED'
+  | 'EXPORT_INVALIDATED';
+
+export interface ExportLifecycleFact {
+  actorContext: DomainFactActorContext;
+  exportId: string;
+  eventId: string;
+  organizerRef: string;
+  recipientEmail?: string | null;
+  noticeType: ExportNoticeType;
+  generation?: bigint | number;
+  partCount?: number;
+  totalSizeBytes?: bigint | number;
+  expiresAt?: Date | null;
+  invalidationReason?: string | null;
+  dedupKey?: string;
+  occurredAt?: Date;
+}

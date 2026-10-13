@@ -108,8 +108,7 @@ The following do not block initial implementation:
 - analytics vendor;
 - CI/CD provider;
 - UI component library;
-- icon library;
-- CSS/styling implementation strategy.
+- icon library.
 
 Architecture abstractions must avoid unnecessarily coupling the product to these providers.
 
@@ -125,4 +124,15 @@ Status: ACCEPTED — 2026-10-08, explicit user approval; traceability: DEC-106.
 - Mandatory: persistent volumes for PostgreSQL and local MinIO data, backups, resource limits, health checks, logical isolation and recoverability. Persistent data must never rely on a container's ephemeral filesystem; bounded scratch remains temporary.
 - DEC-062 remains intact: protected backup/WAL copies outside the application/DB host, PITR, retention and RPO/RTO verification. RecoveryAuthority remains independent of the restored DB timeline. Loss of the Beta host can also lose the live DB; recovery must cover application and DB together.
 - Resolves EL-TK-059's candidate selection (Compose, PostgreSQL 16, local MinIO and Docker), not resource availability, corpus/device access or validation gates.
+
+## EL-TD-009 — Frontend styling strategy
+
+Status: ACCEPTED — 2026-10-12, explicit user approval; traceability: DEC-111.
+
+- Styling uses Sass (SCSS) compiled by the Angular build, plus CSS custom properties (`--el-*`) as the runtime token layer. No external UI component library or icon library is selected; both remain DEFERRED.
+- Authored styles live in `apps/web/src/styles`: partials `_tokens`, `_breakpoints`, `_mixins`, `_fonts`, `_reset`, `_typography`, with `styles.scss` as the single global entrypoint that emits the `:root` custom properties. `stylePreprocessorOptions.includePaths` exposes the `src/styles` load path, and Angular component styles import partials with `@use`.
+- Tokens are defined once in `_tokens.scss`. Components consume them only through CSS custom properties, because Emulated view encapsulation does not apply global class selectors across component boundaries while custom properties are inherited. Breakpoints cannot be CSS custom properties (invalid inside `@media`), so they are SCSS variables plus media mixins.
+- Typography: Manrope is self-hosted as static `woff2` (latin subset, weights 400/500/600/700) under `apps/web/public/assets/fonts/manrope`, served from `/assets/fonts/manrope`; no external font or Google Fonts CDN reference.
+- Accessibility: semantic colors (`success`/`warning`/`danger`/`accent`) do not meet AA as text on soft/white surfaces, so text uses `--el-color-text` or `--el-color-text-secondary` and semantic colors are used only for borders, fills and badges, never as the sole carrier of meaning. WCAG 2.2 AA remains mandatory.
+- Supersedes the historical CR-004 pilot (`ui-foundation.css` and the `--el-ui-*` namespace), which is retired. Resolves the `CSS/styling implementation strategy` item previously listed under Deferred Decisions. The UI component library and icon library items remain DEFERRED.
 

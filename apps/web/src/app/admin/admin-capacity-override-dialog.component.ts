@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import type { AdminApplyOverrideCommand, AdminRemoveOverrideCommand } from './admin.types.js';
 
 export interface CapacityLimitsModel {
@@ -11,7 +10,6 @@ export interface CapacityLimitsModel {
 @Component({
   selector: 'eventlens-admin-capacity-override-dialog',
   standalone: true,
-  imports: [CommonModule],
   template: `
     <div
       class="dialog-backdrop"
