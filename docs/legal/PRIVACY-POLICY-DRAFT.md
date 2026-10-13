@@ -55,6 +55,16 @@ Procedimiento preparatorio: `../../.codex/product/sessions/2026-10-12-el-ep-017-
 
 La arquitectura prevé servidor EC2, PostgreSQL, almacenamiento privado S3-compatible, correo operativo y componentes de procesamiento. **[PROVEEDORES REALES, UBICACIONES, TRANSFERENCIAS/TRANSMISIONES, SUBENCARGADOS, ACUERDOS/DPA, RESPALDOS — PENDIENTES]**. No afirmar región colombiana ni transferencias internacionales sin inventario y contrato comprobados.
 
+### Uso promocional y finalidades no autorizadas durante la Beta
+
+**Decisión funcional confirmada:** durante la Beta, **ninguna fotografía o video procedente de eventos reales alojados en Phoeve se utilizará para publicidad, portafolio, demostración pública, redes sociales ni entrenamiento de IA, aunque el organizador lo ofrezca voluntariamente**. El contenido promocional debe ser producido específicamente o contar con licencias independientes y no derivar de galerías privadas. En fases futuras no se presumirá habilitado ningún consentimiento promocional por aceptar estos términos: se requerirá decisión de producto y revisión legal expresa. Ver DEC-015 y `TERMS-OF-USE-DRAFT.md` §8.8–8.9.
+
+### Tratamiento de evidencias y medidas administrativas
+
+El expediente de privacidad se tramitará manualmente por el canal validado, con datos mínimos y acceso restringido. Las decisiones de moderación, suspensión/revisión y advertencias pueden requerir registros proporcionales de seguridad, pero **no justifican por sí solas conservación indefinida ni nuevas finalidades de perfilado de invitados**. La denuncia aislada no desencadena ocultamiento o sanción automática (DEC-088/089). Las medidas deben respetar las facultades existentes y los procedimientos de EL-EP-009/012/014/015; uso de datos para reincidencia y su plazo requieren dictamen específico.
+
+**Brechas técnicas observadas al 2026-10-12:** la API principal solo anuncia health endpoints; la aceptación del invitado en Angular conserva `v1.0` fijo y estado local; solicitud Beta registra email normalizado en auditoría. Estos son **riesgos pendientes de revisión e integración**, no funcionalidades de cumplimiento demostradas. [Informe con evidencia de código](EL-EP-017-TECHNICAL-GAP-REVIEW-2026-10-12.md).
+
 ## 9. Seguridad e incidentes
 
 Control de acceso, URLs firmadas, auditoría mínima, cifrado/configuración real por verificar y respuesta a incidentes conforme contratos técnicos. No prometer seguridad absoluta; incidentes y notificaciones serán atendidos según la evaluación legal, contractual y técnica que corresponda.
