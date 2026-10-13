@@ -1,6 +1,6 @@
 # EL-EP-017 — Matriz de permisos: suspensión y revocación
 
-**Estado: REVIEW_PROPOSAL / NO NEW AUTHORITY.** Evidencia de código en `stage`, 2026-10-12; no pruebas de runtime. El objetivo es implementar únicamente facultades aceptadas, sin ampliar DEC/TC/ARCH.
+**Estado: TECHNICAL_PERMISSION_BASELINE_APPROVED / NO NEW AUTHORITY / NOT_IMPLEMENTED.** Aprobado expresamente por producto el 2026-10-12 para integrar **facultades existentes**. [Acta](../../.codex/product/sessions/2026-10-12-el-ep-017-approved-technical-contracts.md). Evidencia de código en `stage`; no pruebas de runtime. **No se aprueba crear facultad de suspender cuentas ni de revocar sesión invitada individual administrativamente** sin análisis/aprobación independiente. DEC/TC/ARCH no se amplían; el sufijo de ruta `DRAFT` se mantiene por enlaces.
 
 ## Matriz revisada
 
