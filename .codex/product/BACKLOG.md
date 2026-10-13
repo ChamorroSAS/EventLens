@@ -36,7 +36,7 @@
 | EL-EP-010 | Recuperar originales individualmente y por exportación | MOD-005 | DONE | P0 | EL-EP-006, EL-EP-008, EL-EP-013 | [EL-EP-010](epics/EL-EP-010.md) |
 | EL-EP-011 | Aplicar planes BETA y ampliaciones controladas | MOD-006 | READY | P0 | EL-EP-001 | [EL-EP-011](epics/EL-EP-011.md) |
 | EL-EP-012 | Operar y dar soporte con intervención administrativa justificada | MOD-007 | READY | P0 | EL-EP-001, EL-EP-014 | [EL-EP-012](epics/EL-EP-012.md) |
-| EL-EP-013 | Informar al organizador sobre su cuenta y sus recuerdos | MOD-009 | READY | P0 | Ninguna predecesora dura | [EL-EP-013](epics/EL-EP-013.md) |
+| EL-EP-013 | Informar al organizador sobre su cuenta y sus recuerdos | MOD-009 | DONE | P0 | Ninguna predecesora dura | [EL-EP-013](epics/EL-EP-013.md) |
 | EL-EP-014 | Detectar incidentes y reconstruir acciones relevantes | MOD-009 | READY | P0 | Ninguna predecesora dura | [EL-EP-014](epics/EL-EP-014.md) |
 | EL-EP-015 | Eliminar eventos y cuentas con cancelación y purga controladas | MOD-008 | DONE | P0 | EL-EP-001, EL-EP-003, EL-EP-008, EL-EP-010, EL-EP-013, EL-EP-014 | [EL-EP-015](epics/EL-EP-015.md) |
 | EL-EP-016 | Evaluar la beta con evidencia de valor y confiabilidad | MOD-009 | READY | P1 | EL-EP-014 | [EL-EP-016](epics/EL-EP-016.md) |
@@ -207,11 +207,11 @@
 | EL-TK-158 | Proyectar avisos contextuales vigentes para el panel del organizador | EL-EP-013 | DONE | P0 | 156 | [EL-TK-158](tickets/EL-TK-158.md) |
 | EL-TK-159 | Generar avisos de lifecycle, gracia y eliminación próxima | EL-EP-013 | DONE | P0 | 156; contratos EL-EP-003/015 | [EL-TK-159](tickets/EL-TK-159.md) |
 | EL-TK-160 | Generar avisos de capacidad al 80 y 100 por ciento | EL-EP-013 | DONE | P0 | 156; contrato 138 | [EL-TK-160](tickets/EL-TK-160.md) |
-| EL-TK-161 | Generar avisos de exportación disponible y expiración | EL-EP-013 | READY | P0 | 156; contrato EL-EP-010 | [EL-TK-161](tickets/EL-TK-161.md) |
+| EL-TK-161 | Generar avisos de exportación disponible y expiración | EL-EP-013 | DONE | P0 | 156; contrato EL-EP-010 | [EL-TK-161](tickets/EL-TK-161.md) |
 | EL-TK-162 | Generar avisos de cuenta, seguridad y cambios del evento | EL-EP-013 | DONE | P0 | 156; contratos EL-EP-001/003 | [EL-TK-162](tickets/EL-TK-162.md) |
 | EL-TK-163 | Generar avisos de denuncias e intervenciones según severidad autorizada | EL-EP-013 | DONE | P0 | 156; contratos EL-EP-009/014 | [EL-TK-163](tickets/EL-TK-163.md) |
-| EL-TK-164 | Integrar avisos contextuales y plantillas de correo accesibles | EL-EP-013 | READY | P0 | 157..163 | [EL-TK-164](tickets/EL-TK-164.md) |
-| EL-TK-165 | Validar notificaciones, deduplicación y obsolescencia de extremo a extremo | EL-EP-013 | READY | P0 | 156..164 | [EL-TK-165](tickets/EL-TK-165.md) |
+| EL-TK-164 | Integrar avisos contextuales y plantillas de correo accesibles | EL-EP-013 | DONE | P0 | 157..163 | [EL-TK-164](tickets/EL-TK-164.md) |
+| EL-TK-165 | Validar notificaciones, deduplicación y obsolescencia de extremo a extremo | EL-EP-013 | DONE | P0 | 156..164 | [EL-TK-165](tickets/EL-TK-165.md) |
 | EL-TK-166 | Registrar eventos de auditoría mínimos y sanitizados | EL-EP-014 | DONE | P0 | ninguna predecesora funcional dura | [EL-TK-166](tickets/EL-TK-166.md) |
 | EL-TK-167 | Consultar auditoría contextual con filtros y paginación | EL-EP-014 | DONE | P0 | 166 | [EL-TK-167](tickets/EL-TK-167.md) |
 | EL-TK-168 | Instrumentar señales operativas sanitizadas de aplicación y dependencias | EL-EP-014 | DONE | P0 | ninguna predecesora funcional dura | [EL-TK-168](tickets/EL-TK-168.md) |
@@ -408,6 +408,12 @@ EL-TK-001..004 — SUPERSEDED por EL-TK-005..019; se preservan como historial. E
 
 
 **CONFIRMED — Gate 2 EL-EP-018, 2026-10-12:** EL-TK-205..214 formalizados y aprobados por requisitos, arquitectura y UI aplicable; READY de alcance, IMPLEMENTED NO. Ejecución condicionada a predecesoras verificadas; Mi cuenta espera EL-TK-201. [Dictámenes](sessions/2026-10-12-el-ep-018-review-gates.md). No certifica implementación ni apertura pública.
+
+**CONFIRMED — EL-EP-013 CIERRE DEFINITIVO, 2026-10-13:** épica EL-EP-013 (Informar al organizador sobre su cuenta y sus recuerdos) completada al 100% de sus 10 tickets (EL-TK-156..165 todos DONE).
+- **EL-TK-161 DONE:** Implementado `ExportNoticeService` para avisos de exportación disponible y expiración / invalidación de enlaces (`EXPORT_AVAILABLE`, `EXPORT_EXPIRED`, `EXPORT_INVALIDATED`), con deduplicación por generación, soporte de reemplazo ante retiros/revocaciones per DEC-090 y trazabilidad sanitizada sin URL firmada en payloads. Suite de 5 pruebas unitarias PASS.
+- **EL-TK-164 DONE:** Integración de avisos contextuales y plantillas accesibles completada en frontend y backend. Creado `InAppNoticeComponent` (`eventlens-in-app-notice`) en `apps/web` cumpliendo WCAG 2.2 AA (`role="alert"` en CRITICAL, `role="status"` en INFO/WARNING, fallback de acción cuando el recurso ha expirado hacia `/events/:id/media`), y extendido `EmailRenderer` con soporte responsive y multi-columna adaptable. Suite de 5 pruebas unitarias frontend PASS y 167 tests de `apps/web` limpios.
+- **EL-TK-165 DONE:** Suite de validación integrada de notificaciones, deduplicación y obsolescencia de extremo a extremo (`test/notifications-epic-e2e.test.ts`) cubriendo los 4 escenarios canónicos: hechos repetidos con deduplicación e idempotencia sin duplicar entregas, obsolescencia atómica antes de entrega ante cambio de fecha o retiro de participantes (DEC-090), recuperación de fallos transitorios del proveedor con reintento JobQueue sin duplicidad semántica, y orquestación transversal de los 5 tipos de avisos (Lifecycle, Capacity, Case, Export, Account Security) sin exposición de credenciales ni secrets en payload ni logs.
+- **Estado suite:** 75 pruebas unitarias + 4 pruebas E2E en `@eventlens/notifications` PASS (100%), build tsc limpio; 167 pruebas en `apps/web` PASS (100%). Épica `EL-EP-013` cerrada oficialmente como DONE.
 
 
 
