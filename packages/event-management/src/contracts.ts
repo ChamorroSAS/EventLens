@@ -116,6 +116,14 @@ export class EventManagementError extends Error {
   }
 }
 
+export interface CommandReceipt {
+  readonly operationId: string;
+  readonly eventId: string;
+  readonly operation: string;
+  readonly appliedRevision: string;
+  readonly outcome: 'CREATED' | 'UPDATED' | 'TIMEZONE_CHANGED' | string;
+}
+
 export interface CreateEventDraftCommand {
   readonly actorContext: OrganizerActorContext;
   readonly name: string;
@@ -125,6 +133,7 @@ export interface CreateEventDraftCommand {
 export interface CreateEventDraftResult {
   readonly event: EventRecord;
   readonly outcome: 'CREATED' | 'IDEMPOTENT_REPLAY';
+  readonly receipt?: CommandReceipt;
 }
 
 // ==========================================
@@ -141,6 +150,7 @@ export interface UpdateEventDraftNameCommand {
 export interface UpdateEventDraftNameResult {
   readonly event: EventRecord;
   readonly outcome: 'UPDATED' | 'IDEMPOTENT_REPLAY';
+  readonly receipt?: CommandReceipt;
 }
 
 // ==========================================

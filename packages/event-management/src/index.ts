@@ -4,6 +4,7 @@ export {
   type EventRecord,
   type EventManagementErrorCode,
   EventManagementError,
+  type CommandReceipt,
   type CreateEventDraftCommand,
   type CreateEventDraftResult,
   type SetEventScheduleCommand,
