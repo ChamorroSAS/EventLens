@@ -30,6 +30,7 @@ model Event {
   welcomeMessage         String?  @map("welcome_message")
   idempotencyKey         String?  @unique @map("idempotency_key")
   idempotencyPayloadHash String?  @map("idempotency_payload_hash")
+  revision               BigInt   @default(1) @map("revision")
   createdAt              DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt              DateTime @default(now()) @map("updated_at") @db.Timestamptz
 
