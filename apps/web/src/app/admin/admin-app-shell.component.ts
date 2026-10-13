@@ -21,7 +21,7 @@ export type AdminConsoleTab = 'search' | 'detail' | 'jobs' | 'audit' | 'moderati
     <div class="admin-app-shell">
       <header class="admin-shell-header">
         <div class="header-brand">
-          <h1 class="brand-title">EventLens Admin Console</h1>
+          <h1 class="brand-title">Phoeve · Consola administrativa</h1>
           <span class="badge-role">Soporte e Intervenciones</span>
         </div>
         <nav class="shell-nav" aria-label="Navegación principal de consola administrativa">
