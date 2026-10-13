@@ -59,4 +59,4 @@ El correo necesario para gestionar invitación y solicitud puede permanecer **so
 
 **Néstor:** contrato, seguridad y atomicidad; **Juan:** implementación/migración/tests bajo revisión; **Cristian:** UI del formulario y avisos cuando existan textos aprobados; **asesor jurídico:** plazos, autorización y saneamiento histórico. Contratos afectados: EL-TK-008/009, EL-EP-014/017, DEC-041/059/031, ARCH atomicidad; **sin cambio DEC/TC/ARCH**.
 
-`BETA_EMAIL_IN_AUDIT: PROHIBITED_TARGET` (propuesta funcional), `BETA_REQUEST_6_MONTHS: FUNCTIONAL_CONFIRMED`, `AUDIT_12_MONTHS: EXISTING_TECH_TARGET_LEGAL_PENDING`, `ADMIN_AUDIT_RETENTION_COVERAGE: GAP`, `EL-EP-017 NOT_READY`, `Q-029 DEFERRED`, `BETA_FORM_PUBLIC_COLLECTION BLOCKED`.
+`BETA_EMAIL_IN_AUDIT: PROHIBITED_TARGET_APPROVED_TECHNICAL`,  `BETA_REQUEST_6_MONTHS: FUNCTIONAL_CONFIRMED`, `AUDIT_12_MONTHS: EXISTING_TECH_TARGET_LEGAL_PENDING`, `ADMIN_AUDIT_RETENTION_COVERAGE: GAP`, `EL-EP-017 NOT_READY`, `Q-029 DEFERRED`, `BETA_FORM_PUBLIC_COLLECTION BLOCKED`.
