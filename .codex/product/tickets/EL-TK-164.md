@@ -4,7 +4,7 @@
 EL-EP-013
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador, **quiero** recibir avisos claros en panel y correo, **para** entender el hecho, consecuencia y acción sin una bandeja adicional.
