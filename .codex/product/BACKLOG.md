@@ -203,7 +203,7 @@
 | EL-TK-156 | Registrar intenciones de notificación idempotentes desde hechos de dominio | EL-EP-013 | DONE | P0 | contratos de hechos propietarios | [EL-TK-156](tickets/EL-TK-156.md) |
 | EL-TK-157 | Encolar y procesar correos de notificación con proveedor desacoplado | EL-EP-013 | DONE | P0 | 156, 055; contrato JobQueue | [EL-TK-157](tickets/EL-TK-157.md) |
 | EL-TK-158 | Proyectar avisos contextuales vigentes para el panel del organizador | EL-EP-013 | DONE | P0 | 156 | [EL-TK-158](tickets/EL-TK-158.md) |
-| EL-TK-159 | Generar avisos de lifecycle, gracia y eliminación próxima | EL-EP-013 | READY | P0 | 156; contratos EL-EP-003/015 | [EL-TK-159](tickets/EL-TK-159.md) |
+| EL-TK-159 | Generar avisos de lifecycle, gracia y eliminación próxima | EL-EP-013 | DONE | P0 | 156; contratos EL-EP-003/015 | [EL-TK-159](tickets/EL-TK-159.md) |
 | EL-TK-160 | Generar avisos de capacidad al 80 y 100 por ciento | EL-EP-013 | DONE | P0 | 156; contrato 138 | [EL-TK-160](tickets/EL-TK-160.md) |
 | EL-TK-161 | Generar avisos de exportación disponible y expiración | EL-EP-013 | READY | P0 | 156; contrato EL-EP-010 | [EL-TK-161](tickets/EL-TK-161.md) |
 | EL-TK-162 | Generar avisos de cuenta, seguridad y cambios del evento | EL-EP-013 | DONE | P0 | 156; contratos EL-EP-001/003 | [EL-TK-162](tickets/EL-TK-162.md) |
