@@ -1,6 +1,6 @@
 # EL-EP-017 — Política funcional de minimización y auditoría de solicitudes Beta
 
-**Estado:** DATA_MINIMIZATION_DESIGN_PROPOSED / LEGAL_RETENTION_REVIEW_PENDING / NOT_IMPLEMENTED. Fecha 2026-10-12. No publicar ni activar captación sin LEG-01/03/04/05/06 y DEC-031.
+**Estado:** DATA_MINIMIZATION_TECHNICAL_BASELINE_APPROVED / LEGAL_RETENTION_REVIEW_PENDING / NOT_IMPLEMENTED. **Aprobación expresa de producto:** 2026-10-12; [acta técnica](../../.codex/product/sessions/2026-10-12-el-ep-017-approved-technical-contracts.md). La regla de no duplicar el correo en auditoría y la remediación técnica quedan aprobadas; **no equivale a aprobación jurídica de periodos, saneamiento histórico ni tratamiento público**. Se conserva `DRAFT` en ruta para mantener enlaces. No publicar ni activar captación sin LEG-01/03/04/05/06 y DEC-031.
 
 ## Problema confirmado por lectura del repositorio (`stage`)
 
