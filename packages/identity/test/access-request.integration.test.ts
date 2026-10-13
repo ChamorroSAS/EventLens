@@ -42,7 +42,8 @@ describeIntegration('BetaAccessRequestService (Real PostgreSQL Integration Tests
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
 
-      CREATE INDEX IF NOT EXISTS beta_access_request_email_normalized_idx 
+      DROP INDEX IF EXISTS beta_access_request_email_normalized_idx;
+      CREATE UNIQUE INDEX IF NOT EXISTS beta_access_request_email_normalized_key 
       ON beta_access_request(email_normalized);
 
       CREATE TABLE IF NOT EXISTS admin_audit_event (
@@ -89,15 +90,24 @@ describeIntegration('BetaAccessRequestService (Real PostgreSQL Integration Tests
     expect(rows[0].status).toBe('PENDING_REVIEW');
     expect(rows[0].notes).toBe('Testing wedding gallery features');
 
-    // Verify audit in real PostgreSQL
+    // Verify audit in real PostgreSQL (target_identifier is requestId, no email in audit target)
     const audits = await txs.run((tx) =>
-      tx.query<{ procedure: string; result: string }>(
-        `SELECT procedure, result FROM admin_audit_event WHERE target_identifier = $1`,
-        email
+      tx.query<{ procedure: string; result: string; target_identifier: string }>(
+        `SELECT procedure, result, target_identifier FROM admin_audit_event WHERE target_identifier = $1`,
+        result.requestId
       )
     );
     expect(audits.length).toBe(1);
     expect(audits[0].procedure).toBe('BETA_ACCESS_REQUEST_SUBMITTED');
+    expect(audits[0].target_identifier).toBe(result.requestId);
+
+    const emailAudits = await txs.run((tx) =>
+      tx.query<{ id: string }>(
+        `SELECT id FROM admin_audit_event WHERE target_identifier = $1`,
+        email
+      )
+    );
+    expect(emailAudits.length).toBe(0);
   });
 
   it('deduplicates duplicate requests idempotently in real PostgreSQL', async () => {
@@ -110,6 +120,39 @@ describeIntegration('BetaAccessRequestService (Real PostgreSQL Integration Tests
     expect(first.outcome).toBe('REQUEST_RECEIVED');
     expect(second.outcome).toBe('REQUEST_RECEIVED');
     expect(second.requestId).toBe(first.requestId);
+
+    const rows = await txs.run((tx) =>
+      tx.query<{ count: string; notes: string }>(
+        `SELECT COUNT(*) as count, notes FROM beta_access_request WHERE email_normalized = $1 GROUP BY notes`,
+        email
+      )
+    );
+    expect(Number(rows[0].count)).toBe(1);
+    // Non-destructive: preserves existing note without overwriting
+    expect(rows[0].notes).toBe('First note');
+
+    // Both audits reference the deterministic requestId without storing email
+    const audits = await txs.run((tx) =>
+      tx.query<{ target_identifier: string }>(
+        `SELECT target_identifier FROM admin_audit_event WHERE target_identifier = $1`,
+        first.requestId
+      )
+    );
+    expect(audits.length).toBe(2);
+  });
+
+  it('handles concurrent duplicate submissions safely under race conditions', async () => {
+    const service = new BetaAccessRequestService(txs);
+    const email = 'real-concurrent@eventlens.internal';
+
+    const [first, second] = await Promise.all([
+      service.requestAccess({ email, notes: 'Parallel submission 1' }),
+      service.requestAccess({ email, notes: 'Parallel submission 2' })
+    ]);
+
+    expect(first.outcome).toBe('REQUEST_RECEIVED');
+    expect(second.outcome).toBe('REQUEST_RECEIVED');
+    expect(first.requestId).toBe(second.requestId);
 
     const rows = await txs.run((tx) =>
       tx.query<{ count: string }>(
@@ -146,5 +189,14 @@ describeIntegration('BetaAccessRequestService (Real PostgreSQL Integration Tests
     expect(detail.request).not.toBeNull();
     expect(detail.request?.id).toBe(req.requestId);
     expect(detail.request?.emailNormalized).toBe(email);
+
+    // Admin inspect detail audit uses requestId UUID
+    const detailAudits = await txs.run((tx) =>
+      tx.query<{ procedure: string; target_identifier: string }>(
+        `SELECT procedure, target_identifier FROM admin_audit_event WHERE procedure = 'BETA_ACCESS_REQUEST_DETAIL_VIEWED'`
+      )
+    );
+    expect(detailAudits.length).toBe(1);
+    expect(detailAudits[0].target_identifier).toBe(req.requestId);
   });
 });

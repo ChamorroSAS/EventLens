@@ -168,10 +168,10 @@
 | EL-TK-121 | Integrar reporte y retiro en la experiencia pública/guest | EL-EP-009 | DONE | P0 | 099, 113, 114, 115 | [EL-TK-121](tickets/EL-TK-121.md) |
 | EL-TK-122 | Integrar cola y resolución de casos en la consola administrativa | EL-EP-009 | DONE | P0 | 116..120; contrato EL-EP-012 | [EL-TK-122](tickets/EL-TK-122.md) |
 | EL-TK-123 | Validar privacidad y resolución de reportes/retiros de extremo a extremo | EL-EP-009 | DONE | P0 | 113..122 | [EL-TK-123](tickets/EL-TK-123.md) |
-| EL-TK-124 | Autorizar la descarga individual de un original elegible | EL-EP-010 | READY | P0 | 098,053; contrato EL-EP-006 | [EL-TK-124](tickets/EL-TK-124.md) |
-| EL-TK-125 | Crear una solicitud de exportación con snapshot fijo de elegibles | EL-EP-010 | READY | P0 | 098; contrato EL-EP-008 | [EL-TK-125](tickets/EL-TK-125.md) |
-| EL-TK-126 | Encolar y preparar una exportación asíncrona multipartes | EL-EP-010 | READY | P0 | 125,055 | [EL-TK-126](tickets/EL-TK-126.md) |
-| EL-TK-127 | Publicar disponibilidad y expiración de una exportación preparada | EL-EP-010 | READY | P0 | 126 | [EL-TK-127](tickets/EL-TK-127.md) |
+| EL-TK-124 | Autorizar la descarga individual de un original elegible | EL-EP-010 | DONE | P0 | 098,053; contrato EL-EP-006 | [EL-TK-124](tickets/EL-TK-124.md) |
+| EL-TK-125 | Crear una solicitud de exportación con snapshot fijo de elegibles | EL-EP-010 | DONE | P0 | 098; contrato EL-EP-008 | [EL-TK-125](tickets/EL-TK-125.md) |
+| EL-TK-126 | Encolar y preparar una exportación asíncrona multipartes | EL-EP-010 | DONE | P0 | 125,055 | [EL-TK-126](tickets/EL-TK-126.md) |
+| EL-TK-127 | Publicar disponibilidad y expiración de una exportación preparada | EL-EP-010 | DONE | P0 | 126 | [EL-TK-127](tickets/EL-TK-127.md) |
 | EL-TK-128 | Invalidar exportaciones afectadas por retiro o pérdida de acceso | EL-EP-010 | READY | P0 | 125,126; contratos EL-EP-008/009/015 | [EL-TK-128](tickets/EL-TK-128.md) |
 | EL-TK-129 | Autorizar la descarga temporal de una parte de exportación | EL-EP-010 | READY | P0 | 127,128 | [EL-TK-129](tickets/EL-TK-129.md) |
 | EL-TK-130 | Reintentar o regenerar una exportación fallida o expirada cuando siga autorizada | EL-EP-010 | READY | P0 | 126,127,128 | [EL-TK-130](tickets/EL-TK-130.md) |

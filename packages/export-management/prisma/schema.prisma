@@ -1,0 +1,77 @@
+datasource db {
+  provider = "postgresql"
+}
+
+model ExportRequest {
+  id                 String   @id @db.Uuid
+  eventId            String   @map("event_id") @db.Uuid
+  organizerId        String   @map("organizer_id") @db.Uuid
+  status             String   @default("REQUESTED")
+  idempotencyKey     String   @map("idempotency_key")
+  requestFingerprint String   @map("request_fingerprint")
+  selectedCount      Int      @map("selected_count")
+  selectedBytes      BigInt   @map("selected_bytes")
+  exclusions         Json     @default("{}")
+  requestedAt        DateTime @map("requested_at") @db.Timestamptz
+  generation         BigInt   @default(1)
+  targetPartBytes    BigInt?  @map("target_part_bytes")
+  failureCode        String?  @map("failure_code")
+  statusReason       String?  @map("status_reason")
+  preparedAt         DateTime? @map("prepared_at") @db.Timestamptz
+  manifestNamespace  String?  @map("manifest_namespace")
+  manifestKey        String?  @map("manifest_key")
+  manifestSha256     String?  @map("manifest_sha256")
+  manifestBytes      BigInt?  @map("manifest_bytes")
+  availableAt        DateTime? @map("available_at") @db.Timestamptz
+  expiresAt          DateTime? @map("expires_at") @db.Timestamptz
+  expiredAt          DateTime? @map("expired_at") @db.Timestamptz
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  items ExportRequestItem[]
+  parts ExportPart[]
+
+  @@unique([organizerId, idempotencyKey])
+  @@index([eventId, requestedAt(sort: Desc)])
+  @@map("export_request")
+}
+
+model ExportRequestItem {
+  exportId          String @map("export_id") @db.Uuid
+  position          Int
+  mediaRef          String @map("media_ref")
+  generation        BigInt
+  revision          BigInt
+  originalNamespace String @map("original_namespace")
+  originalKey       String @map("original_key")
+  originalVersion   String @map("original_version")
+  originalSha256    String @map("original_sha256")
+  originalBytes     BigInt @map("original_bytes")
+  fileName          String? @map("file_name")
+  partNumber        Int?    @map("part_number")
+
+  request ExportRequest @relation(fields: [exportId], references: [id])
+
+  @@id([exportId, mediaRef])
+  @@map("export_request_item")
+}
+
+model ExportPart {
+  exportId        String    @map("export_id") @db.Uuid
+  partNumber      Int       @map("part_number")
+  generation      BigInt
+  status          String    @default("PENDING")
+  entryCount      Int       @map("entry_count")
+  plannedBytes    BigInt    @map("planned_bytes")
+  objectNamespace String?   @map("object_namespace")
+  objectKey       String?   @map("object_key")
+  sizeBytes       BigInt?   @map("size_bytes")
+  sha256          String?
+  attemptToken    String?   @map("attempt_token") @db.Uuid
+  completedAt     DateTime? @map("completed_at") @db.Timestamptz
+
+  request ExportRequest @relation(fields: [exportId], references: [id])
+
+  @@id([exportId, partNumber])
+  @@unique([exportId, partNumber, generation])
+  @@map("export_part")
+}

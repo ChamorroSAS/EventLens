@@ -58,7 +58,32 @@ export interface ObjectStorageDownloadSigner {
     namespace: string;
     key: string;
     ttlSeconds: number;
+    /** Forces a download response (Content-Disposition: attachment) instead of inline rendering. */
+    forceDownload?: boolean;
+    fileName?: string;
   }): Promise<string>;
+}
+
+// ==========================================
+// EL-TK-124: Grants de descarga individual de originales
+// ==========================================
+
+export interface RequestOriginalDownloadGrantCommand {
+  readonly eventId: string;
+  readonly mediaId: string;
+  readonly organizerAccountId: string;
+  readonly ttlSeconds?: number;
+  readonly now?: Date;
+}
+
+export interface OriginalDownloadGrant {
+  readonly grantId: string;
+  readonly eventId: string;
+  readonly mediaId: string;
+  readonly downloadUrl: string;
+  readonly expiresAt: string;
+  readonly ttlSeconds: number;
+  readonly securityStatus: 'APPROVED';
 }
 
 // ==========================================
