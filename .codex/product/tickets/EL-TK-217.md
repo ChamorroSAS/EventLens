@@ -1,7 +1,13 @@
 # EL-TK-217 — Autorizar recuperación administrativa excepcional
 
-## Parent epic / Status / Priority
-EL-EP-001 / BLOCKED / P1. CR-005. UI_REQUIRED: NO.
+## Parent epic
+EL-EP-001
+
+## Status
+BLOCKED
+
+## Priority
+P1. CR-005. UI_REQUIRED: NO.
 
 ## User story
 Como operador, quiero recuperar acceso en una base consumida sin credenciales válidas mediante autorización externa verificable, sin resucitar credenciales.
