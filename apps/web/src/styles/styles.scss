@@ -1,0 +1,77 @@
+// EventLens global stylesheet.
+//
+// Loads the global layers (fonts, reset, typography) and emits the design
+// tokens as CSS custom properties once in :root. Components consume these
+// tokens with var(--el-*), which inherit through Angular view encapsulation.
+
+@use 'tokens' as t;
+@use 'fonts';
+@use 'reset';
+@use 'typography';
+
+:root {
+  // Color
+  --el-color-primary: #{t.$el-color-primary};
+  --el-color-primary-hover: #{t.$el-color-primary-hover};
+  --el-color-accent: #{t.$el-color-accent};
+  --el-color-accent-soft: #{t.$el-color-accent-soft};
+  --el-color-background: #{t.$el-color-background};
+  --el-color-surface: #{t.$el-color-surface};
+  --el-color-surface-muted: #{t.$el-color-surface-muted};
+  --el-color-text: #{t.$el-color-text};
+  --el-color-text-secondary: #{t.$el-color-text-secondary};
+  --el-color-text-disabled: #{t.$el-color-text-disabled};
+  --el-color-border: #{t.$el-color-border};
+  --el-color-border-strong: #{t.$el-color-border-strong};
+  --el-color-success: #{t.$el-color-success};
+  --el-color-success-soft: #{t.$el-color-success-soft};
+  --el-color-warning: #{t.$el-color-warning};
+  --el-color-warning-soft: #{t.$el-color-warning-soft};
+  --el-color-danger: #{t.$el-color-danger};
+  --el-color-danger-soft: #{t.$el-color-danger-soft};
+  --el-color-info: #{t.$el-color-info};
+  --el-color-info-soft: #{t.$el-color-info-soft};
+  --el-color-focus: #{t.$el-color-focus};
+
+  // Typography
+  --el-font-family: #{t.$el-font-family};
+  --el-font-weight-regular: #{t.$el-font-weight-regular};
+  --el-font-weight-medium: #{t.$el-font-weight-medium};
+  --el-font-weight-semibold: #{t.$el-font-weight-semibold};
+  --el-font-weight-bold: #{t.$el-font-weight-bold};
+  --el-font-size-display: #{t.$el-font-size-display};
+  --el-font-size-h1: #{t.$el-font-size-h1};
+  --el-font-size-h2: #{t.$el-font-size-h2};
+  --el-font-size-h3: #{t.$el-font-size-h3};
+  --el-font-size-body: #{t.$el-font-size-body};
+  --el-font-size-body-small: #{t.$el-font-size-body-small};
+  --el-font-size-label: #{t.$el-font-size-label};
+  --el-font-size-caption: #{t.$el-font-size-caption};
+  --el-font-size-button: #{t.$el-font-size-button};
+  --el-line-height-tight: #{t.$el-line-height-tight};
+  --el-line-height-normal: #{t.$el-line-height-normal};
+  --el-line-height-relaxed: #{t.$el-line-height-relaxed};
+
+  // Spacing
+  --el-space-xs: #{t.$el-space-xs};
+  --el-space-sm: #{t.$el-space-sm};
+  --el-space-md: #{t.$el-space-md};
+  --el-space-lg: #{t.$el-space-lg};
+  --el-space-xl: #{t.$el-space-xl};
+  --el-space-2xl: #{t.$el-space-2xl};
+
+  // Radius
+  --el-radius-sm: #{t.$el-radius-sm};
+  --el-radius-md: #{t.$el-radius-md};
+  --el-radius-lg: #{t.$el-radius-lg};
+  --el-radius-pill: #{t.$el-radius-pill};
+
+  // Elevation
+  --el-elevation-subtle: #{t.$el-elevation-subtle};
+  --el-elevation-overlay: #{t.$el-elevation-overlay};
+
+  // Focus / accessibility
+  --el-focus-ring-width: #{t.$el-focus-ring-width};
+  --el-focus-ring-offset: #{t.$el-focus-ring-offset};
+  --el-touch-target-min: #{t.$el-touch-target-min};
+}

@@ -1,0 +1,45 @@
+// EventLens shared style mixins.
+//
+// These emit no CSS on their own; @use them from global or component styles
+// (available via stylePreprocessorOptions.includePaths).
+
+@use 'tokens' as *;
+
+// Visible keyboard focus that works across light surfaces.
+@mixin el-focus-ring {
+  outline: $el-focus-ring-width solid $el-color-focus;
+  outline-offset: $el-focus-ring-offset;
+}
+
+// Minimum touch target (WCAG 2.2 AA).
+@mixin el-touch-target($size: $el-touch-target-min) {
+  min-block-size: $size;
+  min-inline-size: $size;
+}
+
+// Content available to assistive tech only.
+@mixin el-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// Single-line ellipsis.
+@mixin el-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Content rendered only when the user prefers reduced motion.
+@mixin el-reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}

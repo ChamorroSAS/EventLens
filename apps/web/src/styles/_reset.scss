@@ -1,0 +1,62 @@
+// Minimal base reset. Keeps the platform predictable without removing
+// semantics; component styles build on top of these defaults.
+
+@use 'tokens' as *;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-block-size: 100vh;
+  background-color: var(--el-color-background);
+  color: var(--el-color-text);
+  font-family: var(--el-font-family);
+  font-size: var(--el-font-size-body);
+  font-weight: var(--el-font-weight-regular);
+  line-height: var(--el-line-height-normal);
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-inline-size: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: $el-focus-ring-width solid var(--el-color-focus);
+  outline-offset: $el-focus-ring-offset;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

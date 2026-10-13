@@ -1,0 +1,31 @@
+// Base typographic defaults from the type scale.
+
+@use 'tokens' as *;
+
+h1,
+h2,
+h3 {
+  margin: 0 0 var(--el-space-sm);
+  font-weight: var(--el-font-weight-semibold);
+  line-height: var(--el-line-height-tight);
+}
+
+h1 {
+  font-size: var(--el-font-size-h1);
+}
+
+h2 {
+  font-size: var(--el-font-size-h2);
+}
+
+h3 {
+  font-size: var(--el-font-size-h3);
+}
+
+p {
+  margin: 0 0 var(--el-space-md);
+}
+
+small {
+  font-size: var(--el-font-size-caption);
+}
