@@ -28,10 +28,10 @@ import { Component } from '@angular/core';
   `,
   styles: [`
     .el-footer {
-      background-color: var(--el-ui-color-surface, #ffffff);
-      border-top: 1px solid var(--el-ui-color-border, #e7e7e3);
-      padding: 3rem 1.5rem 2rem;
-      color: var(--el-ui-color-text-secondary, #667085);
+      background-color: #17202a;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 3.5rem 1.5rem 2.5rem;
+      color: #94a3b8;
       font-family: var(--el-ui-font-family-base, 'Manrope', system-ui, sans-serif);
     }
     .el-footer__container {
@@ -49,16 +49,17 @@ import { Component } from '@angular/core';
     .el-footer__logo {
       height: 32px;
       width: auto;
+      filter: brightness(0) invert(1);
     }
     .el-footer__tagline {
       font-size: 0.9375rem;
       line-height: 1.5;
       margin: 0;
-      color: var(--el-ui-color-text-secondary, #667085);
+      color: #cbd5e1;
       max-width: 480px;
     }
     .el-footer__bottom {
-      border-top: 1px solid var(--el-ui-color-border, #e7e7e3);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
       padding-top: 1.5rem;
       display: flex;
       justify-content: space-between;
@@ -69,7 +70,7 @@ import { Component } from '@angular/core';
     .el-footer__copyright {
       font-size: 0.875rem;
       margin: 0;
-      color: var(--el-ui-color-text-secondary, #667085);
+      color: #94a3b8;
     }
   `]
 })

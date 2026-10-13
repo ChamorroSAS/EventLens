@@ -33,7 +33,6 @@ import { OrganizerSessionService } from '../organizer-session.service';
 
         <!-- Navegación desktop -->
         <nav class="el-header__nav el-header__nav--desktop" aria-label="Navegación principal">
-          <ul class="el-nav-list">
             <li>
               <a [attr.href]="'/#como-funciona'" (click)="onAnchorClick($event, 'como-funciona')">
                 Cómo funciona
@@ -45,16 +44,20 @@ import { OrganizerSessionService } from '../organizer-session.service';
               </a>
             </li>
             <li>
-              <a [attr.href]="'/#privacidad'" (click)="onAnchorClick($event, 'privacidad')">
-                Privacidad
-              </a>
-            </li>
-            <li>
               <a [attr.href]="'/#preguntas-frecuentes'" (click)="onAnchorClick($event, 'preguntas-frecuentes')">
                 Preguntas frecuentes
               </a>
             </li>
-          </ul>
+            <li>
+              <a [attr.href]="'/#comparar'" (click)="onAnchorClick($event, 'comparar')">
+                Comparar
+              </a>
+            </li>
+            <li>
+              <a [attr.href]="'/#privacidad'" (click)="onAnchorClick($event, 'privacidad')">
+                Privacidad
+              </a>
+            </li>
         </nav>
 
         <!-- Acciones adaptativas según estado de sesión -->
@@ -158,13 +161,18 @@ import { OrganizerSessionService } from '../organizer-session.service';
                 </a>
               </li>
               <li>
-                <a [attr.href]="'/#privacidad'" (click)="onAnchorClick($event, 'privacidad')">
-                  Privacidad
+                <a [attr.href]="'/#preguntas-frecuentes'" (click)="onAnchorClick($event, 'preguntas-frecuentes')">
+                  Preguntas frecuentes
                 </a>
               </li>
               <li>
-                <a [attr.href]="'/#preguntas-frecuentes'" (click)="onAnchorClick($event, 'preguntas-frecuentes')">
-                  Preguntas frecuentes
+                <a [attr.href]="'/#comparar'" (click)="onAnchorClick($event, 'comparar')">
+                  Comparar
+                </a>
+              </li>
+              <li>
+                <a [attr.href]="'/#privacidad'" (click)="onAnchorClick($event, 'privacidad')">
+                  Privacidad
                 </a>
               </li>
             </ul>
@@ -233,12 +241,13 @@ import { OrganizerSessionService } from '../organizer-session.service';
   `,
   styles: [`
     .el-header {
-      background-color: var(--el-ui-color-surface, #ffffff);
-      border-bottom: 1px solid var(--el-ui-color-border, #e7e7e3);
+      background-color: var(--el-ui-color-background, #faf8f4);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
       position: sticky;
       top: 0;
       z-index: 100;
       font-family: var(--el-ui-font-family-base, 'Manrope', system-ui, sans-serif);
+      backdrop-filter: blur(8px);
     }
     .el-header__container {
       max-width: 1200px;
@@ -248,7 +257,7 @@ import { OrganizerSessionService } from '../organizer-session.service';
       align-items: center;
       justify-content: space-between;
       gap: 1.5rem;
-      min-height: 4rem;
+      min-height: 4.25rem;
     }
     .el-header__brand {
       display: inline-flex;
@@ -308,6 +317,10 @@ import { OrganizerSessionService } from '../organizer-session.service';
       min-height: 44px;
       display: inline-flex;
       align-items: center;
+      transition: color 0.15s ease;
+    }
+    .el-btn-nav:hover {
+      color: #e05638;
     }
     .el-btn-secondary {
       background: none;
@@ -317,30 +330,33 @@ import { OrganizerSessionService } from '../organizer-session.service';
       font-size: 0.875rem;
       font-weight: 600;
       padding: 0.5rem 1rem;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
       min-height: 44px;
       display: inline-flex;
       align-items: center;
+      transition: all 0.15s ease;
     }
     .el-btn-secondary:hover {
-      background-color: var(--el-ui-color-background, #FAFAF8);
+      background-color: rgba(0, 0, 0, 0.04);
     }
     .el-btn-cta {
-      background-color: var(--el-ui-color-primary, #17345C);
+      background-color: #142a4a;
       color: #ffffff;
       text-decoration: none;
-      font-size: 0.875rem;
+      font-size: 0.9375rem;
       font-weight: 600;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
+      padding: 0.625rem 1.25rem;
+      border-radius: 8px;
       min-height: 44px;
       display: inline-flex;
       align-items: center;
-      transition: background-color 0.15s ease;
+      transition: all 0.15s ease;
+      box-shadow: 0 2px 4px rgba(20, 42, 74, 0.12);
     }
     .el-btn-cta:hover {
-      background-color: var(--el-ui-color-primary-hover, #102A4D);
+      background-color: #1e3a66;
+      box-shadow: 0 4px 8px rgba(20, 42, 74, 0.18);
     }
     .el-header__menu-btn {
       display: inline-flex;
