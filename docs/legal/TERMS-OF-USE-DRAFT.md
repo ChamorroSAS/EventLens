@@ -102,6 +102,16 @@ La evaluación considerará gravedad, contexto, evidencia mínima, derechos de t
 
 **Pendientes:** redacción jurídica validada, procedimientos especiales y autoridades competentes cuando la ley lo exija, controles realmente implementados y proporcionalidad de medidas. `PROHIBITED_CONTENT: FUNCTIONAL_CONFIRMED`; `EL-EP-017: NOT_READY`; `Q-029: DEFERRED`.
 
+## 8.8. Reutilización comercial, publicidad e IA — decisión funcional confirmada (2026-10-12)
+
+**Phoeve no utilizará las fotografías o videos privados de los eventos para publicidad, portafolio, redes sociales, comercialización ni entrenamiento de modelos de inteligencia artificial sin una autorización específica, separada y válida para esa finalidad.** La licencia del uploader permanece limitada a la operación del servicio en los términos de DEC-015; la aceptación general de términos, el acceso por QR o la subida no constituyen esa autorización adicional. La restricción no presupone que el producto Beta implemente un mecanismo comercial ni un consentimiento separado: cualquier capacidad futura requiere análisis y aprobación.
+
+**Organizadores e invitados:** descargar o acceder a una fotografía no concede automáticamente derechos para republicarla, explotarla comercialmente, incluirla en publicidad, compartirla externamente ni tratar datos personales para fines distintos del evento. Quien reutilice imágenes fuera de Phoeve deberá contar con los derechos y autorizaciones aplicables de autores y personas retratadas, incluyendo protecciones reforzadas para menores cuando corresponda. Las copias exportadas fuera de la plataforma no se consideran eliminadas automáticamente por un retiro interno, sin perjuicio de los deberes legales de quien las trate.
+
+**Controles vigentes:** preservar DEC-015 (licencia limitada, sin publicidad/venta/training adicional), EL-EP-010 (descarga/exportación autorizada), EL-EP-009 (reclamación y retiro) y la galería privada. No introducir marketing basado en contenido privado ni cambios a DEC/TC/ARCH.
+
+**PENDING LEGAL:** alcance preciso de derechos de autor, derechos de imagen, autorización de titulares y contenido de menores en reutilizaciones externas, redacción vinculante y procedimientos de reclamación. `PRIVATE_MEDIA_COMMERCIAL_REUSE: RESTRICTED_CONFIRMED`; `PUBLICATION: BLOCKED`; `EL-EP-017: NOT_READY`; `Q-029: DEFERRED`.
+
 ## 9. Relación con organizaciones y proveedores
 
 Un representante humano puede gestionar un evento de organización, pero los alcances de representación, instrucciones de tratamiento y rol responsable/encargado deben definirse caso a caso. Los proveedores técnicos, ubicaciones y contratos de tratamiento no se consideran finalizados por estos términos.
