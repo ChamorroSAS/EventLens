@@ -1,3 +1,5 @@
+> **ARCHIVO HISTÓRICO — EventLens (CR-004).** La identidad pública Phoeve en transición está documentada en [PHOEVE-MANUAL-DE-MARCA.md](PHOEVE-MANUAL-DE-MARCA.md). Se conserva este documento para trazabilidad, sin borrar decisiones ni evidencias previas.
+
 # EventLens — Manual de marca consolidado
 
 Versión 1.1 · 2026-10-12. **CONFIRMED:** criterios aprobados; aplicación y validación visual pendientes. [Cambio y aprobaciones](../../.codex/product/changes/CR-004.md).
