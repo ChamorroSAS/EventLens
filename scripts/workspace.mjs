@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const command = process.argv[2];
-const allowed = ['build','test','typecheck','integration','e2e','prepare','db-generate','db-migrate','openapi','client','client-check','up','down','logs','backup','restore'];
+const allowed = ['build','test','typecheck','integration','e2e','prepare','db-generate','db-migrate','openapi','client','client-check','up','down','watch','logs','backup','restore'];
 if (!allowed.includes(command)) throw new Error('UNKNOWN_WORKSPACE_COMMAND');
 function run(bin, args) {
   const result = spawnSync(bin, args, {cwd:root,stdio:'inherit',env:process.env,shell:bin === 'pnpm' && process.platform === 'win32'});
@@ -12,7 +12,9 @@ function run(bin, args) {
 const pnpm = (...args) => run('pnpm', args);
 const filter = (name, script) => pnpm('--filter', `@eventlens/${name}`, script);
 const node = (...args) => run(process.execPath, args);
-if (['up','down','logs'].includes(command)) {
+if (command === 'watch') {
+  run('docker',['compose','-f','compose.yaml','-f','compose.dev.yaml','up','-d','--wait']);
+} else if (['up','down','logs'].includes(command)) {
   run('docker',['compose', ...(command === 'up' ? ['up','--build','-d','--wait'] : command === 'down' ? ['down'] : ['logs','--tail','100'])]);
 } else if (['backup','restore'].includes(command)) {
   const args = process.argv.slice(3);
