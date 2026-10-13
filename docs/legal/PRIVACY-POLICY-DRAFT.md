@@ -73,6 +73,8 @@ Control de acceso, URLs firmadas, auditoría mínima, cifrado/configuración rea
 
 Publicar versión, vigencia y mecanismo de notificación de modificaciones sustanciales **solo después de aprobación**. Determinar cuándo una nueva finalidad exige una nueva autorización. Conservar versiones y evidencia sin datos excesivos.
 
+**Notificación por cambios de documentos:** se diferencian correcciones menores y cambios sustanciales. Los sustanciales se comunicarán a usuarios afectados y exigirán una nueva aceptación o autorización cuando proceda; no confundir consentimiento para tratamiento de datos con aceptación contractual. La forma concreta para sesiones invitadas anónimas se definirá al integrar DEC-041, sin crear identidad permanente.
+
 ## Bloqueos de publicación
 
 `EL-EP-017: NOT_READY`; `Q-029: DEFERRED`; `DEC-031: LEGAL_PROFESSIONAL_REVIEW_REQUIRED`; `PUBLIC_SERVICE_OPENING: BLOCKED`.
