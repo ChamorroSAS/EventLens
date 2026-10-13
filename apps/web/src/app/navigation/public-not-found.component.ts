@@ -17,7 +17,7 @@ import { PublicEntryRouterService } from './public-entry-router.service';
           Página no encontrada
         </h1>
         <p class="el-not-found__message">
-          La dirección que intentas abrir no está disponible o no existe en EventLens.
+          La dirección que intentas abrir no está disponible o no existe en Phoeve.
         </p>
         <a
           class="el-not-found__action"
