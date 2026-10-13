@@ -26,6 +26,8 @@ La decisión no convierte a NCH SERVICIOS S.A.S. en operadora, no constituye una
 
 **Informe de brechas técnicas:** [Revisión del código de `stage` y contraste con borradores](EL-EP-017-TECHNICAL-GAP-REVIEW-2026-10-12.md), 2026-10-12. Ocho hallazgos TG-01..TG-08; revisión documental, no test de runtime; política y términos aún DRAFT NO PUBLICAR.
 
+**Contratos técnicos propuestos para revisión:** [API HTTP e integración](../contracts/EL-EP-017-API-INTEGRATION-DRAFT-2026-10-12.md), [matriz de suspensión/revocación](../contracts/EL-EP-017-SUSPENSION-REVOCATION-PERMISSIONS-DRAFT-2026-10-12.md) y [política de minimización del correo Beta en auditoría](BETA-EMAIL-AUDIT-POLICY-DRAFT-2026-10-12.md). El documento de auditoría distingue los 6 meses de solicitudes sin invitación del objetivo configurable de auditoría de 12 meses; identifica que la purga existente solo cubre `audit_event`, no `admin_audit_event`. **Propuestas documentales, sin aprobación jurídica ni implementación.**
+
 ## Documentos del expediente
 
 | Documento | Finalidad | Estado |
