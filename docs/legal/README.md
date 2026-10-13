@@ -24,6 +24,8 @@ La decisión no convierte a NCH SERVICIOS S.A.S. en operadora, no constituye una
 
 **Borradores jurídicos nuevos para asesoría profesional (NO PUBLICAR):** [Política de Tratamiento de Datos](PRIVACY-POLICY-DRAFT.md) y [Términos y Condiciones](TERMS-OF-USE-DRAFT.md). No suplantan el aviso Beta ni cierran Q-029.
 
+**Informe de brechas técnicas:** [Revisión del código de `stage` y contraste con borradores](EL-EP-017-TECHNICAL-GAP-REVIEW-2026-10-12.md), 2026-10-12. Ocho hallazgos TG-01..TG-08; revisión documental, no test de runtime; política y términos aún DRAFT NO PUBLICAR.
+
 ## Documentos del expediente
 
 | Documento | Finalidad | Estado |
