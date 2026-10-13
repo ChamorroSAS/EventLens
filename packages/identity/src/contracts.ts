@@ -19,6 +19,7 @@ export class ProvisioningError extends Error {
 
 export type AuthenticationErrorCode =
   | 'UNAUTHENTICATED'
+  | 'FORBIDDEN'
   | 'SESSION_EXPIRED'
   | 'SESSION_REVOKED'
   | 'SESSION_NOT_FOUND'
@@ -563,7 +564,7 @@ export interface OrganizerAccountRecord {
   readonly id: string;
   readonly email: string;
   readonly emailNormalized: string;
-  readonly status: 'PENDING_VERIFICATION' | 'ACTIVE' | 'SUSPENDED' | 'REVOKED';
+  readonly status: 'PENDING_VERIFICATION' | 'ACTIVE' | 'SUSPENDED' | 'REVOKED' | 'PENDING_DELETION' | 'DELETED';
   readonly declaredAdult: boolean;
   readonly declaredAdultAt?: Date | null;
   readonly invitationId: string;
@@ -632,6 +633,7 @@ export interface OrganizerActorContext {
   readonly credentialRevision: bigint;
   readonly sessionWatermark: bigint;
   readonly recoveryEpoch: bigint;
+  readonly restrictedContext?: 'DELETION_MANAGEMENT_ONLY';
 }
 
 export interface OrganizerSessionCookieSpec {
@@ -648,6 +650,39 @@ export function serializeOrganizerSessionCookie(spec: OrganizerSessionCookieSpec
   return `${spec.name}=${spec.value}; Path=${spec.path}; Secure; HttpOnly; SameSite=${spec.sameSite}; Max-Age=${spec.maxAgeSeconds}`;
 }
 
+export type OrganizerEffectiveSessionState =
+  | 'ANONYMOUS'
+  | 'ORGANIZER_ACTIVE'
+  | 'ORGANIZER_RESTRICTED_DELETION';
+
+export interface OrganizerEffectiveSessionCapabilities {
+  readonly canSignIn: boolean;
+  readonly canRequestBetaAccess: boolean;
+  readonly canAccessMyEvents: boolean;
+  readonly canAccessMyAccount: boolean;
+  readonly canManageSessions: boolean;
+  readonly canManageAccountDeletion: boolean;
+  readonly isDeletionRestricted: boolean;
+  readonly canSignOut: boolean;
+}
+
+export interface OrganizerProjectedAccountMetadata {
+  readonly email: string;
+  readonly emailVerified: boolean;
+  readonly accountStatus: 'ACTIVE' | 'PENDING_DELETION';
+}
+
+export interface OrganizerEffectiveSessionProjection {
+  readonly state: OrganizerEffectiveSessionState;
+  readonly capabilities: OrganizerEffectiveSessionCapabilities;
+  readonly account: OrganizerProjectedAccountMetadata | null;
+  readonly csrfToken?: string;
+}
+
+export interface ProjectOrganizerSessionCommand {
+  readonly sessionToken?: string | null;
+}
+
 export interface OrganizerLoginCommand {
   readonly email: string;
   /** Plaintext password provided by organizer. Never logged, returned, or persisted. */
@@ -661,14 +696,18 @@ export interface OrganizerLoginResult {
   readonly csrfToken: string;
   readonly cookieSpec: OrganizerSessionCookieSpec;
   readonly account: OrganizerAccountRecord;
+  readonly projection: OrganizerEffectiveSessionProjection;
 }
 
 export interface ValidateOrganizerSessionCommand {
   readonly sessionToken: string;
+  readonly csrfToken?: string | null;
+  readonly requireCsrf?: boolean;
 }
 
 export interface ValidateOrganizerSessionResult {
   readonly actorContext: OrganizerActorContext;
+  readonly projection: OrganizerEffectiveSessionProjection;
 }
 
 export interface ResendVerificationEmailCommand {

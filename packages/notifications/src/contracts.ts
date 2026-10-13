@@ -262,3 +262,119 @@ export interface GenerateNoticeResult {
   supersededCount?: number;
 }
 
+/**
+ * Contracts for capacity usage threshold notice generation (EL-TK-160, DEC-021, DEC-027).
+ * Consumes signals from EL-EP-011 / EL-TK-138 with strict deduplication.
+ */
+export type CapacityThresholdNoticeType = 'USAGE_80' | 'USAGE_100';
+
+export interface CapacityThresholdFact {
+  actorContext: DomainFactActorContext;
+  eventId: string;
+  organizerRef: string;
+  recipientEmail?: string | null;
+  thresholdType: CapacityThresholdNoticeType;
+  thresholdPercent?: number;
+  currentStoragePercent?: number;
+  currentFilesPercent?: number;
+  consumedBytes?: bigint | number;
+  limitBytes?: bigint | number;
+  consumedFiles?: number;
+  limitFiles?: number;
+  dedupKey?: string;
+  occurredAt?: Date;
+}
+
+/**
+ * Contracts for case report and moderation intervention notice generation (EL-TK-163, Q-018, DEC-021, DEC-023, DEC-088).
+ * Consumes case facts from EL-EP-009 / media-inspection and audit contracts from EL-EP-014.
+ */
+export type CaseReportSeverity = 'CRITICAL' | 'NORMAL' | 'UNCLASSIFIED';
+export type CaseRecipientRole = 'ADMIN' | 'ORGANIZER';
+export type CaseActionType = 'CASE_REPORTED' | 'CASE_RESOLVED' | 'ADMIN_INTERVENTION';
+
+export interface CaseNotificationFact {
+  actorContext: DomainFactActorContext;
+  caseRef: string;
+  eventRef: string;
+  recipientRef: string;
+  recipientRole: CaseRecipientRole;
+  recipientEmail?: string | null;
+  severity: CaseReportSeverity;
+  actionType: CaseActionType;
+  isRestrictedLegalOrSecurity?: boolean;
+  suppressNotice?: boolean;
+  suppressionRef?: string | null;
+  summary?: string | null;
+  dedupKey?: string;
+  occurredAt?: Date;
+}
+
+/**
+ * Contracts for lifecycle milestone notices scheduler (EL-TK-159, EL-EP-013).
+ * Consumes the canonical EventLifecycleTimeline from EL-EP-003/015 to schedule warning
+ * and milestone notices for the event organizer without altering lifecycle logic.
+ */
+
+/**
+ * All notification types emitted by the lifecycle notice scheduler.
+ * Covers: pre-event, expiry warnings (7/3/1d), grace-entry, deletion-upcoming, and deletion.
+ */
+export type LifecycleMilestoneType =
+  | 'LIFECYCLE_EVENT_UPCOMING_24H'
+  | 'LIFECYCLE_EXPIRY_WARNING_7D'
+  | 'LIFECYCLE_EXPIRY_WARNING_3D'
+  | 'LIFECYCLE_EXPIRY_WARNING_1D'
+  | 'LIFECYCLE_GRACE_ENTERED'
+  | 'LIFECYCLE_DELETION_UPCOMING'
+  | 'LIFECYCLE_DELETED';
+
+/**
+ * Canonical lifecycle timeline fact consumed from EL-EP-003/015.
+ * All timestamps are UTC. Timezone is only used for local string presentation in the notice copy.
+ */
+export interface LifecycleTimelineFact {
+  actorContext: DomainFactActorContext;
+  /** Canonical event ID */
+  eventRef: string;
+  /** Display name of the event (used in notice copy) */
+  eventName: string;
+  /** Organizer who will receive the notices */
+  organizerRef: string;
+  recipientEmail?: string | null;
+  /** UTC timestamp when the event starts / is activated */
+  scheduledAt: Date;
+  /** UTC timestamp when validity period ends (expiresAt) */
+  expiresAt: Date;
+  /** UTC timestamp when the grace period ends (graceEndsAt); after this the event is permanently deleted */
+  graceEndsAt: Date;
+  /** IANA timezone — only for local copy presentation */
+  timezone: string;
+  /**
+   * Optional: window key prefix distinguishing this validity window.
+   * When validity is extended the windowKey changes, making prior window's notices obsolete via supersession.
+   * Defaults to a deterministic prefix derived from eventRef + expiresAt ISO string.
+   */
+  windowKey?: string;
+}
+
+/**
+ * Outcome for a single milestone notice generation attempt.
+ */
+export interface LifecycleMilestoneResult {
+  milestone: LifecycleMilestoneType;
+  outcome: NoticeGenerationOutcome | 'SKIPPED_WINDOW_TOO_SHORT';
+  intent?: NotificationIntentRecord | null;
+}
+
+/**
+ * Result of scheduling all applicable lifecycle notices for a given timeline fact.
+ */
+export interface ScheduleLifecycleNoticesResult {
+  eventRef: string;
+  windowKey: string;
+  milestones: LifecycleMilestoneResult[];
+  scheduledCount: number;
+  skippedCount: number;
+  supersededCount: number;
+}

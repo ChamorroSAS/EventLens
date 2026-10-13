@@ -17,6 +17,12 @@ export interface MediaCapabilitiesModel {
   canDownloadOriginal: boolean;
   canView: boolean;
   canDelete: boolean;
+  canApprove?: boolean;
+  canReject?: boolean;
+  canHide?: boolean;
+  canRepublish?: boolean;
+  canTrash?: boolean;
+  canRestore?: boolean;
 }
 
 export interface MediaObservableProgressModel {
@@ -32,6 +38,9 @@ export interface MediaCardModel {
   mimeType?: string;
   sizeBytes?: number;
   status: MediaCatalogStatus;
+  previousStatus?: string;
+  trashedAt?: string;
+  restoreDeadline?: string;
   previewUrl?: string;
   capabilities: MediaCapabilitiesModel;
   safety: {
@@ -39,6 +48,14 @@ export interface MediaCardModel {
   };
   observableProgress?: MediaObservableProgressModel;
   createdAt?: string;
+}
+
+export type EventModerationMode = 'AUTO_PUBLISH' | 'ORGANIZER_REVIEW';
+
+export interface EventModerationSettingsModel {
+  eventRef: string;
+  moderationMode: EventModerationMode;
+  canChangeModerationMode: boolean;
 }
 
 export type MediaStatusFilter =
@@ -69,4 +86,36 @@ export interface RetryCycleResponse {
   cycleNumber: number;
   status: 'ACTIVE' | 'TERMINATED' | 'COMPLETED';
   operationId: string;
+}
+
+export interface ExportStatusSnapshotUI {
+  exportId: string;
+  eventId: string;
+  status: 'REQUESTED' | 'PREPARING' | 'AVAILABLE' | 'FAILED' | 'EXPIRED' | 'INVALIDATED';
+  generation: bigint | number | string;
+  selectedCount: number;
+  selectedBytes: bigint | number | string;
+  requestedAt: string;
+  preparedAt?: string | null;
+  availableAt?: string | null;
+  expiresAt?: string | null;
+  expiredAt?: string | null;
+  invalidatedAt?: string | null;
+  failureCode?: string | null;
+  statusReason?: string | null;
+  progress?: { partsReady: number; partsTotal: number; percent?: number | null } | null;
+  parts: Array<{
+    partNumber: number;
+    status: 'PENDING' | 'READY' | 'FAILED' | 'EXPIRED' | 'INVALIDATED';
+    sizeBytes: number;
+    entryCount: number;
+    sha256?: string | null;
+    fileName: string;
+  }>;
+  capabilities: {
+    canDownload: boolean;
+    canRetry: boolean;
+    canRegenerate: boolean;
+    canRequestNew: boolean;
+  };
 }

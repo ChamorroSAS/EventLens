@@ -7,6 +7,15 @@ import type {
   AdministrativeSupportMediaGrant,
   ExecuteInterventionPayload,
   ExecuteInterventionResult,
+  AdminModerationQueueFilter,
+  AdminModerationQueueResult,
+  AdminCaseDetailResult,
+  AdminClassifyCasePayload,
+  AdminGrantMediaAccessPayload,
+  AdminMediaAccessGrantResult,
+  AdminPreventiveHidePayload,
+  AdminResolveCasePayload,
+  AdminResolveCaseResult,
 } from './admin.types.js';
 
 @Injectable({
@@ -210,5 +219,162 @@ export class AdminApiService {
     }
 
     return response.json() as Promise<{ success: boolean; requestId: string; decision: string }>;
+  }
+
+  // ============================================================================
+  // MODERATION QUEUE & CASE GOVERNANCE (EL-TK-122)
+  // ============================================================================
+
+  async getModerationQueue(
+    filter: AdminModerationQueueFilter,
+    callerActorId?: string
+  ): Promise<AdminModerationQueueResult> {
+    const params = new URLSearchParams();
+    if (filter.severity && filter.severity !== 'ALL') params.set('severity', filter.severity);
+    if (filter.status && filter.status !== 'ALL') params.set('status', filter.status);
+    if (filter.eventId) params.set('eventId', filter.eventId);
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (callerActorId) {
+      headers['x-admin-actor-id'] = callerActorId;
+    }
+
+    const response = await fetch(`${this.baseUrl}/moderation/queue?${params.toString()}`, {
+      method: 'GET',
+      headers,
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error((err as { message?: string }).message || `Error fetching moderation queue: ${response.status}`);
+    }
+
+    return response.json() as Promise<AdminModerationQueueResult>;
+  }
+
+  async getCaseDetail(
+    caseId: string,
+    callerActorId?: string
+  ): Promise<AdminCaseDetailResult> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (callerActorId) {
+      headers['x-admin-actor-id'] = callerActorId;
+    }
+
+    const response = await fetch(`${this.baseUrl}/moderation/cases/${encodeURIComponent(caseId)}`, {
+      method: 'GET',
+      headers,
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error((err as { message?: string }).message || `Error fetching case detail: ${response.status}`);
+    }
+
+    return response.json() as Promise<AdminCaseDetailResult>;
+  }
+
+  async classifyCase(
+    payload: AdminClassifyCasePayload,
+    callerActorId?: string
+  ): Promise<{ success: boolean; caseId: string }> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (callerActorId) {
+      headers['x-admin-actor-id'] = callerActorId;
+    }
+
+    const response = await fetch(`${this.baseUrl}/moderation/cases/${encodeURIComponent(payload.caseId)}/classify`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error((err as { message?: string }).message || `Error classifying case: ${response.status}`);
+    }
+
+    return response.json() as Promise<{ success: boolean; caseId: string }>;
+  }
+
+  async grantMediaAccess(
+    payload: AdminGrantMediaAccessPayload,
+    callerActorId?: string
+  ): Promise<AdminMediaAccessGrantResult> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (callerActorId) {
+      headers['x-admin-actor-id'] = callerActorId;
+    }
+
+    const response = await fetch(`${this.baseUrl}/moderation/cases/${encodeURIComponent(payload.caseId)}/access-media`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error((err as { message?: string }).message || `Error granting media access: ${response.status}`);
+    }
+
+    return response.json() as Promise<AdminMediaAccessGrantResult>;
+  }
+
+  async applyPreventiveHide(
+    payload: AdminPreventiveHidePayload,
+    callerActorId?: string
+  ): Promise<{ success: boolean; caseId: string }> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (callerActorId) {
+      headers['x-admin-actor-id'] = callerActorId;
+    }
+
+    const response = await fetch(`${this.baseUrl}/moderation/cases/${encodeURIComponent(payload.caseId)}/preventive-hide`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error((err as { message?: string }).message || `Error applying preventive hide: ${response.status}`);
+    }
+
+    return response.json() as Promise<{ success: boolean; caseId: string }>;
+  }
+
+  async resolveCase(
+    payload: AdminResolveCasePayload,
+    callerActorId?: string
+  ): Promise<AdminResolveCaseResult> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (callerActorId) {
+      headers['x-admin-actor-id'] = callerActorId;
+    }
+
+    const response = await fetch(`${this.baseUrl}/moderation/cases/${encodeURIComponent(payload.caseId)}/resolve`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error((err as { message?: string }).message || `Error resolving case: ${response.status}`);
+    }
+
+    return response.json() as Promise<AdminResolveCaseResult>;
   }
 }

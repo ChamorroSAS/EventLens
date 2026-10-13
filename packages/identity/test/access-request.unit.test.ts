@@ -16,6 +16,18 @@ class MockTransactionRunner implements TransactionRunner {
     const tx: SqlTransaction = {
       query: async <R extends object>(sql: string, ...params: unknown[]): Promise<R[]> => {
         this.executedQueries.push({ sql, params });
+        if (sql.includes('INSERT INTO beta_access_request') && sql.includes('RETURNING id')) {
+          if (this.mockRows.length === 0) {
+            return [{ id: params[0] }] as unknown as R[];
+          }
+          return [] as R[];
+        }
+        if (sql.includes('SELECT id FROM beta_access_request WHERE email_normalized = $1')) {
+          if (this.mockRows.length > 0) {
+            return [{ id: this.mockRows[0].id }] as unknown as R[];
+          }
+          return [] as R[];
+        }
         return [...this.mockRows] as R[];
       },
       execute: async (sql: string, ...params: unknown[]): Promise<number> => {
@@ -41,6 +53,55 @@ describe('BetaAccessRequestService (Unit Tests — EL-TK-008 & EL-TK-009)', () =
   };
 
   describe('EL-TK-008: Solicitar acceso a la BETA (público sin enumeración)', () => {
+    function scriptedRunner(responses: { id: string }[][]) {
+      const queries: string[] = [];
+      const audits: unknown[][] = [];
+      const runner: TransactionRunner = {
+        run: (work) => work({
+          query: async <R extends object>(sql: string): Promise<R[]> => {
+            queries.push(sql);
+            const response = responses.shift();
+            if (!response) throw new Error('Unexpected query after scripted responses');
+            return response as unknown as R[];
+          },
+          execute: async (_sql, ...args) => { audits.push(args); return 1; }
+        })
+      };
+      return { runner, queries, audits };
+    }
+
+    it('retries when a conflicting row disappears, then resolves the identifier before auditing', async () => {
+      const id = randomUUID();
+      const script = scriptedRunner([[], [], [{ id }]]);
+      const result = await new BetaAccessRequestService(script.runner).requestAccess({ email: 'vanishing@example.com' });
+      expect(result.requestId).toBe(id);
+      expect(script.queries).toHaveLength(3);
+      expect(script.queries[0]).toContain('INSERT INTO beta_access_request');
+      expect(script.queries[1]).toContain('SELECT id FROM beta_access_request');
+      expect(script.queries[2]).toContain('INSERT INTO beta_access_request');
+      expect(script.audits).toHaveLength(1);
+      expect(script.audits[0]).toContain(id);
+    });
+
+    it('fails after exactly three unresolved attempts and never emits a success audit', async () => {
+      const script = scriptedRunner([[], [], [], [], [], []]);
+      await expect(new BetaAccessRequestService(script.runner).requestAccess({ email: 'unresolved@example.com' }))
+        .rejects.toThrow('Failed to deterministically resolve beta access request identifier');
+      expect(script.queries.filter((sql) => sql.includes('INSERT INTO beta_access_request'))).toHaveLength(3);
+      expect(script.queries.filter((sql) => sql.includes('SELECT id FROM beta_access_request'))).toHaveLength(3);
+      expect(script.audits).toEqual([]);
+    });
+
+    it('resolves a surviving conflict on a later retry without inventing a new identifier', async () => {
+      const id = randomUUID();
+      const script = scriptedRunner([[], [], [], [{ id }]]);
+      const result = await new BetaAccessRequestService(script.runner).requestAccess({ email: 'surviving@example.com' });
+      expect(result.requestId).toBe(id);
+      expect(script.queries).toHaveLength(4);
+      expect(script.audits).toHaveLength(1);
+      expect(script.audits[0]).toContain(id);
+    });
+
     it('rejects invalid email formats without creating records', async () => {
       const runner = new MockTransactionRunner();
       const service = new BetaAccessRequestService(runner);
@@ -77,13 +138,16 @@ describe('BetaAccessRequestService (Unit Tests — EL-TK-008 & EL-TK-009)', () =
       expect(insertQuery).toBeDefined();
       expect(insertQuery?.params).toContain('applicant@example.com');
       expect(insertQuery?.sql).toContain('PENDING_REVIEW');
+      expect(insertQuery?.sql).toContain('ON CONFLICT (email_normalized) DO NOTHING');
 
-      // Check audit emission
+      // Check audit emission (target_identifier must be requestId, no email in audit params)
       const auditQuery = runner.executedQueries.find((q) =>
         q.sql.includes('INSERT INTO admin_audit_event')
       );
       expect(auditQuery).toBeDefined();
       expect(auditQuery?.params).toContain('BETA_ACCESS_REQUEST_SUBMITTED');
+      expect(auditQuery?.params).toContain(result.requestId);
+      expect(auditQuery?.params.some((p) => typeof p === 'string' && p.includes('@'))).toBe(false);
     });
 
     it('deduplicates existing requests idempotently without leaking existence or accounts', async () => {
@@ -111,15 +175,32 @@ describe('BetaAccessRequestService (Unit Tests — EL-TK-008 & EL-TK-009)', () =
       expect(result.outcome).toBe('REQUEST_RECEIVED');
       expect(result.requestId).toBe(existingId);
 
-      // Verify update without inserting duplicate
+      // Verify no UPDATE was executed (zero modification of existing row)
       const updateQuery = runner.executedQueries.find((q) =>
         q.sql.includes('UPDATE beta_access_request')
       );
-      expect(updateQuery).toBeDefined();
+      expect(updateQuery).toBeUndefined();
+
+      // Verify insert was attempted
       const insertQuery = runner.executedQueries.find((q) =>
         q.sql.includes('INSERT INTO beta_access_request')
       );
-      expect(insertQuery).toBeUndefined();
+      expect(insertQuery).toBeDefined();
+      expect(insertQuery?.sql).toContain('ON CONFLICT (email_normalized) DO NOTHING');
+
+      // Verify select fallback was executed
+      const selectQuery = runner.executedQueries.find((q) =>
+        q.sql.includes('SELECT id FROM beta_access_request WHERE email_normalized = $1')
+      );
+      expect(selectQuery).toBeDefined();
+
+      // Check audit emission: target_identifier is existingId, no email
+      const auditQuery = runner.executedQueries.find((q) =>
+        q.sql.includes('INSERT INTO admin_audit_event')
+      );
+      expect(auditQuery).toBeDefined();
+      expect(auditQuery?.params).toContain(existingId);
+      expect(auditQuery?.params.some((p) => typeof p === 'string' && p.includes('@'))).toBe(false);
     });
 
     it('enforces rate limiting when request limit is reached', async () => {
@@ -249,6 +330,14 @@ describe('BetaAccessRequestService (Unit Tests — EL-TK-008 & EL-TK-009)', () =
       expect(found.request).not.toBeNull();
       expect(found.request?.id).toBe(reqId);
       expect(found.request?.notes).toBe('Wedding in May');
+
+      const auditQuery = runner.executedQueries.find((q) =>
+        q.sql.includes('INSERT INTO admin_audit_event')
+      );
+      expect(auditQuery).toBeDefined();
+      expect(auditQuery?.params).toContain('BETA_ACCESS_REQUEST_DETAIL_VIEWED');
+      expect(auditQuery?.params).toContain(reqId);
+      expect(auditQuery?.params.some((p) => typeof p === 'string' && p.includes('@') && p !== adminActor.identifier)).toBe(false);
 
       runner.mockRows = [];
       const notFound = await service.getAccessRequest({

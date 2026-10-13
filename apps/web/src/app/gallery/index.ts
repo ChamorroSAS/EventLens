@@ -7,5 +7,7 @@ export * from './image-player.component.js';
 export * from './video-player.component.js';
 export * from './media-viewer.component.js';
 export * from './report-content-action.component.js';
+export * from './report-content-dialog.component.js';
 export * from './gallery-viewer.component.js';
 export * from './gallery.component.js';
+

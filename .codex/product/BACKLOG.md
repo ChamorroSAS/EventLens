@@ -6,6 +6,16 @@
 
 **RECOMMENDED:** primera descomposición funcional; prioridad P0 = necesaria para beta operativa segura; P1 = evaluación beta o preparación pública. Estado READY significa DoR de épica, no autorización de lanzar ni dependencias ya realizadas. NOT_READY conserva bloqueantes explícitos. Los tickets existentes se enumeran en su sección y permanecen sujetos a sus puertas de revisión.
 
+## Planificación frontend adicional (sin certificación de Beta)
+
+| ID | Resultado | Propiedad | Gate | Documento |
+|---|---|---|---|---|
+| EL-EP-018 | Home público informativo, entrada y navegación a cuenta/eventos | Frontend transversal MOD-001/002/003 | READY de requisitos; arquitectura APPROVED, UI YES; EL-TK-205..214 READY | [EL-EP-018](epics/EL-EP-018.md) |
+
+**CONFIRMED — revisión018, 2026-10-12:** requisitos y arquitectura APPROVED, UI ratificada YES y ticket writing habilitado; sin implementación o certificación Beta. Historial editorial/A/B/C preservado. [Gates](sessions/2026-10-12-el-ep-018-review-gates.md), [contrato](../context/public-entry-contract.md), [UI/copy de diseño](../context/ui-public-entry.md). Paths `/solicitar-acceso` y `/mis-eventos` definidos; QR real `/g/:lookupKey`; logout propio confirmado→Home. Mi cuenta lee correo/verificación/estado efectivos; sesión restringida no accede a eventos/seguridad ordinaria. Correctivo de proyección ACTIVE y exposición API/cliente/SPA son trabajo de integración explícito, no gates de producto sin resolver. Publicación externa mantiene017/Q029. P0 propuesto integración operativa/P1 editorial, sin reordenar prioridades aceptadas ni crear registro libre/cuenta guest. Los cierres y gates originales de las17 épicas anteriores permanecen históricos.
+
+**GATE JURÍDICO ACOTADO — 2026-10-12:** [informe](sessions/2026-10-12-el-ep-018-legal-ticket-gate.md) PASS_WITH_CONDITIONS y [expediente persona natural](../../docs/legal/README.md) incorporados **sin revertir** Gates APPROVED y tickets EL-TK-205..214 READY. Captación Beta, copy/fotos, contacto de privacidad y apertura pública requieren evidencias jurídicas; EL-EP-017/Q-029 permanece bloqueado. Nombre comercial en evaluación sin renombrado de código.
+
 ## Epics
 
 **CONFIRMED - 2026-10-08, gate UI actual:** todas16 MVP READY de requisitos. Intake004009 aprobado DEC-103..105, frontend planning YES. EL-EP-017 sigue NOT_READY juridico publico. Total17:16 READY/1 NOT_READY. [Matriz vigente](../context/ui-mvp-epic-review.md), [gate intake](sessions/2026-10-08-removal-intake.md). Solo001015 mantienen gates tecnicos frontend localizados; no implementacion/lanzamiento certificados.
@@ -19,14 +29,14 @@
 | EL-EP-005 | Cargar recuerdos con tolerancia a fallos móviles | MOD-003 | READY | P0 | EL-EP-004, EL-EP-011 | [EL-EP-005](epics/EL-EP-005.md) |
 | EL-EP-006 | Procesar multimedia preservando originales y aislando riesgos | MOD-003 | READY | P0 | EL-EP-005 | [EL-EP-006](epics/EL-EP-006.md) |
 | EL-EP-007 | Visualizar recuerdos en una galería privada móvil | MOD-004 | DONE | P0 | EL-EP-004, EL-EP-006 | [EL-EP-007](epics/EL-EP-007.md) |
-| EL-EP-008 | Moderar, ocultar y recuperar contenido del evento | MOD-004 | READY | P0 | EL-EP-006, EL-EP-007 | [EL-EP-008](epics/EL-EP-008.md) |
-| EL-EP-009 | Atender denuncias y solicitudes de retiro sin cuenta | MOD-004 | READY | P0 | EL-EP-004, EL-EP-007, EL-EP-014 | [EL-EP-009](epics/EL-EP-009.md) |
-| EL-EP-010 | Recuperar originales individualmente y por exportación | MOD-005 | READY | P0 | EL-EP-006, EL-EP-008, EL-EP-013 | [EL-EP-010](epics/EL-EP-010.md) |
+| EL-EP-008 | Moderar, ocultar y recuperar contenido del evento | MOD-004 | DONE | P0 | EL-EP-006, EL-EP-007 | [EL-EP-008](epics/EL-EP-008.md) |
+| EL-EP-009 | Atender denuncias y solicitudes de retiro sin cuenta | MOD-004 | DONE | P0 | EL-EP-004, EL-EP-007, EL-EP-014 | [EL-EP-009](epics/EL-EP-009.md) |
+| EL-EP-010 | Recuperar originales individualmente y por exportación | MOD-005 | DONE | P0 | EL-EP-006, EL-EP-008, EL-EP-013 | [EL-EP-010](epics/EL-EP-010.md) |
 | EL-EP-011 | Aplicar planes BETA y ampliaciones controladas | MOD-006 | READY | P0 | EL-EP-001 | [EL-EP-011](epics/EL-EP-011.md) |
 | EL-EP-012 | Operar y dar soporte con intervención administrativa justificada | MOD-007 | READY | P0 | EL-EP-001, EL-EP-014 | [EL-EP-012](epics/EL-EP-012.md) |
 | EL-EP-013 | Informar al organizador sobre su cuenta y sus recuerdos | MOD-009 | READY | P0 | Ninguna predecesora dura | [EL-EP-013](epics/EL-EP-013.md) |
 | EL-EP-014 | Detectar incidentes y reconstruir acciones relevantes | MOD-009 | READY | P0 | Ninguna predecesora dura | [EL-EP-014](epics/EL-EP-014.md) |
-| EL-EP-015 | Eliminar eventos y cuentas con cancelación y purga controladas | MOD-008 | READY | P0 | EL-EP-001, EL-EP-003, EL-EP-008, EL-EP-010, EL-EP-013, EL-EP-014 | [EL-EP-015](epics/EL-EP-015.md) |
+| EL-EP-015 | Eliminar eventos y cuentas con cancelación y purga controladas | MOD-008 | DONE | P0 | EL-EP-001, EL-EP-003, EL-EP-008, EL-EP-010, EL-EP-013, EL-EP-014 | [EL-EP-015](epics/EL-EP-015.md) |
 | EL-EP-016 | Evaluar la beta con evidencia de valor y confiabilidad | MOD-009 | READY | P1 | EL-EP-014 | [EL-EP-016](epics/EL-EP-016.md) |
 | EL-EP-017 | Cerrar políticas jurídicas y de privacidad para apertura pública | MOD-008 | NOT_READY | P1 | EL-EP-009, EL-EP-015 | [EL-EP-017](epics/EL-EP-017.md) |
 
@@ -145,7 +155,7 @@
 | EL-TK-108 | Restaurar una media de papelera respetando bloqueos vigentes | EL-EP-008 | DONE | P0 | 107 | [EL-TK-108](tickets/EL-TK-108.md) |
 | EL-TK-109 | Entregar a purga una media cuya papelera venció | EL-EP-008 | DONE | P0 | 107,055; contrato EL-EP-015 | [EL-TK-109](tickets/EL-TK-109.md) |
 | EL-TK-110 | Cambiar el modo de moderación sin reescribir contenido existente | EL-EP-008 | DONE | P0 | 028,037 | [EL-TK-110](tickets/EL-TK-110.md) |
-| EL-TK-111 | Integrar acciones de moderación y papelera en la biblioteca del organizador | EL-EP-008 | READY | P0 | 100,103..108,110 | [EL-TK-111](tickets/EL-TK-111.md) |
+| EL-TK-111 | Integrar acciones de moderación y papelera en la biblioteca del organizador | EL-EP-008 | DONE | P0 | 100,103..108,110 | [EL-TK-111](tickets/EL-TK-111.md) |
 | EL-TK-112 | Validar moderación, papelera y restauración de extremo a extremo | EL-EP-008 | DONE | P0 | 103..111 | [EL-TK-112](tickets/EL-TK-112.md) |
 | EL-TK-113 | Registrar una denuncia sobre contenido visible | EL-EP-009 | DONE | P0 | contrato media visible EL-EP-007; contrato EL-EP-014 | [EL-TK-113](tickets/EL-TK-113.md) |
 | EL-TK-114 | Retirar irreversiblemente un aporte propio con sesión guest válida | EL-EP-009 | DONE | P0 | 078; contrato EL-EP-015 | [EL-TK-114](tickets/EL-TK-114.md) |
@@ -155,19 +165,19 @@
 | EL-TK-118 | Aplicar ocultamiento preventivo por decisión administrativa | EL-EP-009 | DONE | P0 | 116,117,101 | [EL-TK-118](tickets/EL-TK-118.md) |
 | EL-TK-119 | Resolver un caso de reporte o retiro registrando la intervención | EL-EP-009 | DONE | P0 | 116,117; contratos EL-EP-013/014/015 | [EL-TK-119](tickets/EL-TK-119.md) |
 | EL-TK-120 | Consultar la cola y detalle de casos para revisión administrativa | EL-EP-009 | DONE | P0 | 113,115,116 | [EL-TK-120](tickets/EL-TK-120.md) |
-| EL-TK-121 | Integrar reporte y retiro en la experiencia pública/guest | EL-EP-009 | READY | P0 | 099, 113, 114, 115 | [EL-TK-121](tickets/EL-TK-121.md) |
-| EL-TK-122 | Integrar cola y resolución de casos en la consola administrativa | EL-EP-009 | READY | P0 | 116..120; contrato EL-EP-012 | [EL-TK-122](tickets/EL-TK-122.md) |
-| EL-TK-123 | Validar privacidad y resolución de reportes/retiros de extremo a extremo | EL-EP-009 | READY | P0 | 113..122 | [EL-TK-123](tickets/EL-TK-123.md) |
-| EL-TK-124 | Autorizar la descarga individual de un original elegible | EL-EP-010 | READY | P0 | 098,053; contrato EL-EP-006 | [EL-TK-124](tickets/EL-TK-124.md) |
-| EL-TK-125 | Crear una solicitud de exportación con snapshot fijo de elegibles | EL-EP-010 | READY | P0 | 098; contrato EL-EP-008 | [EL-TK-125](tickets/EL-TK-125.md) |
-| EL-TK-126 | Encolar y preparar una exportación asíncrona multipartes | EL-EP-010 | READY | P0 | 125,055 | [EL-TK-126](tickets/EL-TK-126.md) |
-| EL-TK-127 | Publicar disponibilidad y expiración de una exportación preparada | EL-EP-010 | READY | P0 | 126 | [EL-TK-127](tickets/EL-TK-127.md) |
-| EL-TK-128 | Invalidar exportaciones afectadas por retiro o pérdida de acceso | EL-EP-010 | READY | P0 | 125,126; contratos EL-EP-008/009/015 | [EL-TK-128](tickets/EL-TK-128.md) |
-| EL-TK-129 | Autorizar la descarga temporal de una parte de exportación | EL-EP-010 | READY | P0 | 127,128 | [EL-TK-129](tickets/EL-TK-129.md) |
-| EL-TK-130 | Reintentar o regenerar una exportación fallida o expirada cuando siga autorizada | EL-EP-010 | READY | P0 | 126,127,128 | [EL-TK-130](tickets/EL-TK-130.md) |
-| EL-TK-131 | Consultar estado, partes y disponibilidad de una exportación | EL-EP-010 | READY | P0 | 125..130 | [EL-TK-131](tickets/EL-TK-131.md) |
-| EL-TK-132 | Integrar descarga individual y exportación en la biblioteca del organizador | EL-EP-010 | READY | P0 | 100,124..131 | [EL-TK-132](tickets/EL-TK-132.md) |
-| EL-TK-133 | Validar recuperación individual y exportación de extremo a extremo | EL-EP-010 | READY | P0 | 124..132 | [EL-TK-133](tickets/EL-TK-133.md) |
+| EL-TK-121 | Integrar reporte y retiro en la experiencia pública/guest | EL-EP-009 | DONE | P0 | 099, 113, 114, 115 | [EL-TK-121](tickets/EL-TK-121.md) |
+| EL-TK-122 | Integrar cola y resolución de casos en la consola administrativa | EL-EP-009 | DONE | P0 | 116..120; contrato EL-EP-012 | [EL-TK-122](tickets/EL-TK-122.md) |
+| EL-TK-123 | Validar privacidad y resolución de reportes/retiros de extremo a extremo | EL-EP-009 | DONE | P0 | 113..122 | [EL-TK-123](tickets/EL-TK-123.md) |
+| EL-TK-124 | Autorizar la descarga individual de un original elegible | EL-EP-010 | DONE | P0 | 098,053; contrato EL-EP-006 | [EL-TK-124](tickets/EL-TK-124.md) |
+| EL-TK-125 | Crear una solicitud de exportación con snapshot fijo de elegibles | EL-EP-010 | DONE | P0 | 098; contrato EL-EP-008 | [EL-TK-125](tickets/EL-TK-125.md) |
+| EL-TK-126 | Encolar y preparar una exportación asíncrona multipartes | EL-EP-010 | DONE | P0 | 125,055 | [EL-TK-126](tickets/EL-TK-126.md) |
+| EL-TK-127 | Publicar disponibilidad y expiración de una exportación preparada | EL-EP-010 | DONE | P0 | 126 | [EL-TK-127](tickets/EL-TK-127.md) |
+| EL-TK-128 | Invalidar exportaciones afectadas por retiro o pérdida de acceso | EL-EP-010 | DONE | P0 | 125,126; contratos EL-EP-008/009/015 | [EL-TK-128](tickets/EL-TK-128.md) |
+| EL-TK-129 | Autorizar la descarga temporal de una parte de exportación | EL-EP-010 | DONE | P0 | 127,128 | [EL-TK-129](tickets/EL-TK-129.md) |
+| EL-TK-130 | Reintentar o regenerar una exportación fallida o expirada cuando siga autorizada | EL-EP-010 | DONE | P0 | 126,127,128 | [EL-TK-130](tickets/EL-TK-130.md) |
+| EL-TK-131 | Consultar estado, partes y disponibilidad de una exportación | EL-EP-010 | DONE | P0 | 125..130 | [EL-TK-131](tickets/EL-TK-131.md) |
+| EL-TK-132 | Integrar descarga individual y exportación en la biblioteca del organizador | EL-EP-010 | DONE | P0 | 100,124..131 | [EL-TK-132](tickets/EL-TK-132.md) |
+| EL-TK-133 | Validar recuperación individual y exportación de extremo a extremo | EL-EP-010 | DONE | P0 | 124..132 | [EL-TK-133](tickets/EL-TK-133.md) |
 | EL-TK-134 | Asignar y resolver el plan BETA efectivo de un evento | EL-EP-011 | DONE | P0 | contrato EL-EP-001 | [EL-TK-134](tickets/EL-TK-134.md) |
 | EL-TK-135 | Consultar consumo comercial y capacidad disponible del evento | EL-EP-011 | DONE | P0 | 134, 136, 137 | [EL-TK-135](tickets/EL-TK-135.md) |
 | EL-TK-136 | Reservar y liberar capacidad comercial de forma atómica | EL-EP-011 | DONE | P0 | 134 | [EL-TK-136](tickets/EL-TK-136.md) |
@@ -193,11 +203,11 @@
 | EL-TK-156 | Registrar intenciones de notificación idempotentes desde hechos de dominio | EL-EP-013 | DONE | P0 | contratos de hechos propietarios | [EL-TK-156](tickets/EL-TK-156.md) |
 | EL-TK-157 | Encolar y procesar correos de notificación con proveedor desacoplado | EL-EP-013 | DONE | P0 | 156, 055; contrato JobQueue | [EL-TK-157](tickets/EL-TK-157.md) |
 | EL-TK-158 | Proyectar avisos contextuales vigentes para el panel del organizador | EL-EP-013 | DONE | P0 | 156 | [EL-TK-158](tickets/EL-TK-158.md) |
-| EL-TK-159 | Generar avisos de lifecycle, gracia y eliminación próxima | EL-EP-013 | READY | P0 | 156; contratos EL-EP-003/015 | [EL-TK-159](tickets/EL-TK-159.md) |
-| EL-TK-160 | Generar avisos de capacidad al 80 y 100 por ciento | EL-EP-013 | READY | P0 | 156; contrato 138 | [EL-TK-160](tickets/EL-TK-160.md) |
+| EL-TK-159 | Generar avisos de lifecycle, gracia y eliminación próxima | EL-EP-013 | DONE | P0 | 156; contratos EL-EP-003/015 | [EL-TK-159](tickets/EL-TK-159.md) |
+| EL-TK-160 | Generar avisos de capacidad al 80 y 100 por ciento | EL-EP-013 | DONE | P0 | 156; contrato 138 | [EL-TK-160](tickets/EL-TK-160.md) |
 | EL-TK-161 | Generar avisos de exportación disponible y expiración | EL-EP-013 | READY | P0 | 156; contrato EL-EP-010 | [EL-TK-161](tickets/EL-TK-161.md) |
 | EL-TK-162 | Generar avisos de cuenta, seguridad y cambios del evento | EL-EP-013 | DONE | P0 | 156; contratos EL-EP-001/003 | [EL-TK-162](tickets/EL-TK-162.md) |
-| EL-TK-163 | Generar avisos de denuncias e intervenciones según severidad autorizada | EL-EP-013 | READY | P0 | 156; contratos EL-EP-009/014 | [EL-TK-163](tickets/EL-TK-163.md) |
+| EL-TK-163 | Generar avisos de denuncias e intervenciones según severidad autorizada | EL-EP-013 | DONE | P0 | 156; contratos EL-EP-009/014 | [EL-TK-163](tickets/EL-TK-163.md) |
 | EL-TK-164 | Integrar avisos contextuales y plantillas de correo accesibles | EL-EP-013 | READY | P0 | 157..163 | [EL-TK-164](tickets/EL-TK-164.md) |
 | EL-TK-165 | Validar notificaciones, deduplicación y obsolescencia de extremo a extremo | EL-EP-013 | READY | P0 | 156..164 | [EL-TK-165](tickets/EL-TK-165.md) |
 | EL-TK-166 | Registrar eventos de auditoría mínimos y sanitizados | EL-EP-014 | DONE | P0 | ninguna predecesora funcional dura | [EL-TK-166](tickets/EL-TK-166.md) |
@@ -223,23 +233,33 @@
 | EL-TK-185 | Corregir el verifier humano y migrar credenciales de organizador | EL-EP-001 | DONE | P0 | 013,018,019,046 | [EL-TK-185](tickets/EL-TK-185.md) |
 | EL-TK-186 | Emitir y consumir evidencia de reautenticación sensible de cuenta | EL-EP-001 | DONE | P0 | 185,013,014,046 | [EL-TK-186](tickets/EL-TK-186.md) |
 | EL-TK-187 | Corregir disposición y liberación de media en cuarentena | EL-EP-006 | DONE | P0 | 041,042,046; contrato 015 | [EL-TK-187](tickets/EL-TK-187.md) |
-| EL-TK-188 | Persistir el contrato canónico de solicitudes e intenciones de eliminación | EL-EP-015 | READY | P0 | 046,067; DEC-091..110 | [EL-TK-188](tickets/EL-TK-188.md) |
-| EL-TK-189 | Solicitar eliminación manual de evento con bloqueo inmediato | EL-EP-015 | READY | P0 | 188,072 | [EL-TK-189](tickets/EL-TK-189.md) |
-| EL-TK-190 | Cancelar eliminación manual de evento antes del claim irreversible | EL-EP-015 | READY | P0 | 189,188;193 integración | [EL-TK-190](tickets/EL-TK-190.md) |
-| EL-TK-191 | Solicitar eliminación de cuenta con reautenticación y suspensión global | EL-EP-015 | READY | P0 | 186,188 | [EL-TK-191](tickets/EL-TK-191.md) |
-| EL-TK-192 | Cancelar eliminación de cuenta con prueba nueva y recálculo de eventos | EL-EP-015 | READY | P0 | 191,186 | [EL-TK-192](tickets/EL-TK-192.md) |
-| EL-TK-193 | Propagar barreras de eliminación a accesos, grants y exportaciones | EL-EP-015 | READY | P0 | 189,191;128 | [EL-TK-193](tickets/EL-TK-193.md) |
-| EL-TK-194 | Coordinar ingresos por causa: gracia, retiro propio, papelera y cuarentena | EL-EP-015 | READY | P0 | 188,067,109,114,187;119/108 integración | [EL-TK-194](tickets/EL-TK-194.md) |
-| EL-TK-195 | Construir inventario verificable y detener escritores antes de purgar | EL-EP-015 | READY | P0 | 188,193;128 | [EL-TK-195](tickets/EL-TK-195.md) |
-| EL-TK-196 | Ejecutar purga física durable e idempotente de principales | EL-EP-015 | READY | P0 | 195,197;194 | [EL-TK-196](tickets/EL-TK-196.md) |
-| EL-TK-197 | Persistir tombstones y reconciliar eliminación con RecoveryAuthority | EL-EP-015 | READY | P0 | 188,046,172,174 | [EL-TK-197](tickets/EL-TK-197.md) |
-| EL-TK-198 | Cerrar estados DELETED y liquidar consumo solo con prueba principal | EL-EP-015 | READY | P0 | 196,197,137;159 | [EL-TK-198](tickets/EL-TK-198.md) |
-| EL-TK-199 | Verificar residual y restauraciones hasta deadline UTC más 30 días | EL-EP-015 | READY | P0 | 197,198,172,174 | [EL-TK-199](tickets/EL-TK-199.md) |
-| EL-TK-200 | Integrar solicitud y cancelación de eliminación en UI de evento | EL-EP-015 | READY | P0 | 189,190,193 | [EL-TK-200](tickets/EL-TK-200.md) |
-| EL-TK-201 | Integrar eliminación de cuenta y reautenticación en UI | EL-EP-015 | READY | P0 | 186,191,192,193 | [EL-TK-201](tickets/EL-TK-201.md) |
-| EL-TK-202 | Validar eliminación ordinaria de extremo a extremo y criterios de Beta | EL-EP-015 | READY | P0 | 194,196,198..201 | [EL-TK-202](tickets/EL-TK-202.md) |
+| EL-TK-188 | Persistir el contrato canónico de solicitudes e intenciones de eliminación | EL-EP-015 | DONE | P0 | 046,067; DEC-091..110 | [EL-TK-188](tickets/EL-TK-188.md) |
+| EL-TK-189 | Solicitar eliminación manual de evento con bloqueo inmediato | EL-EP-015 | DONE | P0 | 188,072 | [EL-TK-189](tickets/EL-TK-189.md) |
+| EL-TK-190 | Cancelar eliminación manual de evento antes del claim irreversible | EL-EP-015 | DONE | P0 | 189,188;193 integración | [EL-TK-190](tickets/EL-TK-190.md) |
+| EL-TK-191 | Solicitar eliminación de cuenta con reautenticación y suspensión global | EL-EP-015 | DONE | P0 | 186,188 | [EL-TK-191](tickets/EL-TK-191.md) |
+| EL-TK-192 | Cancelar eliminación de cuenta con prueba nueva y recálculo de eventos | EL-EP-015 | DONE | P0 | 191,186 | [EL-TK-192](tickets/EL-TK-192.md) |
+| EL-TK-193 | Propagar barreras de eliminación a accesos, grants y exportaciones | EL-EP-015 | DONE | P0 | 189,191;128 | [EL-TK-193](tickets/EL-TK-193.md) |
+| EL-TK-194 | Coordinar ingresos por causa: gracia, retiro propio, papelera y cuarentena | EL-EP-015 | DONE | P0 | 188,067,109,114,187;119/108 integración | [EL-TK-194](tickets/EL-TK-194.md) |
+| EL-TK-195 | Construir inventario verificable y detener escritores antes de purgar | EL-EP-015 | DONE | P0 | 188,193;128 | [EL-TK-195](tickets/EL-TK-195.md) |
+| EL-TK-196 | Ejecutar purga física durable e idempotente de principales | EL-EP-015 | DONE | P0 | 195,197;194 | [EL-TK-196](tickets/EL-TK-196.md) |
+| EL-TK-197 | Persistir tombstones y reconciliar eliminación con RecoveryAuthority | EL-EP-015 | DONE | P0 | 188,046,172,174 | [EL-TK-197](tickets/EL-TK-197.md) |
+| EL-TK-198 | Cerrar estados DELETED y liquidar consumo solo con prueba principal | EL-EP-015 | DONE | P0 | 196,197,137;159 | [EL-TK-198](tickets/EL-TK-198.md) |
+| EL-TK-199 | Verificar residual y restauraciones hasta deadline UTC más 30 días | EL-EP-015 | DONE | P0 | 197,198,172,174 | [EL-TK-199](tickets/EL-TK-199.md) |
+| EL-TK-200 | Integrar solicitud y cancelación de eliminación en UI de evento | EL-EP-015 | DONE | P0 | 189,190,193 | [EL-TK-200](tickets/EL-TK-200.md) |
+| EL-TK-201 | Integrar eliminación de cuenta y reautenticación en UI | EL-EP-015 | DONE | P0 | 186,191,192,193 | [EL-TK-201](tickets/EL-TK-201.md) |
+| EL-TK-202 | Validar eliminación ordinaria de extremo a extremo y criterios de Beta | EL-EP-015 | DONE | P0 | 194,196,198..201 | [EL-TK-202](tickets/EL-TK-202.md) |
 | EL-TK-203 | Validar y publicar los assets corporativos de marca | EL-EP-002 (CR-004) | DONE | P1 recomendado | — | [EL-TK-203](tickets/EL-TK-203.md) |
 | EL-TK-204 | Incorporar foundation visual y piloto aislado del shell de organizador | EL-EP-002 (CR-004) | DONE | P1 recomendado | 203,048 (componente existente) | [EL-TK-204](tickets/EL-TK-204.md) |
+| EL-TK-205 | Proyectar sesión efectiva de organizador para integración web | EL-EP-018 | READY | P0 | EL-TK-013, EL-TK-185 | [EL-TK-205](tickets/EL-TK-205.md) |
+| EL-TK-206 | Preparar infraestructura Router y contratos seguros de montaje | EL-EP-018 | READY | P0 | EL-TK-204 | [EL-TK-206](tickets/EL-TK-206.md) |
+| EL-TK-207 | Integrar ingreso y cierre de sesión del organizador | EL-EP-018 | READY | P0 | EL-TK-205, EL-TK-206, EL-TK-013, EL-TK-015, EL-TK-185 | [EL-TK-207](tickets/EL-TK-207.md) |
+| EL-TK-208 | Montar la solicitud pública de acceso Beta | EL-EP-018 | READY | P0 | EL-TK-008, EL-TK-206 | [EL-TK-208](tickets/EL-TK-208.md) |
+| EL-TK-209 | Componer Mi cuenta con superficies de sus propietarios | EL-EP-018 | READY | P0 | EL-TK-205, EL-TK-206, EL-TK-014, EL-TK-016, EL-TK-017, EL-TK-201 | [EL-TK-209](tickets/EL-TK-209.md) |
+| EL-TK-210 | Montar Mis eventos en la ruta del shell organizador | EL-EP-018 | READY | P0 | EL-TK-205, EL-TK-206, EL-TK-047, EL-TK-048 | [EL-TK-210](tickets/EL-TK-210.md) |
+| EL-TK-211 | Preservar la entrada guest por enlace o QR en el Router | EL-EP-018 | READY | P0 | EL-TK-206, EL-TK-074, EL-TK-075, EL-TK-076, EL-TK-077, EL-TK-078, EL-TK-082, EL-TK-083, EL-TK-084 | [EL-TK-211](tickets/EL-TK-211.md) |
+| EL-TK-212 | Configurar serving SPA y base confiable de enlaces guest | EL-EP-018 | READY | P0 | EL-TK-206, EL-TK-211 | [EL-TK-212](tickets/EL-TK-212.md) |
+| EL-TK-213 | Componer el Home público y cabecera sensible a capacidades | EL-EP-018 | READY | P1 | EL-TK-204, EL-TK-205, EL-TK-206, EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211 | [EL-TK-213](tickets/EL-TK-213.md) |
+| EL-TK-214 | Validar la entrada pública integrada | EL-EP-018 | READY | P0 | EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211, EL-TK-212, EL-TK-213 | [EL-TK-214](tickets/EL-TK-214.md) |
 
 **CONFIRMED — CR-004, 2026-10-12:** exactamente dos tickets nuevos de integración de marca, sin nueva épica, módulo o dependencia retroactiva de entregas DONE. Gates requisitos del cambio/técnico/UI y Gate2 APPROVED;203/204 pasan DRAFT→READY de requisitos.203 READY_FOR_IMPLEMENTATION YES;204 NO exclusivamente hasta ejecutar/validar203, con contrato propio aprobado. [Manual canónico](../../docs/branding/MANUAL-DE-MARCA.md), [contrato](../context/brand-integration-contract.md), [UI](../context/ui-brand-foundation.md) y [dictámenes](sessions/2026-10-12-brand-planning-gates.md). El cierre histórico de EL-EP-002 se conserva; la extensión no está implementada.
 
@@ -374,5 +394,19 @@ EL-TK-001..004 — SUPERSEDED por EL-TK-005..019; se preservan como historial. E
 **CONFIRMED — EL-TK-145 DONE, 2026-10-11:** validación de capacidad, ampliaciones y overrides de extremo a extremo implementada en `@eventlens/capacity-management` (`test/capacity-epic-e2e.test.ts`) conforme a Q-011, Q-020, Q-023, DEC-079/080, DEC-093..095, DEC-100..102 y contratos EL-EP-011. Cubre los cuatro escenarios canónicos: carreras concurrentes de uploads al límite comercial garantizando rechazo atómico (`CAPACITY_LIMIT_EXCEEDED`) sin sobre-asignar la cuota efectiva; reducción administrativa por debajo de consumo con preservación íntegra de archivos y balances (DEC-080), bloqueo de nuevas reservas y rechazo de reducciones de vigencia que dejen el vencimiento en el pasado para eventos `ACTIVE` (`CANNOT_REDUCE_BELOW_PAST_EXPIRATION`, DEC-102); ciclo completo de ampliación y respuesta en la misma solicitud (solicitud -> solicitud de información -> respuesta organizador -> aprobación soporte con override automático en límites efectivos e historial de mensajes); y emisión deduplicada de umbrales al 80% y 100% con rearmado a `ARMED` tras descenso de consumo por purga física. Suite de 4 pruebas E2E PASS, 60 pruebas de la suite de capacidad PASS, y typecheck limpio. Épica `EL-EP-011` completada de extremo a extremo. Véase el [cierre](tickets/EL-TK-145.md).
 
 **CONFIRMED — EL-TK-155 DONE, 2026-10-12:** validación de soporte e intervención administrativa de extremo a extremo completada en `@eventlens/admin-support` (`test/admin-support-epic-e2e.test.ts`) conforme a Q-017, DEC-019, DEC-020, DEC-027, DEC-038 y contratos EL-EP-012. Cubre los 4 escenarios canónicos: 1) denegación estricta de acceso multimedia sin justificación válida / sin actor administrativo humano y emisión firmada de `MediaViewGrant` con auditoría inmutable `ADMIN_MEDIA_ACCESS_GRANTED`; 2) ejecución de intervenciones sobre dominios dueños (`SUSPEND_EVENT`), replay idempotente (`IDEMPOTENT_REPLAY`) y acciones controladas sobre jobs (`RETRY`, rechazo de estados incompatibles) con auditoría `ADMIN_JOB_ACTION_EXECUTED`; 3) tolerancia a fallos en detalle agregado (`overallAvailability: 'PARTIAL'`) ante fallos de secciones propietarias sin ofrecer acciones falsas, y deshabilitación estricta de capacidades en estado cerrado (`CLOSED`) y terminal (`DELETED`); 4) búsqueda administrativa con mínimo privilegio y auditoría `ADMIN_SEARCH_PERFORMED`. Suite total de 11/11 pruebas E2E PASS, 90 pruebas de la suite de admin-support PASS, y typecheck limpio. Épica `EL-EP-012` completada de extremo a extremo. Véase el [cierre](tickets/EL-TK-155.md).
+
+**CONFIRMED — EL-EP-009 CIERRE DEFINITIVO, 2026-10-12:** épica EL-EP-009 (Atender denuncias y solicitudes de retiro sin cuenta) completada al 100% de sus 11 tickets (EL-TK-113..123 todos DONE). Cubre el ciclo completo de privacidad y gobernanza: registro de denuncias con neutralidad de feedback per DEC-088; retiro propio irreversible inmediato sin papelera de organizador per DEC-089 y DEC-097; intake sin sesión con campos apilados conforme a DEC-103..105 (declaración obligatoria nunca preseleccionada y validación de correo sin atribuir sesión ni titularidad); clasificación de severidad con priorización administrativa pero sin auto-ocultamiento per DEC-088; acceso técnico justificado a multimedia con grant temporal de 15 minutos; ocultamiento preventivo a HIDDEN; resolución definitiva (ACTION_TAKEN, RESOLVED, DISMISSED) con purga irreversible downstream; consulta de cola sanitizada sin previews multimedia en el listado; integración en experiencia pública/guest y en consola administrativa de frontend (@eventlens/web); y suite de validación E2E contra PostgreSQL 16 real (media-report-governance-e2e.integration.test.ts). Suite completa web (101 tests PASS) y suite de media-inspection (248 unitarias y 22 de integración PASS) sin regresiones. Épica `EL-EP-009` cerrada oficialmente.
+
+**CONFIRMED — EL-TK-160 DONE, 2026-10-12:** generación de avisos de capacidad al 80% y 100% implementada en `@eventlens/notifications` (`CapacityNoticeService`) conforme a DEC-021, DEC-027 y contratos EL-TK-138. Genera intenciones de aviso contextual y correo (`CAPACITY_WARNING_80`, `CAPACITY_EXCEEDED_100`) con severidad `WARNING`/`CRITICAL`, acción autorizada de ampliación hacia `/events/${eventId}/capacity/extension`, estricta deduplicación/idempotencia por dedupKey ante señales repetidas, integración en `NoticeProjectionService` y plantillas accesibles en `EmailRenderer`, y auditoría sanitizada sin media. Suites de pruebas (4 unitarias y 2 de integración en PostgreSQL 16) PASS, typecheck y build limpios. Desbloquea downstream EL-TK-164 y EL-TK-165. Véase el [cierre](tickets/EL-TK-160.md).
+
+**CONFIRMED — EL-TK-163 DONE, 2026-10-12:** generación de avisos de denuncias e intervenciones según severidad autorizada implementada en `@eventlens/notifications` (`CaseNoticeService`) conforme a Q-018, DEC-021, DEC-023, DEC-088 y contratos EL-EP-009/014. Emite alertas prioritarias para administradores autorizados (`CASE_CRITICAL_ALERT`) ante casos críticos sin auto-ocultar contenido, copy mínimo autorizado para el organizador (`CASE_RESOLUTION_NOTICE`, `ADMIN_INTERVENTION`), supresión estricta por órdenes legales o de seguridad sin fugar razones confidenciales, y cero filtraciones de reportantes ni multimedia sensible en los payloads de notificación. Suites de pruebas (7 unitarias y 2 de integración en PostgreSQL 16) PASS, typecheck y build limpios. Desbloquea downstream EL-TK-164 y EL-TK-165. Véase el [cierre](tickets/EL-TK-163.md).
+
+
+
+
+
+**CONFIRMED — Gate 2 EL-EP-018, 2026-10-12:** EL-TK-205..214 formalizados y aprobados por requisitos, arquitectura y UI aplicable; READY de alcance, IMPLEMENTED NO. Ejecución condicionada a predecesoras verificadas; Mi cuenta espera EL-TK-201. [Dictámenes](sessions/2026-10-12-el-ep-018-review-gates.md). No certifica implementación ni apertura pública.
+
+
 
 

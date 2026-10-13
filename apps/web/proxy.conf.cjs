@@ -4,4 +4,22 @@ const url = new URL(target);
 if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) {
   throw new Error('API_PROXY_TARGET must be an HTTP origin without credentials.');
 }
-module.exports = { '/api/**': { target: url.origin, changeOrigin: false } };
+
+function redactProxyUrl(rawUrl) {
+  if (typeof rawUrl !== 'string') return '';
+  return rawUrl
+    .replace(/(\/g\/)[A-Za-z0-9_-]{1,128}/g, '$1[redacted]')
+    .replace(/(\/api\/v1\/public\/guest-entry\/)[A-Za-z0-9_-]{1,128}/g, '$1[redacted]');
+}
+
+module.exports = {
+  '/api/**': {
+    target: url.origin,
+    changeOrigin: false
+  },
+  '/media/**': {
+    target: url.origin,
+    changeOrigin: false
+  },
+  redactProxyUrl
+};

@@ -11,6 +11,11 @@ import {
   type OrganizerAccountRecord,
   type OrganizerActorContext,
   type OrganizerSessionCookieSpec,
+  type OrganizerEffectiveSessionState,
+  type OrganizerEffectiveSessionCapabilities,
+  type OrganizerProjectedAccountMetadata,
+  type OrganizerEffectiveSessionProjection,
+  type ProjectOrganizerSessionCommand,
   type OrganizerLoginCommand,
   type OrganizerLoginResult,
   type ValidateOrganizerSessionCommand,
@@ -26,6 +31,84 @@ import {
   type RevokeOtherSessionsResult
 } from './contracts.js';
 import { PasswordVerifier } from './password-verifier.js';
+
+export function deriveOrganizerCsrfToken(sessionToken: string): string {
+  return createHash('sha256').update(`el-csrf-v1:${sessionToken}`).digest('hex');
+}
+
+export function computeOrganizerEffectiveCapabilities(
+  state: OrganizerEffectiveSessionState
+): OrganizerEffectiveSessionCapabilities {
+  switch (state) {
+    case 'ORGANIZER_ACTIVE':
+      return {
+        canSignIn: false,
+        canRequestBetaAccess: true,
+        canAccessMyEvents: true,
+        canAccessMyAccount: true,
+        canManageSessions: true,
+        canManageAccountDeletion: true,
+        isDeletionRestricted: false,
+        canSignOut: true
+      };
+    case 'ORGANIZER_RESTRICTED_DELETION':
+      return {
+        canSignIn: false,
+        canRequestBetaAccess: true,
+        canAccessMyEvents: false,
+        canAccessMyAccount: true,
+        canManageSessions: false,
+        canManageAccountDeletion: true,
+        isDeletionRestricted: true,
+        canSignOut: true
+      };
+    case 'ANONYMOUS':
+    default:
+      return {
+        canSignIn: true,
+        canRequestBetaAccess: true,
+        canAccessMyEvents: false,
+        canAccessMyAccount: false,
+        canManageSessions: false,
+        canManageAccountDeletion: false,
+        isDeletionRestricted: false,
+        canSignOut: false
+      };
+  }
+}
+
+export function projectOrganizerEffectiveSession(input: {
+  actorContext?: OrganizerActorContext | null;
+  emailVerified?: boolean;
+  csrfToken?: string;
+}): OrganizerEffectiveSessionProjection {
+  const actor = input.actorContext;
+  if (!actor || actor.actorType !== 'ORGANIZER_HUMAN') {
+    return {
+      state: 'ANONYMOUS',
+      capabilities: computeOrganizerEffectiveCapabilities('ANONYMOUS'),
+      account: null
+    };
+  }
+
+  const isRestricted = actor.restrictedContext === 'DELETION_MANAGEMENT_ONLY';
+  const state: OrganizerEffectiveSessionState = isRestricted
+    ? 'ORGANIZER_RESTRICTED_DELETION'
+    : 'ORGANIZER_ACTIVE';
+
+  const account: OrganizerProjectedAccountMetadata = {
+    email: actor.email,
+    emailVerified: input.emailVerified ?? true,
+    accountStatus: isRestricted ? 'PENDING_DELETION' : 'ACTIVE'
+  };
+
+  return {
+    state,
+    capabilities: computeOrganizerEffectiveCapabilities(state),
+    account,
+    ...(input.csrfToken ? { csrfToken: input.csrfToken } : {})
+  };
+}
 
 interface OrganizerAccountRow {
   id: string;
@@ -379,7 +462,7 @@ export class OrganizerAuthenticationService {
       const rawSessionToken = randomBytes(32).toString('hex');
       const tokenDigest = createHash('sha256').update(rawSessionToken).digest('hex');
 
-      const rawCsrfToken = randomBytes(32).toString('hex');
+      const rawCsrfToken = deriveOrganizerCsrfToken(rawSessionToken);
       const csrfTokenDigest = createHash('sha256').update(rawCsrfToken).digest('hex');
 
       const authTime = now;
@@ -434,14 +517,15 @@ export class OrganizerAuthenticationService {
         authTime,
         credentialRevision: credRevBigInt,
         sessionWatermark: watermark,
-        recoveryEpoch: epoch
+        recoveryEpoch: epoch,
+        ...(account.status === 'PENDING_DELETION' ? { restrictedContext: 'DELETION_MANAGEMENT_ONLY' as const } : {})
       };
 
       const accountRecord: OrganizerAccountRecord = {
         id: account.id,
         email: account.email,
         emailNormalized: account.email_normalized,
-        status: 'ACTIVE',
+        status: (account.status as OrganizerAccountRecord['status']) || 'ACTIVE',
         declaredAdult: Boolean(account.declared_adult),
         declaredAdultAt: account.declared_adult_at ? new Date(account.declared_adult_at) : null,
         invitationId: account.invitation_id,
@@ -450,18 +534,54 @@ export class OrganizerAuthenticationService {
         updatedAt: new Date(account.updated_at)
       };
 
+      const projection = projectOrganizerEffectiveSession({
+        actorContext,
+        emailVerified: Boolean(account.verified_at) || account.status === 'ACTIVE' || account.status === 'PENDING_DELETION',
+        csrfToken: rawCsrfToken
+      });
+
       return {
         actorContext,
         sessionToken: rawSessionToken,
         csrfToken: rawCsrfToken,
         cookieSpec,
-        account: accountRecord
+        account: accountRecord,
+        projection
       };
     });
   }
 
   /**
-   * Validates an existing organizer session and enforces idle/absolute timeouts and credential watermark (EL-TK-013, EL-TK-185).
+   * Projects the effective organizer session and capabilities for web integration (EL-TK-205).
+   * Returns ANONYMOUS with no private data when no valid session is present or when session is expired/revoked.
+   * Propagates infrastructure/authority errors so callers do not confuse service unavailability with confirmed logout.
+   */
+  public async projectSession(
+    command?: ProjectOrganizerSessionCommand
+  ): Promise<OrganizerEffectiveSessionProjection> {
+    const rawToken = command?.sessionToken;
+    if (!rawToken || typeof rawToken !== 'string' || !rawToken.trim()) {
+      return projectOrganizerEffectiveSession({ actorContext: null });
+    }
+
+    const trimmedToken = rawToken.trim();
+    try {
+      const validation = await this.validateSession({ sessionToken: trimmedToken });
+      return projectOrganizerEffectiveSession({
+        actorContext: validation.actorContext,
+        emailVerified: true,
+        csrfToken: deriveOrganizerCsrfToken(trimmedToken)
+      });
+    } catch (err) {
+      if (err instanceof AuthenticationError) {
+        return projectOrganizerEffectiveSession({ actorContext: null });
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * Validates an existing organizer session and enforces idle/absolute timeouts and credential watermark (EL-TK-013, EL-TK-185, EL-TK-205).
    */
   public async validateSession(
     command: ValidateOrganizerSessionCommand
@@ -511,6 +631,19 @@ export class OrganizerAuthenticationService {
         throw new AuthenticationError('UNAUTHENTICATED', 'Organizer account is inactive');
       }
 
+      if (command.requireCsrf || command.csrfToken !== undefined) {
+        if (!command.csrfToken || typeof command.csrfToken !== 'string' || !command.csrfToken.trim()) {
+          throw new AuthenticationError('FORBIDDEN', 'CSRF token is required for authenticated mutations');
+        }
+        const providedDigest = createHash('sha256').update(command.csrfToken.trim()).digest('hex');
+        const expectedDigest = session.csrf_token_digest;
+        const providedBuf = Buffer.from(providedDigest, 'utf8');
+        const expectedBuf = Buffer.from(expectedDigest, 'utf8');
+        if (providedBuf.length !== expectedBuf.length || !timingSafeEqual(providedBuf, expectedBuf)) {
+          throw new AuthenticationError('FORBIDDEN', 'Invalid CSRF token');
+        }
+      }
+
       const sessionWatermark = BigInt(session.session_watermark);
 
       // Invalidate if credential has been rotated post-session issuance
@@ -557,11 +690,21 @@ export class OrganizerAuthenticationService {
         authTime: new Date(session.auth_time),
         credentialRevision: currentCredRev,
         sessionWatermark: sessionWatermark,
-        recoveryEpoch: epoch
+        recoveryEpoch: epoch,
+        ...(session.account_status === 'PENDING_DELETION'
+          ? { restrictedContext: 'DELETION_MANAGEMENT_ONLY' as const }
+          : {})
       };
 
+      const projection = projectOrganizerEffectiveSession({
+        actorContext,
+        emailVerified: true,
+        csrfToken: deriveOrganizerCsrfToken(command.sessionToken)
+      });
+
       return {
-        actorContext
+        actorContext,
+        projection
       };
     });
   }
@@ -579,6 +722,13 @@ export class OrganizerAuthenticationService {
     }
 
     const { actorContext } = command;
+    if (actorContext.restrictedContext === 'DELETION_MANAGEMENT_ONLY') {
+      throw new AuthenticationError(
+        'FORBIDDEN',
+        'Account in PENDING_DELETION is restricted to deletion management only'
+      );
+    }
+
     const now = new Date();
 
     return this.runner.run(async (tx: SqlTransaction) => {
@@ -726,6 +876,13 @@ export class OrganizerAuthenticationService {
       throw new AuthenticationError('UNAUTHENTICATED', 'Organizer authentication required');
     }
 
+    if (command.actorContext.restrictedContext === 'DELETION_MANAGEMENT_ONLY') {
+      throw new AuthenticationError(
+        'FORBIDDEN',
+        'Account in PENDING_DELETION is restricted to deletion management only'
+      );
+    }
+
     if (!command.targetSessionId || typeof command.targetSessionId !== 'string' || !command.targetSessionId.trim()) {
       throw new AuthenticationError('INVALID_ARGUMENT', 'Target session ID is required');
     }
@@ -835,6 +992,13 @@ export class OrganizerAuthenticationService {
   ): Promise<RevokeOtherSessionsResult> {
     if (!command || !command.actorContext || command.actorContext.actorType !== 'ORGANIZER_HUMAN') {
       throw new AuthenticationError('UNAUTHENTICATED', 'Organizer authentication required');
+    }
+
+    if (command.actorContext.restrictedContext === 'DELETION_MANAGEMENT_ONLY') {
+      throw new AuthenticationError(
+        'FORBIDDEN',
+        'Account in PENDING_DELETION is restricted to deletion management only'
+      );
     }
 
     const { actorContext } = command;

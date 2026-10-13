@@ -1,0 +1,51 @@
+{
+  "scope": "isolated actual Prisma deploy of immutable 045/056 subset; full assembly blocked",
+  "sqlSha256": "da2299874e2b31ea083b8ca608730a082705c73fc3e6f6003253f63bf706cf5e",
+  "results": [
+    {
+      "name": "clean subset deploy creates a real unique index",
+      "result": "PASS"
+    },
+    {
+      "name": "safe upgrade selects lowest id on tied timestamps and preserves solo/timestamps",
+      "result": "PASS"
+    },
+    {
+      "name": "divergent notes halt and roll back all business rows",
+      "result": "PASS"
+    },
+    {
+      "name": "tied timestamps must update exactly one canonical row",
+      "result": "FAIL",
+      "error": "migration updated multiple canonical candidates on tied created_at\n+ actual - expected\n\n  [\n    {\n      request_id: '00000000-0000-0000-0000-000000000001'\n    },\n+   {\n+     request_id: '00000000-0000-0000-0000-000000000002'\n+   }\n  ]\n"
+    },
+    {
+      "name": "incompatible statuses must halt without loss",
+      "result": "FAIL",
+      "error": "unsafe migration accepted incompatible historical statuses"
+    },
+    {
+      "name": "blank canonical note must retain nonblank secondary note",
+      "result": "FAIL",
+      "error": "nonblank note lost when canonical note was blank\n+ actual - expected\n\n+ '   '\n- 'retained note'\n"
+    },
+    {
+      "name": "cascading dependent reference must halt without loss",
+      "result": "FAIL",
+      "error": "unsafe migration deleted a referenced duplicate through CASCADE"
+    },
+    {
+      "name": "restricting dependent reference fails and rolls back consolidation",
+      "result": "PASS"
+    },
+    {
+      "name": "intermediate delete failure rolls back prior note updates",
+      "result": "PASS"
+    },
+    {
+      "name": "preexisting nonunique index cannot masquerade as unique",
+      "result": "FAIL",
+      "error": "migration succeeded while the purported unique index is nonunique"
+    }
+  ]
+}

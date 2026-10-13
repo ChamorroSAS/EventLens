@@ -2,11 +2,16 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import type { MediaCardModel, RetryCycleResponse } from './media.types.js';
 import { RetryProcessingActionComponent } from './retry-processing-action.component.js';
 import { DownloadOriginalActionComponent } from './download-original-action.component.js';
+import { MediaModerationActionsComponent } from './media-moderation-actions.component.js';
 
 @Component({
   selector: 'eventlens-organizer-media-table',
   standalone: true,
-  imports: [RetryProcessingActionComponent, DownloadOriginalActionComponent],
+  imports: [
+    RetryProcessingActionComponent,
+    DownloadOriginalActionComponent,
+    MediaModerationActionsComponent,
+  ],
   template: `
     <div class="table-container" role="region" aria-label="Tabla de medios del evento" tabindex="0">
       <table class="media-table">
@@ -100,10 +105,18 @@ import { DownloadOriginalActionComponent } from './download-original-action.comp
 
                   @if (item.status === 'QUARANTINED') {
                     <span class="quarantine-notice">Aislado por seguridad</span>
-                  }
-
-                  @if (item.status === 'PROCESSING') {
+                  } @else if (item.status === 'PROCESSING') {
                     <span class="processing-notice">Procesamiento en curso…</span>
+                  } @else {
+                    <eventlens-media-moderation-actions
+                      [media]="item"
+                      (approve)="approveRequested.emit($event)"
+                      (reject)="rejectRequested.emit($event)"
+                      (hide)="hideRequested.emit($event)"
+                      (republish)="republishRequested.emit($event)"
+                      (trash)="trashRequested.emit($event)"
+                      (restore)="restoreRequested.emit($event)"
+                    />
                   }
                 </div>
               </td>
@@ -237,6 +250,26 @@ import { DownloadOriginalActionComponent } from './download-original-action.comp
       background-color: #dcfce7;
       color: #15803d;
     }
+    .badge-pending_review {
+      background-color: #fef9c3;
+      color: #854d0e;
+    }
+    .badge-hidden {
+      background-color: #f1f5f9;
+      color: #475569;
+    }
+    .badge-rejected {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+    .badge-trashed {
+      background-color: #ffedd5;
+      color: #9a3412;
+    }
+    .badge-deleted {
+      background-color: #e2e8f0;
+      color: #64748b;
+    }
     .progress-info {
       display: block;
       font-size: 0.75rem;
@@ -290,6 +323,13 @@ export class OrganizerMediaTableComponent {
   @Output() refreshRequested = new EventEmitter<void>();
   @Output() downloadTriggered = new EventEmitter<MediaCardModel>();
 
+  @Output() approveRequested = new EventEmitter<MediaCardModel>();
+  @Output() rejectRequested = new EventEmitter<MediaCardModel>();
+  @Output() hideRequested = new EventEmitter<MediaCardModel>();
+  @Output() republishRequested = new EventEmitter<MediaCardModel>();
+  @Output() trashRequested = new EventEmitter<MediaCardModel>();
+  @Output() restoreRequested = new EventEmitter<MediaCardModel>();
+
   getStatusBadgeText(item: MediaCardModel): string {
     switch (item.status) {
       case 'UPLOADED':
@@ -302,6 +342,16 @@ export class OrganizerMediaTableComponent {
         return 'Cuarentena';
       case 'PUBLISHED':
         return 'Publicado';
+      case 'PENDING_REVIEW':
+        return 'Pendiente';
+      case 'HIDDEN':
+        return 'Oculto';
+      case 'REJECTED':
+        return 'Rechazado';
+      case 'TRASHED':
+        return 'En papelera';
+      case 'DELETED':
+        return 'Eliminado';
       default:
         return item.status;
     }

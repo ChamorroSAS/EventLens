@@ -1,10 +1,12 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { PublicEntryRouterOutletComponent } from './navigation/public-entry-router.service';
 
 @Component({
   selector: 'eventlens-root',
   standalone: true,
-  imports: [RouterOutlet],
-  template: `<router-outlet></router-outlet>`,
+  imports: [PublicEntryRouterOutletComponent],
+  template: `
+    <eventlens-router-outlet></eventlens-router-outlet>
+  `
 })
 export class AppComponent {}

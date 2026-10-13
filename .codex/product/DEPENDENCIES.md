@@ -18,6 +18,10 @@
 
 ## Epics
 
+### Gate legal de EL-EP-018 para salida pública
+
+[Evaluación jurídica](sessions/2026-10-12-el-ep-018-legal-ticket-gate.md): PASS_WITH_CONDITIONS para redacción de tickets; EL-TK-205..214 ya READY mediante gates propios, sin implementación inferida. EL-EP-017/Q-029 bloquea **lanzamiento** del servicio, no escritura/validación de tickets. Formulario público Beta condicionado a identidad y canal real del responsable natural, aviso/política, autorización/evidencia y conservación. [Expediente](../../docs/legal/README.md); [naming pendiente](../../docs/branding/NAMING-RISK-2026-10-12.md). Sin nuevos módulos, dependencias retroactivas ni cambios DEC/TC/ARCH.
+
 ### Extensión visual CR-004
 
 EL-TK-203 → EL-TK-204;204 reutiliza también componente de048.203 no depende de routing/auth/API ni de una nueva feature.204 depende de salidas203 validadas, no de completar toda integración funcional de048. Piloto Angular real test-only; ninguna prueba de fixture acredita permiso/contrato de producción. Sin ciclo ni bloqueos retroactivos de tickets DONE. Las migraciones futuras guest/admin/biblioteca mantienen sus tickets propietarios; no se crea motor de temas. [Contrato](../context/brand-integration-contract.md) / [UI](../context/ui-brand-foundation.md) / [gates](sessions/2026-10-12-brand-planning-gates.md).
@@ -203,10 +207,10 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-108 (DONE) | 107 | 111,112 |
 | EL-TK-109 (DONE) | 107,055; contrato EL-EP-015 | 112; consumidor purge EL-EP-015 |
 | EL-TK-110 (DONE) | 028,037 | 111,112 |
-| EL-TK-111 | 100,103..108,110 | 112 |
+| EL-TK-111 (DONE) | 100,103..108,110 | 112 |
 | EL-TK-112 (DONE) | 103..111 | validación EL-EP-008 |
 
-9 activos COMPLETADOS (DONE) de 10 tickets en EL-EP-008 tras culminación de motor backend, expiración de papelera (EL-TK-109), cambio de modo DEC-087 (EL-TK-110) y validación integral E2E en PostgreSQL 16 (EL-TK-112). Solo resta EL-TK-111 (integración UI). Superficies UI reutilizadas del catálogo canónico (§8.5..9), sin componentes nuevos. Seguridad/cuarentena en EL-EP-006 y purga física en EL-EP-015.
+10 activos COMPLETADOS (DONE) de 10 tickets en EL-EP-008 tras culminación de motor backend, expiración de papelera (EL-TK-109), cambio de modo DEC-087 (EL-TK-110), integración UI de moderación, papelera, avisos y diálogos en Angular (@eventlens/web per EL-TK-111) y validación integral E2E en PostgreSQL 16 (EL-TK-112). Épica EL-EP-008 formalmente cerrada como DONE. Superficies UI reutilizadas del catálogo canónico (§8.5..9), sin componentes nuevos. Seguridad/cuarentena en EL-EP-006 y purga física en EL-EP-015.
 
 ## Tickets vigentes — EL-EP-009 (quality gate APPROVED)
 
@@ -220,28 +224,28 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-118 (DONE) | 116,117,101 | 119,122,123 |
 | EL-TK-119 (DONE) | 116,117; contratos EL-EP-013/014/015 | 122,123 |
 | EL-TK-120 (DONE) | 113,115,116 | 122,123 |
-| EL-TK-121 | 099,113,114,115 | 123 |
-| EL-TK-122 | 116..120; contrato EL-EP-012 | 123 |
-| EL-TK-123 | 113..122 | validación EL-EP-009 |
+| EL-TK-121 (DONE) | 099,113,114,115 | 123 |
+| EL-TK-122 (DONE) | 116..120; contrato EL-EP-012 | 123 |
+| EL-TK-123 (DONE) | 113..122 | validación EL-EP-009 |
 
-8 activos COMPLETADOS (DONE) de 11 tickets en EL-EP-009 tras la entrega de la Ruta A (EL-TK-113, 114, 115) y la Ruta B (EL-TK-116 a EL-TK-120): clasificación administrativa con alerta prioritaria sin auto-ocultamiento (EL-TK-116, DEC-088), autorización de acceso justificado temporal de 15 min strictly scoped sin exponer previewUrl en logs (EL-TK-117), ocultamiento preventivo explícito sin disparar purga (EL-TK-118), resolución formal con purga inmediata sin papelera de owner per DEC-089/DEC-097 e idempotencia ante repetición (EL-TK-119), y consulta de cola sanitizada y detalle con capacidades distinguiendo EMPTY_QUEUE de EMPTY_FILTER_RESULTS sin preview automático de media en lista (EL-TK-120). Restan tickets de integración UI (EL-TK-121, EL-TK-122) y validación E2E (EL-TK-123) (Ruta C). Superficies UI reutilizadas del catálogo canónico (§5.26..27 y §12.11..15), sin componentes nuevos. Purga en EL-EP-015, auditoría en EL-EP-014 y consola administrativa en EL-EP-012.
+11 activos COMPLETADOS (DONE) de 11 tickets en EL-EP-009. Culminación integral de la Ruta A (EL-TK-113..115), Ruta B (EL-TK-116..120) y Ruta C (EL-TK-121..123): reporte de contenido y retiro propio irreversible con sesión guest, intake sin sesión con declaración obligatoria no preseleccionada per DEC-103..105, clasificación administrativa con alerta sin auto-ocultamiento per DEC-088, acceso multimedia temporal acotado a 15 min previa justificación, ocultamiento preventivo a HIDDEN, resolución con purga downstream, cola sanitizada sin previews multimedia en el listado, integración completa en experiencias Angular (@eventlens/web) pública y administrativa, y validación E2E contra PostgreSQL 16. Épica EL-EP-009 formalmente cerrada como DONE.
 
 ## Tickets vigentes — EL-EP-010 (quality gate APPROVED)
 
 | Ticket | Depende de | Bloquea |
 |---|---|---|
-| EL-TK-124 | 098,053; contrato EL-EP-006 | 132,133 |
-| EL-TK-125 | 098; contrato EL-EP-008 | 126,128,131,132,133 |
-| EL-TK-126 | 125,055 | 127,128,130,131,132,133 |
-| EL-TK-127 | 126 | 129,131,132,133; avisos EL-EP-013 |
-| EL-TK-128 | 125,126; contratos EL-EP-008/009/015 | 129,131,132,133 |
-| EL-TK-129 | 127,128 | 132,133 |
-| EL-TK-130 | 126,127,128 | 131,132,133 |
-| EL-TK-131 | 125..130 | 132,133 |
-| EL-TK-132 | 100,124..131 | 133 |
-| EL-TK-133 | 124..132 | validación EL-EP-010 |
+| EL-TK-124 (DONE) | 098,053; contrato EL-EP-006 | 132,133 |
+| EL-TK-125 (DONE) | 098; contrato EL-EP-008 | 126,128,131,132,133 |
+| EL-TK-126 (DONE) | 125,055 | 127,128,130,131,132,133 |
+| EL-TK-127 (DONE) | 126 | 129,131,132,133; avisos EL-EP-013 |
+| EL-TK-128 (DONE) | 125,126; contratos EL-EP-008/009/015 | 129,131,132,133 |
+| EL-TK-129 (DONE) | 127,128 | 132,133 |
+| EL-TK-130 (DONE) | 126,127,128 | 131,132,133 |
+| EL-TK-131 (DONE) | 125..130 | 132,133 |
+| EL-TK-132 (DONE) | 100,124..131 | 133 |
+| EL-TK-133 (DONE) | 124..132 | validación EL-EP-010 |
 
-10 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de descarga individual de original seguro para organizador (DEC-009/013/075), exportación asíncrona multipartes con snapshot fijo (DEC-046..049/079/090), disponibilidad 48h, invalidación inmediata ante retiros de privacidad o revocación de acceso (DEC-090), grants temporales de partes, regeneración/retry autorizado y consulta de estado/partes/progreso real en OrganizerMediaLibrary. Superficies UI reutilizadas del catálogo canónico (§9.1..8), sin centros de exportación paralelos ni componentes nuevos. Descargas guest siguen fuera de alcance.
+10 activos COMPLETADOS (DONE) de 10 tickets en EL-EP-010 tras culminación de descarga individual segura de originales aprobados (EL-TK-124), solicitud asíncrona con snapshot fijo de elegibles (EL-TK-125), encolado multipartes ~5GB con ZIP64 (EL-TK-126), publicación con disponibilidad de 48h (EL-TK-127), invalidación inmediata ante retiros de privacidad o pérdida de acceso con borrado downstream (EL-TK-128), emisión de grants temporales por parte (EL-TK-129), reintento y regeneración con bump atómico de generación (EL-TK-130), consulta de estado, partes y progreso real (EL-TK-131), integración de acciones, diálogos, estados y panel en OrganizerMediaLibrary en Angular per @eventlens/web (EL-TK-132), y validación integral E2E multi-tenant (EL-TK-133). Épica EL-EP-010 formalmente cerrada como DONE. Superficies UI reutilizadas del catálogo canónico (§9.1..8), sin centros paralelos ni componentes nuevos. Descargas guest siguen fuera de alcance.
 
 ## Tickets vigentes — EL-EP-011 (quality gate APPROVED)
 
@@ -285,11 +289,11 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-156 (DONE) | hechos de dominios propietarios | 157..165 |
 | EL-TK-157 (DONE) | 156, 055; contrato JobQueue (DEC-064) | 164,165 |
 | EL-TK-158 (DONE) | 156 | 164,165 |
-| EL-TK-159 | 156; contratos EL-EP-003/015 | 164,165 |
-| EL-TK-160 | 156; contrato 138 | 164,165 |
+| EL-TK-159 (DONE) | 156; contratos EL-EP-003/015 | 164,165 |
+| EL-TK-160 (DONE) | 156; contrato 138 | 164,165 |
 | EL-TK-161 | 156; contrato EL-EP-010 | 164,165 |
 | EL-TK-162 (DONE) | 156; hechos de dominio EL-EP-001/003 | 164,165 |
-| EL-TK-163 | 156; hechos de dominio EL-EP-009; contrato EL-EP-014 | 164,165 |
+| EL-TK-163 (DONE) | 156; hechos de dominio EL-EP-009; contrato EL-EP-014 | 164,165 |
 | EL-TK-164 | 157..163 | 165 |
 | EL-TK-165 | 156..164 | validación EL-EP-013 |
 
@@ -314,30 +318,30 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 
 12 activos READY de requisitos tras dictamen de requirements_reviewer y ui_designer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de auditoría mínima y sanitizada, consulta paginada con filtros, telemetría y health neutrales de proveedor, detección de colas/jobs degradados, alertas de infraestructura y disponibilidad agregada, backups PostgreSQL diarios con PITR (RPO≤1h/RTO≤4h), verificación de restore periódico con preservación de tombstones, redundancia/recuperación de ObjectStorage (DEC-062/063), incidentes operacionales, retención de auditoría (12m) y rotación de logs (30d) en EL-TK-184, visor contextual de auditoría en consola administrativa (AuditLogViewer/Detail, UI_REQUIRED: YES, READY_FOR_FRONTEND_PLANNING: YES) y validación integrada E2E. Superficies UI reutilizadas del catálogo canónico (ui-mvp-epic-review.md#el-ep-014), sin dashboard operacional nuevo ni nuevos componentes. Proveedores de observabilidad y storage definitivo permanecen DEFERRED bajo gate operacional DR-001.
 
-## Tickets vigentes — EL-EP-015 y correctivos propietarios (2026-10-12)
+## Tickets vigentes — EL-EP-015 y correctivos propietarios (quality gate APPROVED)
 
-**CONFIRMED — revisiones formales individuales:** EL-TK-188..202 READY tras [dictámenes015](sessions/2026-10-12-el-ep-015-ticket-readiness.md);185..187 READY tras su [revisión posterior propia](sessions/2026-10-12-el-tk-185-187-readiness.md), sin cambiar sus épicas propietarias. La [descomposición original](sessions/2026-10-12-el-ep-015-ticket-plan.md) registra los18 IDs y su DRAFT histórico. No cambiar estados DONE, DEC/ARCH ni declarar implementación/QA terminados.
+| Ticket | Depende de | Bloquea |
+|---|---|---|
+| EL-TK-185 (DONE) | 013,018,019,046; DEC-108 | 186 |
+| EL-TK-186 (DONE) | 185,013,014,046; contrato MOD-001 | 191,192,201 |
+| EL-TK-187 (DONE) | correctivos 041/042 DONE (sin reabrirlos),046 | 194 |
+| EL-TK-188 (DONE) | 046,067, DEC-091..110 | 189,190,191,194,195,197 |
+| EL-TK-189 (DONE) | 188,072 | 190,193,200 |
+| EL-TK-190 (DONE) | 189,188;193 para propagación | 200 |
+| EL-TK-191 (DONE) | 186,188 | 192,193,201 |
+| EL-TK-192 (DONE) | 191,186 | 201 |
+| EL-TK-193 (DONE) | 189,191;128 para exports | 195,200,201 |
+| EL-TK-194 (DONE) | 188,067,109,114,187;119 para casos y correctivo108 para integración papelera | 196,202 |
+| EL-TK-195 (DONE) | 188,193;128 para export inventory | 196 |
+| EL-TK-196 (DONE) | 195,197,194 para cobertura de causas | 198,202 |
+| EL-TK-197 (DONE) | 188,046,172,174 | 196,198,199 |
+| EL-TK-198 (DONE) | 196,197,137;159 avisos | 199,202 |
+| EL-TK-199 (DONE) | 197,198,172,174 | 202 |
+| EL-TK-200 (DONE) | 189,190,193; handoff UI | 202 |
+| EL-TK-201 (DONE) | 186,191,192,193; handoff UI | 202 |
+| EL-TK-202 (DONE) | 194,196,198..201 | QA final |
 
-| Ticket | Epic propietario | Depende de / consume | Bloquea |
-|---|---|---|---|
-| EL-TK-185 | EL-EP-001 | 013,018,019,046; DEC-108 | DONE (desbloqueó 186) |
-| EL-TK-186 | EL-EP-001 | 185,013,014,046; contrato MOD-001 | DONE (desbloqueó 191,192,201) |
-| EL-TK-187 | EL-EP-006 | correctivos 041/042 DONE (sin reabrirlos),046 | DONE (desbloqueó 194) |
-| EL-TK-188 | EL-EP-015 | 046,067, DEC-091..110 | 189,190,191,194,195,197 |
-| EL-TK-189 | EL-EP-015 | 188,072 | 190,193,200 |
-| EL-TK-190 | EL-EP-015 | 189,188;193 para propagación | 200 |
-| EL-TK-191 | EL-EP-015 | 186,188 | 192,193,201 |
-| EL-TK-192 | EL-EP-015 | 191,186 | 201 |
-| EL-TK-193 | EL-EP-015 | 189,191;128 para exports | 195,200,201 |
-| EL-TK-194 | EL-EP-015 | 188,067,109,114,187;119 para casos y correctivo108 para integración papelera | 196,202 |
-| EL-TK-195 | EL-EP-015 | 188,193;128 para export inventory | 196 |
-| EL-TK-196 | EL-EP-015 | 195,197,194 para cobertura de causas | 198,202 |
-| EL-TK-197 | EL-EP-015 | 188,046,172,174 | 196,198,199 |
-| EL-TK-198 | EL-EP-015 | 196,197,137;159 avisos | 199,202 |
-| EL-TK-199 | EL-EP-015 | 197,198,172,174 | 202 |
-| EL-TK-200 | EL-EP-015 | 189,190,193; handoff UI | 202 |
-| EL-TK-201 | EL-EP-015 | 186,191,192,193; handoff UI | 202 |
-| EL-TK-202 | EL-EP-015 | 194,196,198..201 | QA final |
+18 activos aprobados READY de requisitos tras [dictámenes015](sessions/2026-10-12-el-ep-015-ticket-readiness.md) y [revisión propia185..187](sessions/2026-10-12-el-tk-185-187-readiness.md) de 2026-10-12; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para sus alcances propios. Los estados DONE mostrados corresponden a los archivos vigentes de los tickets, sin otorgar PASS adicional a gates Beta. Ownership:185/186 pertenecen a EL-EP-001,187 a EL-EP-006 y188..202 a EL-EP-015. La [descomposición original](sessions/2026-10-12-el-ep-015-ticket-plan.md) conserva los18 IDs y su DRAFT histórico; sin cambios a DEC/ARCH ni a los dictámenes.
 
 **Fronteras y ejecución:** MOD-001 posee verifier/challenge/sesión restringida; MOD-003/006 corrige disposición de cuarentena; MOD-008 orquesta mediante ports y UnitOfWork, no escribe tablas ajenas. EL-TK-067,109,114,119,128,137,159,172/174 siguen con ownership original. EL-TK-108 DONE exige comprobar corrección de frontera exacta ante109. Integración exportaciones y notificaciones condicionada a productores reales; no se genera un nuevo scheduler ni RecoveryAuthority. LEGAL_OR_SECURITY_HOLD excluido (Q-029/EL-EP-017).
 
@@ -360,6 +364,36 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 ## EL-EP-017 — no ticketizado
 
 NOT_READY. Q-029 y revisión jurídica profesional siguen siendo blocker explícito; no se generan tickets de implementación ni se inventan políticas legales.
+
+## Tickets vigentes — EL-EP-018 (quality gate APPROVED)
+
+| Ticket | Depende de | Bloquea |
+|---|---|---|
+| EL-TK-205 (DONE) | EL-TK-013, EL-TK-185 | EL-TK-207, EL-TK-209, EL-TK-210, EL-TK-213 |
+| EL-TK-206 (DONE) | EL-TK-204 | EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211, EL-TK-212, EL-TK-213 |
+| EL-TK-207 (DONE) | EL-TK-205, EL-TK-206, EL-TK-013, EL-TK-015, EL-TK-185 | EL-TK-213, EL-TK-214 |
+| EL-TK-208 (DONE) | EL-TK-008, EL-TK-206 | EL-TK-213, EL-TK-214 |
+| EL-TK-209 (DONE) | EL-TK-205, EL-TK-206, EL-TK-014, EL-TK-016, EL-TK-017, EL-TK-201 | EL-TK-213, EL-TK-214 |
+| EL-TK-210 (DONE) | EL-TK-205, EL-TK-206, EL-TK-047, EL-TK-048 | EL-TK-213, EL-TK-214 |
+| EL-TK-211 (DONE) | EL-TK-206, EL-TK-074, EL-TK-075, EL-TK-076, EL-TK-077, EL-TK-078, EL-TK-082, EL-TK-083, EL-TK-084 | EL-TK-212, EL-TK-213, EL-TK-214 |
+| EL-TK-212 (DONE) | EL-TK-206, EL-TK-211 | EL-TK-214 |
+| EL-TK-213 (DONE) | EL-TK-204, EL-TK-205, EL-TK-206, EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211 | EL-TK-214 |
+| EL-TK-214 (DONE) | EL-TK-207, EL-TK-208, EL-TK-209, EL-TK-210, EL-TK-211, EL-TK-212, EL-TK-213 | — |
+
+**CONFIRMED — EL-EP-018 DONE, 2026-10-13.** [Épica](epics/EL-EP-018.md) / [gates](sessions/2026-10-12-el-ep-018-review-gates.md). Implementación y validación integrada completadas (EL-TK-205..214 DONE). Sin módulo funcional nuevo ni ciclo con identidad/eventos. La navegación consume capacidades existentes, con fronteras:
+- `EL-EP-001`/`EL-TK-008` para login, cuenta y solicitud Beta; no registro abierto.
+- `EL-EP-002` para Mis eventos/OrganizerAppShell; no segundo dashboard.
+- `EL-EP-004` para acceso guest por QR/deep link; no directorio público de eventos.
+- `EL-EP-015` para sesión de eliminación restringida/gestión de cuenta; no nuevas políticas.
+- `EL-TK-203/204` para assets/foundation ya definidos; cambios visuales acotados, sin rediseño total.
+- `EL-EP-017` conserva gate jurídico antes de apertura pública; no impide planificación/ticket writing.
+
+La proyección de sesión autoritativa y su correctivo ACTIVE preceden al consumo de navegación privada. Mi cuenta compone201 y predecesoras bajo owners; no duplicarlas. El montaje HTTP/client/SPA se separa de dominio DONE y de métodos frontend simulados. QR `/g/:lookupKey` permanece directo; estado guest/admin independiente de logout organizador. El grafo concreto revisado se registra debajo, sin dependencia retroactiva que reabra entregas cerradas.
+- Antes de tickets: auditar rutas Angular/runtime/guard, aprobar navegación y copy, `ui_designer`, `requirements_reviewer`, `architect`. Ningún DONE histórico se reabre sin correctivo nuevo explícito.
+
+READY describe el alcance revisado, no predecesoras ejecutadas. Cada salida debe verificarse antes del consumidor. No se alteran dependencias históricas de los owners.
+
+Orden:205 y206 independientes →207/208/209/210/211 según sus propias predecesoras →212 y213 →214.209 espera también201, aún READY.206 no activa bootstrap ni importa componentes futuros;213 ensambla descriptores reales una vez entregados207..211.212 puede avanzar junto a213 tras211;214 requiere ambos. Todo paralelo está sujeto a dependencias y propiedad de archivos sin solapamiento. EP017/Q029 conserva aprobación de apertura pública separada.
 
 ## Tickets vigentes — EL-EP-006 (quality gate APPROVED)
 
@@ -514,7 +548,30 @@ TB-01/TB-02 dejan de bloquear.033/035/036/041/042/056 YES propio;058 NO ejecuci�
 
 **CONFIRMED — EL-TK-204 DONE, 2026-10-12:** dependencias EL-TK-203 y EL-TK-048 satisfechas; foundation visual de marca y piloto aislado de `OrganizerAppShellComponent` implementados y validados en `@eventlens/web`. Tipografía Manrope autoalojada en `apps/web/public/assets/fonts/manrope/` con pesos reales 400, 500, 600 y 700 WOFF2, licencia SIL Open Font License 1.1 (`OFL.txt`) y manifiesto de procedencia (`provenance.json`). Hoja de estilos única `apps/web/src/styles/ui-foundation.css` con `@font-face` (`font-display: swap`) y custom properties `--el-ui-*` inertes en `:root` registrada en `angular.json` sin contaminación global. Wordmark corporativo integrado en `h1` con nombre accesible `EventLens` y fallback textual ante fallo de carga. Roles semánticos WCAG 2.2 AA (contraste > 4.5:1 texto, > 3:1 foco), touch targets ≥ 44×44px, nombres largos sin truncamiento por elipsis, responsive reflow sin scroll horizontal (header estático en móvil y sticky en desktop) y preservación estricta de herencia `system-ui` hacia contenido proyectado y badges hijos. Suite de pruebas 90/90 PASS en `@eventlens/web` (incluyendo 5 unitarias en `organizer-app-shell.component.spec.ts`), verificación automatizada `scripts/verify-ui-foundation.mjs` PASS, typecheck 0 errores, build de producción limpio (106 kB). Épica transversal CR-004 completamente cerrada. Véase el [cierre](tickets/EL-TK-204.md).
 
+**CONFIRMED — EL-TK-160 DONE, 2026-10-12:** dependencias EL-TK-156 y contrato EL-TK-138 satisfechas; generación de avisos de capacidad al 80% y 100% implementada y validada en `@eventlens/notifications` (`CapacityNoticeService`, `packages/notifications/src/capacity-notice-service.ts`) conforme a DEC-021, DEC-027 y contratos EL-EP-011 / EL-TK-138. Genera intenciones deduplicadas `CAPACITY_WARNING_80` (severidad `WARNING`, acción `/events/${eventId}/capacity`) y `CAPACITY_EXCEEDED_100` (severidad `CRITICAL`, acción autorizada de ampliación `/events/${eventId}/capacity/extension`), garantizando estricta idempotencia por dedupKey ante señales repetidas, compatibilidad con `NoticeProjectionService` y `EmailRenderer`, y auditoría sin fugar media ni datos confidenciales. 4/4 pruebas unitarias PASS en `capacity-notice.unit.test.ts`, 2/2 pruebas de integración PASS contra PostgreSQL 16 real en `capacity-notice.integration.test.ts`, 0 errores de typecheck. Desbloquea downstream EL-TK-164 y EL-TK-165. Véase el [cierre](tickets/EL-TK-160.md).
+
+**CONFIRMED — EL-TK-163 DONE, 2026-10-12:** dependencias EL-TK-156, hechos de dominio EL-EP-009 y contrato de auditoría EL-EP-014 satisfechas; generación de avisos de denuncias e intervenciones según severidad autorizada implementada y validada en `@eventlens/notifications` (`CaseNoticeService`, `packages/notifications/src/case-notice-service.ts`) conforme a Q-018, DEC-021, DEC-023, DEC-088 y contratos EL-EP-009/014. Emite alertas prioritarias para administradores autorizados (`CASE_CRITICAL_ALERT`, severidad `CRITICAL`) ante reportes críticos sin auto-ocultamiento de contenido, copy mínimo autorizado para el organizador (`CASE_RESOLUTION_NOTICE`, `ADMIN_INTERVENTION`), supresión estricta por órdenes legales o directivas de seguridad sin fugar razones confidenciales al destinatario, y garantía de cero filtraciones de reportantes o previews multimedia en los payloads de notificación. 7/7 pruebas unitarias PASS en `case-notice.unit.test.ts`, 2/2 pruebas de integración PASS contra PostgreSQL 16 real en `case-notice.integration.test.ts`, 0 errores de typecheck. Desbloquea downstream EL-TK-164 y EL-TK-165. Véase el [cierre](tickets/EL-TK-163.md).
+
+**CONFIRMED — EL-TK-124 DONE, 2026-10-12:** dependencias EL-TK-098 y EL-TK-053 satisfechas; emisión de grant temporal para la descarga individual de un original implementada y validada en `@eventlens/media-gallery` (`OriginalDownloadGrantService`, `packages/media-gallery/src/original-download-grant.ts`) conforme a DEC-013, DEC-063 y DEC-075. Solo el organizador propietario obtiene la URL temporal (60–3600 s, descarga forzada); se deniegan cuarentena, papelera, rechazada, borrada, sin inspeccionar y seguridad inconclusa/pendiente (un `PROCESSING_FAILED` solo con inspección aprobada), eventos suspendidos o en eliminación, y la media de otro evento o un actor ajeno responden sin permitir enumeración. La auditoría no registra URL ni object key. 11/11 pruebas unitarias PASS y 5/5 de integración PASS contra PostgreSQL 16 real. Desbloquea downstream EL-TK-132 y EL-TK-133. Véase el [cierre](tickets/EL-TK-124.md).
+
+**CONFIRMED — EL-TK-125 DONE, 2026-10-12:** dependencia EL-TK-098 y contrato EL-EP-008 satisfechos; solicitud de exportación con snapshot fijo implementada y validada en el nuevo paquete `@eventlens/export-management` (MOD-005; `ExportRequestService`, `packages/export-management/src/export-request.ts`; migración `202610120053_export_request`) conforme a DEC-046, DEC-047 y DEC-090. El manifiesto se congela en una sola sentencia con solo media PUBLISHED/HIDDEN con original completo, registra exclusiones por estado, es idempotente por organizador y clave, no crea exportaciones vacías y admite una sola exportación activa por evento. 10/10 pruebas unitarias PASS y 7/7 de integración PASS contra PostgreSQL 16 real. Desbloquea downstream EL-TK-126, EL-TK-128, EL-TK-131, EL-TK-132 y EL-TK-133. Véase el [cierre](tickets/EL-TK-125.md).
+
+**CONFIRMED — EL-TK-126 DONE, 2026-10-12:** dependencias EL-TK-125 y EL-TK-055 satisfechas; preparación asíncrona multipartes implementada y validada en `@eventlens/export-management` (`ExportPreparationWorker`, `ExportResourcePolicy`; migración `202610120054_export_preparation`) conforme a DEC-047, DEC-049, DEC-063, DEC-064, DEC-079 y DEC-090. El job se publica en la misma transacción de la solicitud; el worker reserva con lease/heartbeat, revalida permisos al preparar y antes de promover, genera partes ZIP64 almacenadas (~5 GB decimales configurables, archivos nunca partidos) en un namespace privado con verificación de tamaño/SHA-256 contra el manifiesto, promueve cada parte con checkpoint fenced y reutiliza las válidas en reintentos. Los fallos transitorios respetan el presupuesto de 3 intentos; el origen ausente o alterado falla de forma terminal y la media retirada o el permiso revocado invalidan; toda salida de un intento fallido se elimina. 11/11 pruebas unitarias y 11/11 de integración PASS contra PostgreSQL 16 con storage en memoria; EXPORT-001 permanece NOT_EVALUATED. Desbloquea downstream EL-TK-127, EL-TK-128, EL-TK-130, EL-TK-131, EL-TK-132 y EL-TK-133. Véase el [cierre](tickets/EL-TK-126.md).
+
+**CONFIRMED — EL-TK-127 DONE, 2026-10-12:** dependencia EL-TK-126 satisfecha; disponibilidad y expiración de exportaciones implementadas y validadas en `@eventlens/export-management` (`publishExportAvailability`, `ExportAvailabilityService`, `ExportExpiryReconciler`, `ExportCleanupWorker`; migración `202610120055_export_availability`) conforme a DEC-048 y DEC-049. `AVAILABLE` se publica de forma atómica con la finalización del job solo con todas las partes y el manifiesto consistentes, con ventana de 48 h medida con el reloj de la base de datos; un replay no mueve la ventana. Al vencer pasa a `EXPIRED` (distinto de FAILED/INVALIDATED), deja de admitir nuevos grants (`isExportAvailable`) y encola una limpieza idempotente de partes y manifiesto. El aviso hacia EL-EP-013 queda como puerto transaccional (`ExportLifecycleNotifier`). 12/12 pruebas de disponibilidad/expiración PASS (paquete completo 51/51) contra PostgreSQL 16 real. Desbloquea downstream EL-TK-129, EL-TK-131, EL-TK-132 y EL-TK-133. Véase el [cierre](tickets/EL-TK-127.md).
+
+**CONFIRMED — EL-TK-128 DONE, 2026-10-13:** dependencias EL-TK-125, EL-TK-126 y contratos EL-EP-008/009/015 satisfechos; invalidación de exportaciones afectadas por retiro de contenido o pérdida de acceso implementada y validada en `@eventlens/export-management` (`ExportInvalidationService`, `packages/export-management/src/export-invalidation.ts`; migración `202610130001_export_invalidation`) conforme a DEC-090. La revalidación bajo demanda (`revalidateExport`) comprueba la vigencia del evento y que ninguna media del snapshot haya sido retirada (o cambiado de generación), transicionando a `INVALIDATED` inmediatamente, cancelando partes y encolando `EXPORT_CLEANUP`. Se proporciona invalidación por medio (`invalidateExportsForMedia`) e implementación de barrera de eliminación con inventario de partes (`invalidateExportsForScope` / `ExportDeletionBarrierPort`). 9/9 pruebas unitarias y de integración PASS contra PostgreSQL 16. Desbloquea downstream EL-TK-129, EL-TK-130, EL-TK-131, EL-TK-132 y EL-TK-133. Véase el [cierre](tickets/EL-TK-128.md).
+
+**CONFIRMED — EL-TK-129 DONE, 2026-10-13:** dependencias EL-TK-127 y EL-TK-128 satisfechas; emisión de grant temporal para la descarga de una parte de exportación implementada y validada en `@eventlens/export-management` (`ExportPartDownloadGrantService`, `packages/export-management/src/export-part-grant.ts`) conforme a DEC-048, DEC-063 y DEC-090. Solo el organizador propietario puede solicitar grants para partes de exportaciones `AVAILABLE` y vigentes; se revalidan permisos y snapshot antes de firmar la URL, invalidando inmediatamente la exportación si hubo retiros; partes inexistentes o incompletas responden `PART_NOT_FOUND` y estados terminales/expirados deniegan con su código específico. TTL configurable (60–3600 s) y auditoría sanitizada `EXPORT_PART_GRANT_ISSUED`. 7/7 pruebas unitarias PASS. Desbloquea downstream EL-TK-132 y EL-TK-133. Véase el [cierre](tickets/EL-TK-129.md).
+
+**CONFIRMED — EL-TK-130 DONE, 2026-10-13:** dependencias EL-TK-126, EL-TK-127 y EL-TK-128 satisfechas; reintento y regeneración de exportaciones implementados y validados en `@eventlens/export-management` (`ExportRetryService`, `packages/export-management/src/export-retry.ts`) conforme a DEC-047, DEC-048 y DEC-090. Permite abrir un nuevo ciclo autorizado para exportaciones en `FAILED` o `EXPIRED`, incrementando la generación atómicamente, reseteando timestamps y re-encolando la preparación de forma aislada sin reutilizar URLs ni paquetes vencidos. Replay idempotente para preparaciones activas, bloqueo de regeneración para exportaciones en `AVAILABLE` vigentes, y denegación estricta (`EXPORT_INVALIDATED`) para exportaciones invalidadas por retiros o revocaciones de acceso. 6/6 pruebas unitarias PASS. Desbloquea downstream EL-TK-131, EL-TK-132 y EL-TK-133. Véase el [cierre](tickets/EL-TK-130.md).
+
+**CONFIRMED — EL-TK-131 DONE, 2026-10-13:** dependencias EL-TK-125, EL-TK-126, EL-TK-127, EL-TK-128 y EL-TK-130 satisfechas; consulta de estado, partes numeradas y disponibilidad implementada y validada en `@eventlens/export-management` (`ExportQueryService`, `packages/export-management/src/export-query.ts`) conforme a DEC-047, DEC-048 y DEC-090. Expone snapshots tipados distinguiendo `REQUESTED`, `PREPARING`, `AVAILABLE`, `FAILED`, `EXPIRED` e `INVALIDATED`; métricas de progreso real calculadas exclusivamente cuando existen partes planificadas; partes disponibles con bytes exactos, SHA-256 y nombres canónicos; reconciliación de expiración en tiempo real; y capacidades de acción autorizadas (`canDownload`, `canRetry`, `canRegenerate`, `canRequestNew`). 8/8 pruebas unitarias PASS. Desbloquea downstream EL-TK-132 y EL-TK-133. Véase el [cierre](tickets/EL-TK-131.md).
 
 
 
 
+
+
+
+**CONFIRMED — EL-EP-018 DONE, 2026-10-13:** [Épica](epics/EL-EP-018.md). Implementación y validación integrada de todos los tickets EL-TK-205..214: proyección de sesión adaptativa (205), router desacoplado y 404 (206), login organizador (207), solicitud Beta pública (208), cuenta y reautenticación Argon2id (209), Mis eventos (210), guest entry directo por QR/deep link (211), serving SPA y redacción (212), Home público oficial y cabecera accesible (213), y validación integrada E2E (214). Suites completas PASS: Web 154/154, API PostgreSQL 16 9/9, Playwright 7/7, OpenAPI y cliente tipado sincronizados. Véase la [sesión de cierre](sessions/2026-10-13-el-ep-018-closure.md).

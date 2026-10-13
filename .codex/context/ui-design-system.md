@@ -115,6 +115,8 @@ Resuelta en [EL-TD-009](technical-baseline.md#el-td-009--frontend-styling-strate
 
 ## Principios
 
+Aplicación acotada de roles vigentes a Home/navegación EL-EP-018: [ui-public-entry.md](ui-public-entry.md). Sin nueva paleta/fuente/peso/token ni ampliación implícita del piloto de OrganizerAppShell; no certifica implementación.
+
 - No usar coral como CTA principal.
 - No depender únicamente del color para comunicar estados.
 - CTA principal azul.

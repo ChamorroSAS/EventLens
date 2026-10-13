@@ -4,7 +4,7 @@
 EL-EP-015
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador, **quiero** cancelar el borrado pendiente de su cuenta en plazo, **para** recuperar la cuenta sin resucitar eventos o contenidos ya purgados.
@@ -73,4 +73,9 @@ UI_REQUIRED: NO.
 READY_FOR_FRONTEND_PLANNING: NOT_REQUIRED — dictamen ui_designer; sin diseño de UI nueva.
 REVIEW_STATUS: APPROVED — [dictámenes formales y validación documental](../sessions/2026-10-12-el-ep-015-ticket-readiness.md).
 
-Histórico: DRAFT en la propuesta original; READY tras revisión individual del 2026-10-12. No acredita implementación, ejecución de pruebas ni PASS de validation gates.
+Histórico: DRAFT en la propuesta original; READY tras revisión individual del 2026-10-12.
+
+## Evidencia de cierre — 2026-10-12
+- **Implementación:** `packages/event-management/src/manual-deletion-workflows.ts` (`ManualDeletionWorkflowService.cancelManualAccountDeletion`, `computeCanonicalAccountDeletionIntentionHash`).
+- **Verificación:** `packages/event-management/test/manual-deletion-workflows.unit.test.ts` y `packages/event-management/test/manual-deletion-workflows.integration.test.ts` (PASS en PostgreSQL 16 real: evidencia nueva `CANCEL_ACCOUNT_DELETION` de un uso ligada a `requestId`, replay exacto sin repetir consumo, `ACK` causal antes de reactivar cuenta, soporte `ADMIN_HUMAN` con grant `MOD-007` + motivo auditado, y recálculo individual de eventos hijos respetando barreras independientes, suspensiones y cierres voluntarios).
+

@@ -4,7 +4,7 @@
 EL-EP-010
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** organizador propietario, **quiero** descargar un original autorizado, **para** recuperar el recuerdo con su calidad original.
@@ -68,3 +68,11 @@ Q-027; DEC-009, DEC-013, DEC-075; EL-EP-010, EL-EP-006.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §9.1..8; sin componentes nuevos ni centros de exportación paralelos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Evidencia de implementación y verificación — 2026-10-12
+
+- **Servicio y contratos:** `OriginalDownloadGrantService` en `packages/media-gallery/src/original-download-grant.ts`; tipos `RequestOriginalDownloadGrantCommand` / `OriginalDownloadGrant` y extensión opcional `forceDownload`/`fileName` en `ObjectStorageDownloadSigner` (`contracts.ts`). Exportado desde `index.ts`.
+- **Reglas:** solo el owner del evento; media en estados READY/PUBLISHED/HIDDEN/PENDING_REVIEW/PROCESSING_FAILED y hecho de seguridad `APPROVED` (DEC-075); cuarentena, papelera, rechazada, borrada, sin inspeccionar, inconclusa o pendiente se deniegan. Evento SUSPENDED/PENDING_DELETION/ARCHIVED/DELETED deniega. Actor ajeno o evento inexistente responden igual (`UNAUTHORIZED`); media de otro evento `MEDIA_NOT_FOUND`. URL temporal con TTL 60–3600 s (900 por defecto) y descarga forzada; fallo de storage -> `TEMPORARY_FAILURE` sin detalles.
+- **Auditoría:** `ORIGINAL_DOWNLOAD_GRANT_ISSUED` sin URL ni object key.
+- **Pruebas:** `test/original-download-grant.unit.test.ts` (11/11) y `test/original-download-grant.integration.test.ts` (5/5, PostgreSQL 16 real con esquema migrado). Build `tsc` de media-gallery OK.
+- **Alcance:** capacidad de dominio/paquete, igual que EL-TK-053/098. Endpoint HTTP, cliente generado y cableado Angular del botón `downloadItemTriggered` quedan para el ticket de UI owner (EL-TK-132).

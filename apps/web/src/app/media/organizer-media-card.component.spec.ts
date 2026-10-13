@@ -256,4 +256,74 @@ describe('OrganizerMediaCard & media failure/retry states (EL-TK-054)', () => {
     expect(alert.textContent).toContain('No se pudo solicitar el reintento: permisos no válidos');
     expect(alert.textContent).not.toContain('RETRY_DENIED');
   });
+
+  it('renders moderation actions according to capabilities and emits events (EL-TK-111)', () => {
+    const pendingMedia: MediaCardModel = {
+      mediaRef: 'media-pending-1',
+      eventRef: 'event-1',
+      fileName: 'selfie_mesa_3.jpg',
+      status: 'PENDING_REVIEW',
+      safety: { outcome: 'APPROVED' },
+      capabilities: {
+        canRetry: false,
+        canDownloadOriginal: false,
+        canView: true,
+        canDelete: false,
+        canApprove: true,
+        canReject: true,
+        canHide: false,
+        canRepublish: false,
+        canTrash: true,
+        canRestore: false,
+      },
+    };
+
+    const fixture = createComponent(pendingMedia);
+    expect(fixture.nativeElement.querySelector('.badge').textContent.trim()).toBe('Pendiente');
+    expect(fixture.nativeElement.textContent).toContain('Pendiente de aprobación del organizador');
+
+    // Moderation action buttons present per capabilities
+    const approveBtn: HTMLButtonElement = fixture.nativeElement.querySelector('.btn-approve');
+    const rejectBtn: HTMLButtonElement = fixture.nativeElement.querySelector('.btn-reject');
+    const trashBtn: HTMLButtonElement = fixture.nativeElement.querySelector('.btn-trash');
+    const hideBtn: HTMLButtonElement = fixture.nativeElement.querySelector('.btn-hide');
+
+    expect(approveBtn).toBeTruthy();
+    expect(rejectBtn).toBeTruthy();
+    expect(trashBtn).toBeTruthy();
+    expect(hideBtn).toBeNull();
+
+    let approvedEmitted = false;
+    fixture.componentInstance.approveRequested.subscribe(m => {
+      expect(m.mediaRef).toBe('media-pending-1');
+      approvedEmitted = true;
+    });
+
+    approveBtn.click();
+    expect(approvedEmitted).toBe(true);
+  });
+
+  it('renders trashed state with retention period badge and expired restore state when canRestore is false', () => {
+    const trashedExpired: MediaCardModel = {
+      mediaRef: 'media-trash-old',
+      eventRef: 'event-1',
+      fileName: 'borrosa.jpg',
+      status: 'TRASHED',
+      safety: { outcome: 'APPROVED' },
+      capabilities: {
+        canRetry: false,
+        canDownloadOriginal: false,
+        canView: false,
+        canDelete: false,
+        canRestore: false,
+      },
+    };
+
+    const fixture = createComponent(trashedExpired);
+    expect(fixture.nativeElement.querySelector('.badge').textContent.trim()).toBe('En papelera');
+    expect(fixture.nativeElement.textContent).toContain('En papelera (retención 7 días)');
+    expect(fixture.nativeElement.textContent).toContain('Ventana de restauración vencida');
+    expect(fixture.nativeElement.querySelector('.btn-restore')).toBeNull();
+  });
 });
+

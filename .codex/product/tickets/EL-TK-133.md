@@ -4,7 +4,7 @@
 EL-EP-010
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** equipo de producto, **quiero** validar descargas y exportaciones privadas, **para** comprobar exactitud, aislamiento e invalidación bajo cambios de permiso.

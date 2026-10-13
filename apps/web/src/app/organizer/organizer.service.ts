@@ -1,38 +1,48 @@
 import { Injectable } from '@angular/core';
+import { createEventLensClient } from '@eventlens/api-client';
 import type { OrganizerEventModel, EventConfigurationModel } from './organizer.types.js';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OrganizerService {
+  private readonly client = createEventLensClient();
+
   /**
-   * Retrieves all events owned by the authenticated organizer (EL-TK-047).
+   * Retrieves all events owned by the authenticated organizer via generated OpenAPI client (EL-TK-047, EL-TK-210).
    */
   async listEvents(): Promise<OrganizerEventModel[]> {
-    const res = await fetch('/api/v1/events');
-    if (!res.ok) {
-      if (res.status === 401 || res.status === 403) {
+    const { data, response } = await this.client.GET('/api/v1/events');
+    if (!response.ok || !data) {
+      if (response.status === 401 || response.status === 403) {
         throw new Error('UNAUTHORIZED');
       }
       throw new Error('COMMUNICATION_ERROR');
     }
-    return (await res.json()) as OrganizerEventModel[];
+    return data;
   }
 
   /**
-   * Retrieves the authorized configuration and capabilities of an event (EL-TK-047).
+   * Retrieves the authorized configuration and capabilities of an event via generated OpenAPI client (EL-TK-047, EL-TK-210).
    */
   async getEventConfiguration(eventId: string): Promise<EventConfigurationModel> {
-    const res = await fetch(`/api/v1/events/${encodeURIComponent(eventId)}/configuration`);
-    if (!res.ok) {
-      if (res.status === 404) {
+    const { data, response } = await this.client.GET(
+      '/api/v1/events/{eventId}/configuration',
+      {
+        params: {
+          path: { eventId }
+        }
+      }
+    );
+    if (!response.ok || !data) {
+      if (response.status === 404) {
         throw new Error('EVENT_NOT_FOUND');
       }
-      if (res.status === 401 || res.status === 403) {
+      if (response.status === 401 || response.status === 403) {
         throw new Error('ACCESS_DENIED');
       }
       throw new Error('COMMUNICATION_ERROR');
     }
-    return (await res.json()) as EventConfigurationModel;
+    return data;
   }
 }

@@ -7,7 +7,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
     <div class="download-action-container">
       <button
         type="button"
-        class="download-btn"
+        class="download-btn btn-download-original"
         [disabled]="disabled"
         [attr.aria-label]="'Descargar archivo original ' + fileName"
         (click)="onDownloadClick()"

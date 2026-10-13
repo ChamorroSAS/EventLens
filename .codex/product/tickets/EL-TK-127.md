@@ -4,7 +4,7 @@
 EL-EP-010
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** sistema, **quiero** marcar una exportación preparada como disponible, **para** informar al organizador qué partes puede descargar y hasta cuándo.
@@ -68,3 +68,13 @@ Q-027; DEC-048, DEC-049; EL-EP-010, EL-EP-013.
 - **UI_UX_READINESS:** YES (reutilización del catálogo canónico ui-mvp-epic-review.md §9.1..8; sin componentes nuevos ni centros de exportación paralelos).
 - **READY_FOR_FRONTEND_PLANNING:** YES
 - **READY_FOR_IMPLEMENTATION:** YES (listo para implementación técnica conforme a secuencia de dependencias y baseline EL-TD-001..007).
+
+## Evidencia de implementación y verificación — 2026-10-12
+
+- **Migración `202610120055_export_availability`:** `available_at`/`expires_at`/`expired_at` en `export_request`; CHECK que exige ventana, `prepared_at` y manifiesto para `AVAILABLE`; índice parcial de expiración; estado de parte `EXPIRED`.
+- **Disponibilidad (`src/export-availability.ts`):** `publishExportAvailability` solo marca `AVAILABLE` si todas las partes del snapshot están `READY` con key/tamaño/SHA-256, el conteo de entradas por parte coincide con el manifiesto congelado y existe el manifiesto preparado; ventana de 48 h (DEC-048) con el reloj de la base de datos. Se ejecuta de forma atómica con la finalización del job de EL-TK-126 (y revierte junto con él si falla el aviso). `ExportAvailabilityService` es el camino idempotente de recuperación; un replay no mueve `expiresAt` ni duplica avisos/auditoría. Una exportación parcial devuelve `PARTS_INCOMPLETE` y un manifiesto/parte inconsistente `MANIFEST_INCONSISTENT`; terminal -> `NOT_PUBLISHABLE`.
+- **Expiración:** `ExportExpiryReconciler` pasa `AVAILABLE -> EXPIRED` (distinto de FAILED/INVALIDATED) con `SKIP LOCKED` (varios schedulers expiran una sola vez) y encola un job `EXPORT_CLEANUP` idempotente por generación. `isExportAvailable` bloquea nuevos grants aunque el reconciliador se retrase (insumo para EL-TK-129). `ExportCleanupWorker` borra partes y manifiesto, deja las partes `EXPIRED` conservando tamaños, reintenta con backoff y, agotado el presupuesto, queda `DEAD` (alerta) sin deshacer la expiración.
+- **Aviso EL-EP-013:** puerto `ExportLifecycleNotifier` (`exportAvailable`/`exportExpired`) invocado dentro de la misma transacción; este paquete no envía correo ni depende de `notifications` (el adaptador se compone en el composition root).
+- **Auditoría:** `EXPORT_AVAILABLE`, `EXPORT_EXPIRED` y `EXPORT_CLEANED_UP` solo con conteos, sin keys ni URLs.
+- **Pruebas:** `test/export-availability.integration.test.ts` (11 de PostgreSQL 16 real + 1 unitaria de `isExportAvailable`). Paquete completo 51/51 y `scripts/workspace.mjs build` OK. Las pruebas de EL-TK-126 se actualizaron al nuevo estado final `AVAILABLE`.
+- **Alcance:** consulta de estado/partes para el owner es EL-TK-131; regenerar tras FAILED/EXPIRED es EL-TK-130; emisión de grants de partes es EL-TK-129.

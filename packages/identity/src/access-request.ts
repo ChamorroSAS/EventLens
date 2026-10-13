@@ -108,34 +108,17 @@ export class BetaAccessRequestService {
       : null;
 
     return this.transactions.run(async (tx) => {
-      // Check for existing request to ensure idempotent deduplication without leaking info
-      const existing = await tx.query<RawAccessRequestRow>(
-        `SELECT id, email, email_normalized, status, notes, ip_hash, created_at, updated_at
-         FROM beta_access_request
-         WHERE email_normalized = $1
-         FOR UPDATE`,
-        normalizedEmail
-      );
+      let requestId: string | null = null;
+      const candidateId = randomUUID();
 
-      let requestId: string;
-
-      if (existing.length > 0) {
-        // Idempotent update without revealing existence
-        requestId = existing[0].id;
-        await tx.execute(
-          `UPDATE beta_access_request
-           SET updated_at = $1, notes = COALESCE($2, notes)
-           WHERE id = $3`,
-          now,
-          command.notes?.trim() ?? null,
-          requestId
-        );
-      } else {
-        requestId = randomUUID();
-        await tx.execute(
+      for (let attempt = 0; attempt < 3; attempt++) {
+        // Step 1: Attempt non-destructive insert; on duplicate email_normalized DO NOTHING preserving existing row completely
+        const inserted = await tx.query<{ id: string }>(
           `INSERT INTO beta_access_request (id, email, email_normalized, status, notes, ip_hash, created_at, updated_at)
-           VALUES ($1, $2, $3, 'PENDING_REVIEW', $4, $5, $6, $7)`,
-          requestId,
+           VALUES ($1, $2, $3, 'PENDING_REVIEW', $4, $5, $6, $7)
+           ON CONFLICT (email_normalized) DO NOTHING
+           RETURNING id`,
+          candidateId,
           command.email.trim(),
           normalizedEmail,
           command.notes?.trim() ?? null,
@@ -143,16 +126,36 @@ export class BetaAccessRequestService {
           now,
           now
         );
+
+        if (inserted.length > 0 && inserted[0].id) {
+          requestId = inserted[0].id;
+          break;
+        }
+
+        // Step 2: Conflict occurred; separate statement obtains fresh snapshot under READ COMMITTED
+        const existing = await tx.query<{ id: string }>(
+          `SELECT id FROM beta_access_request WHERE email_normalized = $1`,
+          normalizedEmail
+        );
+
+        if (existing.length > 0 && existing[0].id) {
+          requestId = existing[0].id;
+          break;
+        }
       }
 
-      // Record audit without exposing secrets
+      if (!requestId) {
+        throw new Error('Failed to deterministically resolve beta access request identifier');
+      }
+
+      // Record audit without exposing secrets or email addresses (target_identifier is requestId UUID)
       await tx.execute(
         `INSERT INTO admin_audit_event (id, procedure, actor_id, target_identifier, target_principal_id, result, details, timestamp)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
         randomUUID(),
         'BETA_ACCESS_REQUEST_SUBMITTED',
         'PUBLIC_USER',
-        normalizedEmail,
+        requestId,
         null,
         'REQUEST_RECEIVED',
         'Beta access request received for administrative review',
@@ -259,7 +262,7 @@ export class BetaAccessRequestService {
         randomUUID(),
         'BETA_ACCESS_REQUEST_DETAIL_VIEWED',
         query.actorContext.principalId,
-        request.emailNormalized,
+        request.id,
         null,
         'SUCCESS',
         `Admin inspected access request ${request.id}`,

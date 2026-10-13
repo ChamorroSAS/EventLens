@@ -94,6 +94,8 @@ export class MediaStatusFilterComponent {
     { id: 'PROCESSING_FAILED', label: 'Con fallos' },
     { id: 'QUARANTINED', label: 'En cuarentena' },
     { id: 'PENDING_REVIEW', label: 'Pendientes' },
+    { id: 'HIDDEN', label: 'Ocultos' },
+    { id: 'TRASHED', label: 'Papelera' },
   ];
 
   onSelect(filter: MediaStatusFilter): void {

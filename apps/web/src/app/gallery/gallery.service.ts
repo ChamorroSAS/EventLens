@@ -3,7 +3,9 @@ import type {
   GallerySnapshot,
   MediaViewGrant,
   FetchGalleryOptions,
-  RequestGrantOptions
+  RequestGrantOptions,
+  SubmitReportPayload,
+  SubmitReportResult
 } from './gallery.types.js';
 
 @Injectable({
@@ -93,5 +95,32 @@ export class GalleryService {
     }
 
     return (await res.json()) as MediaViewGrant;
+  }
+
+  /**
+   * Submits a report for a media item (EL-TK-113 / EL-TK-121).
+   * Note: Receipt does NOT auto-hide content (DEC-088).
+   */
+  public async submitReport(payload: SubmitReportPayload): Promise<SubmitReportResult> {
+    const res = await fetch(`/api/v1/gallery/reports`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      if (res.status === 429) {
+        throw new Error('RATE_LIMIT_EXCEEDED');
+      }
+      if (res.status === 400) {
+        throw new Error('INVALID_ARGUMENT');
+      }
+      throw new Error('COMMUNICATION_ERROR');
+    }
+
+    return (await res.json()) as SubmitReportResult;
   }
 }

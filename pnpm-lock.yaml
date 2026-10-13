@@ -13,6 +13,12 @@ importers:
       '@eventlens/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@eventlens/event-management':
+        specifier: workspace:*
+        version: link:../../packages/event-management
+      '@eventlens/identity':
+        specifier: workspace:*
+        version: link:../../packages/identity
       '@nestjs/common':
         specifier: 12.1.2
         version: 12.1.2(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -233,6 +239,28 @@ importers:
       prisma:
         specifier: 7.10.0
         version: 7.10.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3)
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: 4.0.18
+        version: 4.0.18(@types/node@24.10.1)(jiti@2.7.0)(jsdom@28.1.0)(sass@1.97.3)
+
+  packages/export-management:
+    dependencies:
+      '@eventlens/database':
+        specifier: workspace:*
+        version: link:../database
+      '@eventlens/job-queue':
+        specifier: workspace:*
+        version: link:../job-queue
+    devDependencies:
+      '@types/node':
+        specifier: 24.10.1
+        version: 24.10.1
+      fflate:
+        specifier: 0.8.3
+        version: 0.8.3
       typescript:
         specifier: 5.9.3
         version: 5.9.3
@@ -2919,6 +2947,9 @@ packages:
     peerDependenciesMeta:
       picomatch:
         optional: true
+
+  fflate@0.8.3:
+    resolution: {integrity: sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA==}
 
   file-type@22.1.1:
     resolution: {integrity: sha512-sEB0oStmeLGtpmSAD88RDNuLsvhv4iC3u0lE25CUvfCULvj49xoQ3l3K525Vn+ZzsZ6DOLajQCV6RmhwwhqiJg==}
@@ -6702,6 +6733,8 @@ snapshots:
   fdir@6.5.0(picomatch@4.0.7):
     optionalDependencies:
       picomatch: 4.0.7
+
+  fflate@0.8.3: {}
 
   file-type@22.1.1:
     dependencies:

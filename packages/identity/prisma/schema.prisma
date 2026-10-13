@@ -150,14 +150,13 @@ model OrganizerSession {
 model BetaAccessRequest {
   id              String   @id @db.Uuid
   email           String
-  emailNormalized String   @map("email_normalized")
+  emailNormalized String   @unique @map("email_normalized")
   status          String   @default("PENDING_REVIEW")
   notes           String?
   ipHash          String?  @map("ip_hash")
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt       DateTime @default(now()) @map("updated_at") @db.Timestamptz
 
-  @@index([emailNormalized])
   @@index([status])
   @@map("beta_access_request")
 }

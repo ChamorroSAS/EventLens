@@ -2,7 +2,7 @@
 
 ## Status
 
-READY
+DONE
 
 **RECOMMENDED:** frontera, descomposición y prioridad propuestas por product_planner. **CONFIRMED:** reglas atribuidas al discovery en Q-012, Q-013, Q-019; DEC-016, DEC-023, DEC-029, DEC-031. READY expresa DoR del resultado, no finalización de predecesoras; NOT_READY requiere cerrar preguntas locales antes de tickets.
 
@@ -124,6 +124,7 @@ P0 — Capacidad necesaria para el MVP/BETA operativo.
 
 ## Change history
 
+- 2026-10-12: Cierre total y definitivo de la épica EL-EP-009. Los 11 tickets (EL-TK-113..123) completados y certificados en DONE. Implementación backend (@eventlens/media-inspection) y frontend (@eventlens/web), suites unitarias, de integración y E2E contra PostgreSQL 16 pasando al 100% sin regresiones.
 - 2026-10-10: reconciliación documental de cabecera a READY_FOR_IMPLEMENTATION: YES (alcance propio). Ajuste de dependencias: EL-TK-113 consume contrato de media visible de EL-EP-007; EL-TK-116 depende de EL-TK-113 y EL-TK-115; EL-TK-119 no bloquea EL-TK-120; EL-TK-121 incorpora dependencia UI de EL-TK-099.
 - 2026-10-10: requirements_reviewer y revisión UI/UX aprueban el paso de EL-TK-113..123 de DRAFT a READY (REQUIREMENTS_READY: YES, READY_FOR_FRONTEND_PLANNING: YES, READY_FOR_IMPLEMENTATION: YES propio). Reutilización estricta del catálogo UI/UX (§5.26..27 y §12.11..15) sin nuevos componentes.
 - 2026-10-10: ticket_writer crea EL-TK-113..123 como DRAFT para reportes, retiro propio irreversible, intake sin sesión, clasificación/revisión admin, ocultamiento, resolución, UI pública/admin y validación integrada. Pendientes de requirements_reviewer; sin implementación.
