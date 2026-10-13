@@ -6,74 +6,18 @@ import {
   LocalSlots,
   PrismaTransactions,
   createPrismaClient,
-  type RecoveryAuthority
 } from '@eventlens/job-queue';
 import {
   ExportPreparationWorker,
   ExportRequestService,
   ExportResourcePolicy,
-  ExportStorageError,
-  type ExportObjectRef,
-  type ExportObjectStorage,
-  type ExportOriginalRef
+  ExportStorageError
 } from '../src/index.js';
+import { MemoryStorage, TestAuthority } from './support/memory-storage.js';
 
 const databaseUrl = process.env.DATABASE_URL;
 const describeIntegration = databaseUrl ? describe : describe.skip;
 const pause = () => new Promise((resolve) => setTimeout(resolve, 60));
-
-class TestAuthority implements RecoveryAuthority {
-  epoch = 'export-epoch-1';
-  async acquire() {
-    const epoch = this.epoch;
-    return { epoch, assertCurrent: () => {}, async release() {} };
-  }
-}
-
-class MemoryStorage implements ExportObjectStorage {
-  readonly originals = new Map<string, Buffer>();
-  readonly outputs = new Map<string, Buffer>();
-  readonly writes: string[] = [];
-  failWrite: (ref: ExportObjectRef, attemptWrites: number) => unknown = () => undefined;
-  onWritten: (ref: ExportObjectRef) => Promise<void> = async () => {};
-  missing = new Set<string>();
-  corrupt = new Set<string>();
-  temporaryReads = false;
-
-  openRead(ref: ExportOriginalRef): AsyncIterable<Uint8Array> {
-    const id = `${ref.namespace}/${ref.key}`;
-    const self = this;
-    return (async function* () {
-      if (self.temporaryReads) throw new ExportStorageError('TEMPORARY');
-      if (self.missing.has(id) || !self.originals.has(id)) throw new ExportStorageError('NOT_FOUND');
-      let data = self.originals.get(id)!;
-      if (self.corrupt.has(id)) { data = Buffer.from(data); data[0] = data[0]! ^ 0xff; }
-      for (let i = 0; i < data.length; i += 128) yield data.subarray(i, i + 128);
-    })();
-  }
-
-  async writeObject(ref: ExportObjectRef, bytes: AsyncIterable<Uint8Array>): Promise<void> {
-    const id = `${ref.namespace}/${ref.key}`;
-    this.writes.push(id);
-    const failure = this.failWrite(ref, this.writes.length);
-    const chunks: Buffer[] = [];
-    for await (const c of bytes) chunks.push(Buffer.from(c));
-    if (failure) throw failure;
-    this.outputs.set(id, Buffer.concat(chunks));
-    await this.onWritten(ref);
-  }
-
-  async deleteObject(ref: ExportObjectRef): Promise<void> {
-    this.outputs.delete(`${ref.namespace}/${ref.key}`);
-  }
-
-  partKeys(exportId: string) {
-    return [...this.outputs.keys()].filter((k) => k.includes(`exports/${exportId}/`) && k.endsWith('.zip')).sort();
-  }
-  manifestKeys(exportId: string) {
-    return [...this.outputs.keys()].filter((k) => k.includes(`exports/${exportId}/`) && k.endsWith('manifest.json'));
-  }
-}
 
 describeIntegration('Export preparation worker (PostgreSQL 16 — EL-TK-126)', () => {
   const client = createPrismaClient(databaseUrl!);
@@ -95,7 +39,7 @@ describeIntegration('Export preparation worker (PostgreSQL 16 — EL-TK-126)', (
     new ExportPreparationWorker(queue, txs, storage, {
       owner: 'export-worker-test', exportNamespace: 'exports-private', leaseMs: 5000, heartbeatMs: 1000,
       maxAttempts: 3, retryBackoffMs: 0, targetPartBytes: 3000, ...overrides
-    } as any, revalidator);
+    } as any, revalidator ? { revalidator } : {});
 
   async function insertMedia(status = 'PUBLISHED', content = randomBytes(1000), fileName?: string) {
     const id = randomUUID();
@@ -183,7 +127,7 @@ describeIntegration('Export preparation worker (PostgreSQL 16 — EL-TK-126)', (
     expect(outcome).toMatchObject({ exportId, result: 'PREPARED' });
 
     const row = await exportRow(exportId);
-    expect(row.status).toBe('PREPARING'); // availability belongs to EL-TK-127
+    expect(row.status).toBe('AVAILABLE'); // published atomically with job completion (EL-TK-127)
     expect(row.prepared_at).not.toBeNull();
     expect(await jobRow(exportId)).toMatchObject({ status: 'COMPLETED' });
 

@@ -47,6 +47,9 @@ export interface ExportAuditEvent {
     | 'EXPORT_REQUESTED'
     | 'EXPORT_PART_READY'
     | 'EXPORT_PREPARED'
+    | 'EXPORT_AVAILABLE'
+    | 'EXPORT_EXPIRED'
+    | 'EXPORT_CLEANED_UP'
     | 'EXPORT_PREPARATION_FAILED'
     | 'EXPORT_INVALIDATED';
   readonly eventId: string;
@@ -54,6 +57,7 @@ export interface ExportAuditEvent {
   readonly itemCount: number;
   readonly excludedCount: number;
   readonly partNumber?: number;
+  readonly partCount?: number;
   readonly bytes?: number;
   /** Stable machine code only; never file names, object keys or URLs. */
   readonly code?: string;

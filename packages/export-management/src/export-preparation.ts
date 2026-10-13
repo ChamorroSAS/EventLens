@@ -2,6 +2,13 @@ import { createHash, randomUUID } from 'node:crypto';
 import type { TransactionRunner } from '@eventlens/database';
 import { QueueError, type Execution, type JobQueuePostgres, type SqlTransaction } from '@eventlens/job-queue';
 import { EXPORT_QUEUE, parseExportResourceRef } from './export-job.js';
+import {
+  ExportAvailabilityError,
+  publishExportAvailability,
+  recordAvailabilityAudit,
+  type ExportAvailability,
+  type ExportLifecycleNotifier
+} from './export-availability.js';
 import type { ExportAuditSink } from './export-request.js';
 import { DEFAULT_TARGET_PART_BYTES, entryNameFor, planParts } from './planning.js';
 import type { ExportObjectRef, ExportObjectStorage } from './storage.js';
@@ -114,16 +121,31 @@ const pad = (n: number, width: number) => String(n).padStart(width, '0');
  * parts in the private exports namespace. Outputs are unique per attempt, parts are promoted by fenced checkpoints,
  * valid parts are reused on replay, and nothing is declared available here (EL-TK-127 owns availability).
  */
+export interface ExportPreparationDeps {
+  readonly revalidator?: ExportRevalidator;
+  readonly auditSink?: ExportAuditSink;
+  /** Notice contract towards EL-EP-013; runs in the same transaction that publishes availability. */
+  readonly notifier?: ExportLifecycleNotifier;
+  readonly clock?: () => Date;
+}
+
 export class ExportPreparationWorker {
+  private readonly revalidator: ExportRevalidator;
+  private readonly auditSink?: ExportAuditSink;
+  private readonly notifier?: ExportLifecycleNotifier;
+  private readonly clock: () => Date;
+
   constructor(
     private readonly queue: PreparationQueue,
     private readonly runner: TransactionRunner,
     private readonly storage: ExportObjectStorage,
     private readonly config: ExportPreparationConfig,
-    private readonly revalidator: ExportRevalidator = new DefaultExportRevalidator(),
-    private readonly auditSink?: ExportAuditSink,
-    private readonly clock: () => Date = () => new Date()
+    deps: ExportPreparationDeps = {}
   ) {
+    this.revalidator = deps.revalidator ?? new DefaultExportRevalidator();
+    this.auditSink = deps.auditSink;
+    this.notifier = deps.notifier;
+    this.clock = deps.clock ?? (() => new Date());
     const { leaseMs, heartbeatMs, maxAttempts, retryBackoffMs, exportNamespace, owner, targetPartBytes } = config;
     if (!owner || !exportNamespace) throw new Error('INVALID_CONFIG');
     if (!Number.isSafeInteger(leaseMs) || leaseMs <= 0 || !Number.isSafeInteger(heartbeatMs) || heartbeatMs <= 0 || heartbeatMs >= leaseMs) {
@@ -329,6 +351,7 @@ export class ExportPreparationWorker {
     await this.storage.writeObject(manifestRef, (async function* () { yield manifest; })(), abort.signal);
     const manifestSha = createHash('sha256').update(manifest).digest('hex');
 
+    let availability: ExportAvailability | undefined;
     await this.queue.complete(job, `${job.token}:complete`, { parts: parts.length }, async (tx) => {
       // Re-validate immediately before promotion: permissions may have changed while parts were written.
       const verdict = await this.revalidator.revalidate(tx, target);
@@ -345,9 +368,13 @@ export class ExportPreparationWorker {
          WHERE id = $1::uuid AND generation = $2::bigint AND status = 'PREPARING'`,
         request.id, generation.toString(), manifestRef.namespace, manifestRef.key, manifestSha, String(manifest.length)
       );
+      // EL-TK-127: availability (48 h) is published atomically with job completion and only if every part is consistent.
+      availability = await publishExportAvailability(tx, request.id);
+      if (availability.publishedNow && this.notifier) await this.notifier.exportAvailable(tx, availability);
     });
     context.manifestCommitted = true;
     await this.audit(request, 'EXPORT_PREPARED', { bytes: parts.reduce((sum, p) => sum + Number(p.size_bytes), 0) });
+    if (availability) await recordAvailabilityAudit(this.auditSink, availability);
   }
 
   private async handleFailure(
@@ -368,6 +395,9 @@ export class ExportPreparationWorker {
       return this.terminate(job, exportId, { code: error.code, kind: 'INVALIDATED' }, context);
     }
     if (error instanceof ExportPreparationError) {
+      return this.terminate(job, exportId, { code: error.code, kind: 'FAILED' }, context);
+    }
+    if (error instanceof ExportAvailabilityError) {
       return this.terminate(job, exportId, { code: error.code, kind: 'FAILED' }, context);
     }
     if (error instanceof ZipSourceError) {

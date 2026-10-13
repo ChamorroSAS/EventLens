@@ -22,6 +22,9 @@ model ExportRequest {
   manifestKey        String?  @map("manifest_key")
   manifestSha256     String?  @map("manifest_sha256")
   manifestBytes      BigInt?  @map("manifest_bytes")
+  availableAt        DateTime? @map("available_at") @db.Timestamptz
+  expiresAt          DateTime? @map("expires_at") @db.Timestamptz
+  expiredAt          DateTime? @map("expired_at") @db.Timestamptz
   createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   items ExportRequestItem[]
