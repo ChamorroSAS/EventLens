@@ -133,7 +133,7 @@ describe('PublicHomePageComponent & AppHeaderComponent (EL-TK-213)', () => {
     const footer = element.querySelector('footer.el-footer');
     expect(footer).toBeTruthy();
     expect(footer?.textContent).toContain('Los recuerdos de cada celebración, reunidos en un solo lugar');
-    expect(footer?.textContent).toContain('2026 EventLens. Todos los derechos reservados.');
+    expect(footer?.textContent).toContain('Phoeve · Beta privada');
   });
 
   it('cabecera anónima: muestra enlaces públicos, Iniciar sesión y Solicitar Beta, ocultando acciones privadas', () => {
