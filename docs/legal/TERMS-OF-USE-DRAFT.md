@@ -66,6 +66,14 @@ El organizador podrá solicitar la revisión de una suspensión de su evento med
 
 **Implementación propuesta:** reutilizar el procedimiento manual de privacidad/soporte y las capacidades administrativas de EL-EP-012, notificaciones de EL-EP-013, lifecycle de EL-EP-003 y auditoría existente. No crear un módulo de apelaciones, permisos administrativos nuevos ni un canal de seguimiento público por esta decisión. **PENDING:** verificar rutas/roles reales, condiciones de levantamiento, evidencia mínima, tiempos aplicables y revisión jurídica antes de publicar.
 
+## 8.4. Suspensión de cuenta vs. eliminación definitiva — decisión funcional confirmada (2026-10-12)
+
+La **suspensión de una cuenta de organizador por incumplimientos graves o reiterados** es una medida de restricción temporal o administrativa, distinta del **borrado definitivo de cuenta, eventos y fotografías**. El caso deberá ser evaluado por administración autorizada con motivo documentado, proporcionalidad, trazabilidad, comunicación cuando proceda y posibilidad de solicitar revisión mediante canales existentes. **Esta decisión no otorga nuevas facultades administrativas ni define automáticamente que las cuentas ya soporten un estado o comando de suspensión específico**: verificar contrato de identidad/EL-EP-001 y EL-EP-012 antes de concretar mecanismo; si requiere modificar permisos o estados aceptados, tramitar análisis de impacto y aprobación previa.
+
+La eliminación definitiva **no es sanción automática** por incumplimiento ni consecuencia inherente de una suspensión. Solo puede ejecutarse por causas y actores autorizados siguiendo EL-EP-015 y DEC-043/044/091/092/097–099 (confirmaciones, ventanas pertinentes, anclas y máximos de purga), con protección de derechos de terceros y análisis de hold legal/de seguridad excepcional. La existencia de una investigación ordinaria no habilita conservar fotografías por tiempo indefinido.
+
+**PENDING LEGAL Y TÉCNICO:** definir supuestos de incumplimiento y procedimiento sancionatorio proporcional, duración/revisión de restricciones, verificación de capacidad real de suspensión de cuenta, respuesta al organizador y obligaciones legales de eliminación o conservación. Mantener `EL-EP-017: NOT_READY`, `Q-029: DEFERRED` y políticas no publicables.
+
 ## 9. Relación con organizaciones y proveedores
 
 Un representante humano puede gestionar un evento de organización, pero los alcances de representación, instrucciones de tratamiento y rol responsable/encargado deben definirse caso a caso. Los proveedores técnicos, ubicaciones y contratos de tratamiento no se consideran finalizados por estos términos.
