@@ -1,0 +1,32 @@
+name: eventlens-local-administration
+services:
+  admin:
+    image: eventlens-local-administration:tools
+    build:
+      context: .
+      dockerfile: infra/validation/identity/Dockerfile
+      target: identity-tools
+    # Local operational tooling only. Root owns the private volume; no host capabilities.
+    user: "0:0"
+    init: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    environment:
+      EVENTLENS_DOCKER: "1"
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGUSER: ${POSTGRES_USER:-eventlens}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-eventlens-local-only}
+      PGDATABASE: ${EVENTLENS_ADMIN_DATABASE:?Choose the administrative target database explicitly}
+      EVENTLENS_ADMIN_LOCAL_FRESH_DATABASE: ${EVENTLENS_ADMIN_LOCAL_FRESH_DATABASE:-no}
+      EVENTLENS_BOOTSTRAP_SECRET_FILE: /operator/bootstrap-token
+      EVENTLENS_ADMIN_CREDENTIAL_FILE: /operator/initial-credential
+    volumes: [admin-operator:/operator]
+    networks: [development]
+    command: [node, scripts/admin.mjs, status]
+networks:
+  development:
+    external: true
+    name: eventlens-development_default
+volumes:
+  admin-operator:

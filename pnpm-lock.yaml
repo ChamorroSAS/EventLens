@@ -333,6 +333,9 @@ importers:
 
   packages/media-execution:
     dependencies:
+      '@eventlens/database':
+        specifier: workspace:*
+        version: link:../database
       '@eventlens/job-queue':
         specifier: workspace:*
         version: link:../job-queue

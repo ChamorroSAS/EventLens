@@ -1,3 +1,4 @@
+import { assertTestConnectionUrl, assertTestDatabase } from '@eventlens/database/testing';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
@@ -18,8 +19,7 @@ import { NeutralTelemetryCollector, TelemetryService } from '../src/telemetry-se
 
 const databaseUrl =
   process.env.TEST_DATABASE_URL ||
-  process.env.DATABASE_URL ||
-  'postgresql://eventlens:eventlens-local-only@127.0.0.1:15432/eventlens';
+  process.env.DATABASE_URL!;
 
 describe('PostgresRecoveryService (Real PostgreSQL 16 Integration Tests — EL-TK-172)', () => {
   let pool: Pool;
@@ -39,13 +39,15 @@ describe('PostgresRecoveryService (Real PostgreSQL 16 Integration Tests — EL-T
   };
 
   beforeAll(async () => {
+    assertTestConnectionUrl(databaseUrl);
     pool = new Pool({ connectionString: databaseUrl });
+    await assertTestDatabase({ query: async (sql, ...args) => (await pool.query(sql, args)).rows });
     const res = await pool.query('SELECT version()');
     expect(res.rows[0].version).toContain('PostgreSQL 16');
   });
 
   afterAll(async () => {
-    await pool.end();
+    await pool?.end();
   });
 
   beforeEach(() => {

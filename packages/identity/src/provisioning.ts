@@ -122,6 +122,40 @@ export class AdminProvisioningService {
    * Creates exactly one initial administrative principal and disables the bootstrap mechanism permanently.
    */
   async provisionInitialBootstrap(command: ProvisionInitialBootstrapCommand): Promise<AdminPrincipal> {
+    const normalizedIdentifier = await this.validateInitialBootstrapAuthorization(command);
+
+    return this.transactions.run(async (tx) => {
+      // Establish the singleton before locking: SELECT FOR UPDATE cannot lock a missing row.
+      // A conflicting insert waits for its owner; the subsequent read observes its committed state.
+      await tx.execute(
+        `INSERT INTO operational_bootstrap_state (id, is_consumed) VALUES ('SYSTEM_BOOTSTRAP', false) ON CONFLICT DO NOTHING`
+      );
+      const stateRows = await tx.query<BootstrapStateRow>(
+        `SELECT id, is_consumed FROM operational_bootstrap_state WHERE id = 'SYSTEM_BOOTSTRAP' FOR UPDATE`
+      );
+
+      if (!stateRows.length) {
+        throw new ProvisioningError('INVALID_ARGUMENT', 'Bootstrap state could not be established');
+      }
+      if (stateRows[0].is_consumed) {
+        await this.emitAudit(tx, {
+          id: randomUUID(),
+          procedure: 'INITIAL_BOOTSTRAP',
+          actorId: 'SYSTEM_BOOTSTRAP',
+          targetIdentifier: normalizedIdentifier,
+          result: 'REJECTED_BOOTSTRAP_CONSUMED',
+          details: 'Initial bootstrap mechanism was already consumed and is irreversibly disabled',
+          timestamp: new Date()
+        });
+        throw new ProvisioningError('BOOTSTRAP_ALREADY_CONSUMED', 'Initial operational bootstrap has already been consumed');
+      }
+
+      return this.createInitialPrincipal(tx, normalizedIdentifier);
+    });
+  }
+
+  /** Authorization-only preflight for an initial credential delivery channel; never provisions. */
+  async validateInitialBootstrapAuthorization(command: ProvisionInitialBootstrapCommand): Promise<string> {
     if (!command.identifier || typeof command.identifier !== 'string' || command.identifier.trim().length === 0) {
       throw new ProvisioningError('INVALID_ARGUMENT', 'Administrative identifier is required');
     }
@@ -146,31 +180,10 @@ export class AdminProvisioningService {
       });
       throw new ProvisioningError('UNAUTHORIZED_PROVISIONER', 'Invalid operational bootstrap token');
     }
+    return normalizedIdentifier;
+  }
 
-    return this.transactions.run(async (tx) => {
-      // Lock bootstrap state row to prevent concurrent race conditions
-      const stateRows = await tx.query<BootstrapStateRow>(
-        `SELECT id, is_consumed FROM operational_bootstrap_state WHERE id = 'SYSTEM_BOOTSTRAP' FOR UPDATE`
-      );
-
-      if (!stateRows.length) {
-        // Initialize state if not present (defensive)
-        await tx.execute(
-          `INSERT INTO operational_bootstrap_state (id, is_consumed) VALUES ('SYSTEM_BOOTSTRAP', false) ON CONFLICT DO NOTHING`
-        );
-      } else if (stateRows[0].is_consumed) {
-        await this.emitAudit(tx, {
-          id: randomUUID(),
-          procedure: 'INITIAL_BOOTSTRAP',
-          actorId: 'SYSTEM_BOOTSTRAP',
-          targetIdentifier: normalizedIdentifier,
-          result: 'REJECTED_BOOTSTRAP_CONSUMED',
-          details: 'Initial bootstrap mechanism was already consumed and is irreversibly disabled',
-          timestamp: new Date()
-        });
-        throw new ProvisioningError('BOOTSTRAP_ALREADY_CONSUMED', 'Initial operational bootstrap has already been consumed');
-      }
-
+  private async createInitialPrincipal(tx: SqlTransaction, normalizedIdentifier: string): Promise<AdminPrincipal> {
       // Check for duplicate principal
       const existing = await tx.query<PrincipalRow>(
         `SELECT id FROM admin_principal WHERE identifier = $1`,
@@ -224,7 +237,6 @@ export class AdminProvisioningService {
       });
 
       return toAdminPrincipal(createdRows[0]);
-    });
   }
 
   /**

@@ -1,5 +1,7 @@
 # Identity & Access: MOD-001
 
+Operación local: [bootstrap, estado, custodia y recuperación](../../docs/administrative-operations.md). CR-005 añade `AdminBootstrapService`, que une provisión y credencial en una transacción SQL; no reabre bootstrap ni autoriza recuperación excepcional. Las integraciones requieren el runner aislado; una DATABASE_URL arbitraria no autoriza destructivos.
+
 `@eventlens/identity` implementa la frontera de MOD-001 que gobierna la provisión controlada de principales administrativos y la autenticación administrativa conforme a `ARCH-013`, `AQR-003` y los criterios ratificados de `TB-03`.
 
 ## Capabilities

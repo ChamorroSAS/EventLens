@@ -1,5 +1,7 @@
 # EventLens — operación, retención y recuperación
 
+Procedimientos locales de bootstrap administrativo, diagnóstico de credenciales y aislamiento de pruebas: [runbook operativo](../../docs/administrative-operations.md), correctivo [CR-005](../product/changes/CR-005.md). La recuperación excepcional sin credenciales administrativas vigentes sigue BLOCKED; estos comandos no sustituyen RecoveryAuthority ni reabren un bootstrap consumido.
+
 **CONFIRMED:** objetivos/ventanas de DEC-022/023/034/043..045/059/061/062; precisiones vigentes de cancelación/anclas/calendario en DEC-091/092/097..099. **RECOMMENDED:** mecanismos y validaciones aquí; no se resuelven políticas adicionales mediante procedimientos técnicos. Diseño de objetos/jobs en [media-and-jobs-architecture.md](media-and-jobs-architecture.md).
 
 ## Base de datos, PITR y reconstrucción

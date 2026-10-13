@@ -79,6 +79,12 @@ pnpm db:restore -- .local/backups/<archivo>.dump eventlens_restore_<nombre>
 
 La restauración crea una base aislada nueva y falla si el nombre ya existe. La copia cubre PostgreSQL; no incluye objetos MinIO. Este procedimiento local no configura copias fuera del host, PITR ni acredita recuperación de Beta/producción.
 
+## Administración local y seguridad de pruebas
+
+El [runbook administrativo](docs/administrative-operations.md) explica `pnpm admin:bootstrap`, `admin:status`, la custodia de credenciales y la resolución conservadora del incidente local. `admin:recover` permanece bloqueado hasta contar con un autorizador operacional externo aceptado. El bootstrap consumido nunca se reinicia.
+
+`pnpm test:integration` y `pnpm test:identity:integration` usan `compose.test.yaml`, con PostgreSQL efímero separado de desarrollo y una política de pertenencia al runner validada contra la conexión efectiva. `pnpm test:identity:validation` produce evidencia de guardas, CLI y suites en `infra/validation/identity/evidence/bootstrap-isolation`. No ejecutar pruebas destructivas con la URL de desarrollo.
+
 ## Convenciones mínimas
 
 - Usa nombres de carpetas y módulos que describan su responsabilidad.
