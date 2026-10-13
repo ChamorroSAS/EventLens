@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "status": "CANDIDATES_ONLY_NOT_APPROVED_FOR_IMPLEMENTATION",
+  "status": "IMPLEMENTATION_AUTHORIZED_VISUAL_APPROVAL_PENDING",
   "registeredOn": "2026-10-13",
   "sourceOfTruth": "docs/branding/assets/phoeve",
-  "authority": "Explicit user instruction: only these four repository files are graphic source candidates for planning; preserve original names.",
+  "authority": "Las cuatro fuentes del repositorio se seleccionaron para planificar; el usuario autorizó posteriormente implementar el rebranding público Phoeve en rama de revisión el 2026-10-13.",
   "supersedes": "Previous external graphic references and Downloads versions for planning only.",
   "provenance": {
     "registration": "Read directly from repository working tree at the paths listed below; no import, conversion or image modification was performed.",
@@ -13,8 +13,8 @@
     "originalFileNamesPreserved": true
   },
   "restrictions": {
-    "implementationAuthorized": false,
-    "modifyVectorizeRecolorOrReplace": "Requires subsequent user approval",
+    "implementationAuthorized": true,
+    "modifyVectorizeRecolorOrReplace": "NOT_AUTHORIZED: sólo copias bit-a-bit y sustitución de referencias UI; redibujos y masters SVG requieren aprobación separada.",
     "historicalEventLensAssets": "Preserved",
     "technicalIdentifiers": "Preserved"
   },
