@@ -120,6 +120,16 @@ Para materiales comerciales de la Beta se permiten, sujeto a sus propios derecho
 
 **Trazabilidad:** DEC-015 preservada; EL-EP-017/Q-029 sin cerrar, política DRAFT/NO PUBLICAR; sin implementación promocional ni cambio DEC/TC/ARCH.
 
+## 8.10. Versiones y comunicación de cambios — decisión funcional confirmada (2026-10-12)
+
+Se distinguirán **correcciones menores** (ortografía, claridad o forma sin cambio de derechos, finalidades, permisos u obligaciones) de **cambios sustanciales** que modifiquen derechos, condiciones de uso, responsabilidades, permisos o finalidades del tratamiento. Phoeve publicará un historial/versionado verificable de los textos aplicables y conservará la evidencia mínima pertinente.
+
+Ante cambios sustanciales, **notificará a los usuarios afectados** por los canales habilitados y **solicitará una nueva aceptación o autorización cuando resulte exigible**, respetando DEC-041 (aceptación versionada y trazable) y sin suponer que aceptar Términos equivale a consentir nuevas finalidades de tratamiento. Para invitados anónimos sin canal persistente, diseñar el aviso al siguiente acceso cuando sea apropiado, sin inventar identificadores permanentes ni atribuir identidad a una sesión.
+
+No se impone reaceptación automática ante toda corrección menor. La clasificación precisa de modificaciones, forma de notificar, fecha de entrada en vigor, evidencias y casos de consentimiento independiente deberán pasar revisión jurídica y contraste con UX/API existentes. **No activar** nuevas finalidades antes de cumplir requisitos legales y técnicos.
+
+`TERMS_CHANGE_POLICY: MINOR_VS_MATERIAL_CONFIRMED`; `DEC-041: PRESERVED`; `LEGAL_REVIEW: PENDING`; `EL-EP-017: NOT_READY`; `Q-029: DEFERRED`.
+
 ## 9. Relación con organizaciones y proveedores
 
 Un representante humano puede gestionar un evento de organización, pero los alcances de representación, instrucciones de tratamiento y rol responsable/encargado deben definirse caso a caso. Los proveedores técnicos, ubicaciones y contratos de tratamiento no se consideran finalizados por estos términos.
