@@ -25,7 +25,7 @@ import { LegalFooterComponent } from './legal-footer.component';
               Tu evento termina. Sus recuerdos continúan.
             </h1>
             <p class="el-hero__subtitle">
-              Cada invitado vive momentos diferentes. Con EventLens, puedes reunir sus fotos y videos en un espacio dedicado a los recuerdos de tu celebración, de manera sencilla y sin que tus invitados tengan que crear una cuenta.
+              Cada invitado vive momentos diferentes. Con Phoeve, puedes reunir sus fotos y videos en un espacio dedicado a los recuerdos de tu celebración, de manera sencilla y sin que tus invitados tengan que crear una cuenta.
             </p>
             <div class="el-hero__cta-wrapper">
               <a
@@ -176,7 +176,7 @@ import { LegalFooterComponent } from './legal-footer.component';
 
             <dl class="el-faq-list">
               <div class="el-faq-item">
-                <dt class="el-faq-item__question">¿Qué es EventLens?</dt>
+                <dt class="el-faq-item__question">¿Qué es Phoeve?</dt>
                 <dd class="el-faq-item__answer">
                   Es una plataforma para reunir las fotografías y videos que comparten los invitados de un evento.
                 </dd>
