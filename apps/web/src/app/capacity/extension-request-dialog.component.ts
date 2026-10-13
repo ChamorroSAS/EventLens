@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import type {
   CreateExtensionRequestCommandModel,
   ExtensionRequestTypeModel,
@@ -8,7 +7,6 @@ import type {
 @Component({
   selector: 'app-extension-request-dialog',
   standalone: true,
-  imports: [CommonModule],
   template: `
     <div
       class="dialog-overlay"

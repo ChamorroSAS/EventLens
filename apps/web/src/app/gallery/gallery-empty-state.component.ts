@@ -1,10 +1,8 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'el-gallery-empty-state',
   standalone: true,
-  imports: [CommonModule],
   template: `
     <div class="empty-state-card" role="status" aria-live="polite">
       <div class="empty-icon" aria-hidden="true">

@@ -20,40 +20,51 @@ import { GuestContributionView } from './guest.types.js';
         </button>
       </header>
 
-      <div *ngIf="contributions.length === 0" class="empty-state" role="status">
-        <p class="empty-text">Aún no has compartido recuerdos en este evento.</p>
-      </div>
+      @if (contributions.length === 0) {
+        <div class="empty-state" role="status">
+          <p class="empty-text">Aún no has compartido recuerdos en este evento.</p>
+        </div>
+      }
 
-      <ul *ngIf="contributions.length > 0" class="contributions-list" role="list">
-        <li
-          *ngFor="let item of contributions; trackBy: trackByAttemptId"
-          class="contribution-item"
-        >
-          <div class="item-icon" aria-hidden="true">
-            <span *ngIf="item.mediaType === 'PHOTO'">📷</span>
-            <span *ngIf="item.mediaType === 'VIDEO'">🎬</span>
-          </div>
+      @if (contributions.length > 0) {
+        <ul class="contributions-list" role="list">
+          @for (item of contributions; track item.attemptId) {
+            <li class="contribution-item">
+              <div class="item-icon" aria-hidden="true">
+                @if (item.mediaType === 'PHOTO') {
+                  <span>📷</span>
+                }
+                @if (item.mediaType === 'VIDEO') {
+                  <span>🎬</span>
+                }
+              </div>
 
-          <div class="item-info">
-            <div class="item-title-row">
-              <span class="media-type-badge">{{ item.mediaType === 'PHOTO' ? 'Foto' : 'Video' }}</span>
-              <span class="status-chip" [ngClass]="getStatusClass(item.status)">
-                {{ getStatusLabel(item.status) }}
-              </span>
-            </div>
+              <div class="item-info">
+                <div class="item-title-row">
+                  <span class="media-type-badge">{{ item.mediaType === 'PHOTO' ? 'Foto' : 'Video' }}</span>
+                  <span class="status-chip" [ngClass]="getStatusClass(item.status)">
+                    {{ getStatusLabel(item.status) }}
+                  </span>
+                </div>
 
-            <div class="item-meta">
-              <span>{{ formatSize(item.actualSize || item.declaredSize) }}</span>
-              <span *ngIf="item.durationSeconds">• {{ item.durationSeconds }}s</span>
-              <span>• {{ item.createdAt | date:'short' }}</span>
-            </div>
+                <div class="item-meta">
+                  <span>{{ formatSize(item.actualSize || item.declaredSize) }}</span>
+                  @if (item.durationSeconds) {
+                    <span>• {{ item.durationSeconds }}s</span>
+                  }
+                  <span>• {{ item.createdAt | date:'short' }}</span>
+                </div>
 
-            <div *ngIf="item.rejectionReason" class="rejection-note" role="note">
-              Motivo: {{ item.rejectionReason }}
-            </div>
-          </div>
-        </li>
-      </ul>
+                @if (item.rejectionReason) {
+                  <div class="rejection-note" role="note">
+                    Motivo: {{ item.rejectionReason }}
+                  </div>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      }
     </section>
   `,
   styles: [`
@@ -176,10 +187,6 @@ import { GuestContributionView } from './guest.types.js';
 export class MyContributionsListComponent {
   @Input() contributions: GuestContributionView[] = [];
   @Output() requestRemoval = new EventEmitter<void>();
-
-  trackByAttemptId(index: number, item: GuestContributionView): string {
-    return item.attemptId;
-  }
 
   formatSize(bytes: number): string {
     if (bytes >= 1024 * 1024) {

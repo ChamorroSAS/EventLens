@@ -29,75 +29,89 @@ import { MyContributionsListComponent } from './my-contributions-list.component.
           <span class="status-badge" [ngClass]="'status-' + (accessView?.status?.toLowerCase() || 'draft')">
             {{ getStatusLabel(accessView?.status) }}
           </span>
-          <span *ngIf="accessView?.timezone" class="timezone-chip">{{ accessView?.timezone }}</span>
+          @if (accessView?.timezone) {
+            <span class="timezone-chip">{{ accessView?.timezone }}</span>
+          }
         </div>
         <h1 id="event-title" class="event-title">{{ accessView?.name || 'Cargando evento...' }}</h1>
-        <p *ngIf="accessView?.restrictionReason" class="restriction-banner" role="alert">
-          {{ accessView?.restrictionReason }}
-        </p>
+        @if (accessView?.restrictionReason) {
+          <p class="restriction-banner" role="alert">
+            {{ accessView?.restrictionReason }}
+          </p>
+        }
       </header>
 
       <!-- Escenario 1: PIN requerido cuando aún no hay sesión -->
-      <section *ngIf="needsPinVerification" class="step-section">
-        <el-pin-access-form
-          [submitting]="isSubmittingPin()"
-          [errorMessage]="pinErrorMessage()"
-          (pinSubmit)="onPinSubmitted($event)"
-        ></el-pin-access-form>
-      </section>
+      @if (needsPinVerification) {
+        <section class="step-section">
+          <el-pin-access-form
+            [submitting]="isSubmittingPin()"
+            [errorMessage]="pinErrorMessage()"
+            (pinSubmit)="onPinSubmitted($event)"
+          ></el-pin-access-form>
+        </section>
+      }
 
       <!-- Escenario 2: Consentimiento requerido antes de cargar -->
-      <el-consent-sheet
-        *ngIf="showConsentSheet()"
-        [documentVersion]="'v1.0'"
-        [submitting]="isSubmittingConsent()"
-        (consentAccepted)="onConsentAccepted($event)"
-        (consentCancelled)="onConsentCancelled()"
-      ></el-consent-sheet>
+      @if (showConsentSheet()) {
+        <el-consent-sheet
+          [documentVersion]="'v1.0'"
+          [submitting]="isSubmittingConsent()"
+          (consentAccepted)="onConsentAccepted($event)"
+          (consentCancelled)="onConsentCancelled()"
+        ></el-consent-sheet>
+      }
 
       <!-- Escenario 2: Identidad requerida tras consentimiento -->
-      <section *ngIf="showIdentityForm()" class="step-section">
-        <el-guest-identity-form
-          [submitting]="isSubmittingIdentity()"
-          [errorMessage]="identityErrorMessage()"
-          (nicknameSaved)="onNicknameSaved($event)"
-        ></el-guest-identity-form>
-      </section>
+      @if (showIdentityForm()) {
+        <section class="step-section">
+          <el-guest-identity-form
+            [submitting]="isSubmittingIdentity()"
+            [errorMessage]="identityErrorMessage()"
+            (nicknameSaved)="onNicknameSaved($event)"
+          ></el-guest-identity-form>
+        </section>
+      }
 
       <!-- Escenario 3: Sesión activa y Mis aportes -->
-      <section *ngIf="hasActiveSession && !showIdentityForm()" class="active-session-content">
-        <div class="guest-bar">
-          <span class="welcome-text">
-            Participando como <strong>{{ currentSession?.contributorNickname || 'Invitado' }}</strong>
-          </span>
-          <button
-            *ngIf="canUpload"
-            type="button"
-            class="upload-trigger-btn"
-            (click)="startUploadFlow()"
-            aria-label="Cargar fotos o videos"
-          >
-            Subir recuerdos
-          </button>
-        </div>
+      @if (hasActiveSession && !showIdentityForm()) {
+        <section class="active-session-content">
+          <div class="guest-bar">
+            <span class="welcome-text">
+              Participando como <strong>{{ currentSession?.contributorNickname || 'Invitado' }}</strong>
+            </span>
+            @if (canUpload) {
+              <button
+                type="button"
+                class="upload-trigger-btn"
+                (click)="startUploadFlow()"
+                aria-label="Cargar fotos o videos"
+              >
+                Subir recuerdos
+              </button>
+            }
+          </div>
 
-        <el-my-contributions-list
-          [contributions]="contributions"
-          (requestRemoval)="onRequestRemoval()"
-        ></el-my-contributions-list>
-      </section>
+          <el-my-contributions-list
+            [contributions]="contributions"
+            (requestRemoval)="onRequestRemoval()"
+          ></el-my-contributions-list>
+        </section>
+      }
 
       <!-- Escenario 4: Modal o aviso de derivación a retiro sin sesión -->
-      <div *ngIf="removalIntakeView()" class="removal-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="removal-title">
-        <div class="removal-card">
-          <h3 id="removal-title" class="removal-title">Solicitud de retiro de recuerdo</h3>
-          <p class="removal-disclaimer">{{ removalIntakeView()?.disclaimer }}</p>
-          <div class="removal-actions">
-            <button type="button" class="close-removal-btn" (click)="closeRemovalModal()">Cerrar</button>
-            <a [href]="removalIntakeView()?.intakePath" class="intake-link-btn">Ir al formulario de solicitud</a>
+      @if (removalIntakeView()) {
+        <div class="removal-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="removal-title">
+          <div class="removal-card">
+            <h3 id="removal-title" class="removal-title">Solicitud de retiro de recuerdo</h3>
+            <p class="removal-disclaimer">{{ removalIntakeView()?.disclaimer }}</p>
+            <div class="removal-actions">
+              <button type="button" class="close-removal-btn" (click)="closeRemovalModal()">Cerrar</button>
+              <a [href]="removalIntakeView()?.intakePath" class="intake-link-btn">Ir al formulario de solicitud</a>
+            </div>
           </div>
         </div>
-      </div>
+      }
     </main>
   `,
   styles: [`

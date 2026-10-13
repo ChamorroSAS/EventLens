@@ -7,27 +7,32 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   template: `
     <div class="image-player-container">
-      <div *ngIf="isLoading()" class="player-loading" aria-live="polite">
-        <div class="spinner" aria-hidden="true"></div>
-        <span class="sr-only">Cargando imagen...</span>
-      </div>
+      @if (isLoading()) {
+        <div class="player-loading" aria-live="polite">
+          <div class="spinner" aria-hidden="true"></div>
+          <span class="sr-only">Cargando imagen...</span>
+        </div>
+      }
 
-      <div *ngIf="hasError()" class="player-error" role="alert">
-        <p class="error-msg">No se pudo cargar la imagen.</p>
-        <button type="button" class="retry-btn" (click)="onRetry()">
-          Reintentar
-        </button>
-      </div>
+      @if (hasError()) {
+        <div class="player-error" role="alert">
+          <p class="error-msg">No se pudo cargar la imagen.</p>
+          <button type="button" class="retry-btn" (click)="onRetry()">
+            Reintentar
+          </button>
+        </div>
+      }
 
-      <img
-        *ngIf="!hasError()"
-        [src]="src"
-        [alt]="alt"
-        class="player-img"
-        [ngClass]="{ 'img-visible': !isLoading() }"
-        (load)="onImageLoaded()"
-        (error)="onImageError()"
-      />
+      @if (!hasError()) {
+        <img
+          [src]="src"
+          [alt]="alt"
+          class="player-img"
+          [ngClass]="{ 'img-visible': !isLoading() }"
+          (load)="onImageLoaded()"
+          (error)="onImageError()"
+        />
+      }
     </div>
   `,
   styles: [`

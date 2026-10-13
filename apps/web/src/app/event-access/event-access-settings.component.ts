@@ -53,31 +53,37 @@ import { EventAccessSettings, UpdatePinCommandPayload } from './access.types.js'
           </label>
         </div>
 
-        <div *ngIf="selectedMode === 'ENABLED'" class="pin-input-group">
-          <label for="newPinField" class="field-label">Nuevo PIN (6 dígitos numéricos)</label>
-          <input
-            id="newPinField"
-            name="newPin"
-            type="password"
-            inputmode="numeric"
-            pattern="[0-9]*"
-            maxlength="6"
-            [value]="newPinValue"
-            (input)="onPinInput($event)"
-            [disabled]="submitting"
-            placeholder="••••••"
-            class="pin-field"
-            [attr.aria-describedby]="errorMessage ? 'pin-error' : null"
-          />
-        </div>
+        @if (selectedMode === 'ENABLED') {
+          <div class="pin-input-group">
+            <label for="newPinField" class="field-label">Nuevo PIN (6 dígitos numéricos)</label>
+            <input
+              id="newPinField"
+              name="newPin"
+              type="password"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              maxlength="6"
+              [value]="newPinValue"
+              (input)="onPinInput($event)"
+              [disabled]="submitting"
+              placeholder="••••••"
+              class="pin-field"
+              [attr.aria-describedby]="errorMessage ? 'pin-error' : null"
+            />
+          </div>
+        }
 
-        <div *ngIf="errorMessage" id="pin-error" class="error-banner" role="alert" aria-live="polite">
-          {{ errorMessage }}
-        </div>
+        @if (errorMessage) {
+          <div id="pin-error" class="error-banner" role="alert" aria-live="polite">
+            {{ errorMessage }}
+          </div>
+        }
 
-        <div *ngIf="successMessage" class="success-banner" role="status" aria-live="polite">
-          {{ successMessage }}
-        </div>
+        @if (successMessage) {
+          <div class="success-banner" role="status" aria-live="polite">
+            {{ successMessage }}
+          </div>
+        }
 
         <button
           type="button"
@@ -85,8 +91,12 @@ import { EventAccessSettings, UpdatePinCommandPayload } from './access.types.js'
           (click)="applyChanges()"
           [disabled]="isApplyDisabled"
         >
-          <span *ngIf="!submitting">Guardar configuración de PIN</span>
-          <span *ngIf="submitting" aria-live="assertive">Aplicando cambios...</span>
+          @if (!submitting) {
+            <span>Guardar configuración de PIN</span>
+          }
+          @if (submitting) {
+            <span aria-live="assertive">Aplicando cambios...</span>
+          }
         </button>
       </div>
     </section>

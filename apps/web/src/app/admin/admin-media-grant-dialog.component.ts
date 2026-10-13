@@ -9,13 +9,11 @@ import {
   AfterViewInit,
   OnDestroy,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import type { AdminMediaPurpose, AdministrativeSupportMediaGrant } from './admin.types.js';
 
 @Component({
   selector: 'eventlens-admin-media-grant-dialog',
   standalone: true,
-  imports: [CommonModule],
   template: `
     <div
       class="dialog-backdrop"

@@ -7,7 +7,6 @@ import {
   inject,
   OnInit,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { AdminApiService } from './admin-api.service.js';
 import { AdminInterventionDialogComponent } from './admin-intervention-dialog.component.js';
 import { AdminMediaGrantDialogComponent } from './admin-media-grant-dialog.component.js';
@@ -31,7 +30,6 @@ import type {
   selector: 'eventlens-admin-event-detail',
   standalone: true,
   imports: [
-    CommonModule,
     AdminInterventionDialogComponent,
     AdminMediaGrantDialogComponent,
     JobsViewerComponent,

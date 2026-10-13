@@ -1,5 +1,4 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import type { GalleryMediaItem, MediaViewGrant } from './gallery.types.js';
 import { ImagePlayerComponent } from './image-player.component.js';
 import { VideoPlayerComponent } from './video-player.component.js';
@@ -7,37 +6,43 @@ import { VideoPlayerComponent } from './video-player.component.js';
 @Component({
   selector: 'el-media-viewer',
   standalone: true,
-  imports: [CommonModule, ImagePlayerComponent, VideoPlayerComponent],
+  imports: [ImagePlayerComponent, VideoPlayerComponent],
   template: `
     <div class="media-viewer-root">
-      <div *ngIf="isLoading" class="loading-state" aria-live="polite">
-        <div class="spinner" aria-hidden="true"></div>
-        <p class="loading-text">Cargando contenido...</p>
-      </div>
+      @if (isLoading) {
+        <div class="loading-state" aria-live="polite">
+          <div class="spinner" aria-hidden="true"></div>
+          <p class="loading-text">Cargando contenido...</p>
+        </div>
+      }
 
-      <div *ngIf="errorMessage && !isLoading" class="error-state" role="alert">
-        <p class="error-title">{{ errorMessage }}</p>
-        <button type="button" class="retry-action-btn" (click)="retry.emit()">
-          Reintentar autorización
-        </button>
-      </div>
+      @if (errorMessage && !isLoading) {
+        <div class="error-state" role="alert">
+          <p class="error-title">{{ errorMessage }}</p>
+          <button type="button" class="retry-action-btn" (click)="retry.emit()">
+            Reintentar autorización
+          </button>
+        </div>
+      }
 
-      <ng-container *ngIf="!isLoading && !errorMessage && viewGrant">
-        <el-image-player
-          *ngIf="item.mediaType === 'PHOTO'"
-          [src]="viewGrant.downloadUrl"
-          [alt]="getAltText()"
-          (retry)="retry.emit()"
-        ></el-image-player>
+      @if (!isLoading && !errorMessage && viewGrant) {
+        @if (item.mediaType === 'PHOTO') {
+          <el-image-player
+            [src]="viewGrant.downloadUrl"
+            [alt]="getAltText()"
+            (retry)="retry.emit()"
+          ></el-image-player>
+        }
 
-        <el-video-player
-          *ngIf="item.mediaType === 'VIDEO'"
-          [src]="viewGrant.downloadUrl"
-          [poster]="item.thumbnailUrl"
-          [durationSeconds]="item.durationSeconds"
-          (retry)="retry.emit()"
-        ></el-video-player>
-      </ng-container>
+        @if (item.mediaType === 'VIDEO') {
+          <el-video-player
+            [src]="viewGrant.downloadUrl"
+            [poster]="item.thumbnailUrl"
+            [durationSeconds]="item.durationSeconds"
+            (retry)="retry.emit()"
+          ></el-video-player>
+        }
+      }
     </div>
   `,
   styles: [`

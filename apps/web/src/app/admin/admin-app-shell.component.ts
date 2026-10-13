@@ -1,5 +1,4 @@
 import { Component, signal, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { AdminEventSearchComponent } from './admin-event-search.component.js';
 import { AdminEventDetailComponent } from './admin-event-detail.component.js';
 import { JobsViewerComponent } from '../jobs/jobs-viewer.component.js';
@@ -11,7 +10,6 @@ export type AdminConsoleTab = 'search' | 'detail' | 'jobs' | 'audit';
   selector: 'eventlens-admin-app-shell',
   standalone: true,
   imports: [
-    CommonModule,
     AdminEventSearchComponent,
     AdminEventDetailComponent,
     JobsViewerComponent,
