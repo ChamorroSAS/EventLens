@@ -29,6 +29,8 @@
 
 **Auditoría de código del 2026-10-12:** [Informe TG-01..TG-08](EL-EP-017-TECHNICAL-GAP-REVIEW-2026-10-12.md). **Bloqueos técnicos detectados:** API sin endpoints de negocio en OpenAPI, aceptación guest frontend local/version fija, solicitud Beta con correo en auditoría, ausencia de supresión/retención comprobadas. **Condicionales:** guest selectivo tiene primitiva de dominio pero no intervención admin selectiva; status `SUSPENDED` para cuenta no demuestra comando de suspensión; avisos de suspensión existen como servicio de intents sin integración de producción probada. LEG-03/04/05/06/07/09 y apertura conservan estados PENDING/BLOCKED. Esta verificación no cambia DEC/TC/ARCH ni acredita pruebas E2E.
 
+**Diseño de contratos y permisos (2026-10-12):** [Contrato API](../contracts/EL-EP-017-API-INTEGRATION-DRAFT-2026-10-12.md), [suspensión/revocación](../contracts/EL-EP-017-SUSPENSION-REVOCATION-PERMISSIONS-DRAFT-2026-10-12.md) y [auditoría Beta](BETA-EMAIL-AUDIT-POLICY-DRAFT-2026-10-12.md) son **DRAFT / NOT_IMPLEMENTED**. Los nuevos endpoints HTTP no están expuestos en `contracts/openapi.json`; operaciones de cuenta e invitado selectivas NO autorizadas por inferencia. El saneamiento de email histórico y la conservación de `admin_audit_event` requieren verificación de integridad y revisión jurídica. **LEG-04/05/06 mantienen PENDING; BETA_FORM_PUBLIC_COLLECTION/PUBLIC_SERVICE_OPENING siguen BLOCKED.**
+
 ## Gates no intercambiables
 
 | Gate | Estado |
