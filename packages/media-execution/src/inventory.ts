@@ -1,5 +1,6 @@
 import {PrismaClient} from './generated/prisma/client.js';
 import {PrismaPg} from '@prisma/adapter-pg';
+import {assertTestConnectionUrl,assertTestDatabase} from '@eventlens/database/testing';
 import type {AttemptInventory,AttemptRecord} from './contracts.js';
 import {ExecutionError} from './contracts.js';
 /** Generated Prisma models are confined to this infrastructure adapter. */
@@ -16,4 +17,11 @@ export class PrismaAttemptInventory implements AttemptInventory {
  async get(id:string):Promise<AttemptRecord|null>{const row=await this.client.executionInventory.findUnique({where:{id}});return row?row.record as unknown as AttemptRecord:null;}
  async pending(limit:number,afterId?:string):Promise<AttemptRecord[]>{if(!Number.isSafeInteger(limit)||limit<=0)throw new ExecutionError('INVALID_CONFIG');const rows=await this.client.executionInventory.findMany({where:{status:{not:'QUIESCENT'},...(afterId?{id:{gt:afterId}}:{})},orderBy:{id:'asc'},take:limit});return rows.map(row=>row.record as unknown as AttemptRecord);}
 }
-export function createInventoryClient(connectionString:string):PrismaClient{return new PrismaClient({adapter:new PrismaPg({connectionString})});}
+export function createInventoryClient(connectionString:string):PrismaClient{
+ const testing=process.env.VITEST!==undefined||process.env.NODE_ENV==='test';
+ if(testing)assertTestConnectionUrl(connectionString);
+ const client=new PrismaClient({adapter:new PrismaPg({connectionString})});
+ if(!testing)return client;
+ const verify=()=>assertTestDatabase({query:<T extends object>(sql:string,...args:unknown[])=>client.$queryRawUnsafe<T[]>(sql,...args)});
+ return client.$extends({query:{$allOperations:async({args,query})=>{await verify();return query(args);}}}) as unknown as PrismaClient;
+}

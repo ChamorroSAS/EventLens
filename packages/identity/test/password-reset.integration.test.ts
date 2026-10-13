@@ -1,3 +1,4 @@
+import { IsolatedTestTransactions, assertTestDatabase } from '@eventlens/database/testing';
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { createPrismaClient, PrismaTransactions } from '@eventlens/database';
@@ -5,7 +6,8 @@ import {
   PasswordResetService,
   OrganizerAuthenticationService,
   PasswordResetError,
-  computeCredentialDigest,
+  PasswordVerifier,
+  type RecoveryAuthorityPort,
   type PasswordResetNotificationPort
 } from '../src/index.js';
 
@@ -13,8 +15,27 @@ const databaseUrl = process.env.DATABASE_URL;
 const describeIntegration = databaseUrl ? describe : describe.skip;
 
 describeIntegration('PasswordResetService (Real PostgreSQL Integration Tests — EL-TK-018 & EL-TK-019)', () => {
+  if (!databaseUrl) return;
   const client = createPrismaClient(databaseUrl!);
-  const txs = new PrismaTransactions(client, 10000);
+  const txs = new IsolatedTestTransactions(new PrismaTransactions(client, 10000));
+  const verifier = new PasswordVerifier();
+  const authorityRevisions = new Map<string, bigint>();
+  const preparedSubjects = new Map<string, string>();
+  const authority: RecoveryAuthorityPort = {
+    async getRecoveryEpoch() { return 1n; },
+    async getAdminAuthWatermark() { return 1n; },
+    async getCredentialRevision(subject) { return authorityRevisions.get(subject) ?? null; },
+    async prepare(command) {
+      const receipt = randomUUID();
+      preparedSubjects.set(receipt, command.subjectRef);
+      return { preparedReceipt: receipt, sequence: 1n, operationId: command.operationId, subjectRef: command.subjectRef };
+    },
+    async ackCommit(receipt, revision) {
+      const subject = preparedSubjects.get(receipt);
+      if (!subject) throw new Error('Unknown test recovery receipt');
+      authorityRevisions.set(subject, revision);
+    }
+  };
 
   async function sql(statement: string, ...args: unknown[]) {
     return txs.run((tx) => tx.execute(statement, ...args));
@@ -33,17 +54,14 @@ describeIntegration('PasswordResetService (Real PostgreSQL Integration Tests —
 
   const resetService = new PasswordResetService(txs, {
     notificationPort,
+    recoveryAuthority: authority,
     tokenTtlMs: 3600 * 1000
   });
 
   const authService = new OrganizerAuthenticationService(
     txs,
     { async record() {} },
-    {
-      async getRecoveryEpoch() { return 1n; },
-      async getAdminAuthWatermark() { return 1n; },
-      async getCredentialRevision() { return 1n; }
-    }
+    authority
   );
 
   beforeAll(async () => {
@@ -133,6 +151,8 @@ describeIntegration('PasswordResetService (Real PostgreSQL Integration Tests —
 
   beforeEach(async () => {
     capturedNotifications = [];
+    authorityRevisions.clear();
+    preparedSubjects.clear();
     resetService.resetRateLimitTracker();
     authService.resetRateLimitTracker();
     await sql('DELETE FROM password_reset_intent');
@@ -159,11 +179,13 @@ describeIntegration('PasswordResetService (Real PostgreSQL Integration Tests —
       VALUES ('${accountId}', '${email}', '${emailNormalized}', 'ACTIVE', true, NOW(), '${invitationId}', NOW(), NOW(), NOW())
     `);
 
-    const secretDigest = computeCredentialDigest('ORGANIZER_AUTHENTICATION', accountId, initialPassword);
+    const secretDigest = await verifier.hashPassword(initialPassword);
     await sql(`
       INSERT INTO organizer_credential (id, account_id, purpose, secret_digest, revision, status, created_at, updated_at)
       VALUES ('${credentialId}', '${accountId}', 'ORGANIZER_AUTHENTICATION', '${secretDigest}', 1, 'ACTIVE', NOW(), NOW())
     `);
+
+    authorityRevisions.set(accountId, 1n);
 
     return { accountId, invitationId, credentialId, email, emailNormalized };
   }
@@ -236,8 +258,9 @@ describeIntegration('PasswordResetService (Real PostgreSQL Integration Tests —
       `SELECT revision, secret_digest FROM organizer_credential WHERE account_id = '${accountId}'`
     );
     expect(Number(credRows[0].revision)).toBe(2);
-    const expectedDigest = computeCredentialDigest('ORGANIZER_AUTHENTICATION', accountId, newPassword);
-    expect(credRows[0].secret_digest).toBe(expectedDigest);
+    expect(await verifier.verifyPassword(credRows[0].secret_digest, newPassword)).toBe(true);
+    expect(await verifier.verifyPassword(credRows[0].secret_digest, 'OldSecretPassword123!')).toBe(false);
+    expect(await authority.getCredentialRevision(accountId)).toBe(2n);
 
     // Verify that old sessions now throw SESSION_REVOKED
     await expect(

@@ -1,0 +1,12 @@
+{
+  "result": "PASS",
+  "terminal": "isolated POSIX PTY",
+  "credentialMode": "0600",
+  "bootstrap": "authenticated, session validated and logged out",
+  "singleUse": "rejected without replacing file",
+  "unauthorized": "rejected and audited before credential delivery",
+  "channelFailure": "occupied destination unchanged, principal absent and bootstrap unconsumed",
+  "exceptionalRecovery": "denied without database configuration/connection",
+  "audit": "no operational or credential secret",
+  "runtimeAuthority": "not certified; initial local domain verification only"
+}

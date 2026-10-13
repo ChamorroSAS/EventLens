@@ -1,5 +1,7 @@
 # Product backlog changelog
 
+- 2026-10-13: CR-005 entregado: EL-TK-215/216 DONE, EL-TK-217 BLOCKED por autorización externa; guardas/runner PostgreSQL, bootstrap atómico local y operación documentada. Evidencia aislada y revisión APPROVED; sin datos reales ni tickets históricos modificados.
+
 | Date | Change | Affected artifacts | Reason | Change request |
 |---|---|---|---|---|
 | 2026-10-12 | EL-EP-018 revisada; EL-TK-205..214 READY tras gates de requisitos, arquitectura y UI aplicable | Épica, contratos/handoff, catálogo, diez tickets, backlog/grafo/convenciones y sesión | Gaps de proyección efectiva, transporte, rutas y serving delimitados; owners preservados. Ejecución sujeta a predecesoras, sin runtime ni aprobación legal | Solicitud de revisión EL-EP-018 |

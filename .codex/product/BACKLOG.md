@@ -1,5 +1,7 @@
 # EventLens — índice de backlog de producto
 
+**CONFIRMED — CR-005, 2026-10-13:** EL-TK-215/216 DONE tras aislamiento, bootstrap local y validación/revisión independientes; EL-TK-217 BLOCKED sólo para recuperación excepcional sobre base consumida. Sin reapertura de043..046 ni decisiones aceptadas. [Sesión](sessions/2026-10-13-admin-bootstrap-test-isolation.md) / [runbook](../../docs/administrative-operations.md).
+
 **HISTÓRICO — gate de ejecución EL-TK-033, 2026-10-09:** requisitos READY y dependencias032/056 DONE; el alcance completo permaneció bloqueado hasta decidir `MalwareInspection`. [Hallazgo conservado](sessions/2026-10-09-el-tk-033-security-gate.md).
 
 **HISTÓRICO — ARCH-016 antes de la implementación:** el usuario aprobó ClamAV local y architect cerró su contrato. El readiness autorizaba construir y validar el alcance; el resultado final de EL-TK-033 se registra abajo.

@@ -1,0 +1,38 @@
+name: eventlens-isolated-tests
+services:
+  workspace-tests:
+    profiles: [workspace]
+    build:
+      context: .
+      dockerfile: infra/development/Dockerfile
+      target: workspace
+    environment:
+      EVENTLENS_DOCKER: "1"
+      EVENTLENS_TEST_ADMIN_URL: postgresql://test_runner:isolated-test-server-only@test-postgres:5432/postgres
+    depends_on:
+      test-postgres: {condition: service_healthy}
+    command: [node, scripts/workspace.mjs, integration]
+  test-postgres:
+    image: postgres:16.15-alpine3.24
+    environment:
+      POSTGRES_USER: test_runner
+      POSTGRES_PASSWORD: isolated-test-server-only
+      POSTGRES_DB: postgres
+    tmpfs: [/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U test_runner -d postgres]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  identity-validation:
+    build:
+      context: .
+      dockerfile: infra/validation/identity/Dockerfile
+    environment:
+      EVENTLENS_TEST_ADMIN_URL: postgresql://test_runner:isolated-test-server-only@test-postgres:5432/postgres
+      EVENTLENS_TEST_EVIDENCE_DIRECTORY: /evidence
+    depends_on:
+      test-postgres: {condition: service_healthy}
+    volumes: [./infra/validation/identity/evidence/bootstrap-isolation:/evidence]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]

@@ -1,0 +1,19 @@
+{
+  "change": "CR-005",
+  "tickets": [
+    "EL-TK-215",
+    "EL-TK-216"
+  ],
+  "runId": "el_test_6ebb06aa610e40cd81f677da328d009e",
+  "testedAt": "2026-10-13T07:11:40.520Z",
+  "result": "PASS",
+  "tests": 198,
+  "passed": 198,
+  "failed": 0,
+  "postgresql": "16 real dedicated container, temporary database and constrained role",
+  "guard": "guard-proof.json (verified before suites)",
+  "cli": "cli-proof.json",
+  "existingDevelopmentData": "not accessed; laboratory isolated from development network and volumes",
+  "exceptionalRecovery": "BLOCKED: no accepted external operational authorizer/adapter",
+  "betaReadiness": "NOT_EVALUATED"
+}

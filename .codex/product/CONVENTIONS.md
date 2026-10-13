@@ -1,5 +1,7 @@
 # Convenciones de identificadores — EventLens
 
+**CONFIRMED — CR-005, 2026-10-13:** EL-TK-215..217 asignados al correctivo de aislamiento/bootstrap/recuperación excepcional. Serie ocupada hasta217; no reutiliza IDs ni reabre043..046.215/216 DONE tras ejecución y revisión;217 BLOCKED por autorización externa.
+
 **CONFIRMED — 2026-10-07:** convención solicitada por el usuario y aplicada por backlog_manager.
 
 ## Identificadores canónicos
