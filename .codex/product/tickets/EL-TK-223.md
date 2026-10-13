@@ -2,7 +2,7 @@
 ## Parent epic
 EL-EP-019
 ## Status
-READY
+DONE
 ## User story
 Como usuario, quiero navegar por rutas de paneles con un único router, para conservar refresh, historial y autorizaciones coherentes.
 ## Alcance funcional
@@ -40,9 +40,14 @@ EL-EP-019; `ui-event-control-panels.md`; `event-control-panels-contract.md`.
 - [x] Rutas, compatibilidad y permisos delimitados
 - [x] Dependencias externas identificadas
 - [x] Gate 2 aprobado
-REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: NO actual (PENDING_DEPENDENCIES); IMPLEMENTABLE_AFTER_DEPENDENCIES: YES. Validar depends_on antes de ejecutar; no repetir Gate2 salvo cambio material. Activación nuevas mutaciones/admin BLOCKED por EL-TK-221/222 y evidencias finales. IMPLEMENTED: NO.
+REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: YES. IMPLEMENTED: YES.
 ## Definition of Done
-Un solo Router comprobado en rutas aprobadas, sin regresión de entrada pública/guest.
+- [x] Un solo Router comprobado en rutas aprobadas, sin regresión de entrada pública/guest.
+- [x] Rutas de paneles montadas en Angular Router: `/mis-eventos/:eventId`, `/mis-eventos/:eventId/configuracion/general`, `/mis-eventos/:eventId/configuracion/programacion`, `/admin/ingresar`, `/admin/eventos`, `/admin/eventos/:eventId`.
+- [x] Rutas públicas y guest preservadas sin absorción por los paneles.
+- [x] Retorno seguro `canonicalizeAdminReturnUrl` implementado con allowlist estricta y aislamiento entre actores (sin cruce actor).
+- [x] Logout no es GET navegable (retorna 404 neutro).
+- [x] 100% pruebas de enrutamiento pasando en `apps/web/src/app/app.routes.spec.ts`.
 ## Archivos candidatos
 - **read/modify:** `apps/web/src/main.ts`, `apps/web/src/app/app.component.ts`, `apps/web/src/app/app.config.ts`, `apps/web/src/app/navigation/public-entry-router.service.ts`, `apps/web/src/app/app.routes.ts`, `apps/web/src/app/navigation/all-routes.ts`, `apps/web/src/app/navigation/public-entry-routes.contract.ts`.
 - **test:** `apps/web/src/app/app.routes.spec.ts` (nuevo candidato semántico) y pruebas existentes de shells organizer/admin.
