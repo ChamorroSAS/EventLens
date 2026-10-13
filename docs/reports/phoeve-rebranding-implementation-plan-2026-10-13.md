@@ -1,3 +1,5 @@
+> **Ejecución posterior autorizada — 2026-10-13:** el usuario solicitó implementar el rebranding. La rama `feat/phoeve-public-rebrand-20261013` incorpora los PNG canónicos existentes en `docs/branding/assets/phoeve/` mediante copias byte a byte a Angular, preservando el Home refactorizado y sin alterar branding original, identificadores técnicos ni contratos. El `phoeve-source-manifest.json` refleja la autorización de integración, **no** aprobación visual, modificación/vectorización de arte, viabilidad registral o lanzamiento público. Ver [CR-006](../../.codex/product/changes/CR-006.md) y [manual candidato](../branding/PHOEVE-MANUAL-DE-MARCA.md). Este addendum tiene precedencia cronológica sobre `NOT_IMPLEMENTED` histórico del plan; ejecución y pruebas se evalúan por evidencia del PR.
+
 # Phoeve — Plan de implementación verificable
 
 Fecha: 2026-10-13. Referencia: borrador externo CR-006. Estado: **PLAN PROPUESTO / NOT_IMPLEMENTED**. Rama de planificación: `planning/phoeve-rebranding`, desde `stage` en `2510f07`.
