@@ -384,6 +384,23 @@ describe('GuestContainerComponent (EL-TK-083 & EL-TK-211 & Mobile-First 7-Screen
     component.editNickname(); expect(component.currentStep()).toBe('LANDING'); expect(component.hasActiveSession).toBe(false);
   });
 
+  it('shows upload container when canUpload and session ready', async () => {
+    guestService.setSession({
+      id: 'sess-ready',
+      eventId: mockAccessView.eventId,
+      credentialGeneration: 1,
+      contributorNickname: 'Test User',
+      hasConsented: true,
+      consentVersion: 'v1.0'
+    });
+    const { fixture, component } = createComponent({ ...mockAccessView, pinRequired: false });
+    fixture.detectChanges();
+    expect(component.canUpload).toBe(true);
+    expect(component.hasActiveSession).toBe(true);
+    expect(guestService.isReadyToUpload()).toBe(true);
+    expect(fixture.nativeElement.querySelector('eventlens-upload-container')).not.toBeNull();
+  });
+
   it('cancels nickname editing to origin and shows nickname 401 on landing', async () => {
     guestService.setSession({ id: 'sess', eventId: mockAccessView.eventId, credentialGeneration: 1, contributorNickname: null, hasConsented: false, consentVersion: null });
     const { fixture, component } = createComponent({ ...mockAccessView, canUpload: false }); fixture.detectChanges();

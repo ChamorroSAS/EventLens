@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges, ElementRef, HostListener, inject, signal } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges, ElementRef, HostListener, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GuestService } from './guest.service.js';
 import {
@@ -13,12 +13,15 @@ import { GuestIdentityFormComponent } from './guest-identity-form.component.js';
 import { MyContributionsListComponent } from './my-contributions-list.component.js';
 import { RemovalRequestFlowComponent } from './removal-request-flow.component.js';
 import { GalleryComponent } from '../gallery/gallery.component.js';
+import { UploadContainerComponent } from '../upload/upload-container.component.js';
+import type { UploadLocalFile } from '../upload/upload.types.js';
 import {
   APPROVED_PUBLIC_ENTRY_PATHS,
   CANONICAL_PUBLIC_ENTRY_ROUTE_METADATA,
   type PublicEntryRouteDescriptor
 } from '../navigation/public-entry-routes.contract.js';
 import { PublicEntryRouterService } from '../navigation/public-entry-router.service.js';
+import { UploadOrchestratorService } from '../upload/upload-orchestrator.service.js';
 
 export interface SelectedUploadItem {
   id: string;
@@ -52,7 +55,8 @@ export type GuestFlowStep =
     GuestIdentityFormComponent,
     MyContributionsListComponent,
     RemovalRequestFlowComponent,
-    GalleryComponent
+    GalleryComponent,
+    UploadContainerComponent
   ],
   template: `
     <main class="guest-shell" role="main" [attr.aria-labelledby]="currentStep() === 'CONSENT' ? 'consent-title' : currentStep() === 'IDENTITY' ? 'identity-heading' : currentStep() === 'SELECT_FILES' ? 'selection-title' : currentStep() === 'GALLERY' ? 'gallery-title' : 'event-title'">
@@ -282,6 +286,17 @@ export type GuestFlowStep =
                     (requestRemoval)="onRequestRemoval()"
                   ></el-my-contributions-list>
                 }
+              </section>
+            }
+
+            <!-- Upload Section (Task 4: integrate upload container in guest flow) -->
+            @if (hasActiveSession && !showIdentityForm() && !isUnavailableAccess && canUpload && guestService.isReadyToUpload()) {
+              <section class="upload-section" aria-labelledby="upload-title">
+                <eventlens-upload-container
+                  [isPolicyBlocked]="!canUpload"
+                  (fileQueued)="onFileQueued($event)"
+                  (fileRetried)="onFileRetried($event)"
+                ></eventlens-upload-container>
               </section>
             }
 
@@ -1839,7 +1854,12 @@ export class GuestContainerComponent implements OnInit, OnDestroy, OnChanges {
   private entryRequest = 0;
   private serviceContext: number;
 
-  constructor(public guestService: GuestService) { this.serviceContext = guestService.getContextVersion(); }
+  constructor(
+    public guestService: GuestService,
+    private readonly orchestrator: UploadOrchestratorService
+  ) { this.serviceContext = guestService.getContextVersion(); }
+
+  @ViewChild(UploadContainerComponent) uploadContainer!: UploadContainerComponent;
 
   private invalidateFlowRequests(): void {
     ++this.entryRequest;
@@ -2225,6 +2245,23 @@ export class GuestContainerComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   retryFileUpload(_id: string): void { this.startUploadingSelectedFiles(); }
+
+  onFileQueued(file: UploadLocalFile): void {
+    this.orchestrator.startUpload(file, {
+      onProgress: (id, pct) => this.uploadContainer.updateFileProgress(id, pct),
+      onStatusChange: (id, status, opts) => this.uploadContainer.updateFileStatus(id, status, opts),
+    });
+  }
+
+  onFileRetried(fileId: string): void {
+    const file = this.uploadContainer.files.find(f => f.id === fileId);
+    if (file) {
+      this.orchestrator.retryUpload(fileId, file, {
+        onProgress: (id, pct) => this.uploadContainer.updateFileProgress(id, pct),
+        onStatusChange: (id, status, opts) => this.uploadContainer.updateFileStatus(id, status, opts),
+      });
+    }
+  }
 
   isAllUploadsDone(): boolean { return false; }
 
