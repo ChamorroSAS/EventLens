@@ -177,3 +177,8 @@ export {
   toBase64NoPadding,
   fromBase64NoPadding
 } from './password-verifier.js';
+
+export {
+  DurableRecoveryAuthorityAdapter,
+  type DurableRecoveryAuthorityOptions
+} from './recovery-authority-adapter.js';
