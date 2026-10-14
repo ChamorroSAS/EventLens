@@ -19,6 +19,7 @@ El usuario autorizó EL-TK-233–238 con ramas por ticket, commits atómicos e i
 | Receipts/CAS/zona horaria en PostgreSQL | 16/16 PASS | Fixtures de dominio; no autoridad operacional |
 | API organizador y migraciones reales | 5/5 PASS | Lista, creación idempotente, cambio de nombre/CAS, sesiones/cuentas; no post-PITR |
 | Controlador/servicio administrativo y auditoría SQL | 2/2 PASS | Migraciones reales, invocación directa y autoridad simulada explícita; no acredita transporte HTTP ni 222 |
+| Transporte HTTPS administrativo sin autoridad | 8/8 PASS | TLS real con CA verificada, sesión y preflight CORS; denegación antes de SQL, no acredita login exitoso, sesión organizadora válida ni post-PITR |
 | Builds identity, admin-support, API, api-client y web | PASS | Web presenta aviso de presupuesto inicial |
 | OpenAPI/cliente generados y drift | PASS tras corregir LF/CRLF | Comparación estricta preservada; `.gitattributes` fija LF en los dos archivos generados |
 
@@ -39,6 +40,7 @@ node scripts/isolated-tests.mjs event-draft-panels
 node scripts/isolated-tests.mjs organizer-panels
 node scripts/isolated-tests.mjs admin-support-read
 node scripts/isolated-tests.mjs admin-read-only
+node scripts/isolated-tests.mjs admin-transport-denial
 pnpm.cmd --filter @eventlens/web test
 pnpm.cmd --filter @eventlens/api test
 node apps/api/dist/export-openapi.js --check
@@ -46,6 +48,10 @@ node scripts/api-client.mjs --check
 ```
 
 Las líneas PostgreSQL requieren la variable de aprovisionamiento ya configurada para ese servidor nuevo. Con Compose usar `compose.test.yaml` y un nombre de proyecto exclusivo por ejecución; ejecutar el mismo runner desde workspace-tests y no reutilizar la topología de desarrollo. Los nuevos scopes API aplican migraciones antes de las suites. La limpieza comprueba OID/owner/marker y elimina exclusivamente base/rol creados por la ejecución; el sentinel auxiliar tiene nombre aleatorio único y se elimina sólo tras CREATE confirmado. El caso de rechazo de limpieza ajena usa una fila sintética y no acredita una prueba integrada del cleanup contra recursos ajenos. No se ejecutó reset, down -v ni limpieza sobre eventlens.
+
+El scope admin-transport-denial no necesita tablas de dominio: valida la base efectiva antes de listen, crea HTTPS sólo en el puerto aislado y reemplaza el UOW con un espía que rechaza cualquier acceso de dominio. Usa OpenSSL ya disponible en la imagen de desarrollo/CI o en Git para Windows (OPENSSL_BIN puede indicar el ejecutable instalado). Genera certificado/key temporal por ejecución, confía explícitamente en ese certificado con rejectUnauthorized=true y valida SAN para loopback. No almacena TLS keys en Git ni muestra cuerpos de error/secretos; limpieza de su directorio exclusivo en finally con verificación de ruta absoluta. No introduce dependencias runtime.
+
+La primera ampliación de esa suite dio 7/8 porque esperaba 200 sin cookie en GET session; se verificó que el servicio/contrato devuelve 401 y se corrigió la expectativa, conservando el comportamiento. Repetición final 8/8 PASS. Preflight acredita headers de origen exacto y credenciales en HTTP real; no simula el comportamiento de cookies/CORS de un navegador.
 
 ## Matriz pendiente de EL-TK-237
 
@@ -61,7 +67,7 @@ Las líneas PostgreSQL requieren la variable de aprovisionamiento ya configurada
 
 | Garantía | Estado | Evidencia necesaria para cerrar |
 |---|---|---|
-| Denegación sin autoridad | CONFIRMED por código/unitarias | HTTPS real y no-store, cookies seguras, Origin/CSRF/CORS y spoof |
+| Denegación sin autoridad | CONFIRMED en HTTPS real | Login sin autoridad 503, lectura anónima/spoof 401 y contexto/logout 503; no-store, Origin/header/CSRF/CORS y cero SQL comprobados. Falta emisión/autenticación exitosa y flags de cookie inicial con autoridad acreditada |
 | Auditoría SQL antes de publicar | CONFIRMED en laboratorio | Errores y outage integrados con autoridad operacional |
 | DTO mínimo y UI sin mutaciones | CONFIRMED por código/unitarias | Navegador real, deep-links y PARTIAL, sin datos privados tras pérdida de permiso |
 | Logout incierto y carreras | CONFIRMED por unitarias | Confirmación explícita en navegador y revocación externa durable |
