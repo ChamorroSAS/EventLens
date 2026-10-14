@@ -25,3 +25,23 @@ Verificar: paths y base href; disponibilidad real assets/favicon/fuentes; proced
 Baseline aplicable ACCEPTED: EL-TD-001/005/006/007/009; EL-TD-004 preservado. Sin persistencia, API, transacciones, recovery ni permisos nuevos. Reversión de referencias/CSS no requiere migración de datos. La estrategia de estilos es ahora general (Sass/SCSS + CSS custom properties `--el-*`), resuelta en [EL-TD-009](technical-baseline.md#el-td-009--frontend-styling-strategy)/DEC-111; el piloto CR-004 queda superseded.
 
 Readiness técnico propio suficiente; gate UI YES y revisión final203/204 APPROVED registrados.203 listo para comenzar;204 espera salidas203 validadas. Sin implementación acreditada. [Registro de gates](../product/sessions/2026-10-12-brand-planning-gates.md).
+
+## Assets derivados de marca (EL-TK-243 / CR-009) — PROPUESTA
+
+> Estado: **PROPUESTA**, vigente sólo tras `CHANGE_READY` de [CR-009](../product/changes/CR-009.md). Incorporada desde el gate técnico (rondas 1-3) para cerrar la extensión de contrato requerida; no modifica decisiones aceptadas ni la baseline EL-TD-*.
+
+El arte canónico y las cuatro copias publicadas en `apps/web/public/assets/branding/phoeve/` siguen siendo **bit a bit** (`source.equals(published)` intacto). Para eliminar el warning dev-only NG0913 y reducir el peso se autoriza, de forma acotada, servir **derivados PNG** del mismo arte, declarados en `docs/branding/phoeve-source-manifest.json` (`schemaVersion: 2`).
+
+Invariantes:
+
+- **I1** Los 4 originales publicados permanecen byte-idénticos a `docs/branding/assets/phoeve/*`; no se relaja `source.equals(published)`.
+- **I2** Prohibido sobrescribir un nombre de rol publicado con contenido derivado; todo derivado usa nombre nuevo que incluye el ancho objetivo.
+- **I3** Cada derivado declara `derivedFrom` + `sourceSha256` + `sha256` + `bytes` + `width`/`height` + parámetros de transformación, atados a `assets[]`.
+- **I4** Transformación permitida: sólo `raster-resize` del mismo arte (incluye re-codificación PNG); sin recolor, recorte, redibujo, vectorización ni cambio de proporción/transparencia. La fidelidad fina es evidencia declarativa + revisión visual.
+- **I5** Cap: `minWidthPx[rol] ≤ width ≤ 512` y `height ≤ 512`; `height === width / 3`; sin upscale. Ningún `<img>` de marca puede referenciar un archivo por encima del cap.
+- **I6** Ningún `<img>` de marca usa rutas absolutas; `src` normalizado (sin `/` inicial, sin `./`) igual a `assets/branding/phoeve/${derivative.file}`.
+- **I7** Se conservan `alt="Phoeve"`, `width`/`height` explícitos, `aspect-ratio: 2172/724` y el fallback `onLogoError`/texto de marca.
+- **I8** No se alteran bytes ni rutas de favicon, grayscale, fondos de login ni avatar; no se generan derivados de roles no usados como `<img>`.
+- **I9** No se cambia `loading` ni se añade `lazy` en imágenes de marca (verificado por grep de ausencia).
+
+Autorización machine-checkable en el manifiesto: `derivativeGeneration` (`authorizedBy`, `authorizedOn`, `allowedTransforms`, `minWidthPx`, `maxWidthPx`, `maxHeightPx`, `upscale`) más un opt-in en el propio CR. El verificador falla con `UNAUTHORIZED_DERIVATIVES` si hay derivados sin autorización válida, y `verify-ui-foundation.mjs` valida el wordmark del shell contra los derivados en lugar del literal `logo-primary.png`.
