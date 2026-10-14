@@ -5,6 +5,7 @@ import type { OrganizerEventModel, EventConfigurationModel } from './organizer.t
 import type { operations } from '@eventlens/api-client';
 
 export type OrganizerLifecycleSnapshot = operations['getOrganizerEventLifecycle']['responses'][200]['content']['application/json'];
+export type OrganizerShareSnapshot = operations['getEventShareAccessSnapshot']['responses'][200]['content']['application/json'];
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,31 @@ export type OrganizerLifecycleSnapshot = operations['getOrganizerEventLifecycle'
 export class OrganizerService {
   private readonly client = createEventLensClient();
   private readonly sessionService = inject(OrganizerSessionService, { optional: true });
+
+  async getEventShareAccess(eventId: string): Promise<OrganizerShareSnapshot> {
+    const { data, response } = await this.client.GET('/api/v1/events/{eventId}/share-access', {
+      params: { path: { eventId } }
+    });
+    if (!response.ok || !data) {
+      const error = new Error('SHARE_ACCESS_UNAVAILABLE') as Error & { status: number };
+      error.status = response.status;
+      throw error;
+    }
+    return data;
+  }
+
+  async prepareEventShareAccess(params: { eventId: string; expectedRevision: string; idempotencyKey: string }): Promise<void> {
+    const { data, response } = await this.client.POST('/api/v1/events/{eventId}/share-access', {
+      params: { path: { eventId: params.eventId }, header: { 'Idempotency-Key': params.idempotencyKey } },
+      headers: { 'X-CSRF-Token': this.sessionService?.getCsrfToken() ?? '' },
+      body: { expectedRevision: params.expectedRevision }
+    });
+    if (!response.ok || !data) {
+      const error = new Error('SHARE_ACCESS_COMMAND_FAILED') as Error & { status: number };
+      error.status = response.status;
+      throw error;
+    }
+  }
 
   async getEventLifecycle(eventId: string): Promise<OrganizerLifecycleSnapshot> {
     const { data, response } = await this.client.GET('/api/v1/events/{eventId}/lifecycle', {

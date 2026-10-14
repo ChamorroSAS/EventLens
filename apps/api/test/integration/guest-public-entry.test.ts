@@ -29,13 +29,6 @@ beforeAll(async () => {
   db = application.app.get(DatabaseService);
   sessionService = application.app.get(OrganizerSessionService);
 
-  await db.transactions.run(async (tx) => {
-    await tx.execute(`
-      ALTER TABLE event
-        ADD COLUMN IF NOT EXISTS pin_hash TEXT,
-        ADD COLUMN IF NOT EXISTS pin_salt TEXT;
-    `);
-  });
 });
 
 afterAll(async () => {

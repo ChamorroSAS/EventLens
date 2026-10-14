@@ -119,6 +119,14 @@
                 </div>
               }
               @case ('access') {
+                @if (selectedEventConfig(); as configuration) {
+                  <eventlens-event-share-access
+                    [eventId]="configuration.event.id"
+                    [status]="configuration.event.status"
+                    [revision]="configuration.revision"
+                    (refreshed)="onReconcileEvent()"
+                  />
+                }
                 <div class="section-card">
                   <h3>Acceso y protección por PIN</h3>
                   <p>Protección por PIN: {{ selectedEvent()?.pinEnabled ? 'Activa' : 'Desactivada' }}</p>

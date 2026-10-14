@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { SqlTransaction, TransactionRunner } from '@eventlens/database';
 import { AuthenticationError, OrganizerAuthenticationService } from '@eventlens/identity';
-import { EventLifecycleService, EventManagementError, DEFAULT_VALIDITY_DAYS, DEFAULT_GRACE_PERIOD_DAYS, type EventAuditSink } from '@eventlens/event-management';
+import { EventLifecycleService, EventPublicAccessService, EventManagementError, DEFAULT_VALIDITY_DAYS, DEFAULT_GRACE_PERIOD_DAYS, type EventAuditSink } from '@eventlens/event-management';
 import { BadRequestException, ForbiddenException, UnauthorizedException, ServiceUnavailableException } from '@nestjs/common';
 import type { OrganizerSessionService } from '../identity/organizer-session.service.js';
 import { extractOrganizerSessionCookie } from '../identity/organizer-session.service.js';
@@ -23,6 +23,11 @@ export interface OrganizerLifecycleSnapshot {
 export interface OrganizerLifecycleResult {
   eventId: string;
   outcome: 'SCHEDULED' | 'ACTIVATED' | 'IDEMPOTENT_REPLAY';
+}
+
+export interface OrganizerShareAccessResult {
+  eventId: string;
+  outcome: 'ISSUED' | 'IDEMPOTENT_REPLAY';
 }
 
 export interface LifecycleRequest {
@@ -130,6 +135,46 @@ export class OrganizerEventLifecycleAdapter {
         (operation_id,event_id,actor_id,operation,idempotency_key,fingerprint,payload_hash,applied_revision,outcome,created_at)
         VALUES ($1,$2,$3,'ORGANIZER_LIFECYCLE',$4,$5,$5,$6,$7,$8)`,
       randomUUID(), request.eventId, actorContext.accountId, key, fingerprint, revision[0].revision, result.outcome, new Date());
+      return { eventId: request.eventId, outcome: result.outcome };
+    });
+  }
+
+  async shareSnapshot(request: LifecycleRequest, baseUrl: string) {
+    return this.database.run(async tx => {
+      const actorContext = await this.authenticate(tx, request, false);
+      return new EventPublicAccessService({ run: work => work(tx) }).getShareAccessSnapshot({ eventId: request.eventId, actorContext, baseUrl });
+    });
+  }
+
+  async prepareShare(request: LifecycleRequest): Promise<OrganizerShareAccessResult> {
+    this.sessions.assertTrustedOrigin(request.originHeader);
+    const key = request.idempotencyKey?.trim();
+    if (!key || !/^[A-Za-z0-9_-]{1,128}$/.test(key)) throw new BadRequestException('Valid Idempotency-Key header required');
+    if (!request.body || typeof request.body !== 'object' || Array.isArray(request.body)) throw new BadRequestException('Request body must be an object');
+    const body = request.body as Record<string, unknown>;
+    if (Object.keys(body).some(k => k !== 'expectedRevision') || typeof body.expectedRevision !== 'string' || !/^[1-9]\d*$/.test(body.expectedRevision)) throw new BadRequestException('Request body must contain only a positive expectedRevision string');
+    const expectedRevision = body.expectedRevision;
+    return this.database.run(async tx => {
+      const actorContext = await this.authenticate(tx, request, true);
+      await tx.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))::text AS locked', `${actorContext.accountId}:INITIAL_SHARE_ACCESS:${key}`);
+      const rows = await tx.query<{ organizer_id: string; status: string; revision: bigint; expires_at: Date | null }>(
+        'SELECT organizer_id, status, revision, expires_at FROM event WHERE id=$1 FOR UPDATE', request.eventId);
+      if (!rows.length || rows[0].organizer_id !== actorContext.accountId) throw new EventManagementError('EVENT_NOT_FOUND', 'Event not found');
+      const fingerprint = createHash('sha256').update(JSON.stringify({ eventId: request.eventId, action: 'INITIAL_SHARE_ACCESS', expectedRevision })).digest('hex');
+      const receipts = await tx.query<{ fingerprint: string }>(
+        "SELECT fingerprint FROM event_command_receipt WHERE actor_id=$1 AND operation='INITIAL_SHARE_ACCESS' AND idempotency_key=$2 FOR UPDATE", actorContext.accountId, key);
+      if (receipts.length) {
+        if (receipts[0].fingerprint !== fingerprint) throw new EventManagementError('IDEMPOTENCY_CONFLICT', 'Idempotency key already used');
+        await this.audit(tx).record({ id: randomUUID(), procedure: 'EVENT_PUBLIC_CREDENTIAL_ISSUED', actorId: actorContext.accountId, targetIdentifier: request.eventId, result: 'IDEMPOTENT_REPLAY', timestamp: new Date() });
+        return { eventId: request.eventId, outcome: 'IDEMPOTENT_REPLAY' };
+      }
+      if (String(rows[0].revision) !== expectedRevision) throw new EventManagementError('CONCURRENCY_CONFLICT', 'Event revision changed');
+      if (!['SCHEDULED', 'ACTIVE'].includes(rows[0].status) || !rows[0].expires_at || new Date(rows[0].expires_at).getTime() <= Date.now()) throw new EventManagementError('INVALID_STATE', 'Event must be scheduled or active and valid');
+      const result = await new EventPublicAccessService({ run: work => work(tx) }, this.audit(tx)).issueInitialCredential({ actorContext, eventId: request.eventId });
+      await tx.execute(`INSERT INTO event_command_receipt
+        (operation_id,event_id,actor_id,operation,idempotency_key,fingerprint,payload_hash,applied_revision,outcome,created_at)
+        VALUES ($1,$2,$3,'INITIAL_SHARE_ACCESS',$4,$5,$5,$6,$7,$8)`,
+      randomUUID(), request.eventId, actorContext.accountId, key, fingerprint, rows[0].revision, result.outcome, new Date());
       return { eventId: request.eventId, outcome: result.outcome };
     });
   }

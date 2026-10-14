@@ -23,6 +23,7 @@ import { OrganizerSessionService } from '../organizer-session.service';
 import { EventScheduleSectionComponent } from './event-schedule-section.component.js';
 import { EventTimezoneSectionComponent } from './event-timezone-section.component.js';
 import { EventLifecycleActionsComponent } from './event-lifecycle-actions.component.js';
+import { EventShareAccessComponent } from './event-share-access.component.js';
 
 @Component({
   selector: 'eventlens-organizer-dashboard',
@@ -37,7 +38,8 @@ import { EventLifecycleActionsComponent } from './event-lifecycle-actions.compon
     EventBasicInfoFormComponent,
     EventScheduleSectionComponent,
     EventTimezoneSectionComponent,
-    EventLifecycleActionsComponent
+    EventLifecycleActionsComponent,
+    EventShareAccessComponent
   ],
   templateUrl: './organizer-dashboard.component.html',
   styleUrl: './organizer-dashboard.component.scss',

@@ -138,3 +138,54 @@ it('does not activate an expired scheduled timeline and suppresses its activatio
   expect((await command(eventId, 'activate', expired.revision, actor.headers)).status).toBe(409);
   expect((await snapshot(eventId, actor.headers)).status).toBe('SCHEDULED');
 }, 30000);
+
+async function prepareShare(eventId: string, revision: string, headers: Record<string, string>, key = randomUUID()) {
+  return fetch(`${base}/api/v1/events/${eventId}/share-access`, { method: 'POST', headers: { ...headers, 'Idempotency-Key': key }, body: JSON.stringify({ expectedRevision: revision }) });
+}
+
+it('prepares one scheduled QR under concurrent calls and retains its key after activation with guest lifecycle gating', async () => {
+  const actor = await owner();
+  const eventId = await draft(actor.headers);
+  const initial = await snapshot(eventId, actor.headers);
+  expect((await prepareShare(eventId, initial.revision, actor.headers)).status).toBe(409);
+  expect((await command(eventId, 'schedule', initial.revision, actor.headers)).status).toBe(200);
+  const scheduled = await snapshot(eventId, actor.headers);
+  const key = randomUUID();
+  const prepared = await Promise.all([prepareShare(eventId, scheduled.revision, actor.headers, key), prepareShare(eventId, scheduled.revision, actor.headers)]);
+  expect(prepared.map(r => r.status)).toEqual([200, 200]);
+  const outcomes = await Promise.all(prepared.map(r => r.json() as Promise<any>));
+  expect(outcomes.map(r => r.outcome).sort()).toEqual(['IDEMPOTENT_REPLAY', 'ISSUED']);
+  const shareResponse = await fetch(`${base}/api/v1/events/${eventId}/share-access`, { headers: actor.headers });
+  expect(shareResponse.status).toBe(200);
+  const share = (await shareResponse.json()) as any;
+  expect(share.qrSvg).toContain('<svg');
+  const scheduledGuest = await fetch(`${base}/api/v1/public/guest-entry/${share.lookupKey}`);
+  expect(scheduledGuest.status).toBe(200);
+  expect(((await scheduledGuest.json()) as any).access.accessState).toBe('RESTRICTED');
+  expect((await command(eventId, 'activate', scheduled.revision, actor.headers)).status).toBe(200);
+  expect((await prepareShare(eventId, scheduled.revision, actor.headers, key)).status).toBe(200);
+  const activeShare = await fetch(`${base}/api/v1/events/${eventId}/share-access`, { headers: actor.headers });
+  expect(((await activeShare.json()) as any).lookupKey).toBe(share.lookupKey);
+  const activeGuest = await fetch(`${base}/api/v1/public/guest-entry/${share.lookupKey}`);
+  expect(activeGuest.status).toBe(200);
+  expect(((await activeGuest.json()) as any).access.accessState).toBe('ALLOWED');
+  const credentials = await db.transactions.run(tx => tx.query<{ count: bigint }>('SELECT count(*) AS count FROM public_access_credential WHERE event_id=$1', eventId));
+  expect(BigInt(credentials[0].count)).toBe(1n);
+}, 30000);
+
+it('share preparation rejects nonowners, invalid Origin/CSRF and restricted session reads', async () => {
+  const actor = await owner();
+  const alien = await owner();
+  const eventId = await draft(actor.headers);
+  const initial = await snapshot(eventId, actor.headers);
+  expect((await command(eventId, 'schedule', initial.revision, actor.headers)).status).toBe(200);
+  const scheduled = await snapshot(eventId, actor.headers);
+  expect((await prepareShare(eventId, scheduled.revision, alien.headers)).status).toBe(404);
+  expect((await fetch(`${base}/api/v1/events/${eventId}/share-access`, { headers: alien.headers })).status).toBe(404);
+  expect((await prepareShare(eventId, scheduled.revision, { ...actor.headers, Origin: 'https://untrusted.invalid' })).status).toBe(403);
+  expect((await prepareShare(eventId, scheduled.revision, { ...actor.headers, 'X-CSRF-Token': 'invalid' })).status).toBe(403);
+  expect((await prepareShare(eventId, scheduled.revision, actor.headers)).status).toBe(200);
+  await db.transactions.run(tx => tx.execute("UPDATE organizer_account SET status='PENDING_DELETION' WHERE id=$1", actor.accountId));
+  expect((await prepareShare(eventId, scheduled.revision, actor.headers)).status).toBe(403);
+  expect((await fetch(`${base}/api/v1/events/${eventId}/share-access`, { headers: actor.headers })).status).toBe(403);
+}, 30000);

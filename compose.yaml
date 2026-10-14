@@ -67,6 +67,7 @@ services:
       <<: *database
       API_PORT: 3000
       WEB_ORIGIN: http://localhost:${WEB_PORT:-4200}
+      PUBLIC_ENTRY_BASE_URL: ${PUBLIC_ENTRY_BASE_URL:-http://localhost:${WEB_PORT:-4200}}
       NODE_ENV: development
       LOCAL_ADMIN_ENABLED: ${LOCAL_ADMIN_ENABLED:-false}
       LOCAL_ADMIN_AUTHORITY_DIR: /home/node/.eventlens/admin-authority
