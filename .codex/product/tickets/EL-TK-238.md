@@ -2,7 +2,10 @@
 ## Parent epic
 EL-EP-019
 ## Status
-READY
+BLOCKED
+
+## Evidencia independiente actual
+Preparación inactiva: HTTPS real con certificado temporal verificado por CA (sin desactivar validación TLS), 8/8 pruebas de denegación PASS y cero UOW de dominio después del probe de aislamiento. Se ejercitan autoridad ausente, actor falso/cookie sintética del espacio organizador, sesión, Origin/header/CSRF/preflight CORS, no-store, logout sin ACK y rechazo de fallback legacy. No instala autoridad ni acredita emisión exitosa de cookie, sesión organizadora válida, PITR o UI de navegador. Cierre BLOCKED por EL-TK-222/237 y pruebas integradas/manuales pendientes. Véase `docs/reports/event-control-panels-validation-2026-10-14.md`.
 ## User story
 Como responsable de seguridad, quiero validar de extremo a extremo la consola administrativa, para cerrar su MVP sin bypass ni fuga de datos.
 ## Alcance funcional
@@ -40,7 +43,7 @@ EL-EP-019; MOD-001/MOD-007; contrato técnico/UI; EL-TK-221/222/233..237.
 - [x] Matriz security y dependencias definida
 - [x] Gate 2 aprobado
 - [ ] Capacidad EL-TK-222 y dependencias finales validadas
-REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: NO actual (PENDING_DEPENDENCIES); IMPLEMENTABLE_AFTER_DEPENDENCIES: YES. Validar depends_on antes de ejecutar; no repetir Gate2 salvo cambio material. Activación nuevas mutaciones/admin BLOCKED por EL-TK-221/222 y evidencias finales. IMPLEMENTED: NO.
+REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: NO actual (PENDING_DEPENDENCIES); IMPLEMENTABLE_AFTER_DEPENDENCIES: YES. Validar depends_on antes de ejecutar; no repetir Gate2 salvo cambio material. Activación nuevas mutaciones/admin BLOCKED por EL-TK-221/222 y evidencias finales. IMPLEMENTED: PARTIAL (denegación HTTPS independiente; cierre BLOCKED).
 ## Definition of Done
 Critical_review sin hallazgos bloqueantes, evidencia aislada real y ambos recorridos aptos para decidir cierre de épica.
 ## Archivos candidatos

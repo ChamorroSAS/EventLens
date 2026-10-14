@@ -2,7 +2,10 @@
 ## Parent epic
 EL-EP-019
 ## Status
-READY
+IN_PROGRESS
+
+## Evidencia de ejecución actual
+Implementación independiente e inactiva autorizada por el usuario; integrada y validada sin activar RecoveryAuthority. Unitarias owners 33/33, API 31/31; PostgreSQL aislado owners 6/6 y API 2/2; generación y drift del cliente PASS. Auditoría durable, cookies host estrictas y DTO mínimo. La autoridad de laboratorio simulada no acredita EL-TK-222. Cierre/activación pendientes de dependencias y validación final. Véase `.codex/product/sessions/2026-10-13-admin-console-inactive-delivery.md`.
 ## User story
 Como administrador autorizado, quiero buscar y abrir detalle mínimo de eventos, para investigar sin ejecutar acciones administrativas.
 ## Alcance funcional
@@ -41,7 +44,7 @@ EL-EP-019; MOD-007; contrato técnico.
 - [x] Gate 2 de planificación aprobado
 ## Condiciones de ejecución pendientes
 - [ ] Autoridad operacional acreditada y dependencias validadas, incluido EL-TK-222, antes de ejecutar/activar
-REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: NO actual (PENDING_DEPENDENCIES); IMPLEMENTABLE_AFTER_DEPENDENCIES: YES. Validar depends_on antes de ejecutar; no repetir Gate2 salvo cambio material. Activación nuevas mutaciones/admin BLOCKED por EL-TK-221/222 y evidencias finales. IMPLEMENTED: NO.
+REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: NO actual (PENDING_DEPENDENCIES); IMPLEMENTABLE_AFTER_DEPENDENCIES: YES. Validar depends_on antes de ejecutar; no repetir Gate2 salvo cambio material. Activación nuevas mutaciones/admin BLOCKED por EL-TK-221/222 y evidencias finales. IMPLEMENTED: PARTIAL (alcance independiente; activación/cierre pendientes).
 ## Definition of Done
 Lecturas mínimas auditadas y fail-closed demostradas en entorno aislado.
 ## Archivos candidatos

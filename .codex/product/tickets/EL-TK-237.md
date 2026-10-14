@@ -2,7 +2,10 @@
 ## Parent epic
 EL-EP-019
 ## Status
-READY
+BLOCKED
+
+## Evidencia de ejecución independiente
+Preparación verificada sin activar: aislamiento 38/38, PostgreSQL receipts/CAS/zona horaria 16/16, API organizador con migraciones reales 5/5 y suite frontend completa 246/246 PASS. Runner incorpora scopes reproducibles y sentinel único de propiedad exclusiva. Cierre BLOCKED por autoridad operacional EL-TK-222, integración HTTPS/Playwright y accesibilidad manual; estas pruebas no acreditan post-PITR. Véase `docs/reports/event-control-panels-validation-2026-10-14.md`.
 ## User story
 Como equipo de entrega, quiero validar el recorrido completo del organizador en laboratorio, para acreditar sus garantías antes de activarlo.
 ## Alcance funcional
@@ -40,7 +43,7 @@ EL-EP-019; contrato técnico/UI; EL-TK-218..232.
 - [x] Matriz de garantías y dependencias definida
 - [x] Gate 2 aprobado
 - [ ] Capacidad EL-TK-222 y dependencias finales validadas
-REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: NO actual (PENDING_DEPENDENCIES); IMPLEMENTABLE_AFTER_DEPENDENCIES: YES. Validar depends_on antes de ejecutar; no repetir Gate2 salvo cambio material. Activación nuevas mutaciones/admin BLOCKED por EL-TK-221/222 y evidencias finales. IMPLEMENTED: NO.
+REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: NO actual (PENDING_DEPENDENCIES); IMPLEMENTABLE_AFTER_DEPENDENCIES: YES. Validar depends_on antes de ejecutar; no repetir Gate2 salvo cambio material. Activación nuevas mutaciones/admin BLOCKED por EL-TK-221/222 y evidencias finales. IMPLEMENTED: PARTIAL (alcance independiente; activación/cierre pendientes).
 ## Definition of Done
 Evidencia reproducible aislada, revisión independiente y activación organizer aprobada; no cierra la épica.
 ## Archivos candidatos

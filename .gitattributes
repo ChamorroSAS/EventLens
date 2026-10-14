@@ -1,0 +1,3 @@
+# Generated contracts must match their deterministic LF generators on Windows and CI.
+contracts/openapi.json text eol=lf
+packages/api-client/src/schema.ts text eol=lf

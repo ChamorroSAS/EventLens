@@ -90,6 +90,11 @@ export interface AdminSupportAuditSink {
   record(event: AdminSupportAuditEvent): Promise<void>;
 }
 
+/** HTTP private reads must durably acknowledge their owner audit before returning data. */
+export interface AdminReadAuditOptions {
+  readonly requireDurableAudit?: boolean;
+}
+
 // ==========================================
 // EL-TK-148: Diagnóstico y Consulta de Jobs
 // ==========================================

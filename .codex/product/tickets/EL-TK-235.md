@@ -2,7 +2,10 @@
 ## Parent epic
 EL-EP-019
 ## Status
-READY
+IN_PROGRESS
+
+## Evidencia de ejecución actual
+Implementación inactiva autorizada: cliente generado, sesión/guard separados, limpieza privada, revalidación y logout incierto con confirmación explícita. Rutas usan un shell de sólo lectura sin UI histórica de mutaciones. Activación/cierre pendientes de EL-TK-222 y laboratorio HTTPS. Evidencia y límites en `.codex/product/sessions/2026-10-13-admin-console-inactive-delivery.md`.
 ## User story
 Como administrador, quiero entrar y salir por una interfaz separada, para mantener aislada la sesión administrativa.
 ## Alcance funcional
@@ -41,7 +44,7 @@ EL-EP-019; UI/contrato admin; EL-TK-223/233.
 - [x] Gate 2 de planificación aprobado
 ## Condiciones de ejecución pendientes
 - [ ] Autoridad operacional acreditada y dependencias validadas, incluido EL-TK-222, antes de ejecutar/activar
-REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: NO actual (PENDING_DEPENDENCIES); IMPLEMENTABLE_AFTER_DEPENDENCIES: YES. Validar depends_on antes de ejecutar; no repetir Gate2 salvo cambio material. Activación nuevas mutaciones/admin BLOCKED por EL-TK-221/222 y evidencias finales. IMPLEMENTED: NO.
+REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: NO actual (PENDING_DEPENDENCIES); IMPLEMENTABLE_AFTER_DEPENDENCIES: YES. Validar depends_on antes de ejecutar; no repetir Gate2 salvo cambio material. Activación nuevas mutaciones/admin BLOCKED por EL-TK-221/222 y evidencias finales. IMPLEMENTED: PARTIAL (alcance independiente; activación/cierre pendientes).
 ## Definition of Done
 Entrada/salida accesibles sin mezclar sesiones ni secretos en cliente.
 ## Archivos candidatos

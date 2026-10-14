@@ -70,6 +70,7 @@ describe('OrganizerSessionController & OrganizerSessionService (EL-TK-205)', () 
       databaseUrl: 'postgresql://local:local@localhost:5432/local',
       databaseTimeoutMs: 2000,
       webOrigin: 'http://localhost:4200',
+      publicEntryBaseUrl: 'http://localhost:4200',
       identityPepperSecret: 'eventlens-local-dev-pepper-secret-0123456789abcdef'
     });
 
@@ -90,6 +91,7 @@ describe('OrganizerSessionController & OrganizerSessionService (EL-TK-205)', () 
       databaseUrl: 'postgresql://local:local@localhost:5432/local',
       databaseTimeoutMs: 2000,
       webOrigin: 'http://localhost:4200',
+      publicEntryBaseUrl: 'http://localhost:4200',
       identityPepperSecret: 'eventlens-local-dev-pepper-secret-0123456789abcdef'
     });
 
