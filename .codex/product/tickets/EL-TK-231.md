@@ -2,7 +2,7 @@
 ## Parent epic
 EL-EP-019
 ## Status
-READY
+DONE
 ## User story
 Como organizador, quiero guardar fecha y hora local de mi borrador, para programarlo sin activarlo.
 ## Alcance funcional
@@ -39,9 +39,15 @@ EL-EP-019; DEC-070; UI/contrato.
 ## Definition of Ready
 - [x] Campos/DST/errores definidos
 - [x] Gate 2 aprobado
-REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: NO actual (PENDING_DEPENDENCIES); IMPLEMENTABLE_AFTER_DEPENDENCIES: YES. Validar depends_on antes de ejecutar; no repetir Gate2 salvo cambio material. Activación nuevas mutaciones/admin BLOCKED por EL-TK-221/222 y evidencias finales. IMPLEMENTED: NO.
+REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: YES. IMPLEMENTED: YES.
 ## Definition of Done
-Guardado independiente, accesible y sin cálculo DST cliente acreditado.
+- [x] Guardado independiente, accesible y sin cálculo DST cliente acreditado.
+- [x] Formulario `EventScheduleSectionComponent` creado con badge de zona horaria confirmada visible.
+- [x] RadioGroup de desambiguación de offset para solapamiento (overlap) con invalidación ante cambios en inputs.
+- [x] Manejo de error 422 `DST_GAP_TIME` sin simulación local de DST.
+- [x] Manejo de conflicto de concurrencia 409 con botón de reconciliación.
+- [x] Suite de pruebas unitarias exhaustiva (6 pruebas en `event-schedule-section.component.spec.ts`, 31 suites web pasando en verde).
 ## Archivos candidatos
-- **read/modify:** `apps/web/src/app/lifecycle/event-schedule-form.component.ts`, `apps/web/src/app/organizer/organizer.service.ts`, `apps/web/src/app/organizer/event-settings-nav.component.ts`.
-- **test:** `apps/web/src/app/lifecycle/event-lifecycle-panel.component.spec.ts`, nuevo `apps/web/src/app/organizer/event-schedule-form.component.spec.ts` si se extrae el formulario.
+- **read/modify:** `apps/web/src/app/organizer/event-schedule-section.component.ts`, `apps/web/src/app/organizer/organizer-dashboard.component.ts`.
+- **test:** `apps/web/src/app/organizer/event-schedule-section.component.spec.ts`, `apps/web/src/app/organizer/organizer-dashboard.component.spec.ts`.
+

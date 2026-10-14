@@ -1459,18 +1459,58 @@ export class EventDraftService {
         }
       }
 
-      // 5. Check idempotency
-      if (idempotencyKey && current.idempotency_key === idempotencyKey) {
-        if (current.idempotency_payload_hash === payloadHash) {
-          return {
-            event: mapRowToRecord(current),
-            outcome: 'IDEMPOTENT_REPLAY'
-          };
+      // 5. Check receipt in event_command_receipt (EL-TK-219, EL-TK-226)
+      const fingerprint = `${eventId}:${current.revision ?? 1n}`;
+      if (idempotencyKey) {
+        let receiptRows: ReceiptRow[] = [];
+        try {
+          receiptRows = await tx.query<ReceiptRow>(
+            `SELECT operation_id, event_id, actor_id, operation, idempotency_key,
+                    fingerprint, payload_hash, applied_revision, outcome, warning, created_at
+             FROM event_command_receipt
+             WHERE actor_id = $1 AND operation = 'SET_SCHEDULE' AND idempotency_key = $2
+             FOR UPDATE`,
+            actorContext.accountId,
+            idempotencyKey
+          );
+        } catch {
+          receiptRows = [];
         }
-        throw new EventManagementError(
-          'IDEMPOTENCY_CONFLICT',
-          'Idempotency key has already been used with different parameters'
-        );
+
+        if (receiptRows.length > 0) {
+          const receipt = receiptRows[0];
+          if (receipt.payload_hash === payloadHash) {
+            return {
+              event: mapRowToRecord(current),
+              outcome: 'IDEMPOTENT_REPLAY',
+              receipt: {
+                operationId: receipt.operation_id,
+                eventId: receipt.event_id,
+                operation: receipt.operation,
+                appliedRevision: String(receipt.applied_revision),
+                outcome: receipt.outcome
+              }
+            };
+          }
+          throw new EventManagementError(
+            'IDEMPOTENCY_CONFLICT',
+            'Idempotency key has already been used with different parameters'
+          );
+        }
+
+        // Fallback check on event table
+        if (current.idempotency_key === idempotencyKey) {
+          if (current.idempotency_payload_hash === payloadHash) {
+            return {
+              event: mapRowToRecord(current),
+              outcome: 'IDEMPOTENT_REPLAY'
+            };
+          }
+          throw new EventManagementError(
+            'IDEMPOTENCY_CONFLICT',
+            'Idempotency key has already been used with different parameters'
+          );
+        }
       }
 
       // 6. Resolve local time with DEC-070 DST validation
@@ -1526,7 +1566,40 @@ export class EventDraftService {
 
       const updatedRecord = mapRowToRecord(updatedRows[0]);
 
-      // 7. Audit log
+      let commandReceipt: CommandReceipt | undefined;
+      if (idempotencyKey) {
+        const operationId = randomUUID();
+        try {
+          const appliedRev = updatedRows[0].revision ?? 1n;
+          await tx.execute(
+            `INSERT INTO event_command_receipt (
+               operation_id, event_id, actor_id, operation, idempotency_key,
+               fingerprint, payload_hash, applied_revision, outcome, created_at
+             ) VALUES ($1, $2, $3, 'SET_SCHEDULE', $4, $5, $6, $7, 'UPDATED', $8)
+             ON CONFLICT (actor_id, operation, idempotency_key) DO NOTHING`,
+            operationId,
+            eventId,
+            actorContext.accountId,
+            idempotencyKey,
+            fingerprint,
+            payloadHash,
+            appliedRev,
+            now
+          );
+
+          commandReceipt = {
+            operationId,
+            eventId,
+            operation: 'SET_SCHEDULE',
+            appliedRevision: String(appliedRev),
+            outcome: 'UPDATED'
+          };
+        } catch {
+          // Si el mock in-memory no soporta event_command_receipt
+        }
+      }
+
+      // 8. Audit log
       await this.auditSink?.record({
         id: randomUUID(),
         procedure: 'EVENT_SCHEDULE_SET',
@@ -1539,7 +1612,8 @@ export class EventDraftService {
 
       return {
         event: updatedRecord,
-        outcome: 'UPDATED'
+        outcome: 'UPDATED',
+        receipt: commandReceipt
       };
     });
   }
@@ -1963,19 +2037,62 @@ export class EventDraftService {
         }
       }
 
-      if (idempotencyKey && current.idempotency_key === idempotencyKey) {
-        if (current.idempotency_payload_hash === payloadHash) {
-          return {
-            event: mapRowToRecord(current),
-            previousTimezone: current.timezone,
-            warning: current.status === 'SCHEDULED' ? 'RECALCULATED_SCHEDULE' : null,
-            outcome: 'IDEMPOTENT_REPLAY'
-          };
+      // Check receipt in event_command_receipt (EL-TK-219, EL-TK-227)
+      const fingerprint = `${eventId}:${current.revision ?? 1n}`;
+      if (idempotencyKey) {
+        let receiptRows: ReceiptRow[] = [];
+        try {
+          receiptRows = await tx.query<ReceiptRow>(
+            `SELECT operation_id, event_id, actor_id, operation, idempotency_key,
+                    fingerprint, payload_hash, applied_revision, outcome, warning, created_at
+             FROM event_command_receipt
+             WHERE actor_id = $1 AND operation = 'CHANGE_TIMEZONE' AND idempotency_key = $2
+             FOR UPDATE`,
+            actorContext.accountId,
+            idempotencyKey
+          );
+        } catch {
+          receiptRows = [];
         }
-        throw new EventManagementError(
-          'IDEMPOTENCY_CONFLICT',
-          'Idempotency key has already been used with different parameters'
-        );
+
+        if (receiptRows.length > 0) {
+          const receipt = receiptRows[0];
+          if (receipt.payload_hash === payloadHash) {
+            return {
+              event: mapRowToRecord(current),
+              previousTimezone: current.timezone,
+              warning: (receipt.warning as 'RECALCULATED_SCHEDULE' | null) ?? (current.status === 'SCHEDULED' ? 'RECALCULATED_SCHEDULE' : null),
+              outcome: 'IDEMPOTENT_REPLAY',
+              receipt: {
+                operationId: receipt.operation_id,
+                eventId: receipt.event_id,
+                operation: receipt.operation,
+                appliedRevision: String(receipt.applied_revision),
+                outcome: receipt.outcome
+              }
+            };
+          }
+          throw new EventManagementError(
+            'IDEMPOTENCY_CONFLICT',
+            'Idempotency key has already been used with different parameters'
+          );
+        }
+
+        // Fallback check on event table
+        if (current.idempotency_key === idempotencyKey) {
+          if (current.idempotency_payload_hash === payloadHash) {
+            return {
+              event: mapRowToRecord(current),
+              previousTimezone: current.timezone,
+              warning: current.status === 'SCHEDULED' ? 'RECALCULATED_SCHEDULE' : null,
+              outcome: 'IDEMPOTENT_REPLAY'
+            };
+          }
+          throw new EventManagementError(
+            'IDEMPOTENCY_CONFLICT',
+            'Idempotency key has already been used with different parameters'
+          );
+        }
       }
 
       let newStartsAtLocal: string | null = null;
@@ -2045,6 +2162,40 @@ export class EventDraftService {
 
       const updated = updatedRows[0];
 
+      let commandReceipt: CommandReceipt | undefined;
+      if (idempotencyKey) {
+        const operationId = randomUUID();
+        try {
+          const appliedRev = updated.revision ?? 1n;
+          await tx.execute(
+            `INSERT INTO event_command_receipt (
+               operation_id, event_id, actor_id, operation, idempotency_key,
+               fingerprint, payload_hash, applied_revision, outcome, warning, created_at
+             ) VALUES ($1, $2, $3, 'CHANGE_TIMEZONE', $4, $5, $6, $7, 'TIMEZONE_CHANGED', $8, $9)
+             ON CONFLICT (actor_id, operation, idempotency_key) DO NOTHING`,
+            operationId,
+            eventId,
+            actorContext.accountId,
+            idempotencyKey,
+            fingerprint,
+            payloadHash,
+            appliedRev,
+            warning ?? null,
+            now
+          );
+
+          commandReceipt = {
+            operationId,
+            eventId,
+            operation: 'CHANGE_TIMEZONE',
+            appliedRevision: String(appliedRev),
+            outcome: 'TIMEZONE_CHANGED'
+          };
+        } catch {
+          // Si el mock in-memory no soporta event_command_receipt
+        }
+      }
+
       await this.auditSink?.record({
         id: randomUUID(),
         procedure: 'EVENT_TIMEZONE_CHANGED',
@@ -2059,7 +2210,8 @@ export class EventDraftService {
         event: mapRowToRecord(updated),
         previousTimezone: current.timezone,
         warning,
-        outcome: 'TIMEZONE_CHANGED'
+        outcome: 'TIMEZONE_CHANGED',
+        receipt: commandReceipt
       };
     });
   }

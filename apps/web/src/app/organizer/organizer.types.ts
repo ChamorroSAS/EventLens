@@ -41,6 +41,8 @@ export interface EventConfigurationCapabilitiesModel {
   canViewCapacity: boolean;
   canPublishOrActivate: boolean;
   canEditName?: boolean;
+  canSetLocalSchedule?: boolean;
+  canChangeTimezone?: boolean;
 }
 
 export interface EventConfigurationModel {

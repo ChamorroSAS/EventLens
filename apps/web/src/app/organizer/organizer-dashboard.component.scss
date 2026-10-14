@@ -264,3 +264,8 @@
   }
 }
 
+.schedule-tab-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--el-space-lg);
+}

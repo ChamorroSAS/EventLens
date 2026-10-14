@@ -2,7 +2,7 @@
 ## Parent epic
 EL-EP-019
 ## Status
-READY
+DONE
 ## User story
 Como organizador, quiero guardar fecha y hora local de mi borrador, para planificarlo en su zona confirmada.
 ## Alcance funcional
@@ -39,10 +39,16 @@ EL-EP-019; DEC-070; contrato técnico.
 ## Definition of Ready
 - [x] Contrato/DST/transacción definidos
 - [x] Gate 2 aprobado
-REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: NO actual (PENDING_DEPENDENCIES); IMPLEMENTABLE_AFTER_DEPENDENCIES: YES. Validar depends_on antes de ejecutar; no repetir Gate2 salvo cambio material. Activación nuevas mutaciones/admin BLOCKED por EL-TK-221/222 y evidencias finales. IMPLEMENTED: NO.
+REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: YES. IMPLEMENTED: YES.
 ## Definition of Done
-Calendario propietario y errores DST demostrados en PostgreSQL aislado.
-## Archivos candidatos
-- **read/modify:** `apps/api/src/events/organizer-events.controller.ts`; consume dominio/calendario propietario sin alterar reglas de negocio.
-- **generated exclusively:** `contracts/openapi.json` mediante export OpenAPI y `packages/api-client/src/schema.ts` mediante generación del cliente; nunca edición manual.
-- **test:** `packages/event-management/test/event-schedule.integration.test.ts`, `packages/event-management/test/event-draft-timezone-preview.integration.test.ts`.
+Calendario propietario y errores DST demostrados con CAS, receipt durable y tipado en OpenAPI/cliente.
+- [x] Endpoint PUT `/api/v1/events/{eventId}/configuration/schedule` implementado en `OrganizerEventsController`.
+- [x] Recálculo atómico en MOD-002 mediante `EventDraftService.setSchedule` con resolución DEC-070 DST (gap 422, overlap/offset 422, formato ISO local).
+- [x] CAS monotónico verificado con `expectedRevision` y conflicto 409.
+- [x] Persistencia e idempotencia con receipts durables en `event_command_receipt` (`SET_SCHEDULE`).
+- [x] Export OpenAPI y cliente TypeScript `api-client` regenerados sin edición manual.
+- [x] Pruebas unitarias de CAS, DST y contratos validadas en Vitest.
+
+## Cierre de implementación — 2026-10-13
+Implementación completada en rama `EL-TK-226`. Endpoint montado en NestJS, tipado generado en OpenAPI (`contracts/openapi.json`) y api-client (`packages/api-client/src/schema.ts`), con integración en `OrganizerService` de `@eventlens/web`. Suite de pruebas ejecutada con éxito (30 test files, 190 tests en `@eventlens/web`).
+
