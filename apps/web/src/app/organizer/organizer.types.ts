@@ -40,6 +40,7 @@ export interface EventConfigurationCapabilitiesModel {
   canViewLifecycle: boolean;
   canViewCapacity: boolean;
   canPublishOrActivate: boolean;
+  canEditName?: boolean;
 }
 
 export interface EventConfigurationModel {

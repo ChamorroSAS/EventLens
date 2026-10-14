@@ -11,6 +11,7 @@ import { EventSettingsNavComponent } from './event-settings-nav.component.js';
 import { EventStatusBadgeComponent } from '../lifecycle/event-status-badge.component.js';
 import { OrganizerMediaLibraryComponent } from '../media/organizer-media-library.component.js';
 import { CreateEventFormComponent } from './create-event-form.component.js';
+import { EventBasicInfoFormComponent } from './event-basic-info-form.component.js';
 import {
   APPROVED_PUBLIC_ENTRY_PATHS,
   CANONICAL_PUBLIC_ENTRY_ROUTE_METADATA,
@@ -28,7 +29,8 @@ import { OrganizerSessionService } from '../organizer-session.service';
     EventSettingsNavComponent,
     EventStatusBadgeComponent,
     OrganizerMediaLibraryComponent,
-    CreateEventFormComponent
+    CreateEventFormComponent,
+    EventBasicInfoFormComponent
   ],
   template: `
     <eventlens-organizer-app-shell
@@ -121,27 +123,14 @@ import { OrganizerSessionService } from '../organizer-session.service';
               <div class="section-body">
                 @switch (activeSection()) {
                   @case ('general') {
-                    <div class="section-card">
-                      <h3>Información del evento</h3>
-                      <dl class="detail-list">
-                        <div class="detail-item">
-                          <dt>Nombre:</dt>
-                          <dd>{{ selectedEvent()?.name }}</dd>
-                        </div>
-                        <div class="detail-item">
-                          <dt>Zona horaria:</dt>
-                          <dd>{{ selectedEvent()?.timezone }}</dd>
-                        </div>
-                        <div class="detail-item">
-                          <dt>Estado de ciclo de vida:</dt>
-                          <dd>{{ selectedEvent()?.status }}</dd>
-                        </div>
-                        <div class="detail-item">
-                          <dt>Revisión actual:</dt>
-                          <dd>{{ selectedEventConfig()?.revision }}</dd>
-                        </div>
-                      </dl>
-                    </div>
+                    @if (selectedEvent() && selectedEventConfig()) {
+                      <eventlens-event-basic-info-form
+                        [event]="selectedEvent()!"
+                        [configuration]="selectedEventConfig()!"
+                        (eventUpdated)="onEventBasicInfoUpdated($event)"
+                        (dirtyChange)="isBasicInfoDirty.set($event)"
+                      />
+                    }
                   }
                   @case ('schedule') {
                     <div class="section-card">
@@ -201,6 +190,39 @@ import { OrganizerSessionService } from '../organizer-session.service';
           (cancel)="onCancelCreateEvent()"
         />
       }
+
+      @if (showUnsavedChangesModal()) {
+        <div
+          class="unsaved-modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="unsaved-modal-title"
+          aria-describedby="unsaved-modal-desc"
+        >
+          <div class="unsaved-modal-card">
+            <h3 id="unsaved-modal-title" class="unsaved-modal-title">¿Descartar cambios sin guardar?</h3>
+            <p id="unsaved-modal-desc" class="unsaved-modal-desc">
+              Tienes modificaciones en el nombre del evento que no has guardado. Si continúas, se perderán estos cambios.
+            </p>
+            <div class="unsaved-modal-actions">
+              <button
+                type="button"
+                class="btn-cancel"
+                (click)="onKeepEditing()"
+              >
+                Seguir editando
+              </button>
+              <button
+                type="button"
+                class="btn-danger"
+                (click)="onDiscardAndNavigate()"
+              >
+                Descartar y continuar
+              </button>
+            </div>
+          </div>
+        </div>
+      }
     </eventlens-organizer-app-shell>
   `,
   styleUrl: './organizer-dashboard.component.scss',
@@ -228,7 +250,10 @@ export class OrganizerDashboardComponent implements OnInit {
   readonly selectedEventConfig = signal<EventConfigurationModel | null>(null);
   readonly activeSection = signal<EventSettingsSection>('general');
   readonly isCreatingEvent = signal<boolean>(false);
+  readonly isBasicInfoDirty = signal<boolean>(false);
+  readonly showUnsavedChangesModal = signal<boolean>(false);
   createEventTriggerElement: HTMLElement | null = null;
+  pendingNavigation: { type: 'section' | 'back'; targetSection?: EventSettingsSection } | null = null;
 
   constructor() {
     this.sessionService?.registerOrganizerCacheClearer(() => {
@@ -236,6 +261,9 @@ export class OrganizerDashboardComponent implements OnInit {
       this.selectedEventId.set(null);
       this.selectedEventConfig.set(null);
       this.isCreatingEvent.set(false);
+      this.isBasicInfoDirty.set(false);
+      this.showUnsavedChangesModal.set(false);
+      this.pendingNavigation = null;
     });
   }
 
@@ -270,6 +298,7 @@ export class OrganizerDashboardComponent implements OnInit {
   async onEventSelected(eventId: string): Promise<void> {
     this.selectedEventId.set(eventId);
     this.activeSection.set('general');
+    this.isBasicInfoDirty.set(false);
     try {
       const config = await this.organizerService.getEventConfiguration(eventId);
       this.selectedEventConfig.set(config);
@@ -279,13 +308,61 @@ export class OrganizerDashboardComponent implements OnInit {
   }
 
   onBackToEvents(): void {
+    if (this.isBasicInfoDirty()) {
+      this.pendingNavigation = { type: 'back' };
+      this.showUnsavedChangesModal.set(true);
+      return;
+    }
     this.selectedEventId.set(null);
     this.selectedEventConfig.set(null);
     this.activeSection.set('general');
+    this.isBasicInfoDirty.set(false);
   }
 
   onSectionChange(section: EventSettingsSection): void {
+    if (this.isBasicInfoDirty() && section !== this.activeSection()) {
+      this.pendingNavigation = { type: 'section', targetSection: section };
+      this.showUnsavedChangesModal.set(true);
+      return;
+    }
     this.activeSection.set(section);
+  }
+
+  onKeepEditing(): void {
+    this.showUnsavedChangesModal.set(false);
+    this.pendingNavigation = null;
+  }
+
+  onDiscardAndNavigate(): void {
+    this.showUnsavedChangesModal.set(false);
+    this.isBasicInfoDirty.set(false);
+    const nav = this.pendingNavigation;
+    this.pendingNavigation = null;
+    if (nav?.type === 'section' && nav.targetSection) {
+      this.activeSection.set(nav.targetSection);
+    } else if (nav?.type === 'back') {
+      this.selectedEventId.set(null);
+      this.selectedEventConfig.set(null);
+      this.activeSection.set('general');
+    }
+  }
+
+  onEventBasicInfoUpdated(updated: { id: string; name: string; revision: string }): void {
+    this.isBasicInfoDirty.set(false);
+    this.events.update((list) =>
+      list.map((e) => (e.id === updated.id ? { ...e, name: updated.name } : e))
+    );
+    const currentConfig = this.selectedEventConfig();
+    if (currentConfig && currentConfig.event.id === updated.id) {
+      this.selectedEventConfig.set({
+        ...currentConfig,
+        revision: updated.revision,
+        event: {
+          ...currentConfig.event,
+          name: updated.name
+        }
+      });
+    }
   }
 
   onCreateDraft(trigger?: HTMLElement): void {
