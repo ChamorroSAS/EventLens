@@ -219,6 +219,7 @@ export class OrganizerEventsService {
     try {
       authoritativeBaseUrl = resolveAuthoritativeShareBaseUrl({
         trustedPublicEntryBaseUrl: this.config.publicEntryBaseUrl,
+        allowPrivateNetworkHttp: this.config.allowPrivateNetworkPublicEntryHttp,
         untrustedBaseUrlOverride: params.untrustedBaseUrlOverride,
         untrustedHostOverride: params.untrustedHostOverride
       });

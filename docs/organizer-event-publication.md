@@ -19,6 +19,8 @@ En **Configurar evento → Acceso y PIN**, los eventos `SCHEDULED` y `ACTIVE` pe
 
 El enlace del QR usa `PUBLIC_ENTRY_BASE_URL`, que es independiente de `WEB_ORIGIN`. Compose la toma de `.env`; en desarrollo local usa `http://localhost:4200`. Para usar un dominio público, configura, por ejemplo, `PUBLIC_ENTRY_BASE_URL=https://eventos.tudominio.com`, y recrea únicamente el servicio API:
 
+En `NODE_ENV=development` también se permite una URL HTTP con IPv4 privada de laboratorio (10/8, 172.16/12 o 192.168/16), configurada por el servidor. En producción, test o sin modo development estas direcciones HTTP se rechazan; los destinos públicos requieren HTTPS. Esta opción no modifica CORS, cookies ni los puertos publicados. La aplicación debe ser accesible en la dirección configurada.
+
 ```sh
 docker compose up -d --no-deps --force-recreate api
 ```

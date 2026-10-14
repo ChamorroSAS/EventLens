@@ -8,6 +8,7 @@ export interface PlatformConfig {
   databaseTimeoutMs: number;
   webOrigin: string;
   publicEntryBaseUrl: string;
+  allowPrivateNetworkPublicEntryHttp?: boolean;
   identityPepperSecret: string;
   localAdminAuthorityDir?: string;
 }
@@ -42,7 +43,8 @@ export function readConfig(env: NodeJS.ProcessEnv): PlatformConfig {
     throw new Error('INVALID_CONFIG:WEB_ORIGIN');
   }
   const publicEntryBaseUrl = validateTrustedPublicEntryBaseUrl(
-    env.PUBLIC_ENTRY_BASE_URL ?? webOrigin
+    env.PUBLIC_ENTRY_BASE_URL ?? webOrigin,
+    { allowPrivateNetworkHttp: env.NODE_ENV === 'development' }
   );
   const host = env.API_HOST ?? '0.0.0.0';
   if (!/^[a-zA-Z0-9.:-]+$/.test(host)) throw new Error('INVALID_CONFIG:API_HOST');
@@ -68,6 +70,7 @@ export function readConfig(env: NodeJS.ProcessEnv): PlatformConfig {
     databaseTimeoutMs: integer(env.DATABASE_TIMEOUT_MS, 2000, 100, 30000, 'DATABASE_TIMEOUT_MS'),
     webOrigin,
     publicEntryBaseUrl,
+    allowPrivateNetworkPublicEntryHttp: env.NODE_ENV === 'development',
     identityPepperSecret,
     localAdminAuthorityDir
   };

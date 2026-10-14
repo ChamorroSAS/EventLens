@@ -2,7 +2,7 @@
 
 Fecha: 2026-10-13. EL-EP-019 / CR-007. Incorporado desde dictamen read-only `panels_architecture`: **APPROVED_FOR_PLANNING**. [Gates y limitaciones](../product/sessions/2026-10-13-event-control-panels-gates.md). Arquitectura de planificación aprobada; no acredita runtime ni autoriza activar superficies que dependan de RecoveryAuthority no verificada.
 
-Actualización focal 2026-10-14: CR-010/EL-TK-244 permite editar el inicio de DRAFT/SCHEDULED nunca activado.
+Actualización focal 2026-10-14: CR-010/EL-TK-244 permite editar el inicio de DRAFT/SCHEDULED nunca activado. La compatibilidad de laboratorio de PUBLIC_ENTRY_BASE_URL admite HTTP RFC1918 IPv4 únicamente cuando NODE_ENV es exactamente development, mediante una política interna servidor propagada a la validación y al resolver de compartir. La opción es false por defecto; no habilita overrides del cliente, destinos públicos HTTP ni cambios de CORS/cookies/puertos. Dictamen arquitectónico focal APPROVED; producción/test siguen rechazando HTTP privado.
 
 ## Precedencia y ownership
 

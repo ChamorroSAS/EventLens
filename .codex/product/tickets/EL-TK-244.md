@@ -31,3 +31,4 @@ IMPLEMENTED: YES. Revisión independiente APPROVED; gate UI focal APPROVED. Ento
 - Web: ejecuciones focales de event-schedule-section, organizer-dashboard y organizer-schedule-api, 11 + 13 + 6 pruebas aprobadas. Recarga escalonada, códigos de error, timeout y doble envío verificados.
 - PostgreSQL aislado con withIsolatedTestDatabase: event-lifecycle-http 9/9, más carrera activación/reprogramación 1/1; matriz de capacidades 1/1. Timeline, duración, estado, QR, restricciones y rollback verificados.
 - API/web builds y OpenAPI/cliente --check aprobados.
+- Corrección operacional adicional: 27/27 pruebas de config/public-entry-serving para HTTP RFC1918 únicamente en development; arquitectura y revisión APPROVED. La URL LAN de .env se conservó al recuperar el arranque.
