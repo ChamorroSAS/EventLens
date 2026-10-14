@@ -22,6 +22,7 @@ import {
 } from '../navigation/public-entry-routes.contract';
 import { PublicEntryRouterService } from '../navigation/public-entry-router.service';
 import { OrganizerSessionService } from '../organizer-session.service';
+import { OrganizerAppShellComponent } from '../organizer/organizer-app-shell.component.js';
 
 export interface OrganizerSessionViewModel {
   readonly id: string;
@@ -185,7 +186,7 @@ export class OrganizerAccountGatewayService implements AccountDeletionUiAdapter 
 @Component({
   selector: 'eventlens-organizer-account',
   standalone: true,
-  imports: [CommonModule, DeletionManagementComponent],
+  imports: [CommonModule, DeletionManagementComponent, OrganizerAppShellComponent],
   providers: [
     {
       provide: ACCOUNT_DELETION_UI_ADAPTER,
@@ -199,7 +200,8 @@ export class OrganizerAccountGatewayService implements AccountDeletionUiAdapter 
     }
   ],
   template: `
-    <main class="el-account-page" aria-labelledby="organizer-account-heading">
+    <eventlens-organizer-app-shell activeNav="account">
+      <main class="el-account-page" aria-labelledby="organizer-account-heading">
       <header class="el-account-header">
         <div>
           <p class="el-account-eyebrow">Espacio de organizador</p>
@@ -392,16 +394,17 @@ export class OrganizerAccountGatewayService implements AccountDeletionUiAdapter 
           />
         </section>
       }
-    </main>
+      </main>
+    </eventlens-organizer-app-shell>
   `,
   styles: [
     `
       .el-account-page {
-        max-width: 52rem;
-        margin: 2rem auto;
-        padding: 0 1.25rem;
-        font-family: 'Manrope', system-ui, sans-serif;
-        color: #0f172a;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        font-family: var(--el-font-family, 'Manrope', system-ui, sans-serif);
+        color: var(--el-color-text, #0f172a);
       }
       .el-account-header {
         display: flex;
@@ -415,23 +418,25 @@ export class OrganizerAccountGatewayService implements AccountDeletionUiAdapter 
         margin: 0 0 0.25rem;
         font-size: 0.875rem;
         font-weight: 600;
-        color: #1d4ed8;
+        color: var(--el-color-primary, #2563eb);
       }
       .el-account-header h1 {
         margin: 0;
-        font-size: 1.875rem;
+        font-size: var(--el-font-size-h1, 1.875rem);
         font-weight: 700;
+        color: var(--el-color-text, #0f172a);
       }
       .el-account-nav {
         display: flex;
         gap: 1rem;
       }
       .el-account-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 0.875rem;
+        background: var(--el-color-surface, #ffffff);
+        border: 1px solid var(--el-color-border, #e2e8f0);
+        border-radius: var(--el-radius-lg, 0.75rem);
         padding: 1.5rem;
         margin-bottom: 1.25rem;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
       }
       .el-account-card h2 {
         margin: 0 0 1rem;

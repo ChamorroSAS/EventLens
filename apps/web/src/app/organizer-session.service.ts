@@ -182,6 +182,18 @@ export class OrganizerSessionService {
         : APPROVED_PUBLIC_ENTRY_PATHS.HOME;
     }
 
+    if (!canonical) {
+      if (snap.state === 'ORGANIZER_ACTIVE' && snap.capabilities.canAccessMyEvents) {
+        return APPROVED_PUBLIC_ENTRY_PATHS.ORGANIZER_DASHBOARD;
+      }
+      if (
+        snap.state === 'ORGANIZER_RESTRICTED_DELETION' &&
+        snap.capabilities.canAccessMyAccount
+      ) {
+        return APPROVED_PUBLIC_ENTRY_PATHS.ORGANIZER_ACCOUNT;
+      }
+    }
+
     return APPROVED_PUBLIC_ENTRY_PATHS.HOME;
   }
 
