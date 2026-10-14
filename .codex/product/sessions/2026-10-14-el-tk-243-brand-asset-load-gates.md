@@ -277,17 +277,17 @@ técnico). `baseline_impact: NONE`; `critical_review: NO`.
 
 ### Cierre de gates
 
-Ambos gates quedan **favorables** para la **revisión 4-final**. Pendiente el paso documental
-autorizado que: (1) fije `CHANGE_READY` en CR-009 y emita la línea única del token
-(`AUTHORIZED_DERIVATIVES: <id>`, con el id del CR); (2) retire `DRAFT` de las entradas de
-CONVENTIONS/BACKLOG y registre el CR en CHANGELOG; (3) promueva la sección del contrato de marca de
-PROPUESTA a vigente; (4) pase EL-TK-243 a `READY` (`REQUIREMENTS_READY: YES`,
-`READY_FOR_IMPLEMENTATION: YES`); y (5) salde las dos OBSERVATION de la ronda 7.
+Ambos gates quedan **favorables** para la **revisión 4-final**. **Paso documental de cierre ejecutado
+el 2026-10-14 con autorización del owner:** (1) CR-009 pasa a `CHANGE_READY` y emite la línea única
+del token (`AUTHORIZED_DERIVATIVES: CR-009`); (2) CONVENTIONS/BACKLOG pasan de `DRAFT` a
+`CHANGE_READY` y el CR queda registrado en CHANGELOG; (3) la sección del contrato de marca se
+promueve de PROPUESTA a vigente; (4) EL-TK-243 pasa a `READY` (`REQUIREMENTS_READY: YES`,
+`READY_FOR_IMPLEMENTATION: YES`); y (5) se saldan las dos OBSERVATION de la ronda 7 (redacción de
+CONVENTIONS:93 y magnitud duplicada en el registro del hallazgo).
 
 **Decisiones del owner (2026-10-14):** (a) **CONFIRMED** — la reparación de los dos verificadores se
-mantiene **dentro de EL-TK-243** (no se separa en ticket propio); (b) el paso documental de cierre
-**no se ha autorizado todavía**, por lo que CR-009 y EL-TK-243 permanecen en `DRAFT` y los tres
-puntos restantes del cierre siguen pendientes.
+mantiene **dentro de EL-TK-243** (no se separa en ticket propio); (b) **autorizado** el paso
+documental de cierre, ya ejecutado (CR-009 `CHANGE_READY`; EL-TK-243 `READY`).
 
 **Nota posterior a los dictámenes (solo evidencia, sin cambio técnico):** el owner commiteó
 `668392d` (refactor de `organizer-app-shell.component.html` / `organizer-account.component.html`,

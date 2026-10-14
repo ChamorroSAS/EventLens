@@ -3,11 +3,12 @@
 Hallazgo de rendimiento detectado durante la verificación de EL-TK-242, registrado en
 [evidencia de sesión](../sessions/2026-10-14-el-tk-243-brand-asset-load-finding.md). Trabajo
 correctivo fuera de CR-004/CR-008; requiere CR propio o excepción aprobada a la restricción de
-bytes de CR-006 antes de READY. DRAFT (revisión 4-final; correcciones de las rondas 1-5 aplicadas;
+bytes de CR-006 antes de READY. READY (revisión 4-final; correcciones de las rondas 1-5 aplicadas;
+ambos gates APPROVED y cierre documental autorizado por el owner el 2026-10-14;
 [dictámenes](../sessions/2026-10-14-el-tk-243-brand-asset-load-gates.md)).
 
 **Enfoque fijado (CONFIRMED por el usuario, 2026-10-14): B — derivados optimizados, autorizados de
-forma acotada por [CR-009](../changes/CR-009.md) (DRAFT / PENDING_GATES), servidos por `src`
+forma acotada por [CR-009](../changes/CR-009.md) (CHANGE_READY), servidos por `src`
 directo. `NgOptimizedImage` NO se adopta.**
 
 ## Parent epic
@@ -17,7 +18,7 @@ la extensión de CR-004 se conservan).
 
 ## Status
 
-DRAFT
+READY
 
 ## User story
 
@@ -183,10 +184,11 @@ si no se ejecuta.
 
 - **CONFIRMED (CR-006):** la publicación vigente es copia **bit a bit**; el manifiesto declara
   `modifyVectorizeRecolorOrReplace: NOT_AUTHORIZED`.
-- **CONFIRMED (CR-009, DRAFT/PENDING_GATES):** autoriza de forma acotada la generación de derivados
+- **CONFIRMED (CR-009, `CHANGE_READY`):** autoriza de forma acotada la generación de derivados
   PNG del mismo arte y la actualización de su verificación, conservando los originales y sus
-  hashes. La excepción vive en `derivativeGeneration` + opt-in del CR; el literal de CR-006 no se
-  enmienda en su valor y se añade referencia cruzada. Aprobación formal pendiente de gates.
+  hashes. La excepción vive en `derivativeGeneration` + opt-in del CR (token emitido el 2026-10-14);
+  el literal de CR-006 no se enmienda en su valor y se añade referencia cruzada. Aprobado por ambos
+  gates (revisión 4-final).
 - Los derivados no alteran arte, colores, transparencia, proporción ni encuadre; no se vectorizan ni
   recolorean; nunca se sobrescribe un nombre de rol publicado; la transformación permitida es sólo
   `raster-resize` (incluye la re-codificación PNG).
@@ -317,22 +319,22 @@ CR-004 (publicación de marca); `scripts/verify-branding-assets.mjs`;
 - [x] Permisos/errores definidos (estáticos; sin permisos nuevos)
 - [x] Sin preguntas BLOCKER
 
-REQUIREMENTS_READY: PENDING — Gate 1 **APPROVED** en la ronda 7 (revisión 4-final); el paso formal
-a `YES` corresponde al paso documental de cierre, que **aún no está autorizado** por el owner.
-READY_FOR_IMPLEMENTATION: NO — gate técnico **APPROVED** (ronda 6), pero la transición queda
-pendiente de la autorización del owner (y de la aprobación formal de CR-009).
+REQUIREMENTS_READY: YES — Gate 1 **APPROVED** (ronda 7, revisión 4-final); cierre documental
+ejecutado el 2026-10-14 con autorización del owner.
+READY_FOR_IMPLEMENTATION: YES — gate técnico **APPROVED** (ronda 6) y CR-009 en `CHANGE_READY`
+(token emitido).
 UI_REQUIRED: NO (no introduce ni cambia pantallas, formularios, navegación, estados visibles ni
 componentes reutilizables; sí exige verificación visual de no-regresión y se reevaluaría si
 cambiara el reflujo/CLS). IMPLEMENTED: NO.
 
 ## Bloqueos y gates requeridos
 
-1. **Autorización de bytes:** atendida por [CR-009](../changes/CR-009.md) (DRAFT). Efectiva sólo
-   tras su aprobación (opt-in) por los gates.
+1. **Autorización de bytes:** atendida por [CR-009](../changes/CR-009.md) (`CHANGE_READY`, token
+   `AUTHORIZED_DERIVATIVES: CR-009` emitido). Resuelta.
 2. **Gate de requisitos/arquitectura:** `requirements_reviewer` + `architect` antes de `READY`.
    Rondas 1-5: ambos NEEDS_CHANGES. Ronda 6: gate técnico **APPROVED** y Gate 1 NEEDS_CHANGES sólo
-   por correcciones de registro. Ronda 7: **Gate 1 APPROVED**. Ambos gates son favorables; la
-   transición a `READY`/`CHANGE_READY` queda pendiente de autorización del owner.
+   por correcciones de registro. Ronda 7: **Gate 1 APPROVED**. Ambos gates favorables; transición a
+   `READY`/`CHANGE_READY` ejecutada el 2026-10-14 con autorización del owner.
 3. **Decisión de enfoque:** CERRADA — B (derivados, `src` directo); `NgOptimizedImage` descartado.
 4. **Reparación preexistente:** tres defectos en los dos verificadores. Se mantiene dentro del
    alcance por ser prerequisito lógico de sus propios criterios de aceptación; el owner **ratificó**
@@ -342,6 +344,6 @@ cambiara el reflujo/CLS). IMPLEMENTED: NO.
 
 [CR-009](../changes/CR-009.md) — Optimización de carga de los assets de marca Phoeve (Technical
 change, excepción acotada a la restricción de bytes de CR-006). Este ticket no pertenece a CR-004
-ni a CR-008. Secuencia: CR-009 DRAFT → Gate 1 requisitos → gate técnico `architect` →
-(`ui_designer` NO) → EL-TK-243 `READY` → software delivery. Sin ese CR no debe declararse READY ni
-implementarse por implicación.
+ni a CR-008. Secuencia: CR-009 `CHANGE_READY` (2026-10-14) → Gate 1 requisitos APPROVED (ronda 7) →
+gate técnico `architect` APPROVED (ronda 6) → (`ui_designer` NO) → EL-TK-243 `READY` (2026-10-14) →
+software delivery. Sin ese CR no debe declararse READY ni implementarse por implicación.

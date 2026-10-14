@@ -68,7 +68,7 @@ del orden de 2000 px y supera con holgura la tolerancia de 1200.
 - Peso **publicado en disco** del set PNG: 1.224.308 B ≈1,17 MiB.
 - Peso **realmente solicitado** en una visita con header + footer, **incluyendo el favicon**:
   `logo-primary` (286.360) + `logo-dark` (283.221) + `favicon` (374.816) = 944.397 B
-  (≈922 KiB; 944.397 B). De esa cifra, los **wordmarks `<img>`** suman **569.581 B**, que es la
+  (≈922 KiB). De esa cifra, los **wordmarks `<img>`** suman **569.581 B**, que es la
   línea base del criterio de peso (el favicon queda fuera de alcance).
 
 ## CONFIRMED — estado de los verificadores en HEAD (`c744647`)
