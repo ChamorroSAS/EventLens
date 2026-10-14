@@ -24,6 +24,8 @@ import {
 } from './guest/guest-public-entry.controller.js';
 import { AdminSessionController } from './identity/admin-session.controller.js';
 import { AdminSessionService } from './identity/admin-session.service.js';
+import { AdminReadOnlyController } from './admin/admin-read-only.controller.js';
+import { AdminReadOnlyService } from './admin/admin-read-only.service.js';
 import type { PlatformConfig } from './platform/config/config.js';
 @Module({})
 export class AppModule {
@@ -34,6 +36,7 @@ export class AppModule {
         HealthController,
         OrganizerSessionController,
         AdminSessionController,
+        AdminReadOnlyController,
         BetaAccessRequestController,
         OrganizerAccountController,
         OrganizerEventsController,
@@ -44,6 +47,7 @@ export class AppModule {
         {provide:DatabaseService,useFactory:() => new DatabaseService(config)},
         OrganizerSessionService,
         AdminSessionService,
+        AdminReadOnlyService,
         PublicBetaAccessRequestAdapterService,
         OrganizerAccountService,
         OrganizerEventsService,

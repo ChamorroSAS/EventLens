@@ -10,6 +10,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@eventlens/admin-support':
+        specifier: workspace:*
+        version: link:../../packages/admin-support
       '@eventlens/database':
         specifier: workspace:*
         version: link:../../packages/database

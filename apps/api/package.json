@@ -12,6 +12,7 @@
                     "openapi:export":  "pnpm build \u0026\u0026 node dist/export-openapi.js"
                 },
     "dependencies":  {
+                         "@eventlens/admin-support": "workspace:*",
                          "@eventlens/database":  "workspace:*",
                          "@eventlens/event-management":  "workspace:*",
                          "@eventlens/identity":  "workspace:*",

@@ -21,6 +21,20 @@ La autoridad actual puede reinicializar almacenamiento perdido, rebajar floors y
 
 EL-TK-237 y EL-TK-238: cierre BLOCKED. EL-TK-233–236: sólo construcción independiente inactiva y validación acotada hasta acreditar dependencias. HTTPS real, revisión manual de accesibilidad y restauración PostgreSQL: PENDING.
 
+## EL-TK-234 — lectura administrativa inactiva
+
+- Endpoints search y aggregated-detail: sólo actor MOD-001, DTO explícito mínimo, no-store, errores neutros y auditoría SQL durable obligatoria antes de responder. Sin media, invitationCode, acciones ni jobs.
+- Correctivo de frontera compartido con 233: cookie host estricta, sin fallback legacy ni aceptación de duplicados/vacíos/valores malformados. Paginación rechaza overflow; detalle estricto rechaza organizador ausente en lugar de inventar datos.
+- Unitarias ejecutadas: owners MOD-007 33/33; API admin sesión/lectura 31/31. Builds y generación/verificación OpenAPI/cliente: PASS.
+- PostgreSQL 16.15 exclusivo y efímero `eventlens-admin-lab-20261013`, publicado sólo en loopback y con tmpfs. Guard probado antes de las suites: rechazo de política ausente, marker ajeno, base/rol efectivo incorrecto y URL eventlens; sentinelas intactos. Cada ejecución crea una base y rol únicos, validando OID/owner/marker antes de limpiarlos.
+- Integración PostgreSQL ejecutada: búsqueda/detalle owners 6/6; nueva API `test/integration/admin-read-only.test.ts` 2/2 sobre migraciones reales. La segunda usa autoridad simulada explícita de laboratorio: acredita SQL/auditoría y falla cerrada, no RecoveryAuthority operacional ni PITR.
+- Revisión independiente: PASS_WITH_WARNINGS para alcance inactivo; no habilita activación.
+- Instalación offline no pudo resolver metadata ya ausente de Nest; se añadió sólo el enlace workspace existente al importer de lockfile y un junction local ignorado para verificar. No dependencia externa nueva.
+
+## Preparación de aislamiento para EL-TK-237
+
+La primera ejecución de laboratory dio 37/38: una prueba de política ausente heredaba variables del runner. Se aisló explícitamente esa prueba; repetición 38/38 PASS. Además, el sentinel auxiliar usa ahora nombre único por ejecución y limpieza sólo tras su CREATE confirmado, evitando tocar una tabla ajena con nombre fijo. Esto no completa la validación organizadora ni el cierre de 237.
+
 ## Próximas fases verificables
 
 1. EL-TK-234: endpoints mínimos de lectura, sesión MOD-001 y auditoría durable obligatoria antes de responder; DTO explícito sin media/acciones/códigos de invitación.

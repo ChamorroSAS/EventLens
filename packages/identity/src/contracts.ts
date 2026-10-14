@@ -289,6 +289,22 @@ export function extractAdminSessionCookie(cookieHeader: string | undefined): str
   return fallbackSession;
 }
 
+/** Secure administrative HTTP boundary: one nonempty host cookie, with no legacy fallback. */
+export function extractHostAdminSessionCookie(cookieHeader: string | undefined): string | undefined {
+  if (!cookieHeader || typeof cookieHeader !== 'string') return undefined;
+  const values = cookieHeader.split(';').flatMap(part => {
+    const separator = part.indexOf('=');
+    if (separator < 0 && part.trim() === '__Host-el_admin_session') return [''];
+    if (separator < 0 || part.slice(0, separator).trim() !== '__Host-el_admin_session') return [];
+    return [part.slice(separator + 1).trim()];
+  });
+  if (values.length !== 1 || !values[0]) return undefined;
+  try {
+    const decoded = decodeURIComponent(values[0]);
+    return decoded && !/[\s\x00-\x1f\x7f;]/.test(decoded) ? decoded : undefined;
+  } catch { return undefined; }
+}
+
 export interface AdminSessionProjection {
   readonly state: 'ADMIN_ACTIVE' | 'ANONYMOUS';
   readonly principal: {

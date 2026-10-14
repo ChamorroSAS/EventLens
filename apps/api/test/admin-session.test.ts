@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import {
   extractAdminSessionCookie,
+  extractHostAdminSessionCookie,
   type RecoveryAuthorityPort
 } from '@eventlens/identity';
 import { AdminSessionController } from '../src/identity/admin-session.controller.js';
@@ -25,6 +26,13 @@ describe('AdminSessionController & AdminSessionService (EL-TK-233)', () => {
 
   it('mounts below the application global prefix without duplicating api/v1', () => {
     expect(Reflect.getMetadata('path', AdminSessionController)).toBe('admin/auth');
+  });
+
+  it('secure host cookie has no legacy fallback, rejects malformed, empty or duplicated values', () => {
+    expect(extractHostAdminSessionCookie('__Host-el_admin_session=valid-token')).toBe('valid-token');
+    for (const cookie of ['el_admin_session=legacy', '__Host-el_admin_session=; el_admin_session=legacy', '__Host-el_admin_session=%E0%A4%A; el_admin_session=legacy', '__Host-el_admin_session=a; __Host-el_admin_session=b']) {
+      expect(extractHostAdminSessionCookie(cookie)).toBeUndefined();
+    }
   });
 
   it('denies unconfigured authority before database reads or writes and preserves explicit DI', async () => {

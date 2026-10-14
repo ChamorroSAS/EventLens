@@ -37,6 +37,7 @@ export {
   computeDummyCredentialDigest,
   serializeSessionCookie,
   extractAdminSessionCookie,
+  extractHostAdminSessionCookie,
   type AdminSessionProjection,
   type RenewSessionContextCommand,
   type RenewSessionContextResult,
