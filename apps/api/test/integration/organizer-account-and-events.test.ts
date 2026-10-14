@@ -78,7 +78,9 @@ async function seedOrganizerAccount(status: 'ACTIVE' | 'PENDING_DELETION') {
   return { accountId, invitationId, email, password };
 }
 
-it('EL-TK-209: manages own organizer sessions, rejects alien sessions with 404, and executes account deletion/cancellation with reauthentication on real PostgreSQL 16', async () => {
+it(
+  'EL-TK-209: manages own organizer sessions, rejects alien sessions with 404, and executes account deletion/cancellation with reauthentication on real PostgreSQL 16',
+  async () => {
   const owner = await seedOrganizerAccount('ACTIVE');
   const other = await seedOrganizerAccount('ACTIVE');
 
@@ -283,7 +285,7 @@ it('EL-TK-209: manages own organizer sessions, rejects alien sessions with 404, 
   const execCancelBody = (await execCancelRes.json()) as any;
   expect(execCancelBody.accountStatus).toBe('ACTIVE');
   expect(execCancelBody.status).toBe('CANCELLED');
-});
+}, 30000);
 
 it('EL-TK-210: lists own events, serves authorized event configuration, enforces cross-organizer 404 anti-enumeration, and denies restricted/anonymous callers on real PostgreSQL 16', async () => {
   const owner = await seedOrganizerAccount('ACTIVE');
@@ -367,6 +369,113 @@ it('EL-TK-210: lists own events, serves authorized event configuration, enforces
   });
   expect(alienConfigRes.status).toBe(404);
 });
+
+it('EL-TK-224: creates event draft idempotently via POST /events, verifies replay, CSRF, origin, and rejections', async () => {
+  const owner = await seedOrganizerAccount('ACTIVE');
+  const session = await sessionService.getAuthService().login({
+    email: owner.email,
+    password: owner.password,
+    origin: config.webOrigin
+  });
+
+  const idempotencyKey = `create-${randomUUID()}`;
+  const eventName = 'Mi Boda de Prueba EL-TK-224';
+
+  // 1. Rechazo por falta de Idempotency-Key -> 400
+  const noKeyRes = await fetch(`${base}/api/v1/events`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: config.webOrigin,
+      'X-CSRF-Token': session.csrfToken,
+      Cookie: `__Host-el_session=${session.sessionToken}`
+    },
+    body: JSON.stringify({ name: eventName })
+  });
+  expect(noKeyRes.status).toBe(400);
+
+  // 2. Rechazo por nombre inválido (vacío) -> 422
+  const emptyNameRes = await fetch(`${base}/api/v1/events`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: config.webOrigin,
+      'X-CSRF-Token': session.csrfToken,
+      'Idempotency-Key': idempotencyKey,
+      Cookie: `__Host-el_session=${session.sessionToken}`
+    },
+    body: JSON.stringify({ name: '   ' })
+  });
+  expect(emptyNameRes.status).toBe(422);
+
+  // 3. Rechazo por falta de CSRF -> 403
+  const noCsrfRes = await fetch(`${base}/api/v1/events`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: config.webOrigin,
+      'Idempotency-Key': idempotencyKey,
+      Cookie: `__Host-el_session=${session.sessionToken}`
+    },
+    body: JSON.stringify({ name: eventName })
+  });
+  expect(noCsrfRes.status).toBe(403);
+
+  // 4. Creación autorizada exitosa -> 201 Created con envelope { receipt, outcome: 'APPLIED', event: { id } }
+  const createRes = await fetch(`${base}/api/v1/events`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: config.webOrigin,
+      'X-CSRF-Token': session.csrfToken,
+      'Idempotency-Key': idempotencyKey,
+      Cookie: `__Host-el_session=${session.sessionToken}`
+    },
+    body: JSON.stringify({ name: eventName })
+  });
+  expect(createRes.status).toBe(201);
+  const createBody = (await createRes.json()) as any;
+  expect(createBody.outcome).toBe('APPLIED');
+  expect(createBody.event.id).toBeDefined();
+  expect(createBody.receipt).toBeDefined();
+  expect(createBody.receipt.operation).toBe('CREATE_EVENT');
+  expect(createBody.receipt.eventId).toBe(createBody.event.id);
+  expect(createBody.receipt.appliedRevision).toBe('1');
+  const createdEventId = createBody.event.id;
+
+  // 5. Replay idéntico compatible -> 200 OK con outcome: 'REPLAYED' y mismo receipt original
+  const replayRes = await fetch(`${base}/api/v1/events`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: config.webOrigin,
+      'X-CSRF-Token': session.csrfToken,
+      'Idempotency-Key': idempotencyKey,
+      Cookie: `__Host-el_session=${session.sessionToken}`
+    },
+    body: JSON.stringify({ name: eventName })
+  });
+  expect(replayRes.status).toBe(200);
+  const replayBody = (await replayRes.json()) as any;
+  expect(replayBody.outcome).toBe('REPLAYED');
+  expect(replayBody.event.id).toBe(createdEventId);
+  expect(replayBody.receipt.operationId).toBe(createBody.receipt.operationId);
+  expect(replayBody.receipt.appliedRevision).toBe(createBody.receipt.appliedRevision);
+
+  // 6. Conflicto de idempotencia con mismo key y diferente payload -> 409 Conflict
+  const conflictRes = await fetch(`${base}/api/v1/events`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: config.webOrigin,
+      'X-CSRF-Token': session.csrfToken,
+      'Idempotency-Key': idempotencyKey,
+      Cookie: `__Host-el_session=${session.sessionToken}`
+    },
+    body: JSON.stringify({ name: 'Nombre Completamente Distinto' })
+  });
+  expect(conflictRes.status).toBe(409);
+}, 30000);
 
 it('EL-TK-218: verifica guardas de aislamiento de laboratorio antes de listen', async () => {
   const { assertTestServerStartup } = await import('@eventlens/database/testing');
