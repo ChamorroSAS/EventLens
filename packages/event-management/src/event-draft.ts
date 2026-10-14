@@ -671,17 +671,6 @@ export class EventDraftService {
         );
       }
 
-      // Validar CAS (EL-TK-220)
-      if (expectedRevision !== undefined) {
-        const currentRevisionStr = String(current.revision ?? 1n);
-        if (currentRevisionStr !== expectedRevision) {
-          throw new EventManagementError(
-            'CONCURRENCY_CONFLICT',
-            `Event revision conflict: expected ${expectedRevision}, but current revision is ${currentRevisionStr}`
-          );
-        }
-      }
-
       // Check receipt in event_command_receipt (EL-TK-219)
       if (idempotencyKey) {
         let receiptRows: ReceiptRow[] = [];
@@ -731,6 +720,17 @@ export class EventDraftService {
           throw new EventManagementError(
             'IDEMPOTENCY_CONFLICT',
             'Idempotency key has already been used with different parameters'
+          );
+        }
+      }
+
+      // Validar CAS (EL-TK-220)
+      if (expectedRevision !== undefined) {
+        const currentRevisionStr = String(current.revision ?? 1n);
+        if (currentRevisionStr !== expectedRevision) {
+          throw new EventManagementError(
+            'CONCURRENCY_CONFLICT',
+            `Event revision conflict: expected ${expectedRevision}, but current revision is ${currentRevisionStr}`
           );
         }
       }
