@@ -2,7 +2,7 @@
 ## Parent epic
 EL-EP-019
 ## Status
-READY
+DONE
 ## User story
 Como organizador, quiero cambiar la zona horaria en una sección separada, para revisar su efecto antes de guardar fecha/hora.
 ## Alcance funcional
@@ -39,9 +39,17 @@ EL-EP-019; DEC-070; UI/contrato.
 ## Definition of Ready
 - [x] Separación de grupos y estados definida
 - [x] Gate 2 aprobado
-REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: NO actual (PENDING_DEPENDENCIES); IMPLEMENTABLE_AFTER_DEPENDENCIES: YES. Validar depends_on antes de ejecutar; no repetir Gate2 salvo cambio material. Activación nuevas mutaciones/admin BLOCKED por EL-TK-221/222 y evidencias finales. IMPLEMENTED: NO.
+REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: YES. IMPLEMENTED: YES.
 ## Definition of Done
-TZ guardada separadamente sin transacción visual ficticia.
+- [x] TZ guardada separadamente sin transacción visual ficticia.
+- [x] Componente `EventTimezoneSectionComponent` creado e integrado en la pestaña Programación de `organizer-dashboard.component.ts`.
+- [x] Buscador reactivo de zonas horarias IANA preservando la opción actualmente seleccionada.
+- [x] Badge visible con la zona horaria confirmada del evento.
+- [x] Advertencia explícita ante eventos en estado `SCHEDULED` antes de confirmar el cambio de zona horaria.
+- [x] Bloqueo e información visible ante eventos en estado `ACTIVE`.
+- [x] Manejo de error 409 con botón de reconciliación de datos y conservación de entradas.
+- [x] Pruebas unitarias completas en `event-timezone-section.component.spec.ts` (6 pruebas pasando, 32 suites web en verde).
 ## Archivos candidatos
-- **read/modify:** `apps/web/src/app/lifecycle/event-schedule-form.component.ts`, `apps/web/src/app/organizer/organizer.service.ts`, `apps/web/src/app/organizer/event-settings-nav.component.ts`.
-- **test:** nuevo `apps/web/src/app/organizer/event-timezone-form.component.spec.ts` si se introduce componente semántico; pruebas existentes de formulario lifecycle.
+- **read/modify:** `apps/web/src/app/organizer/event-timezone-section.component.ts`, `apps/web/src/app/organizer/organizer-dashboard.component.ts`, `apps/web/src/app/organizer/organizer-dashboard.component.scss`.
+- **test:** `apps/web/src/app/organizer/event-timezone-section.component.spec.ts`, `apps/web/src/app/organizer/organizer-dashboard.component.spec.ts`.
+
