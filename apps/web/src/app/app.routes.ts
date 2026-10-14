@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { adminSessionGuard } from './admin/admin-session.guard';
 
 export const routes: Routes = [
   {
@@ -78,14 +79,16 @@ export const routes: Routes = [
   },
   {
     path: 'admin/eventos',
+    canActivate: [adminSessionGuard],
     loadComponent: () =>
-      import('./admin/admin-app-shell.component').then((m) => m.AdminAppShellComponent),
+      import('./admin/admin-read-only-shell.component').then((m) => m.AdminReadOnlyShellComponent),
     title: 'Búsqueda administrativa — Phoeve',
   },
   {
     path: 'admin/eventos/:eventId',
+    canActivate: [adminSessionGuard],
     loadComponent: () =>
-      import('./admin/admin-app-shell.component').then((m) => m.AdminAppShellComponent),
+      import('./admin/admin-read-only-shell.component').then((m) => m.AdminReadOnlyShellComponent),
     title: 'Detalle administrativo — Phoeve',
   },
   {

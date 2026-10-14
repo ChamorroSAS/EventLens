@@ -1,6 +1,6 @@
 import type { PublicEntryRouteDescriptor } from './public-entry-routes.contract';
 import { OrganizerDashboardComponent } from '../organizer/organizer-dashboard.component';
-import { AdminAppShellComponent } from '../admin/admin-app-shell.component';
+import { AdminReadOnlyShellComponent } from '../admin/admin-read-only-shell.component';
 import { AdminLoginComponent } from '../admin/admin-login.component';
 
 export const ORGANIZER_EVENT_DETAIL_ROUTE_DESCRIPTOR: PublicEntryRouteDescriptor = Object.freeze({
@@ -40,7 +40,7 @@ export const ADMIN_EVENTS_ROUTE_DESCRIPTOR: PublicEntryRouteDescriptor = Object.
   path: '/admin/eventos',
   title: 'Búsqueda administrativa — Phoeve',
   context: 'ADMIN_OPERATIONS',
-  component: AdminAppShellComponent
+  component: AdminReadOnlyShellComponent
 });
 
 export const ADMIN_EVENT_DETAIL_ROUTE_DESCRIPTOR: PublicEntryRouteDescriptor = Object.freeze({
@@ -48,5 +48,5 @@ export const ADMIN_EVENT_DETAIL_ROUTE_DESCRIPTOR: PublicEntryRouteDescriptor = O
   path: '/admin/eventos/:eventId',
   title: 'Detalle administrativo — Phoeve',
   context: 'ADMIN_OPERATIONS',
-  component: AdminAppShellComponent
+  component: AdminReadOnlyShellComponent
 });
