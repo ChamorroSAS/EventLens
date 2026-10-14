@@ -7,13 +7,10 @@ import {
   ServiceUnavailableException,
   UnauthorizedException
 } from '@nestjs/common';
-import * as path from 'node:path';
 import {
   AdminAuthenticationService,
   AuthenticationError,
-  DurableRecoveryAuthorityAdapter,
   serializeSessionCookie,
-  type AdminActorContext,
   type AdminSessionProjection,
   type AuditEventRecord,
   type AuditSink,
@@ -25,11 +22,23 @@ import { ORGANIZER_SESSION_CONFIG } from './organizer-session.service.js';
 
 export const ADMIN_RECOVERY_AUTHORITY = Symbol('ADMIN_RECOVERY_AUTHORITY');
 
+function unavailableRecoveryAuthority(): RecoveryAuthorityPort {
+  const unavailable = async (): Promise<never> => {
+    throw new AuthenticationError('AUTHORITY_UNAVAILABLE', 'Administrative RecoveryAuthority is not configured');
+  };
+  return {
+    getRecoveryEpoch: unavailable,
+    getCredentialRevision: unavailable,
+    getAdminAuthWatermark: unavailable
+  };
+}
+
 @Injectable()
 export class AdminSessionService {
   private readonly authService: AdminAuthenticationService;
   private readonly auditSink: AuditSink;
   private readonly recoveryAuthority: RecoveryAuthorityPort;
+  private readonly authorityConfigured: boolean;
 
   constructor(
     @Inject(DatabaseService) private readonly database: DatabaseService,
@@ -56,14 +65,8 @@ export class AdminSessionService {
       }
     };
 
-    if (recoveryAuthorityOverride) {
-      this.recoveryAuthority = recoveryAuthorityOverride;
-    } else {
-      const storageDir =
-        process.env.RECOVERY_JOURNAL_DIR ||
-        path.join(process.cwd(), '.eventlens-recovery');
-      this.recoveryAuthority = new DurableRecoveryAuthorityAdapter({ storageDir });
-    }
+    this.authorityConfigured = recoveryAuthorityOverride != null;
+    this.recoveryAuthority = recoveryAuthorityOverride ?? unavailableRecoveryAuthority();
 
     this.authService = new AdminAuthenticationService(this.database.transactions, {
       allowedOrigins: [this.config.webOrigin],
@@ -119,6 +122,7 @@ export class AdminSessionService {
     }
 
     try {
+      this.assertAuthorityConfigured();
       const result = await this.authService.authenticate({
         identifier: params.identifier,
         secret: params.secret,
@@ -148,6 +152,7 @@ export class AdminSessionService {
     }
 
     try {
+      this.assertAuthorityConfigured();
       const actorContext = await this.authService.validateSession({
         sessionToken
       });
@@ -192,6 +197,7 @@ export class AdminSessionService {
     }
 
     try {
+      this.assertAuthorityConfigured();
       const result = await this.authService.renewSessionContext({
         sessionToken: params.sessionToken,
         origin: params.originHeader,
@@ -239,6 +245,7 @@ export class AdminSessionService {
     }
 
     try {
+      this.assertAuthorityConfigured();
       await this.authService.logout({
         sessionToken: params.sessionToken,
         origin: params.originHeader,
@@ -253,6 +260,12 @@ export class AdminSessionService {
       };
     } catch (err) {
       this.mapAuthError(err);
+    }
+  }
+
+  private assertAuthorityConfigured(): void {
+    if (!this.authorityConfigured) {
+      throw new AuthenticationError('AUTHORITY_UNAVAILABLE', 'Administrative RecoveryAuthority is not configured');
     }
   }
 

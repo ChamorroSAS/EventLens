@@ -78,7 +78,7 @@ function readSingleHeader(
 }
 
 @ApiTags('AdminAuthentication')
-@Controller('api/v1/admin/auth')
+@Controller('admin/auth')
 export class AdminSessionController {
   constructor(
     @Inject(AdminSessionService) private readonly sessionService: AdminSessionService
@@ -100,6 +100,7 @@ export class AdminSessionController {
     @Req() request: { headers?: Record<string, string | string[] | undefined> },
     @Res({ passthrough: true }) response: { setHeader(name: string, value: string | string[]): void }
   ): Promise<{ principal: { id: string; identifier: string }; csrfToken: string }> {
+    response.setHeader('Cache-Control', 'no-store');
     const originHeader = readSingleHeader(request.headers, 'origin');
     const clientHeader = readSingleHeader(request.headers, 'x-eventlens-admin-client');
 
@@ -131,6 +132,7 @@ export class AdminSessionController {
     @Req() request: { headers?: Record<string, string | string[] | undefined> },
     @Res({ passthrough: true }) response: { setHeader(name: string, value: string | string[]): void }
   ) {
+    response.setHeader('Cache-Control', 'no-store');
     const rawCookieHeader = request.headers?.cookie;
     const cookieHeader = Array.isArray(rawCookieHeader)
       ? rawCookieHeader.join('; ')
@@ -156,6 +158,7 @@ export class AdminSessionController {
     @Req() request: { headers?: Record<string, string | string[] | undefined> },
     @Res({ passthrough: true }) response: { setHeader(name: string, value: string | string[]): void }
   ): Promise<{ csrfToken: string }> {
+    response.setHeader('Cache-Control', 'no-store');
     const rawCookieHeader = request.headers?.cookie;
     const cookieHeader = Array.isArray(rawCookieHeader)
       ? rawCookieHeader.join('; ')
@@ -187,6 +190,7 @@ export class AdminSessionController {
     @Req() request: { headers?: Record<string, string | string[] | undefined> },
     @Res({ passthrough: true }) response: { setHeader(name: string, value: string | string[]): void }
   ): Promise<{ outcome: 'LOGGED_OUT' }> {
+    response.setHeader('Cache-Control', 'no-store');
     const rawCookieHeader = request.headers?.cookie;
     const cookieHeader = Array.isArray(rawCookieHeader)
       ? rawCookieHeader.join('; ')

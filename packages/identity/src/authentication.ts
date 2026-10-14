@@ -876,7 +876,7 @@ export class AdminAuthenticationService {
     return this.transactions.run(async (tx) => {
       // 1. Look up existing session
       const sessionRows = await tx.query<SessionRow>(
-        `SELECT id, principal_id, csrf_token_digest, auth_time, created_at, expires_at, last_active_at, idle_expires_at, revoked_at, session_watermark
+        `SELECT id, principal_id, token_digest, csrf_token_digest, auth_time, created_at, expires_at, last_active_at, idle_expires_at, revoked_at, session_watermark
          FROM admin_session
          WHERE token_digest = $1
          FOR UPDATE`,
@@ -889,6 +889,12 @@ export class AdminAuthenticationService {
 
       const session = sessionRows[0];
 
+      if (!session.auth_time || !session.token_digest || !session.csrf_token_digest ||
+          session.session_watermark === null || session.session_watermark === undefined ||
+          BigInt(session.session_watermark) <= 0n) {
+        throw new AuthenticationError('SESSION_REVOKED', 'Legacy session without verifiable binding invalidated');
+      }
+
       if (now.getTime() >= session.expires_at.getTime() || now.getTime() >= session.idle_expires_at.getTime()) {
         throw new AuthenticationError('SESSION_EXPIRED', 'Session expired before context renewal');
       }
@@ -899,22 +905,40 @@ export class AdminAuthenticationService {
         session.principal_id
       );
 
-      if (principalRows.length === 0) {
+      if (principalRows.length === 0 || principalRows[0].status !== 'ACTIVE') {
         throw new AuthenticationError('UNAUTHENTICATED', 'Principal is not active');
       }
       const principal = principalRows[0];
 
+      const sessionWatermark = BigInt(session.session_watermark);
+      const credRows = await tx.query<CredentialRow>(
+        `SELECT id, revision, status FROM admin_credential WHERE principal_id = $1 AND purpose = 'ADMIN_AUTHENTICATION' AND status = 'ACTIVE' ORDER BY revision DESC LIMIT 1`,
+        principal.id
+      );
+      if (credRows.length === 0 || credRows[0].status !== 'ACTIVE') {
+        throw new AuthenticationError('UNAUTHENTICATED', 'Administrative credential is not active or missing');
+      }
+      const credRev = BigInt(credRows[0].revision);
+      if (credRev > sessionWatermark || BigInt(principal.auth_revision) > sessionWatermark) {
+        throw new AuthenticationError('SESSION_REVOKED', 'Session invalidated by authentication revision');
+      }
+
       // 3. Verify RecoveryAuthority
       const recoveryEpoch = await this.assertRecoveryAuthorityOperational('MOD-001');
       let watermark: bigint;
+      let authorityRevision: bigint | null;
       try {
         watermark = await this.recoveryAuthority!.getAdminAuthWatermark(principal.id);
+        authorityRevision = await this.recoveryAuthority!.getCredentialRevision(principal.id);
       } catch (err) {
         if (err instanceof AuthenticationError) throw err;
         throw new AuthenticationError('AUTHORITY_UNAVAILABLE', `RecoveryAuthority unavailable: ${(err as Error).message}`);
       }
 
-      if (watermark > BigInt(session.session_watermark)) {
+      if (authorityRevision === null || authorityRevision === undefined || watermark === null || watermark === undefined) {
+        throw new AuthenticationError('AUTHORITY_UNAVAILABLE', 'RecoveryAuthority credential revision is unavailable');
+      }
+      if (watermark > sessionWatermark || authorityRevision > sessionWatermark) {
         await tx.execute(
           `UPDATE admin_session SET revoked_at = $1, revocation_reason = 'WATERMARK_SUPERSEDED' WHERE id = $2 AND revoked_at IS NULL`,
           now,
@@ -932,12 +956,6 @@ export class AdminAuthenticationService {
         newCsrfTokenDigest,
         session.id
       );
-
-      const credRows = await tx.query<CredentialRow>(
-        `SELECT revision FROM admin_credential WHERE principal_id = $1 AND purpose = 'ADMIN_AUTHENTICATION' AND status = 'ACTIVE' ORDER BY revision DESC LIMIT 1`,
-        principal.id
-      );
-      const credRev = credRows.length > 0 ? BigInt(credRows[0].revision) : 1n;
 
       const actorContext: AdminActorContext = {
         actorType: 'ADMIN_HUMAN',

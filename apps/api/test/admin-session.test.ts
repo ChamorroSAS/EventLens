@@ -23,6 +23,26 @@ describe('AdminSessionController & AdminSessionService (EL-TK-233)', () => {
     identityPepperSecret: 'eventlens-local-dev-pepper-secret-0123456789abcdef'
   };
 
+  it('mounts below the application global prefix without duplicating api/v1', () => {
+    expect(Reflect.getMetadata('path', AdminSessionController)).toBe('admin/auth');
+  });
+
+  it('denies unconfigured authority before database reads or writes and preserves explicit DI', async () => {
+    const run = vi.fn();
+    const service = new AdminSessionService({ transactions: { run } } as any, dummyConfig);
+    await expect(service.loginAdmin({ identifier: 'admin@example.test', secret: 'secret', originHeader: dummyConfig.webOrigin, clientHeader: '1' })).rejects.toBeInstanceOf(ServiceUnavailableException);
+    await expect(service.getSessionProjection('token')).rejects.toBeInstanceOf(ServiceUnavailableException);
+    await expect(service.renewSessionContext({ sessionToken: 'token', originHeader: dummyConfig.webOrigin, clientHeader: '1' })).rejects.toBeInstanceOf(ServiceUnavailableException);
+    await expect(service.logoutAdmin({ sessionToken: 'token', originHeader: dummyConfig.webOrigin, csrfTokenHeader: 'csrf' })).rejects.toBeInstanceOf(ServiceUnavailableException);
+    expect(run).not.toHaveBeenCalled();
+    const response = { setHeader: vi.fn() };
+    await expect(new AdminSessionController(service).getSession({ headers: { cookie: '__Host-el_admin_session=token' } }, response)).rejects.toBeInstanceOf(ServiceUnavailableException);
+    expect(response.setHeader).toHaveBeenCalledWith('Cache-Control', 'no-store');
+    await expect(service.getRecoveryAuthority().getRecoveryEpoch()).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE' });
+    const port: RecoveryAuthorityPort = { getRecoveryEpoch: async () => 1n, getCredentialRevision: async () => 1n, getAdminAuthWatermark: async () => 1n };
+    expect(new AdminSessionService({ transactions: { run } } as any, dummyConfig, port).getRecoveryAuthority()).toBe(port);
+  });
+
   it('1. Cookie extraction: extracts __Host-el_admin_session safely and ignores malformed inputs', () => {
     expect(extractAdminSessionCookie(undefined)).toBeUndefined();
     expect(extractAdminSessionCookie('')).toBeUndefined();
