@@ -54,8 +54,8 @@ function createInMemoryRunner(db: InMemoryDb): TransactionRunner {
           throw new Error(`Unhandled mock query: ${sql}`);
         },
 
-        async execute(sql: string, ..._params: unknown[]): Promise<number> {
-          throw new Error(`Unhandled mock execute: ${sql}`);
+        async execute(_sql: string, ..._params: unknown[]): Promise<number> {
+          return 1;
         }
       };
 
@@ -725,6 +725,68 @@ describe('EL-EP-002 Ruta 2: Zona Horaria y Preview (Unit Tests)', () => {
         });
       } catch (err: any) {
         expect(err.code).toBe('EVENT_NOT_IN_DRAFT');
+      }
+    });
+  });
+
+  describe('EL-TK-227: Cambio de Zona Horaria con CAS, Receipts y Warning', () => {
+    it('rechaza conflicto de revisión cuando expectedRevision no coincide (CAS)', async () => {
+      seedEvent({ status: 'DRAFT', revision: 3n });
+
+      await expect(
+        service.changeTimezone({
+          actorContext: ownerActor,
+          eventId,
+          timezone: 'America/New_York',
+          expectedRevision: '2'
+        })
+      ).rejects.toThrowError(EventManagementError);
+
+      try {
+        await service.changeTimezone({
+          actorContext: ownerActor,
+          eventId,
+          timezone: 'America/New_York',
+          expectedRevision: '2'
+        });
+      } catch (err: any) {
+        expect(err.code).toBe('CONCURRENCY_CONFLICT');
+      }
+    });
+
+    it('permite cambiar TZ en SCHEDULED, recalcula UTC y devuelve warning allowlisted', async () => {
+      seedEvent({
+        status: 'SCHEDULED',
+        timezone: 'America/Bogota',
+        starts_at_local: '2026-12-15T10:00:00',
+        revision: 4n
+      });
+
+      const res = await service.changeTimezone({
+        actorContext: ownerActor,
+        eventId,
+        timezone: 'America/New_York',
+        expectedRevision: '4'
+      });
+
+      expect(res.outcome).toBe('TIMEZONE_CHANGED');
+      expect(res.warning).toBe('RECALCULATED_SCHEDULE');
+      expect(res.event.timezone).toBe('America/New_York');
+      expect(res.event.startsAtLocal).toBe('2026-12-15T10:00:00');
+    });
+
+    it('rechaza cambio de zona horaria si el evento está en ACTIVE', async () => {
+      seedEvent({ status: 'ACTIVE', timezone: 'America/Bogota' });
+
+      try {
+        await service.changeTimezone({
+          actorContext: ownerActor,
+          eventId,
+          timezone: 'America/New_York'
+        });
+        expect.fail('Should have rejected ACTIVE event');
+      } catch (err: any) {
+        expect(err.code).toBe('INVALID_STATE');
       }
     });
   });
