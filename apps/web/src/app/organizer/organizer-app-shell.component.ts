@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, inject, computed } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject, computed, signal } from '@angular/core';
 import type { OrganizerEventModel } from './organizer.types.js';
 import { EventStatusBadgeComponent } from '../lifecycle/event-status-badge.component.js';
 import { APPROVED_PUBLIC_ENTRY_PATHS } from '../navigation/public-entry-routes.contract.js';
@@ -11,7 +11,7 @@ import { OrganizerSessionService } from '../organizer-session.service.js';
   standalone: true,
   imports: [CommonModule, EventStatusBadgeComponent],
   template: `
-    <div class="organizer-shell">
+    <div class="organizer-shell" [class.sidebar-is-collapsed]="isSidebarCollapsed()">
       <header class="shell-header" role="banner">
         <div class="shell-container header-inner">
           <div class="brand-area">
@@ -38,26 +38,18 @@ import { OrganizerSessionService } from '../organizer-session.service.js';
             </a>
             <span class="brand-badge">Organizador</span>
 
-            <nav class="header-nav" aria-label="Navegación principal superior">
-              <a
-                [href]="homePath"
-                (click)="onNavigate($event, homePath)"
-                class="header-nav-link"
-                aria-label="Ir a Inicio"
-              >
-                Inicio
-              </a>
-              <span class="header-nav-sep" aria-hidden="true">/</span>
-              <a
-                [href]="myEventsPath"
-                (click)="onNavigate($event, myEventsPath)"
-                class="header-nav-link"
-                [class.is-active]="activeNav === 'events'"
-                aria-label="Ir a Mis eventos"
-              >
-                Mis eventos
-              </a>
-            </nav>
+            <button
+              type="button"
+              class="btn-sidebar-toggle"
+              (click)="toggleSidebar()"
+              aria-label="Alternar menú lateral"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </button>
           </div>
 
           <div class="header-right">
@@ -82,68 +74,132 @@ import { OrganizerSessionService } from '../organizer-session.service.js';
 
       <div class="shell-container shell-layout">
         <aside class="shell-sidebar" aria-label="Menú principal del organizador">
-          <nav class="sidebar-nav">
-            @if (canAccessEvents()) {
-              <a
-                [href]="myEventsPath"
-                class="sidebar-nav-item"
-                [class.is-active]="activeNav === 'events'"
-                (click)="onNavigate($event, myEventsPath)"
-                aria-label="Ir a Mis eventos"
-                data-testid="sidebar-nav-events"
-              >
-                <span class="nav-icon" aria-hidden="true">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                  </svg>
-                </span>
-                <span class="nav-label">Mis eventos</span>
-              </a>
-            }
-
-            @if (canAccessAccount()) {
-              <a
-                [href]="myAccountPath"
-                class="sidebar-nav-item"
-                [class.is-active]="activeNav === 'account'"
-                (click)="onNavigate($event, myAccountPath)"
-                aria-label="Ir a Mi cuenta"
-                data-testid="sidebar-nav-account"
-              >
-                <span class="nav-icon" aria-hidden="true">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
-                </span>
-                <span class="nav-label">Mi cuenta</span>
-              </a>
-            }
-          </nav>
-
-          <div class="sidebar-footer">
-            @if (userEmail()) {
-              <div class="sidebar-user-pill" [title]="userEmail()">
-                <span class="sidebar-user-avatar" aria-hidden="true">{{ userInitial() }}</span>
-                <span class="sidebar-user-email">{{ userEmail() }}</span>
+          <div class="sidebar-card">
+            <!-- Profile Info Card -->
+            <div class="sidebar-profile-card">
+              <div class="sidebar-avatar-wrap">
+                @if (!avatarFailed) {
+                  <img
+                    src="assets/branding/phoeve/organizer-avatar.jpg"
+                    alt="Avatar del organizador"
+                    class="sidebar-avatar-img"
+                    width="60"
+                    height="60"
+                    (error)="onAvatarError()"
+                  />
+                } @else {
+                  <div class="sidebar-avatar-fallback">
+                    {{ userInitial() }}
+                  </div>
+                }
               </div>
-            }
-            <button
-              type="button"
-              class="sidebar-logout-btn"
-              (click)="onLogout()"
-              aria-label="Cerrar sesión"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-              </svg>
-              <span>Cerrar sesión</span>
-            </button>
+              <div class="sidebar-user-details">
+                <span class="sidebar-user-greeting">Hi, Organizador</span>
+                <span class="sidebar-user-email" [title]="userEmail()">
+                  {{ userEmail() || 'organizador@phoeve.local' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Main Navigation -->
+            <nav class="sidebar-nav">
+              @if (canAccessEvents()) {
+                <a
+                  [href]="myEventsPath"
+                  class="sidebar-nav-item"
+                  [class.is-active]="activeNav === 'events'"
+                  (click)="onNavigate($event, myEventsPath)"
+                  aria-label="Ir a Mis eventos"
+                  data-testid="sidebar-nav-events"
+                >
+                  <span class="nav-icon" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="16" y1="2" x2="16" y2="6"></line>
+                      <line x1="8" y1="2" x2="8" y2="6"></line>
+                      <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                  </span>
+                  <span class="nav-label">Mis eventos</span>
+                </a>
+              }
+
+              @if (canAccessAccount()) {
+                <div class="sidebar-nav-group" [class.is-active]="activeNav === 'account'">
+                  <div class="sidebar-nav-pill-indicator" *ngIf="activeNav === 'account'" aria-hidden="true"></div>
+                  <a
+                    [href]="myAccountPath"
+                    class="sidebar-nav-item sidebar-nav-item--parent"
+                    [class.is-active]="activeNav === 'account'"
+                    (click)="onNavigate($event, myAccountPath)"
+                    aria-label="Ir a Mi cuenta"
+                    data-testid="sidebar-nav-account"
+                  >
+                    <div class="nav-item-content">
+                      <span class="nav-icon" aria-hidden="true">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                      </span>
+                      <span class="nav-label">Mi cuenta</span>
+                    </div>
+                    <svg class="nav-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </a>
+
+                  @if (activeNav === 'account') {
+                    <div class="sidebar-subnav">
+                      <a
+                        href="#datos-basicos"
+                        class="sidebar-subnav-item"
+                        [class.is-active]="activeSubNav === 'datos-basicos'"
+                        (click)="onSubNavClick($event, 'datos-basicos')"
+                      >
+                        <span class="subnav-indicator" aria-hidden="true"></span>
+                        <span>Datos básicos</span>
+                      </a>
+                      <a
+                        href="#seguridad"
+                        class="sidebar-subnav-item"
+                        [class.is-active]="activeSubNav === 'seguridad'"
+                        (click)="onSubNavClick($event, 'seguridad')"
+                      >
+                        <span class="subnav-indicator" aria-hidden="true"></span>
+                        <span>Seguridad</span>
+                      </a>
+                      <a
+                        href="#sesiones"
+                        class="sidebar-subnav-item"
+                        [class.is-active]="activeSubNav === 'sesiones'"
+                        (click)="onSubNavClick($event, 'sesiones')"
+                      >
+                        <span class="subnav-indicator" aria-hidden="true"></span>
+                        <span>Sesiones</span>
+                      </a>
+                    </div>
+                  }
+                </div>
+              }
+            </nav>
+
+            <!-- Bottom Action: Cerrar sesión -->
+            <div class="sidebar-footer">
+              <button
+                type="button"
+                class="sidebar-logout-btn"
+                (click)="onLogout()"
+                aria-label="Cerrar sesión"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                <span>Cerrar sesión</span>
+              </button>
+            </div>
           </div>
         </aside>
 
@@ -167,6 +223,7 @@ export class OrganizerAppShellComponent {
 
   @Input() selectedEvent?: OrganizerEventModel | null = null;
   @Input() activeNav: 'events' | 'account' | string = 'events';
+  @Input() activeSubNav: 'datos-basicos' | 'seguridad' | 'sesiones' | string = 'datos-basicos';
   @Output() exitContext = new EventEmitter<void>();
 
   readonly myEventsPath = APPROVED_PUBLIC_ENTRY_PATHS.ORGANIZER_DASHBOARD;
@@ -174,6 +231,8 @@ export class OrganizerAppShellComponent {
   readonly homePath = APPROVED_PUBLIC_ENTRY_PATHS.HOME;
 
   logoFailed = false;
+  avatarFailed = false;
+  readonly isSidebarCollapsed = signal(false);
 
   readonly userEmail = computed(() => this.sessionService?.account()?.email ?? '');
   readonly userInitial = computed(() => {
@@ -187,12 +246,29 @@ export class OrganizerAppShellComponent {
     () => this.sessionService?.capabilities()?.canAccessMyAccount ?? true
   );
 
+  toggleSidebar(): void {
+    this.isSidebarCollapsed.update(v => !v);
+  }
+
   onLogoError(): void {
     this.logoFailed = true;
   }
 
+  onAvatarError(): void {
+    this.avatarFailed = true;
+  }
+
   onExitContext(): void {
     this.exitContext.emit();
+  }
+
+  onSubNavClick(event: Event, targetId: string): void {
+    event.preventDefault();
+    this.activeSubNav = targetId;
+    const targetEl = document.getElementById(targetId);
+    if (targetEl) {
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   onNavigate(event: Event, path: string): void {
