@@ -65,9 +65,11 @@ del orden de 2000 px y supera con holgura la tolerancia de 1200.
 | `admin-login-background.jpg` | 496.962 | Sí (CSS, fuera de alcance) |
 | `organizer-avatar.jpg` | 698.657 | Sí (fuera de alcance) |
 
-- Peso **publicado en disco** del set PNG: 1.224.308 B ≈ 1,20 MB.
-- Peso **realmente solicitado** en una visita con header + footer: `logo-primary` (286.360) +
-  `logo-dark` (283.221) + `favicon` (374.816) = 944.397 B (≈944 KB / 922 KiB).
+- Peso **publicado en disco** del set PNG: 1.224.308 B ≈1,17 MiB.
+- Peso **realmente solicitado** en una visita con header + footer, **incluyendo el favicon**:
+  `logo-primary` (286.360) + `logo-dark` (283.221) + `favicon` (374.816) = 944.397 B
+  (≈922 KiB; 944.397 B). De esa cifra, los **wordmarks `<img>`** suman **569.581 B**, que es la
+  línea base del criterio de peso (el favicon queda fuera de alcance).
 
 ## CONFIRMED — estado de los verificadores en HEAD (`c744647`)
 
@@ -86,6 +88,15 @@ Consecuencia: el criterio "ejecutar los verificadores de marca" de EL-TK-243 no 
 satisfacerse sin repararlos; ambas reparaciones forman parte de las actualizaciones ya
 exigidas por el gate técnico de CR-009.
 
+**Re-verificación en `668392d`** (commit posterior del owner, que toca también
+`organizer-app-shell.component.html`): se ejecutaron de nuevo ambos scripts y los fallos persisten,
+idénticos — `[FAIL] INVALID_ACTIVE_LOGO:footer` y `[FAIL] Component does not reference
+assets/branding/phoeve/logo-primary.png`. Se confirmó además que el conjunto auditado de cinco nodos
+sigue vigente y con `src` relativos crudos (sin `/` inicial ni `./`):
+`app-header.component.html:11/13`, `legal-footer.component.html:5/7`,
+`organizer-app-shell.component.html:14/16`, `organizer-login.component.html:5/7` y
+`admin-login.component.ts:16/18`.
+
 ## Decisión adoptada
 
 El usuario fijó el **enfoque B**: derivados PNG del mismo arte a 2× del render, conservando los
@@ -97,12 +108,21 @@ añade diagnósticos propios.
 ## ASSUMED / no verificado
 
 - `ASSUMED`: la mejora de tiempos de carga percibida es marginal en la primera visita porque el
-  peso dominante son avatar (698 KB) y fondos de login (924 KB), fuera de alcance.
+  peso dominante son avatar (≈682 KiB / 698.657 B) y fondos de login (≈903 KiB / 924.228 B), fuera de alcance.
 - `[NOT_EVALUATED]`: regeneración byte a byte de los derivados en CI (no se añadirá dependencia
   de imágenes al repositorio).
 - `[NOT_EVALUATED]`: verificación HTTP real bajo prefijo de `base href` en subruta.
 
 ## Próximo paso
 
-Aplicar las correcciones de la ronda 1 de gates a CR-009 y EL-TK-243, re-someter ambos a
-`requirements_reviewer` y `architect`, y sólo con dictamen favorable pasar el ticket a `READY`.
+Rondas 1-6 de gates aplicadas (ver
+[dictámenes](2026-10-14-el-tk-243-brand-asset-load-gates.md)): la **revisión 4-final** de CR-009 y
+EL-TK-243 corrige el token de autorización opt-in (forma endurecida, sin auto-autorización), el
+formato de `derivatives[].file` y su normalización, el binding superficie→rol del conjunto
+auditado, la aserción de `verify-ui-foundation.mjs` que el cambio invalidaba, la ambigüedad de la
+suma de peso, el dominio de `role` y las precisiones de unidades/nomenclatura/recuento de rondas.
+En la ronda 6 el gate técnico (`architect`) pasó a **APPROVED** y en la ronda 7 el **Gate 1**
+también aprobó (con dos OBSERVATION no bloqueantes). Ambos gates son favorables sobre la revisión
+4-final; el paso documental de cierre (`CHANGE_READY` + token, registros, contrato a vigente,
+EL-TK-243 a `READY`) queda **pendiente de autorización del owner**. El owner ratificó (CONFIRMED,
+2026-10-14) que la reparación de los dos verificadores se mantiene dentro de EL-TK-243.
