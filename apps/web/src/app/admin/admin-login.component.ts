@@ -147,8 +147,8 @@ import { AdminSessionService } from './admin-session.service.js';
         align-items: center;
         justify-content: center;
         padding: 2rem 1.25rem;
-        font-family: 'Manrope', system-ui, sans-serif;
-        color: #0f172a;
+        font-family: var(--el-font-family);
+        color: var(--el-color-text);
         background-color: #0b1120;
         background-image: url('/assets/branding/phoeve/admin-login-background.jpg');
         background-size: cover;
@@ -189,9 +189,9 @@ import { AdminSessionService } from './admin-session.service.js';
         display: inline-flex;
         align-items: center;
         gap: 0.375rem;
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
-        color: #1d4ed8;
+        background: var(--el-color-info-soft);
+        border: 1px solid var(--el-color-info-soft);
+        color: var(--el-color-info);
         padding: 0.25rem 0.75rem;
         border-radius: 9999px;
         font-size: 0.75rem;
@@ -206,12 +206,12 @@ import { AdminSessionService } from './admin-session.service.js';
         font-size: 1.625rem;
         font-weight: 700;
         margin: 0 0 0.5rem 0;
-        color: #0f172a;
+        color: var(--el-color-text);
         line-height: 1.25;
       }
       .el-admin-login-subtitle {
         font-size: 0.875rem;
-        color: #64748b;
+        color: var(--el-color-text-secondary);
         margin: 0;
         line-height: 1.45;
       }
@@ -219,9 +219,9 @@ import { AdminSessionService } from './admin-session.service.js';
         margin-bottom: 1rem;
         padding: 0.75rem 1rem;
         border-radius: 0.5rem;
-        background: #fef2f2;
-        border: 1px solid #fecaca;
-        color: #991b1b;
+        background: var(--el-color-danger-soft);
+        border: 1px solid var(--el-color-danger-soft);
+        color: var(--el-color-danger);
         font-size: 0.875rem;
         line-height: 1.4;
       }
@@ -229,9 +229,9 @@ import { AdminSessionService } from './admin-session.service.js';
         margin-bottom: 1rem;
         padding: 0.75rem 1rem;
         border-radius: 0.5rem;
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
-        color: #1e40af;
+        background: var(--el-color-info-soft);
+        border: 1px solid var(--el-color-info-soft);
+        color: var(--el-color-info);
         font-size: 0.875rem;
         line-height: 1.4;
       }
@@ -248,28 +248,28 @@ import { AdminSessionService } from './admin-session.service.js';
       .el-form-field label {
         font-size: 0.875rem;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--el-color-text);
       }
       .el-form-field input {
         min-height: 2.75rem;
         padding: 0.625rem 0.875rem;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--el-color-border);
         border-radius: 0.5rem;
-        background-color: #f8fafc;
+        background-color: var(--el-color-surface-muted);
         font-family: inherit;
         font-size: 0.95rem;
-        color: #0f172a;
+        color: var(--el-color-text);
         transition: all 0.15s ease;
         box-sizing: border-box;
       }
       .el-form-field input::placeholder {
-        color: #94a3b8;
+        color: var(--el-color-text-disabled);
       }
       .el-form-field input:focus-visible {
         outline: none;
-        border-color: #2563eb;
-        background-color: #ffffff;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        border-color: var(--el-color-primary);
+        background-color: var(--el-color-surface);
+        box-shadow: 0 0 0 3px var(--el-color-info-soft);
       }
       .el-password-wrap {
         position: relative;
@@ -290,17 +290,17 @@ import { AdminSessionService } from './admin-session.service.js';
         height: 2rem;
         border: none;
         background: transparent;
-        color: #94a3b8;
+        color: var(--el-color-text-disabled);
         border-radius: 0.375rem;
         cursor: pointer;
         transition: color 0.15s ease;
 
         &:hover {
-          color: #475569;
+          color: var(--el-color-text-secondary);
         }
 
         &:focus-visible {
-          outline: 2px solid #2563eb;
+          outline: 2px solid var(--el-color-primary);
           outline-offset: 1px;
         }
       }
@@ -313,18 +313,18 @@ import { AdminSessionService } from './admin-session.service.js';
         padding: 0.75rem 1.25rem;
         border: none;
         border-radius: 0.5rem;
-        background: #2563eb;
-        color: #ffffff;
+        background: var(--el-color-primary);
+        color: var(--el-color-surface);
         font-family: inherit;
         font-size: 0.95rem;
         font-weight: 600;
         cursor: pointer;
-        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+        box-shadow: var(--el-elevation-subtle);
         transition: all 0.15s ease;
 
         &:hover:not(:disabled) {
-          background: #1d4ed8;
-          box-shadow: 0 4px 8px rgba(37, 99, 235, 0.25);
+          background: var(--el-color-primary-hover);
+          box-shadow: var(--el-elevation-overlay);
         }
 
         &:disabled {
@@ -334,7 +334,7 @@ import { AdminSessionService } from './admin-session.service.js';
 
         &:focus-visible {
           outline: none;
-          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35);
+          box-shadow: 0 0 0 3px var(--el-color-info-soft);
         }
       }
       .el-auth-footer {
@@ -347,7 +347,7 @@ import { AdminSessionService } from './admin-session.service.js';
       .el-link-secondary {
         display: inline-flex;
         align-items: center;
-        color: #1e293b;
+        color: var(--el-color-text);
         font-size: 0.8125rem;
         font-weight: 500;
         text-decoration: underline;
@@ -355,7 +355,7 @@ import { AdminSessionService } from './admin-session.service.js';
         transition: color 0.15s ease;
 
         &:hover {
-          color: #2563eb;
+          color: var(--el-color-primary);
         }
       }
       .el-btn-link {
