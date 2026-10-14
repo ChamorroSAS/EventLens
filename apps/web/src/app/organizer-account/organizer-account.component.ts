@@ -203,29 +203,10 @@ export class OrganizerAccountGatewayService implements AccountDeletionUiAdapter 
     <eventlens-organizer-app-shell activeNav="account">
       <main class="el-account-page" aria-labelledby="organizer-account-heading">
       <header class="el-account-header">
-        <div>
-          <p class="el-account-eyebrow">Espacio de organizador</p>
+        <div class="el-account-title-group">
+          <span class="el-account-context-tag">Espacio de organizador</span>
           <h1 id="organizer-account-heading" tabindex="-1">Mi cuenta</h1>
         </div>
-        <nav class="el-account-nav" aria-label="Navegación desde Mi cuenta">
-          <a
-            class="el-link-secondary"
-            [href]="homePath"
-            (click)="onNavigate($event, homePath)"
-          >
-            Inicio
-          </a>
-          @if (isOrdinaryActiveSession()) {
-            <a
-              class="el-link-secondary"
-              data-testid="account-link-my-events"
-              [href]="myEventsPath"
-              (click)="onNavigate($event, myEventsPath)"
-            >
-              Mis eventos
-            </a>
-          }
-        </nav>
       </header>
 
       @if (isLoadingAccount()) {
@@ -259,29 +240,88 @@ export class OrganizerAccountGatewayService implements AccountDeletionUiAdapter 
           aria-labelledby="account-basics-heading"
           data-testid="account-readonly-summary"
         >
-          <h2 id="account-basics-heading">Datos básicos de la cuenta</h2>
-          <dl class="el-account-dl">
-            <div class="el-account-dl-row">
-              <dt>Correo electrónico</dt>
-              <dd data-testid="account-email-value">{{ accountData.email }}</dd>
-            </div>
-            <div class="el-account-dl-row">
-              <dt>Verificación de correo</dt>
-              <dd data-testid="account-verified-value">
-                {{ accountData.emailVerified ? 'Verificado' : 'Pendiente de verificación' }}
-              </dd>
-            </div>
-            <div class="el-account-dl-row">
-              <dt>Estado efectivo</dt>
-              <dd data-testid="account-status-value">
-                {{
-                  accountData.accountStatus === 'PENDING_DELETION'
-                    ? 'Eliminación pendiente (gestión restringida)'
-                    : 'Activa'
-                }}
-              </dd>
-            </div>
-          </dl>
+          <div class="el-card-header">
+            <h2 id="account-basics-heading">Datos básicos de la cuenta</h2>
+            <p class="el-card-subtitle">Información verificada asociada a tu perfil de organizador en Phoeve.</p>
+          </div>
+
+          <div class="el-account-table-wrap">
+            <table class="el-account-table" role="presentation">
+              <tbody>
+                <tr class="el-table-row">
+                  <th scope="row" class="el-table-label">
+                    <span class="el-label-content">
+                      <svg class="el-label-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                      </svg>
+                      <span>Correo electrónico</span>
+                    </span>
+                  </th>
+                  <td class="el-table-value" data-testid="account-email-value">{{ accountData.email }}</td>
+                </tr>
+
+                <tr class="el-table-row">
+                  <th scope="row" class="el-table-label">
+                    <span class="el-label-content">
+                      <svg class="el-label-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                      </svg>
+                      <span>Verificación de correo</span>
+                    </span>
+                  </th>
+                  <td class="el-table-value">
+                    <span data-testid="account-verified-value">
+                      @if (accountData.emailVerified) {
+                        <span class="el-status-pill el-status-pill--verified">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                          Verificado
+                        </span>
+                      } @else {
+                        <span class="el-status-pill el-status-pill--warning">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                          </svg>
+                          Pendiente de verificación
+                        </span>
+                      }
+                    </span>
+                  </td>
+                </tr>
+
+                <tr class="el-table-row">
+                  <th scope="row" class="el-table-label">
+                    <span class="el-label-content">
+                      <svg class="el-label-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                      </svg>
+                      <span>Estado efectivo</span>
+                    </span>
+                  </th>
+                  <td class="el-table-value">
+                    <span data-testid="account-status-value">
+                      @if (accountData.accountStatus === 'PENDING_DELETION') {
+                        <span class="el-status-pill el-status-pill--danger">
+                          <span class="el-dot el-dot--danger" aria-hidden="true"></span>
+                          Eliminación pendiente (gestión restringida)
+                        </span>
+                      } @else {
+                        <span class="el-status-pill el-status-pill--active">
+                          <span class="el-dot el-dot--active" aria-hidden="true"></span>
+                          Activa
+                        </span>
+                      }
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <!-- 2. Superficie ordinaria: SecurityNotice + SessionList + SignOutOtherSessionsAction -->
@@ -291,9 +331,20 @@ export class OrganizerAccountGatewayService implements AccountDeletionUiAdapter 
             aria-labelledby="account-sessions-heading"
             data-testid="account-sessions-section"
           >
-            <h2 id="account-sessions-heading">Seguridad y sesiones activas</h2>
+            <div class="el-card-header">
+              <h2 id="account-sessions-heading">Seguridad y sesiones activas</h2>
+              <p class="el-card-subtitle">Administra los dispositivos que tienen acceso a tu panel de organizador.</p>
+            </div>
+
             <div class="el-security-notice" data-testid="organizer-security-notice">
-              <p>
+              <div class="el-security-notice-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+              </div>
+              <p class="el-security-notice-text">
                 Revisa los dispositivos con sesión activa en tu cuenta de organizador. Cerrar otras
                 sesiones no afecta tus sesiones como invitado en eventos ni sesiones administrativas.
               </p>
@@ -318,25 +369,53 @@ export class OrganizerAccountGatewayService implements AccountDeletionUiAdapter 
                 </button>
               </div>
             } @else if (isLoadingSessions()) {
-              <p role="status" aria-busy="true">Cargando sesiones activas…</p>
+              <p role="status" aria-busy="true" class="el-sessions-muted">Cargando sesiones activas…</p>
             } @else if (sessions().length === 0) {
-              <p data-testid="sessions-empty-state">No se encontraron sesiones adicionales.</p>
+              <p data-testid="sessions-empty-state" class="el-sessions-muted">No se encontraron sesiones adicionales.</p>
             } @else {
               <ul class="el-session-list" data-testid="organizer-session-list">
                 @for (sess of sessions(); track sess.id) {
-                  <li class="el-session-item" data-testid="organizer-session-item">
-                    <div class="el-session-meta">
-                      <span class="el-session-badge">
-                        {{ sess.isCurrent ? 'Sesión actual' : 'Sesión activa' }}
-                      </span>
-                      <span class="el-session-time">
-                        Última actividad: {{ sess.lastActiveAt }}
-                      </span>
+                  <li
+                    class="el-session-item"
+                    [class.el-session-item--current]="sess.isCurrent"
+                    data-testid="organizer-session-item"
+                  >
+                    <div class="el-session-left">
+                      <div class="el-session-icon" [class.el-session-icon--current]="sess.isCurrent" aria-hidden="true">
+                        @if (sess.isCurrent) {
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                            <line x1="8" y1="21" x2="16" y2="21"></line>
+                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                          </svg>
+                        } @else {
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                            <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                          </svg>
+                        }
+                      </div>
+                      <div class="el-session-meta">
+                        <div class="el-session-title-row">
+                          <span class="el-session-badge">
+                            {{ sess.isCurrent ? 'Sesión actual' : 'Sesión activa' }}
+                          </span>
+                          @if (sess.isCurrent) {
+                            <span class="el-active-pill" title="Sesión activa en este navegador">
+                              <span class="el-pulse-dot" aria-hidden="true"></span>
+                              Activo
+                            </span>
+                          }
+                        </div>
+                        <span class="el-session-time">
+                          Última actividad: {{ formatSessionDate(sess.lastActiveAt) }}
+                        </span>
+                      </div>
                     </div>
                     @if (!sess.isCurrent) {
                       <button
                         type="button"
-                        class="el-btn-secondary"
+                        class="el-btn-secondary el-btn-revoke"
                         data-testid="revoke-specific-session-btn"
                         [disabled]="sessionMutationInFlight()"
                         (click)="onRevokeSpecificSession(sess.id)"
@@ -352,12 +431,16 @@ export class OrganizerAccountGatewayService implements AccountDeletionUiAdapter 
                 <div class="el-session-bulk-actions">
                   <button
                     type="button"
-                    class="el-btn-secondary"
+                    class="el-btn-secondary el-btn-bulk-revoke"
                     data-testid="sign-out-other-sessions-btn"
                     [disabled]="sessionMutationInFlight()"
                     (click)="onRevokeOtherSessions()"
                   >
-                    Cerrar las demás sesiones
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                      <line x1="12" y1="2" x2="12" y2="12"></line>
+                    </svg>
+                    <span>Cerrar las demás sesiones</span>
                   </button>
                 </div>
               }
@@ -407,126 +490,293 @@ export class OrganizerAccountGatewayService implements AccountDeletionUiAdapter 
         color: var(--el-color-text, #0f172a);
       }
       .el-account-header {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.75rem;
       }
-      .el-account-eyebrow {
-        margin: 0 0 0.25rem;
-        font-size: 0.875rem;
+      .el-account-title-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+      }
+      .el-account-context-tag {
+        display: inline-flex;
+        align-self: flex-start;
+        align-items: center;
+        padding: 0.2rem 0.625rem;
+        border-radius: 9999px;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 0.75rem;
         font-weight: 600;
-        color: var(--el-color-primary, #2563eb);
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
       }
       .el-account-header h1 {
         margin: 0;
         font-size: var(--el-font-size-h1, 1.875rem);
         font-weight: 700;
         color: var(--el-color-text, #0f172a);
-      }
-      .el-account-nav {
-        display: flex;
-        gap: 1rem;
+        letter-spacing: -0.02em;
       }
       .el-account-card {
         background: var(--el-color-surface, #ffffff);
         border: 1px solid var(--el-color-border, #e2e8f0);
         border-radius: var(--el-radius-lg, 0.75rem);
-        padding: 1.5rem;
-        margin-bottom: 1.25rem;
+        padding: 1.75rem;
+        margin-bottom: 1.5rem;
         box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
       }
-      .el-account-card h2 {
-        margin: 0 0 1rem;
+      .el-card-header {
+        margin-bottom: 1.25rem;
+      }
+      .el-card-header h2 {
+        margin: 0 0 0.25rem;
         font-size: 1.25rem;
         font-weight: 700;
-      }
-      .el-account-dl {
-        margin: 0;
-        display: grid;
-        gap: 0.75rem;
-      }
-      .el-account-dl-row {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        gap: 0.5rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 1px solid #f1f5f9;
-      }
-      .el-account-dl-row dt {
-        font-weight: 500;
-        color: #475569;
-      }
-      .el-account-dl-row dd {
-        margin: 0;
-        font-weight: 600;
         color: #0f172a;
       }
-      .el-security-notice {
-        padding: 0.75rem 1rem;
-        background: #f8fafc;
-        border-left: 4px solid #2563eb;
-        border-radius: 0.375rem;
-        margin-bottom: 1rem;
-        font-size: 0.925rem;
-        color: #334155;
-      }
-      .el-security-notice p {
+      .el-card-subtitle {
         margin: 0;
+        font-size: 0.875rem;
+        color: #64748b;
+      }
+      .el-account-table-wrap {
+        border: 1px solid #e2e8f0;
+        border-radius: 0.625rem;
+        overflow: hidden;
+        background: #ffffff;
+      }
+      .el-account-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+      }
+      .el-table-row {
+        border-bottom: 1px solid #f1f5f9;
+        transition: background-color 0.15s ease;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        &:hover {
+          background-color: #f8fafc;
+        }
+      }
+      .el-table-label {
+        padding: 1rem 1.25rem;
+        font-weight: 500;
+        color: #475569;
+        font-size: 0.9rem;
+        width: 35%;
+        vertical-align: middle;
+      }
+      .el-label-content {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.625rem;
+      }
+      .el-label-icon {
+        color: #64748b;
+        flex-shrink: 0;
+      }
+      .el-table-value {
+        padding: 1rem 1.25rem;
+        font-weight: 600;
+        color: #0f172a;
+        font-size: 0.95rem;
+        vertical-align: middle;
+      }
+      .el-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+      }
+      .el-status-pill--verified {
+        background: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+      }
+      .el-status-pill--active {
+        background: #f0fdfa;
+        color: #0f766e;
+        border: 1px solid #99f6e4;
+      }
+      .el-status-pill--warning {
+        background: #fffbeb;
+        color: #92400e;
+        border: 1px solid #fde68a;
+      }
+      .el-status-pill--danger {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+      }
+      .el-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+      }
+      .el-dot--active {
+        background: #0d9488;
+      }
+      .el-dot--danger {
+        background: #ef4444;
+      }
+      .el-security-notice {
+        display: flex;
+        gap: 0.875rem;
+        align-items: flex-start;
+        padding: 1rem 1.25rem;
+        background: #f0f7ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 0.75rem;
+        margin-bottom: 1.5rem;
+      }
+      .el-security-notice-icon {
+        color: #2563eb;
+        flex-shrink: 0;
+        margin-top: 0.125rem;
+      }
+      .el-security-notice-text {
+        margin: 0;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        color: #1e3a8a;
       }
       .el-session-list {
         list-style: none;
         padding: 0;
-        margin: 0 0 1rem;
+        margin: 0 0 1.25rem;
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 0.875rem;
       }
       .el-session-item {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
         justify-content: space-between;
-        gap: 0.75rem;
-        padding: 0.75rem 1rem;
-        border: 1px solid #cbd5e1;
-        border-radius: 0.5rem;
+        gap: 1rem;
+        padding: 1rem 1.25rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        background: #ffffff;
+        transition: all 0.15s ease;
+      }
+      .el-session-item--current {
+        border-color: #bfdbfe;
+        background: linear-gradient(to right, #f8fafc, #ffffff);
+        box-shadow: 0 1px 3px rgba(37, 99, 235, 0.06);
+      }
+      .el-session-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+      .el-session-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 0.625rem;
+        background: #f1f5f9;
+        color: #64748b;
+        flex-shrink: 0;
+      }
+      .el-session-icon--current {
+        background: #eff6ff;
+        color: #2563eb;
       }
       .el-session-meta {
         display: flex;
         flex-direction: column;
         gap: 0.25rem;
       }
+      .el-session-title-row {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+      }
       .el-session-badge {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #0f172a;
+      }
+      .el-active-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.125rem 0.5rem;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        border-radius: 9999px;
+        font-size: 0.75rem;
         font-weight: 600;
-        font-size: 0.9rem;
+        color: #065f46;
+      }
+      .el-pulse-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #10b981;
       }
       .el-session-time {
         font-size: 0.85rem;
         color: #64748b;
       }
+      .el-sessions-muted {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin: 0 0 1rem;
+      }
       .el-btn-secondary {
-        min-height: 2.75rem;
+        min-height: 2.5rem;
         padding: 0.5rem 1rem;
-        border: 1px solid #1d4ed8;
+        border: 1px solid #e2e8f0;
         border-radius: 0.5rem;
         background: #ffffff;
-        color: #1d4ed8;
+        color: #334155;
         font-family: inherit;
-        font-size: 0.9rem;
+        font-size: 0.875rem;
         font-weight: 600;
         cursor: pointer;
+        transition: all 0.15s ease;
+
+        &:hover {
+          background-color: #f8fafc;
+          border-color: #cbd5e1;
+          color: #0f172a;
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
       }
-      .el-link-secondary {
+      .el-btn-revoke {
+        color: #dc2626;
+        border-color: #fee2e2;
+        background-color: #fef2f2;
+
+        &:hover {
+          background-color: #fee2e2;
+          border-color: #fca5a5;
+          color: #b91c1c;
+        }
+      }
+      .el-btn-bulk-revoke {
         display: inline-flex;
         align-items: center;
-        min-height: 2.75rem;
-        color: #1d4ed8;
-        font-weight: 600;
-        text-decoration: underline;
+        gap: 0.5rem;
+      }
+      .el-session-bulk-actions {
+        display: flex;
+        justify-content: flex-end;
       }
       .el-irreversible-banner,
       .el-uncertain-banner {
@@ -572,6 +822,23 @@ export class OrganizerAccountComponent implements OnInit {
   readonly hasOtherActiveSessions = computed(() =>
     this.sessions().some((s) => !s.isCurrent)
   );
+
+  formatSessionDate(isoDate: string): string {
+    if (!isoDate) return '';
+    try {
+      const date = new Date(isoDate);
+      if (isNaN(date.getTime())) return isoDate;
+      return new Intl.DateTimeFormat('es-ES', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(date);
+    } catch {
+      return isoDate;
+    }
+  }
 
   constructor() {
     this.sessionService.registerOrganizerCacheClearer(() => {
