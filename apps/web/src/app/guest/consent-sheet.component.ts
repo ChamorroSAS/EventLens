@@ -77,7 +77,8 @@ import { CommonModule } from '@angular/common';
           </div>
         </div>
 
-        <h1 id="consent-title" class="consent-heading">Comparte tus recuerdos</h1>
+        <h1 id="consent-title" tabindex="-1" class="consent-heading">Comparte tus recuerdos</h1>
+        @if (errorMessage) { <p role="alert">{{ errorMessage }}</p> }
         <p id="consent-desc" class="consent-subheading">
           Antes de continuar, por favor acepta las políticas del evento para poder subir tus fotos y videos.
         </p>
@@ -511,12 +512,13 @@ export class ConsentSheetComponent {
   @Input() documentVersion = 'v1.0';
   @Input() submitting = false;
   @Input() eventName = 'Evento';
+  @Input() errorMessage: string | null = null;
   @Output() consentAccepted = new EventEmitter<string>();
   @Output() consentCancelled = new EventEmitter<void>();
 
-  acceptedTerms = true;
-  acceptedPrivacy = true;
-  acceptedPublishing = true;
+  acceptedTerms = false;
+  acceptedPrivacy = false;
+  acceptedPublishing = false;
 
   activeLegalModal: 'privacy' | 'terms' | 'publishing' | null = null;
 

@@ -47,14 +47,14 @@ import { CommonModule } from '@angular/common';
         </div>
       </div>
 
-      <h2 id="identity-heading" class="identity-title">¿Cómo quieres aparecer en este evento?</h2>
+      <h2 id="identity-heading" tabindex="-1" class="identity-title">¿Cómo quieres aparecer en este evento?</h2>
       <p class="identity-subtitle">Usaremos este nombre para identificar tus aportes.</p>
 
       <form (submit)="onFormSubmit($event)" class="identity-fields-form" novalidate>
         <!-- Field 1: Nombre * -->
         <div class="field-item">
           <label for="nicknameInput" class="field-label">
-            Nombre <span class="required-star">*</span>
+            Nombre o apodo <span class="required-star">*</span>
           </label>
           <div class="input-wrapper">
             <input
@@ -78,26 +78,6 @@ import { CommonModule } from '@angular/common';
               {{ errorMessage }}
             </p>
           }
-        </div>
-
-        <!-- Field 2: Correo o alias (opcional) -->
-        <div class="field-item">
-          <label for="emailOrAliasInput" class="field-label">
-            Correo o alias <span class="optional-tag">(opcional)</span>
-          </label>
-          <div class="input-wrapper">
-            <input
-              id="emailOrAliasInput"
-              name="emailOrAlias"
-              type="text"
-              [value]="emailOrAliasValue"
-              (input)="onEmailInput($event)"
-              [disabled]="submitting"
-              maxlength="100"
-              class="styled-text-input"
-              placeholder="tu.correo@ejemplo.com"
-            />
-          </div>
         </div>
 
         <!-- Info pill callout -->
@@ -370,7 +350,6 @@ export class GuestIdentityFormComponent implements OnInit {
   @Output() back = new EventEmitter<void>();
 
   nicknameValue = '';
-  emailOrAliasValue = '';
 
   Boolean = Boolean;
 
@@ -392,11 +371,6 @@ export class GuestIdentityFormComponent implements OnInit {
   onNicknameInput(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.nicknameValue = target?.value ?? '';
-  }
-
-  onEmailInput(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    this.emailOrAliasValue = target?.value ?? '';
   }
 
   onFormSubmit(event: Event): void {

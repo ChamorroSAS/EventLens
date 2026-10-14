@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, inject, signal } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges, ElementRef, HostListener, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GuestService } from './guest.service.js';
 import {
@@ -22,7 +22,7 @@ import { PublicEntryRouterService } from '../navigation/public-entry-router.serv
 
 export interface SelectedUploadItem {
   id: string;
-  file?: File;
+  file: File;
   name: string;
   sizeBytes: number;
   type: 'PHOTO' | 'VIDEO';
@@ -55,7 +55,7 @@ export type GuestFlowStep =
     GalleryComponent
   ],
   template: `
-    <main class="guest-shell" role="main" aria-labelledby="event-title">
+    <main class="guest-shell" role="main" [attr.aria-labelledby]="currentStep() === 'CONSENT' ? 'consent-title' : currentStep() === 'IDENTITY' ? 'identity-heading' : currentStep() === 'SELECT_FILES' ? 'selection-title' : currentStep() === 'GALLERY' ? 'gallery-title' : 'event-title'">
       <!-- Loading State -->
       @if (isLoadingEntry()) {
         <header class="event-hero" role="status" aria-live="polite">
@@ -107,6 +107,8 @@ export type GuestFlowStep =
                 class="header-menu-btn"
                 (click)="toggleMenu()"
                 aria-label="Abrir menú"
+                [attr.aria-expanded]="isMenuOpen()"
+                aria-controls="guest-menu"
               >
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -117,8 +119,13 @@ export type GuestFlowStep =
             </header>
 
             @if (isMenuOpen()) {
-              <div class="header-dropdown-menu">
-                <button type="button" class="menu-item" (click)="goToGallery(); isMenuOpen.set(false)">
+              <div id="guest-menu" class="header-dropdown-menu">
+                <button type="button" class="menu-item" [disabled]="!canUpload || needsPinVerification" (click)="onUploadCtaClick(); closeMenu(false)">Subir fotos y videos</button>
+                @if (!canUpload) { <p role="note">{{ uploadRestrictionMessage }}</p> }
+                @if (hasActiveSession) {
+                  <button type="button" class="menu-item" (click)="editNickname()">{{ currentSession?.contributorNickname ? 'Editar nombre o apodo' : 'Completar nombre o apodo' }}</button>
+                }
+                <button type="button" class="menu-item" [disabled]="!accessView?.canViewGallery" (click)="goToGallery(); closeMenu(false)">
                   🖼️ Ver Galería
                 </button>
                 <button type="button" class="menu-item" (click)="openUploadPolicy(); isMenuOpen.set(false)">
@@ -131,21 +138,17 @@ export type GuestFlowStep =
             }
 
             <!-- Event Hero Image Banner Card -->
-            <section class="event-hero-card" aria-label="Portada del evento">
+            <section class="event-hero-card" aria-label="Información del evento">
               <div class="hero-image-wrap">
-                <img
-                  src="assets/branding/phoeve/login-background.jpg"
-                  alt="Celebración del evento"
-                  class="hero-cover-img"
-                />
+                <div class="neutral-event-cover" aria-hidden="true"></div>
                 <div class="hero-gradient-overlay"></div>
               </div>
 
               <div class="hero-content-overlay">
                 <span class="event-script-title">
-                  {{ accessView?.name || 'Cumpleaños de Néstor' }}
+                  {{ accessView?.name || 'Evento' }}
                 </span>
-                <h1 id="event-title" class="sr-only">{{ accessView?.name || 'Cumpleaños de Néstor' }}</h1>
+                <h1 id="event-title" tabindex="-1" class="sr-only">{{ accessView?.name || 'Evento' }}</h1>
 
                 <div class="event-meta-pills">
                   <div class="meta-pill">
@@ -155,7 +158,7 @@ export type GuestFlowStep =
                       <line x1="8" y1="2" x2="8" y2="6"></line>
                       <line x1="3" y1="10" x2="21" y2="10"></line>
                     </svg>
-                    <span>17 de octubre · 6:00 p.m.</span>
+                    <span>{{ eventDateLabel }}</span>
                   </div>
 
                   <div class="meta-pill">
@@ -163,16 +166,18 @@ export type GuestFlowStep =
                       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                       <circle cx="12" cy="10" r="3"></circle>
                     </svg>
-                    <span>Barranquilla</span>
+                    <span>{{ accessView?.timezone }}</span>
                   </div>
                 </div>
               </div>
             </section>
+            @if (accessView?.welcomeMessage) { <p class="event-welcome">{{ accessView?.welcomeMessage }}</p> }
+            <p class="restriction-banner" role="note">{{ transferUnavailableMessage }}</p>
 
             <!-- Restriction / Session Alerts if applicable -->
             @if (accessView?.restrictionReason) {
               <div class="restriction-banner" role="alert">
-                {{ accessView?.restrictionReason }}
+                {{ uploadRestrictionMessage }}
               </div>
             }
             @if (sessionErrorMessage()) {
@@ -212,12 +217,13 @@ export type GuestFlowStep =
                 <p class="festive-desc">Fotos, videos y recuerdos de un día muy especial.</p>
 
                 <div class="festive-buttons-col">
-                  @if (canUpload) {
+
                     <button
                       type="button"
                       class="btn-primary-gradient cta-large"
                       (click)="onUploadCtaClick()"
                       aria-label="Subir fotos y videos"
+                      [disabled]="!canUpload"
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -229,13 +235,15 @@ export type GuestFlowStep =
                         <polyline points="9 18 15 12 9 6"></polyline>
                       </svg>
                     </button>
-                  }
+
+                  @if (!canUpload) { <p role="note">{{ uploadRestrictionMessage }}</p> }
 
                   <button
                     type="button"
                     class="btn-secondary-white cta-large"
                     (click)="goToGallery()"
                     aria-label="Ver galería"
+                    [disabled]="!accessView?.canViewGallery"
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -258,6 +266,7 @@ export type GuestFlowStep =
                   <span class="guest-identity-text">
                     Participando como <strong>{{ currentSession?.contributorNickname || 'Invitado' }}</strong>
                   </span>
+                  <button type="button" class="view-contributions-toggle" (click)="editNickname()">{{ currentSession?.contributorNickname ? 'Editar nombre o apodo' : 'Completar nombre o apodo' }}</button>
                   <button
                     type="button"
                     class="view-contributions-toggle"
@@ -306,6 +315,7 @@ export type GuestFlowStep =
             [documentVersion]="'v1.0'"
             [eventName]="accessView?.name || 'Evento'"
             [submitting]="isSubmittingConsent()"
+            [errorMessage]="sessionErrorMessage()"
             (consentAccepted)="onConsentAccepted($event)"
             (consentCancelled)="onConsentCancelled()"
           ></el-consent-sheet>
@@ -319,7 +329,7 @@ export type GuestFlowStep =
               [submitting]="isSubmittingIdentity()"
               [errorMessage]="identityErrorMessage()"
               (nicknameSaved)="onNicknameSaved($event)"
-              (back)="goToStep('LANDING')"
+              (back)="cancelIdentity()"
             ></el-guest-identity-form>
 
             <footer class="persistent-legal-footer">
@@ -335,6 +345,8 @@ export type GuestFlowStep =
         <!-- SCREEN 4: SELECCIÓN DE ARCHIVOS -->
         @if (currentStep() === 'SELECT_FILES') {
           <div class="screen-view file-selection-screen">
+            <p class="restriction-banner" role="status">Los archivos seleccionados todavía no se han enviado. {{ transferUnavailableMessage }}</p>
+            @if (sessionErrorMessage()) { <p role="alert">{{ sessionErrorMessage() }}</p> }
             <!-- Header bar -->
             <header class="mobile-app-header">
               <button type="button" class="header-nav-btn" (click)="goToStep('LANDING')" aria-label="Volver">
@@ -349,7 +361,7 @@ export type GuestFlowStep =
             </header>
 
             <div class="section-heading-box">
-              <h2 class="step-title">Tus recuerdos</h2>
+              <h2 id="selection-title" tabindex="-1" class="step-title">Tus recuerdos</h2>
               <p class="step-subtitle">
                 Agrega fotos y videos del evento. ¡Nos encantará ver tu perspectiva!
               </p>
@@ -427,7 +439,8 @@ export type GuestFlowStep =
                 <div class="previews-grid">
                   @for (item of selectedFiles(); track item.id) {
                     <div class="preview-item-card">
-                      <img [src]="item.previewUrl" [alt]="item.name" class="preview-thumb" />
+                      @if (item.type === 'PHOTO') { <img [src]="item.previewUrl" [alt]="item.name" class="preview-thumb" /> }
+                      @else { <video [src]="item.previewUrl" class="preview-thumb" preload="metadata" [attr.aria-label]="item.name"></video> }
 
                       <button
                         type="button"
@@ -443,7 +456,7 @@ export type GuestFlowStep =
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="#ffffff">
                             <polygon points="5 3 19 12 5 21 5 3"></polygon>
                           </svg>
-                          <span>{{ item.duration || '0:28' }}</span>
+                          <span>Video</span>
                         </div>
                       }
                     </div>
@@ -468,7 +481,7 @@ export type GuestFlowStep =
             <button
               type="button"
               class="btn-primary-gradient cta-large mt-auto"
-              [disabled]="selectedFiles().length === 0"
+              [disabled]="true"
               (click)="startUploadingSelectedFiles()"
             >
               <span>Subir recuerdos</span>
@@ -476,244 +489,6 @@ export type GuestFlowStep =
                 <polyline points="9 18 15 12 9 6"></polyline>
               </svg>
             </button>
-
-            <footer class="persistent-legal-footer">
-              <button type="button" class="footer-legal-btn" (click)="openLegalModal('privacy')">Privacidad</button>
-              <span class="sep">•</span>
-              <button type="button" class="footer-legal-btn" (click)="openLegalModal('terms')">Términos</button>
-              <span class="sep">•</span>
-              <button type="button" class="footer-legal-btn" (click)="openLegalModal('publishing')">Condiciones de publicación</button>
-            </footer>
-          </div>
-        }
-
-        <!-- SCREEN 5: PROGRESO DE CARGA -->
-        @if (currentStep() === 'UPLOADING') {
-          <div class="screen-view upload-progress-screen">
-            <!-- Header bar -->
-            <header class="mobile-app-header">
-              <div class="header-spacer"></div>
-              <div class="header-logo-box">
-                <img src="assets/branding/phoeve/logo-primary.png" alt="Phoeve" class="brand-logo" />
-              </div>
-              <div class="header-spacer"></div>
-            </header>
-
-            <div class="section-heading-box flex-row-heading">
-              <div class="clock-calendar-badge" aria-hidden="true">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e11d74" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-              </div>
-              <div class="heading-text">
-                <h2 class="step-title">Subiendo archivos</h2>
-                <p class="step-subtitle">
-                  Por favor, mantén esta pantalla abierta mientras se completan las cargas.
-                </p>
-              </div>
-            </div>
-
-            <!-- List of files with progress items -->
-            <ul class="uploading-files-list" role="list">
-              @for (item of selectedFiles(); track item.id) {
-                <li class="upload-file-row">
-                  <div class="file-thumb-box">
-                    <img [src]="item.previewUrl" [alt]="item.name" class="thumb-mini" />
-                    @if (item.type === 'VIDEO') {
-                      <div class="mini-play-icon">▶</div>
-                    }
-                  </div>
-
-                  <div class="file-detail-box">
-                    <div class="file-name-row">
-                      <span class="file-title-text">{{ item.name }}</span>
-                    </div>
-                    <div class="file-meta-row">
-                      <span>{{ formatBytes(item.sizeBytes) }}</span>
-                      <span>•</span>
-                      <span>{{ item.type === 'PHOTO' ? 'Foto' : 'Video' }}</span>
-                    </div>
-
-                    <!-- Progress bar when uploading -->
-                    @if (item.status === 'UPLOADING') {
-                      <div class="file-progress-track">
-                        <div class="file-progress-fill" [style.width.%]="item.progress"></div>
-                      </div>
-                    }
-                  </div>
-
-                  <div class="file-status-action">
-                    @if (item.status === 'COMPLETED') {
-                      <div class="status-badge-completed">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                          <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span>Completado</span>
-                      </div>
-                    } @else if (item.status === 'UPLOADING') {
-                      <span class="status-pct">{{ item.progress }}%</span>
-                    } @else if (item.status === 'PROCESSING') {
-                      <div class="status-spinner-row">
-                        <div class="mini-spinner"></div>
-                        <span>Procesando...</span>
-                      </div>
-                    } @else if (item.status === 'ERROR') {
-                      <div class="status-error-col">
-                        <span class="error-badge">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2.5">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="12" y1="8" x2="12" y2="12"></line>
-                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                          </svg>
-                          <span>Error en la carga</span>
-                        </span>
-                        <button type="button" class="btn-retry-pill" (click)="retryFileUpload(item.id)">
-                          Reintentar
-                        </button>
-                      </div>
-                    }
-                  </div>
-                </li>
-              }
-            </ul>
-
-            <!-- Info pill callout -->
-            <div class="info-pill-callout">
-              <div class="info-pill-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="16" x2="12" y2="12"></line>
-                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                </svg>
-              </div>
-              <span class="info-pill-text">Un fallo no detiene los demás. Puedes seguir subiendo archivos.</span>
-            </div>
-
-            <!-- Complete manually if button wanted -->
-            @if (isAllUploadsDone()) {
-              <button
-                type="button"
-                class="btn-primary-gradient cta-large mt-auto"
-                (click)="goToStep('CONFIRMATION')"
-              >
-                <span>Continuar a la confirmación</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="9 18 15 12 9 6"></polyline>
-                </svg>
-              </button>
-            }
-
-            <footer class="persistent-legal-footer">
-              <button type="button" class="footer-legal-btn" (click)="openLegalModal('privacy')">Privacidad</button>
-              <span class="sep">•</span>
-              <button type="button" class="footer-legal-btn" (click)="openLegalModal('terms')">Términos</button>
-              <span class="sep">•</span>
-              <button type="button" class="footer-legal-btn" (click)="openLegalModal('publishing')">Condiciones de publicación</button>
-            </footer>
-          </div>
-        }
-
-        <!-- SCREEN 6: CONFIRMACIÓN -->
-        @if (currentStep() === 'CONFIRMATION') {
-          <div class="screen-view confirmation-screen">
-            <!-- Header bar -->
-            <header class="mobile-app-header">
-              <div class="header-spacer"></div>
-              <div class="header-logo-box">
-                <img src="assets/branding/phoeve/logo-primary.png" alt="Phoeve" class="brand-logo" />
-              </div>
-              <div class="header-spacer"></div>
-            </header>
-
-            <!-- Large Celebration Checkmark Circle with Confetti Bursts -->
-            <div class="celebration-burst-hero">
-              <div class="confetti-sparkles-burst" aria-hidden="true">
-                <span class="confetti sp-1">✦</span>
-                <span class="confetti sp-2">★</span>
-                <span class="confetti sp-3">◆</span>
-                <span class="confetti sp-4">▲</span>
-                <span class="confetti sp-5">●</span>
-                <span class="confetti sp-6">✦</span>
-              </div>
-
-              <div class="celebration-circle">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-              </div>
-            </div>
-
-            <h2 class="celebration-title">¡Gracias por compartir!</h2>
-            <p class="celebration-subtitle">Tus recuerdos ya forman parte del evento.</p>
-
-            <!-- Stats badges row -->
-            <div class="stats-summary-row">
-              <div class="stat-pill-card stat-photo">
-                <div class="stat-icon-circle">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e11d74" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                    <circle cx="12" cy="13" r="4"></circle>
-                  </svg>
-                </div>
-                <div class="stat-text-col">
-                  <span class="stat-number">{{ confirmedPhotosCount }}</span>
-                  <span class="stat-label">fotos cargadas</span>
-                </div>
-              </div>
-
-              <div class="stat-pill-card stat-video">
-                <div class="stat-icon-circle">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="23 7 16 12 23 17 23 7"></polygon>
-                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
-                  </svg>
-                </div>
-                <div class="stat-text-col">
-                  <span class="stat-number">{{ confirmedVideosCount }}</span>
-                  <span class="stat-label">video cargado</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Action buttons -->
-            <div class="confirmation-actions-col">
-              <button
-                type="button"
-                class="btn-primary-gradient cta-large"
-                (click)="onUploadMoreClick()"
-              >
-                <span>Subir más</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="9 18 15 12 9 6"></polyline>
-                </svg>
-              </button>
-
-              <button
-                type="button"
-                class="btn-secondary-white cta-large"
-                (click)="goToGallery()"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                  <polyline points="21 15 16 10 5 21"></polyline>
-                </svg>
-                <span>Ver galería</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="9 18 15 12 9 6"></polyline>
-                </svg>
-              </button>
-            </div>
-
-            <!-- Festive balloons decoration & script text -->
-            <div class="festive-balloons-footer" aria-hidden="true">
-              <div class="balloons-illustration">
-                <span class="balloon b-blue">🎈</span>
-                <span class="balloon b-pink">🎈</span>
-              </div>
-              <span class="script-see-you">¡Nos vemos en la galería!</span>
-            </div>
 
             <footer class="persistent-legal-footer">
               <button type="button" class="footer-legal-btn" (click)="openLegalModal('privacy')">Privacidad</button>
@@ -741,7 +516,7 @@ export type GuestFlowStep =
               <div class="header-spacer"></div>
             </header>
 
-            <h2 class="step-title text-left mb-2">Galería del evento</h2>
+            <h2 id="gallery-title" tabindex="-1" class="step-title text-left mb-2">Galería del evento</h2>
 
             <!-- Filter Tabs Pills [Todos] [Fotos] [Videos] -->
             <div class="gallery-filter-tabs">
@@ -920,6 +695,10 @@ export type GuestFlowStep =
     </main>
   `,
   styles: [`
+    .neutral-event-cover { width: 100%; height: 100%; background: linear-gradient(135deg, #163354, #334155); }
+    button:disabled { cursor: not-allowed; opacity: 0.65; }
+    .menu-item, .header-menu-btn, .header-nav-btn { min-height: 44px; min-width: 44px; }
+    .header-dropdown-menu p { padding: 0 0.75rem; font-size: 0.875rem; }
     :host {
       display: block;
       min-height: 100vh;
@@ -2018,7 +1797,7 @@ export type GuestFlowStep =
     }
   `]
 })
-export class GuestContainerComponent implements OnInit {
+export class GuestContainerComponent implements OnInit, OnDestroy, OnChanges {
   private readonly router = inject(PublicEntryRouterService, { optional: true });
 
   @Input() accessView: PublicAccessView | null = null;
@@ -2043,7 +1822,7 @@ export class GuestContainerComponent implements OnInit {
   readonly removalFlowVariant = signal<'OWN_REMOVAL' | 'GUEST_INTAKE'>('GUEST_INTAKE');
   readonly targetMediaId = signal<string>('');
 
-  // Enhanced 7-screen state matching the mockup
+  // Guest steps use authoritative session receipts and capabilities.
   readonly currentStep = signal<GuestFlowStep>('LANDING');
   readonly isMenuOpen = signal(false);
   readonly showContributionsTray = signal(false);
@@ -2053,9 +1832,36 @@ export class GuestContainerComponent implements OnInit {
   readonly isDragOver = signal(false);
 
   readonly selectedFiles = signal<SelectedUploadItem[]>([]);
-  readonly uploadTimer = signal<any>(null);
+  readonly transferUnavailableMessage = 'La subida de archivos aún no está disponible.';
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private identityOrigin: GuestFlowStep | null = null;
+  private fileSequence = 0;
+  private entryRequest = 0;
+  private serviceContext: number;
 
-  constructor(public guestService: GuestService) {}
+  constructor(public guestService: GuestService) { this.serviceContext = guestService.getContextVersion(); }
+
+  private invalidateFlowRequests(): void {
+    ++this.entryRequest;
+    const version = this.guestService.invalidatePendingRequests(this.serviceContext);
+    if (version !== null) this.serviceContext = version;
+    this.isSubmittingPin.set(false);
+    this.isSubmittingConsent.set(false);
+    this.isSubmittingIdentity.set(false);
+    this.pinErrorMessage.set(null);
+    this.identityErrorMessage.set(null);
+    this.sessionErrorMessage.set(null);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (Object.values(changes).every(change => change.firstChange)) return;
+    if (changes['lookupKey'] || changes['accessView']) {
+      this.invalidateFlowRequests();
+      this.clearSelectedFiles();
+      this.goToStep('LANDING');
+      if (changes['lookupKey'] && this.effectiveLookupKey) void this.loadGuestEntry(this.effectiveLookupKey);
+    }
+  }
 
   ngOnInit(): void {
     const resolvedKey = this.effectiveLookupKey;
@@ -2064,11 +1870,7 @@ export class GuestContainerComponent implements OnInit {
       return;
     }
 
-    const session = this.guestService.getSession();
-    if (session && !session.hasConsented) {
-      this.showConsentSheet.set(true);
-      this.currentStep.set('CONSENT');
-    }
+
   }
 
   get effectiveLookupKey(): string | null {
@@ -2080,7 +1882,10 @@ export class GuestContainerComponent implements OnInit {
   }
 
   get currentSession(): GuestSessionState | null {
-    return this.guestService.getSession();
+    const session = this.guestService.getSession();
+    if (!session || !this.accessView || session.eventId !== this.accessView.eventId ||
+        session.credentialGeneration !== this.accessView.generation || this.isUnavailableAccess) return null;
+    return session;
   }
 
   get hasActiveSession(): boolean {
@@ -2105,19 +1910,36 @@ export class GuestContainerComponent implements OnInit {
   }
 
   get contributions(): GuestContributionView[] {
-    return this.guestService.getContributions();
+    return this.hasActiveSession ? this.guestService.getContributions() : [];
+  }
+
+  get eventDateLabel(): string {
+    if (!this.accessView?.scheduledAt) return 'Fecha por confirmar';
+    try {
+      return new Intl.DateTimeFormat('es-CO', { timeZone: this.accessView.timezone, dateStyle: 'long', timeStyle: 'short' }).format(new Date(this.accessView.scheduledAt));
+    } catch { return 'Fecha por confirmar'; }
+  }
+
+  get uploadRestrictionMessage(): string {
+    switch (this.accessView?.status) {
+      case 'SCHEDULED': return 'El evento está programado. Podrás compartir cuando se active.';
+      case 'ACTIVE': return 'El organizador tiene deshabilitada la subida de archivos.';
+      case 'CLOSED': return 'El evento está cerrado y ya no acepta archivos.';
+      case 'GRACE_PERIOD': return 'El plazo para subir archivos ha terminado.';
+      default: return 'Este evento no permite subir archivos en este momento.';
+    }
   }
 
   get confirmedPhotosCount(): number {
     const fromSelected = this.selectedFiles().filter(f => f.type === 'PHOTO' && f.status === 'COMPLETED').length;
     const fromContribs = this.contributions.filter(c => c.mediaType === 'PHOTO').length;
-    return Math.max(fromSelected, fromContribs, 3); // Matches mockup display (3 fotos)
+    return Math.max(fromSelected, fromContribs);
   }
 
   get confirmedVideosCount(): number {
     const fromSelected = this.selectedFiles().filter(f => f.type === 'VIDEO' && f.status === 'COMPLETED').length;
     const fromContribs = this.contributions.filter(c => c.mediaType === 'VIDEO').length;
-    return Math.max(fromSelected, fromContribs, 1); // Matches mockup display (1 video)
+    return Math.max(fromSelected, fromContribs);
   }
 
   getStatusLabel(status?: string): string {
@@ -2135,15 +1957,53 @@ export class GuestContainerComponent implements OnInit {
     this.isMenuOpen.set(!this.isMenuOpen());
   }
 
+  closeMenu(returnFocus = true): void {
+    this.isMenuOpen.set(false);
+    if (returnFocus) this.host.nativeElement.querySelector<HTMLButtonElement>('.header-menu-btn')?.focus();
+  }
+
+  @HostListener('keydown.escape')
+  onMenuEscape(): void { if (this.isMenuOpen()) this.closeMenu(); }
+
+  private focusStep(): void {
+    queueMicrotask(() => {
+      const title = this.host.nativeElement.querySelector<HTMLElement>('#consent-title, #identity-heading, .step-title, #event-title');
+      title?.setAttribute('tabindex', '-1');
+      title?.focus();
+    });
+  }
+
   goToStep(step: GuestFlowStep): void {
+    if (step === 'UPLOADING' || step === 'CONFIRMATION') { this.sessionErrorMessage.set(this.transferUnavailableMessage); return; }
+    if (step === 'GALLERY' && !this.accessView?.canViewGallery) return;
+    if ((step === 'CONSENT' || step === 'SELECT_FILES' || (step === 'IDENTITY' && this.identityOrigin === null)) && (!this.canUpload || !this.hasActiveSession)) {
+      this.goToStep('LANDING');
+      this.sessionErrorMessage.set(this.hasActiveSession ? this.uploadRestrictionMessage : 'Tu sesión de invitado ha expirado o fue revocada.');
+      return;
+    }
+    if (step === 'IDENTITY' && !this.hasActiveSession) { this.goToStep('LANDING'); return; }
+    if (step === 'SELECT_FILES' && (!this.currentSession?.hasConsented || !this.currentSession?.contributorNickname)) { this.startUploadFlow(); return; }
     this.currentStep.set(step);
+    this.isMenuOpen.set(false);
+    if (step === 'LANDING') this.identityOrigin = null;
     if (step !== 'CONSENT') {
       this.showConsentSheet.set(false);
     }
     if (step !== 'IDENTITY') {
       this.showIdentityForm.set(false);
     }
+    this.focusStep();
   }
+
+  editNickname(): void {
+    if (!this.hasActiveSession) return;
+    this.identityOrigin = this.currentStep();
+    this.identityErrorMessage.set(null);
+    this.goToStep('IDENTITY');
+    this.showIdentityForm.set(true);
+  }
+
+  cancelIdentity(): void { this.goToStep(this.identityOrigin ?? 'LANDING'); }
 
   goToGallery(): void {
     this.goToStep('GALLERY');
@@ -2178,11 +2038,18 @@ export class GuestContainerComponent implements OnInit {
   }
 
   async loadGuestEntry(lookupKey: string): Promise<void> {
+    this.invalidateFlowRequests();
+    const request = this.entryRequest;
+    this.clearSelectedFiles();
+    this.goToStep('LANDING');
     this.isLoadingEntry.set(true);
     this.entryErrorMessage.set(null);
     this.sessionErrorMessage.set(null);
 
-    const outcome = await this.guestService.resolvePublicEntry(lookupKey);
+    const pending = this.guestService.resolvePublicEntry(lookupKey);
+    this.serviceContext = this.guestService.getContextVersion();
+    const outcome = await pending;
+    if (request !== this.entryRequest) return;
     this.isLoadingEntry.set(false);
 
     if (!outcome.ok) {
@@ -2198,6 +2065,8 @@ export class GuestContainerComponent implements OnInit {
   }
 
   async onPinSubmitted(pin: string): Promise<void> {
+    const request = this.entryRequest;
+    this.serviceContext = this.guestService.getContextVersion();
     const key = this.effectiveLookupKey;
     if (!key) {
       this.pinErrorMessage.set('No se encontró un enlace de acceso válido para verificar el PIN.');
@@ -2209,6 +2078,7 @@ export class GuestContainerComponent implements OnInit {
     this.sessionErrorMessage.set(null);
 
     const outcome = await this.guestService.submitPin(key, pin);
+    if (request !== this.entryRequest) return;
     this.isSubmittingPin.set(false);
 
     if (!outcome.ok) {
@@ -2222,66 +2092,74 @@ export class GuestContainerComponent implements OnInit {
   }
 
   startUploadFlow(): void {
-    const session = this.guestService.getSession();
+    if (!this.canUpload) { this.goToStep('LANDING'); this.sessionErrorMessage.set(this.uploadRestrictionMessage); return; }
+    this.identityOrigin = null;
+    const session = this.currentSession;
     if (!session) {
+      this.goToStep('LANDING');
       this.sessionErrorMessage.set('Tu sesión de invitado ha expirado o fue revocada.');
       return;
     }
     if (!session.hasConsented) {
       this.showConsentSheet.set(true);
-      this.currentStep.set('CONSENT');
+      this.goToStep('CONSENT');
       return;
     }
     if (!session.contributorNickname) {
       this.showIdentityForm.set(true);
-      this.currentStep.set('IDENTITY');
+      this.goToStep('IDENTITY');
       return;
     }
 
     // Both consented and named: go straight to file selection
-    this.initializeDefaultMockFilesIfEmpty();
     this.goToStep('SELECT_FILES');
   }
 
   async onConsentAccepted(version: string): Promise<void> {
+    const request = this.entryRequest;
+    if (this.isSubmittingConsent()) return;
+    if (!this.canUpload || !this.hasActiveSession) { this.startUploadFlow(); return; }
+    this.serviceContext = this.guestService.getContextVersion();
     this.isSubmittingConsent.set(true);
     this.sessionErrorMessage.set(null);
 
     const outcome = await this.guestService.confirmConsent(version, true);
+    if (request !== this.entryRequest) return;
     this.isSubmittingConsent.set(false);
 
     if (!outcome.ok) {
-      this.showConsentSheet.set(false);
+      if (outcome.status === 401) { this.guestService.clearSession(); this.clearSelectedFiles(); this.goToStep('LANDING'); }
+      else { this.goToStep('CONSENT'); this.showConsentSheet.set(true); }
       this.sessionErrorMessage.set(outcome.message);
       return;
     }
 
     this.showConsentSheet.set(false);
-    if (!outcome.session.contributorNickname) {
-      this.showIdentityForm.set(true);
-      this.currentStep.set('IDENTITY');
-    } else {
-      this.initializeDefaultMockFilesIfEmpty();
-      this.goToStep('SELECT_FILES');
-    }
+    this.startUploadFlow();
   }
 
   onConsentCancelled(): void {
-    this.showConsentSheet.set(false);
-    this.currentStep.set('LANDING');
+    this.goToStep('LANDING');
   }
 
   async onNicknameSaved(nickname: string): Promise<void> {
+    const request = this.entryRequest;
+    if (this.isSubmittingIdentity()) return;
+    if (!this.hasActiveSession) { this.goToStep('LANDING'); this.sessionErrorMessage.set('Tu sesión de invitado ha expirado o fue revocada.'); return; }
+    this.serviceContext = this.guestService.getContextVersion();
     this.isSubmittingIdentity.set(true);
     this.identityErrorMessage.set(null);
     this.sessionErrorMessage.set(null);
 
     const outcome = await this.guestService.saveContributorNickname(nickname);
+    if (request !== this.entryRequest) return;
     this.isSubmittingIdentity.set(false);
 
     if (!outcome.ok) {
       if (outcome.status === 401) {
-        this.showIdentityForm.set(false);
+        this.guestService.clearSession();
+        this.clearSelectedFiles();
+        this.goToStep('LANDING');
         this.sessionErrorMessage.set(outcome.message);
         return;
       }
@@ -2290,54 +2168,8 @@ export class GuestContainerComponent implements OnInit {
     }
 
     this.showIdentityForm.set(false);
-    this.initializeDefaultMockFilesIfEmpty();
-    this.goToStep('SELECT_FILES');
-  }
-
-  initializeDefaultMockFilesIfEmpty(): void {
-    if (this.selectedFiles().length === 0) {
-      // Mock files matching the mockup display:
-      this.selectedFiles.set([
-        {
-          id: 'file-mock-1',
-          name: 'IMG_2345.jpg',
-          sizeBytes: 2.4 * 1024 * 1024,
-          type: 'PHOTO',
-          previewUrl: 'assets/branding/phoeve/login-background.jpg',
-          status: 'PENDING',
-          progress: 0
-        },
-        {
-          id: 'file-mock-2',
-          name: 'VID_4821.mp4',
-          sizeBytes: 120 * 1024 * 1024,
-          type: 'VIDEO',
-          duration: '0:28',
-          previewUrl: 'assets/branding/phoeve/admin-login-background.jpg',
-          status: 'PENDING',
-          progress: 0
-        },
-        {
-          id: 'file-mock-3',
-          name: 'IMG_7778.jpg',
-          sizeBytes: 3.1 * 1024 * 1024,
-          type: 'PHOTO',
-          previewUrl: 'assets/branding/phoeve/login-background.jpg',
-          status: 'PENDING',
-          progress: 0
-        },
-        {
-          id: 'file-mock-4',
-          name: 'VID_9901.mp4',
-          sizeBytes: 310 * 1024 * 1024,
-          type: 'VIDEO',
-          duration: '1:12',
-          previewUrl: 'assets/branding/phoeve/admin-login-background.jpg',
-          status: 'PENDING',
-          progress: 0
-        }
-      ]);
-    }
+    if (this.identityOrigin !== null) this.goToStep(this.identityOrigin);
+    else this.startUploadFlow();
   }
 
   onDragOver(event: DragEvent): void {
@@ -2362,16 +2194,16 @@ export class GuestContainerComponent implements OnInit {
   }
 
   addLocalFiles(files: File[]): void {
-    const newItems: SelectedUploadItem[] = files.map((file, idx) => {
+    if (!this.canUpload || !this.hasActiveSession || !this.currentSession?.hasConsented || !this.currentSession?.contributorNickname || this.currentStep() !== 'SELECT_FILES') return;
+    const newItems: SelectedUploadItem[] = files.map((file) => {
       const isVideo = file.type.startsWith('video/') || /\.(mp4|mov|webm)$/i.test(file.name);
       return {
-        id: `sel-${Date.now()}-${idx}`,
+        id: `sel-${++this.fileSequence}`,
         file,
         name: file.name,
         sizeBytes: file.size,
         type: isVideo ? 'VIDEO' : 'PHOTO',
         previewUrl: URL.createObjectURL(file),
-        duration: isVideo ? '0:28' : undefined,
         status: 'PENDING',
         progress: 0
       };
@@ -2381,71 +2213,22 @@ export class GuestContainerComponent implements OnInit {
   }
 
   removeSelectedFile(id: string): void {
+    const removed = this.selectedFiles().find(f => f.id === id);
+    if (removed) URL.revokeObjectURL(removed.previewUrl);
     this.selectedFiles.set(this.selectedFiles().filter(f => f.id !== id));
   }
 
   startUploadingSelectedFiles(): void {
-    this.goToStep('UPLOADING');
-
-    // Simulate progress per file matching Screen 5 from mockup:
-    // Item 1: Completed
-    // Item 2: Progress 63%
-    // Item 3: Processing spinner
-    // Item 4: Error with retry
-    const files = [...this.selectedFiles()];
-    if (files.length > 0) files[0].status = 'COMPLETED';
-    if (files.length > 1) {
-      files[1].status = 'UPLOADING';
-      files[1].progress = 63;
-    }
-    if (files.length > 2) files[2].status = 'PROCESSING';
-    if (files.length > 3) {
-      files[3].status = 'ERROR';
-      files[3].errorMessage = 'Error en la carga';
-    }
-    this.selectedFiles.set(files);
-
-    // Auto complete after short interval to allow viewing the progress step and advancing
-    setTimeout(() => {
-      const updated = this.selectedFiles().map(f => {
-        if (f.status === 'UPLOADING' || f.status === 'PROCESSING') {
-          return { ...f, status: 'COMPLETED' as const, progress: 100 };
-        }
-        return f;
-      });
-      this.selectedFiles.set(updated);
-    }, 2500);
+    if (!this.canUpload || !this.hasActiveSession) { this.startUploadFlow(); return; }
+    if (!this.currentSession?.hasConsented || !this.currentSession?.contributorNickname) { this.startUploadFlow(); return; }
+    this.sessionErrorMessage.set(this.transferUnavailableMessage);
   }
 
-  retryFileUpload(id: string): void {
-    const files = this.selectedFiles().map(f => {
-      if (f.id === id) {
-        return { ...f, status: 'UPLOADING' as const, progress: 45, errorMessage: undefined };
-      }
-      return f;
-    });
-    this.selectedFiles.set(files);
+  retryFileUpload(_id: string): void { this.startUploadingSelectedFiles(); }
 
-    setTimeout(() => {
-      const updated = this.selectedFiles().map(f => {
-        if (f.id === id) {
-          return { ...f, status: 'COMPLETED' as const, progress: 100 };
-        }
-        return f;
-      });
-      this.selectedFiles.set(updated);
-    }, 1500);
-  }
+  isAllUploadsDone(): boolean { return false; }
 
-  isAllUploadsDone(): boolean {
-    const files = this.selectedFiles();
-    if (files.length === 0) return true;
-    return files.every(f => f.status === 'COMPLETED' || f.status === 'ERROR');
-  }
-
-  onUploadMoreClick(): void {
-    this.goToStep('SELECT_FILES');
-  }
+  onUploadMoreClick(): void { this.startUploadFlow(); }
 
   formatBytes(bytes: number): string {
     if (bytes >= 1024 * 1024) {
@@ -2455,13 +2238,26 @@ export class GuestContainerComponent implements OnInit {
   }
 
   async refreshContributions(): Promise<void> {
+    const request = this.entryRequest;
+    this.serviceContext = this.guestService.getContextVersion();
     const outcome = await this.guestService.refreshOwnContributions();
+    if (request !== this.entryRequest) return;
     if (!outcome.ok && outcome.status === 401) {
+      this.clearSelectedFiles();
+      this.goToStep('LANDING');
       this.sessionErrorMessage.set(outcome.message);
     }
   }
 
+  private clearSelectedFiles(): void {
+    for (const item of this.selectedFiles()) URL.revokeObjectURL(item.previewUrl);
+    this.selectedFiles.set([]);
+  }
+
+  ngOnDestroy(): void { this.invalidateFlowRequests(); this.clearSelectedFiles(); }
+
   async onRequestRemoval(): Promise<void> {
+    const request = this.entryRequest;
     const key = this.effectiveLookupKey;
     if (!key) {
       this.sessionErrorMessage.set('No se pudo consultar la derivación de retiro sin un enlace válido.');
@@ -2469,6 +2265,7 @@ export class GuestContainerComponent implements OnInit {
     }
 
     const outcome = await this.guestService.resolveRemovalIntake(key);
+    if (request !== this.entryRequest) return;
     if (!outcome.ok) {
       this.sessionErrorMessage.set(outcome.message);
       return;

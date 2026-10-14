@@ -254,7 +254,7 @@ export class EventPublicAccessService {
            e.starts_at_local, e.scheduled_at, e.expires_at, e.grace_ends_at, e.activated_at,
            e.closed_at, e.purge_started_at, e.suspended_at, e.suspension_reason, e.previous_status,
            e.validity_duration_days, e.grace_days, e.uploads_enabled, e.guest_gallery_enabled,
-           e.moderation_mode, e.pin_enabled, e.organizer_id, e.created_at, e.updated_at
+           e.moderation_mode, e.pin_enabled, e.welcome_message, e.organizer_id, e.created_at, e.updated_at
          FROM public_access_credential c
          JOIN event e ON e.id = c.event_id
          WHERE c.lookup_key = $1
@@ -302,6 +302,7 @@ export class EventPublicAccessService {
         guestGalleryEnabled: Boolean(row.guest_gallery_enabled),
         moderationMode: row.moderation_mode as any,
         pinEnabled: Boolean(row.pin_enabled),
+        welcomeMessage: row.welcome_message,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at)
       };
@@ -341,6 +342,7 @@ export class EventPublicAccessService {
       } else if (eventRecord.status === 'ACTIVE') {
         // ACTIVE (Escenario 1)
         accessState = 'ALLOWED';
+        restrictionReason = !uploadDecision.allowed ? uploadDecision.reason : undefined;
       } else {
         // SCHEDULED, CLOSED, GRACE_PERIOD (Escenario 3)
         accessState = 'RESTRICTED';
@@ -364,6 +366,12 @@ export class EventPublicAccessService {
         name: row.event_name,
         status: eventRecord.status,
         timezone: eventRecord.timezone,
+        scheduledAt: landingDecision.allowed
+          ? eventRecord.scheduledAt?.toISOString() ?? null
+          : null,
+        welcomeMessage: landingDecision.allowed
+          ? eventRecord.welcomeMessage ?? null
+          : null,
         generation: Number(row.generation),
         pinRequired: Boolean(row.pin_required),
         capabilities,
@@ -856,6 +864,7 @@ interface ResolvedCredentialRow {
   guest_gallery_enabled: boolean;
   moderation_mode: string;
   pin_enabled: boolean;
+  welcome_message: string | null;
   organizer_id: string;
   created_at: Date | string;
   updated_at: Date | string;

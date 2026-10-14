@@ -64,6 +64,7 @@ function createMockRunner(db: MockDb): TransactionRunner {
               guest_gallery_enabled: Boolean(ev.guest_gallery_enabled),
               moderation_mode: ev.moderation_mode ?? 'AUTO_PUBLISH',
               pin_enabled: Boolean(ev.pin_enabled),
+              welcome_message: ev.welcome_message ?? null,
               organizer_id: ev.organizer_id,
               created_at: cred.created_at,
               updated_at: cred.created_at
@@ -293,6 +294,8 @@ describe('EL-TK-084: EventPublicAccessService (Unit Tests)', () => {
         name: 'Tech Conference 2026',
         status: 'ACTIVE',
         timezone: 'America/Bogota',
+        scheduled_at: new Date('2027-06-15T23:00:00.000Z'),
+        welcome_message: 'Bienvenida a nuestra celebración',
         uploads_enabled: true,
         guest_gallery_enabled: true,
         pin_enabled: false
@@ -316,6 +319,8 @@ describe('EL-TK-084: EventPublicAccessService (Unit Tests)', () => {
       expect(result.name).toBe('Tech Conference 2026');
       expect(result.status).toBe('ACTIVE');
       expect(result.timezone).toBe('America/Bogota');
+      expect(result.scheduledAt).toBe('2027-06-15T23:00:00.000Z');
+      expect(result.welcomeMessage).toBe('Bienvenida a nuestra celebración');
       expect(result.generation).toBe(1);
       expect(result.pinRequired).toBe(false);
       expect(result.capabilities).toEqual({
@@ -417,6 +422,8 @@ describe('EL-TK-084: EventPublicAccessService (Unit Tests)', () => {
         name: 'Suspended Festival',
         status: 'SUSPENDED',
         timezone: 'America/Bogota',
+        scheduled_at: new Date('2027-06-15T23:00:00.000Z'),
+        welcome_message: 'Esta bienvenida debe permanecer privada',
         uploads_enabled: true,
         guest_gallery_enabled: true
       });
@@ -442,6 +449,8 @@ describe('EL-TK-084: EventPublicAccessService (Unit Tests)', () => {
         canViewGallery: false
       });
       expect(result.restrictionReason).toContain('suspended');
+      expect(result.scheduledAt).toBeNull();
+      expect(result.welcomeMessage).toBeNull();
     });
 
     it('Escenario 3: Evento CLOSED con credencial válida devuelve RESTRICTED (uploads cerrados, galería accesible si está habilitada)', async () => {
@@ -513,6 +522,42 @@ describe('EL-TK-084: EventPublicAccessService (Unit Tests)', () => {
       expect(result.capabilities.canViewLanding).toBe(true);
       expect(result.capabilities.canUpload).toBe(false);
       expect(result.capabilities.canViewGallery).toBe(false);
+    });
+
+    it('Mantiene ACTIVE permitido y comunica el motivo cuando las cargas están deshabilitadas', async () => {
+      const eventId = randomUUID();
+      const lookupKey = 'active_uploads_disabled_555555';
+      const credId = randomUUID();
+
+      db.events.set(eventId, {
+        id: eventId,
+        organizer_id: ownerActor.accountId,
+        name: 'Evento sin cargas',
+        status: 'ACTIVE',
+        timezone: 'America/Bogota',
+        uploads_enabled: false,
+        guest_gallery_enabled: true,
+        scheduled_at: new Date('2027-06-15T23:00:00.000Z'),
+        welcome_message: 'Disfruta el evento'
+      });
+      db.credentials.set(credId, {
+        id: credId,
+        event_id: eventId,
+        lookup_key: lookupKey,
+        token_hash: 'uploadsdisabledhash',
+        generation: 1,
+        pin_required: false,
+        created_at: new Date(),
+        revoked_at: null
+      });
+
+      const result = await service.resolvePublicAccess({ lookupKey });
+
+      expect(result.accessState).toBe('ALLOWED');
+      expect(result.capabilities.canUpload).toBe(false);
+      expect(result.restrictionReason).toBeDefined();
+      expect(result.scheduledAt).toBe('2027-06-15T23:00:00.000Z');
+      expect(result.welcomeMessage).toBe('Disfruta el evento');
     });
   });
 });

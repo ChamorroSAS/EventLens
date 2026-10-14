@@ -7790,6 +7790,15 @@
                         "timezone": {
                           "type": "string"
                         },
+                        "scheduledAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
+                        },
+                        "welcomeMessage": {
+                          "type": "string",
+                          "nullable": true
+                        },
                         "generation": {
                           "type": "integer",
                           "minimum": 1

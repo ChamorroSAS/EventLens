@@ -62,6 +62,8 @@ export interface GuestPublicAccessDto {
   name: string;
   status: string;
   timezone: string;
+  scheduledAt: string | null;
+  welcomeMessage: string | null;
   generation: number;
   pinRequired: boolean;
   canViewLanding: boolean;
@@ -146,6 +148,8 @@ export const guestPublicAccessSchema = {
     name: { type: 'string' },
     status: { type: 'string' },
     timezone: { type: 'string' },
+    scheduledAt: { type: 'string', format: 'date-time', nullable: true },
+    welcomeMessage: { type: 'string', nullable: true },
     generation: { type: 'integer', minimum: 1 },
     pinRequired: { type: 'boolean' },
     canViewLanding: { type: 'boolean' },
@@ -472,6 +476,8 @@ export class GuestPublicEntryService {
         name: resolved.name,
         status: resolved.status,
         timezone: resolved.timezone,
+        scheduledAt: resolved.scheduledAt ?? null,
+        welcomeMessage: resolved.welcomeMessage ?? null,
         generation: resolved.generation,
         pinRequired: resolved.pinRequired,
         canViewLanding: resolved.capabilities.canViewLanding,

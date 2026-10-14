@@ -701,6 +701,13 @@ export interface ResolvePublicAccessResult {
   readonly name: string;
   readonly status: EventStatus;
   readonly timezone: string;
+  /**
+   * Public landing metadata. It is null whenever the landing itself is not
+   * available, so callers cannot use a valid credential to discover event
+   * details for an unavailable event.
+   */
+  readonly scheduledAt?: string | null;
+  readonly welcomeMessage?: string | null;
   readonly generation: number;
   readonly pinRequired: boolean;
   readonly capabilities: PublicAccessCapabilities;

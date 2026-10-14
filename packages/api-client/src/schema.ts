@@ -4074,6 +4074,9 @@ export interface operations {
                             name: string;
                             status: string;
                             timezone: string;
+                            /** Format: date-time */
+                            scheduledAt?: string | null;
+                            welcomeMessage?: string | null;
                             generation: number;
                             pinRequired: boolean;
                             canViewLanding: boolean;
