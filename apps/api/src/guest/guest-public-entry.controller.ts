@@ -33,7 +33,7 @@ import { DatabaseService } from '../platform/database/database.service.js';
 import { ORGANIZER_SESSION_CONFIG } from '../identity/organizer-session.service.js';
 import type { PlatformConfig } from '../platform/config/config.js';
 import { errorSchema } from '../platform/health/health.controller.js';
-import { PresignUploadService, S3_CLIENT_TOKEN } from './guest-upload.service.js';
+import { PresignUploadService } from './guest-upload.service.js';
 import type { PresignInputFile, PresignedUpload, ConfirmUploadResult, PresignInput } from './guest-upload.service.js';
 
 export const GUEST_SESSION_COOKIE_NAME = 'el_guest_session';
@@ -327,9 +327,10 @@ export const presignUploadsResponseSchema = {
 
 export const confirmUploadRequestSchema = {
   type: 'object',
-  required: ['mediaRef', 'operationId'],
+  required: ['mediaRef', 'objectKey', 'operationId'],
   properties: {
     mediaRef: { type: 'string', pattern: '^mr-[a-z0-9]+$' },
+    objectKey: { type: 'string', pattern: '^events/[^/]+/media/mr-[a-z0-9]+/.+$' },
     operationId: { type: 'string', format: 'uuid' }
   }
 };
@@ -1166,6 +1167,7 @@ export class GuestPublicEntryController {
   @ApiResponse({ status: 200, schema: presignUploadsResponseSchema })
   @ApiResponse({ status: 401, schema: errorSchema })
   @ApiResponse({ status: 403, schema: errorSchema })
+  @ApiResponse({ status: 422, schema: errorSchema })
   @ApiResponse({ status: 503, schema: errorSchema })
   async presignUploads(
     @Req() request: { headers?: Record<string, string | string[] | undefined> },
@@ -1176,10 +1178,38 @@ export class GuestPublicEntryController {
     const cookieToken = this.extractCookieToken(request);
     const session = await this.guestPublicEntryService.getSessionFromCookie(cookieToken);
     if (!session || !session.canUpload) throw new ForbiddenException('Uploads not allowed');
+
+    // Enforce file size limits per type: photo ≤ 50 MB, video ≤ 500 MB
+    const PHOTO_MAX_SIZE = 50 * 1024 * 1024; // 50 MB
+    const VIDEO_MAX_SIZE = 500 * 1024 * 1024; // 500 MB
+    const photoTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+    const videoTypes = new Set(['video/mp4', 'video/webm', 'video/quicktime']);
+
+    for (const file of body.files) {
+      if (photoTypes.has(file.type) && file.size > PHOTO_MAX_SIZE) {
+        throw new HttpException(
+          {
+            code: 'FILE_TOO_LARGE',
+            message: `Photo files must not exceed 50 MB. File "${file.name}" is ${Math.round(file.size / 1024 / 1024)} MB.`,
+          },
+          HttpStatus.UNPROCESSABLE_ENTITY
+        );
+      }
+      if (videoTypes.has(file.type) && file.size > VIDEO_MAX_SIZE) {
+        throw new HttpException(
+          {
+            code: 'FILE_TOO_LARGE',
+            message: `Video files must not exceed 500 MB. File "${file.name}" is ${Math.round(file.size / 1024 / 1024)} MB.`,
+          },
+          HttpStatus.UNPROCESSABLE_ENTITY
+        );
+      }
+    }
+
     const uploads = await this.guestUploadService.getPresignedUploadUrls({
       eventId: session.eventId,
       files: body.files,
-    }, session.id, BigInt(session.credentialGeneration));
+    });
     return { uploads };
   }
 
@@ -1193,15 +1223,12 @@ export class GuestPublicEntryController {
   @ApiResponse({ status: 503, schema: errorSchema })
   async confirmUpload(
     @Req() request: { headers?: Record<string, string | string[] | undefined> },
-    @Body() body: { mediaRef: string; operationId: string },
+    @Body() body: { mediaRef: string; objectKey: string; operationId: string },
     @Res({ passthrough: true }) response: { setHeader(name: string, value: string | string[]): void }
   ): Promise<ConfirmUploadResult> {
     this.applySecurityHeaders(response);
     const cookieToken = this.extractCookieToken(request);
     await this.guestPublicEntryService.getSessionFromCookie(cookieToken); // validates session
-    // The mediaRef from the client is just the mediaRef, but confirmUpload needs the full object key
-    // We need to reconstruct the key. Since we don't have the file name here, we'll need to store the mapping
-    // or have the client send the full key. For now, accept the full object key as mediaRef.
-    return this.guestUploadService.confirmUpload(body.mediaRef, body.operationId);
+    return this.guestUploadService.confirmUpload(body.mediaRef, body.objectKey, body.operationId);
   }
 }

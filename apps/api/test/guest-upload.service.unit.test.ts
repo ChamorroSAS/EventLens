@@ -8,8 +8,9 @@ vi.mock('@aws-sdk/s3-presigned-post', () => ({
 
 vi.mock('@aws-sdk/client-s3', () => ({
   S3Client: vi.fn(),
-  PutObjectCommand: vi.fn(),
-  HeadObjectCommand: vi.fn(function(this: any, args: any) { this.input = args; }),
+  HeadObjectCommand: vi.fn(function (this: { input: Record<string, unknown> }, args: Record<string, unknown>) {
+    this.input = args;
+  }),
 }));
 
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
@@ -24,9 +25,9 @@ describe('PresignUploadService', () => {
     vi.clearAllMocks();
     mockS3Send = vi.fn();
     mockS3Client = { send: mockS3Send };
-    
+
     // Create service with mocked S3 client
-    service = new PresignUploadService(mockS3Client as any);
+    service = new PresignUploadService(mockS3Client as unknown as ReturnType<typeof import('@aws-sdk/client-s3').S3Client>);
   });
 
   it('returns presigned POST URL with correct key pattern and fields', async () => {
@@ -44,12 +45,12 @@ describe('PresignUploadService', () => {
       },
     };
 
-    (createPresignedPost as any).mockResolvedValueOnce(mockPresignedPost);
+    vi.mocked(createPresignedPost).mockResolvedValueOnce(mockPresignedPost);
 
     const result = await service.getPresignedUploadUrls({
       eventId: 'evt-123',
       files: [{ name: 'photo.jpg', size: 1024, type: 'image/jpeg', sha256: 'abc123' }],
-    }, 'session-456', 1n);
+    });
 
     expect(result).toHaveLength(1);
     // When sha256 is provided, mediaRef is mr- + first 22 chars of sha256
@@ -58,7 +59,7 @@ describe('PresignUploadService', () => {
     expect(result[0].fields['Content-Type']).toBe('image/jpeg');
     expect(result[0].fields['x-amz-checksum-sha256']).toBe('abc123');
     expect(result[0].expiresAt).toBeDefined();
-    
+
     // Verify createPresignedPost was called with correct parameters
     expect(createPresignedPost).toHaveBeenCalledWith(
       mockS3Client, // The mocked S3Client instance
@@ -93,13 +94,13 @@ describe('PresignUploadService', () => {
       },
     };
 
-    (createPresignedPost as any).mockResolvedValueOnce(mockPresignedPost);
+    vi.mocked(createPresignedPost).mockResolvedValueOnce(mockPresignedPost);
 
     // sha256 is 32 chars, we take first 22
     const result = await service.getPresignedUploadUrls({
       eventId: 'evt-123',
       files: [{ name: 'image.png', size: 2048, type: 'image/png', sha256: 'deadbeef12345678901234567890123456789012' }],
-    }, 'session-456', 1n);
+    });
 
     expect(result[0].mediaRef).toBe('mr-deadbeef12345678901234');
   });
@@ -118,12 +119,12 @@ describe('PresignUploadService', () => {
       },
     };
 
-    (createPresignedPost as any).mockResolvedValueOnce(mockPresignedPost);
+    vi.mocked(createPresignedPost).mockResolvedValueOnce(mockPresignedPost);
 
     const result = await service.getPresignedUploadUrls({
       eventId: 'evt-123',
       files: [{ name: 'image.png', size: 2048, type: 'image/png' }],
-    }, 'session-456', 1n);
+    });
 
     // Generated mediaRef: mr- + timestamp base36 + 16 random chars
     expect(result[0].mediaRef).toMatch(/^mr-[a-z0-9]{10,}$/);
@@ -133,6 +134,7 @@ describe('PresignUploadService', () => {
     mockS3Send.mockResolvedValueOnce({});
 
     const result = await service.confirmUpload(
+      'mr-abc123',
       'events/evt-123/media/mr-abc123/photo.jpg',
       'op-123'
     );
@@ -158,10 +160,10 @@ describe('PresignUploadService', () => {
 
   it('throws when confirmUpload object not found', async () => {
     const error = new Error('Not Found');
-    (error as any).$metadata = { httpStatusCode: 404 };
+    error.$metadata = { httpStatusCode: 404 };
     mockS3Send.mockRejectedValueOnce(error);
 
-    await expect(service.confirmUpload('events/evt-123/media/mr-abc123/missing.jpg', 'op-123'))
+    await expect(service.confirmUpload('mr-abc123', 'events/evt-123/media/mr-abc123/missing.jpg', 'op-123'))
       .rejects.toThrow();
   });
 });

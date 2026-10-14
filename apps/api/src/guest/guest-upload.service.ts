@@ -1,6 +1,7 @@
-import { Injectable, Optional, Inject } from '@nestjs/common';
-import { S3Client, PutObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
+import { Injectable, Optional, Inject, HttpException, HttpStatus } from '@nestjs/common';
+import { S3Client, HeadObjectCommand } from '@aws-sdk/client-s3';
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
+import type { Conditions } from '@aws-sdk/s3-presigned-post/dist-types/types.js';
 import { randomUUID } from 'node:crypto';
 
 export const S3_CLIENT_TOKEN = 'S3_CLIENT_TOKEN';
@@ -60,11 +61,8 @@ export class PresignUploadService {
   }
 
   async getPresignedUploadUrls(
-    input: PresignInput,
-    sessionId: string,
-    credentialGeneration: bigint
+    input: PresignInput
   ): Promise<PresignedUpload[]> {
-    // TODO: validate session + canUpload via existing service (later task)
     const expiresIn = 900; // 15 min
     const results: PresignedUpload[] = [];
 
@@ -72,7 +70,7 @@ export class PresignUploadService {
       const mediaRef = file.sha256 ? `mr-${file.sha256.slice(0, 22)}` : this.generateMediaRef();
       const key = this.buildObjectKey(input.eventId, mediaRef, file.name);
 
-      const conditions: any[] = [
+      const conditions: Conditions[] = [
         ['content-length-range', 0, file.size],
         ['eq', '$Content-Type', file.type],
       ];
@@ -87,13 +85,28 @@ export class PresignUploadService {
         fields['x-amz-checksum-sha256'] = file.sha256;
       }
 
-      const { url, fields: presignedFields } = await createPresignedPost(this.s3, {
-        Bucket: this.bucket,
-        Key: key,
-        Conditions: conditions,
-        Fields: fields,
-        Expires: expiresIn,
-      });
+      let url: string;
+      let presignedFields: Record<string, string>;
+      try {
+        const presigned = await createPresignedPost(this.s3, {
+          Bucket: this.bucket,
+          Key: key,
+          Conditions: conditions,
+          Fields: fields,
+          Expires: expiresIn,
+        });
+        url = presigned.url;
+        presignedFields = presigned.fields;
+      } catch (error) {
+        // Map MinIO/S3 errors to appropriate HTTP exception
+        throw new HttpException(
+          {
+            code: 'PRESIGN_FAILED',
+            message: 'Unable to generate presigned upload URL. Storage service may be unavailable.',
+          },
+          HttpStatus.SERVICE_UNAVAILABLE
+        );
+      }
 
       results.push({
         mediaRef,
@@ -105,10 +118,17 @@ export class PresignUploadService {
     return results;
   }
 
-  async confirmUpload(objectKey: string, operationId: string): Promise<ConfirmUploadResult> {
-    // Verify object exists in MinIO
+  /**
+   * Confirms an upload by verifying the object exists in MinIO.
+   * @param mediaRef The short media reference (e.g., "mr-abc123") for idempotency tracking
+   * @param objectKey The full MinIO object key (e.g., "events/evt-123/media/mr-abc123/photo.jpg") for HEAD verification
+   * @param operationId The operation ID for future MediaAcceptance.confirm integration (Task 3)
+   */
+  async confirmUpload(mediaRef: string, objectKey: string, operationId: string): Promise<ConfirmUploadResult> {
+    // Verify object exists in MinIO using the full object key
     await this.s3.send(new HeadObjectCommand({ Bucket: this.bucket, Key: objectKey }));
     // TODO: call MediaAcceptance.confirm with operationId (later task)
+    // operationId is accepted for forward compatibility with MediaAcceptance.confirm integration
     return { status: 'RECEIVED', availableAt: new Date().toISOString() };
   }
 }
