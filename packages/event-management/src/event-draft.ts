@@ -300,8 +300,8 @@ export class EventDraftService {
                       utc_offset_minutes, expires_at, grace_ends_at, activated_at, closed_at,
                       purge_started_at, suspended_at, suspension_reason, previous_status,
                       validity_duration_days, grace_days, uploads_enabled, guest_gallery_enabled,
-                      moderation_mode, pin_enabled, pin_hash, pin_salt, welcome_message, cover_asset_id,
-                      idempotency_key, idempotency_payload_hash, created_at, updated_at
+                      moderation_mode, pin_enabled,
+                      idempotency_key, idempotency_payload_hash, revision, created_at, updated_at
                FROM event
                WHERE id = $1`,
               receipt.event_id
@@ -671,17 +671,6 @@ export class EventDraftService {
         );
       }
 
-      // Validar CAS (EL-TK-220)
-      if (expectedRevision !== undefined) {
-        const currentRevisionStr = String(current.revision ?? 1n);
-        if (currentRevisionStr !== expectedRevision) {
-          throw new EventManagementError(
-            'CONCURRENCY_CONFLICT',
-            `Event revision conflict: expected ${expectedRevision}, but current revision is ${currentRevisionStr}`
-          );
-        }
-      }
-
       // Check receipt in event_command_receipt (EL-TK-219)
       if (idempotencyKey) {
         let receiptRows: ReceiptRow[] = [];
@@ -731,6 +720,17 @@ export class EventDraftService {
           throw new EventManagementError(
             'IDEMPOTENCY_CONFLICT',
             'Idempotency key has already been used with different parameters'
+          );
+        }
+      }
+
+      // Validar CAS (EL-TK-220)
+      if (expectedRevision !== undefined) {
+        const currentRevisionStr = String(current.revision ?? 1n);
+        if (currentRevisionStr !== expectedRevision) {
+          throw new EventManagementError(
+            'CONCURRENCY_CONFLICT',
+            `Event revision conflict: expected ${expectedRevision}, but current revision is ${currentRevisionStr}`
           );
         }
       }

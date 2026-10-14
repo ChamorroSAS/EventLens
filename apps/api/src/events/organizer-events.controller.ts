@@ -10,6 +10,8 @@ import {
   Injectable,
   NotFoundException,
   Param,
+  Patch,
+  Post,
   Put,
   Query,
   Req,
@@ -18,7 +20,7 @@ import {
   UnauthorizedException,
   UnprocessableEntityException
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   EventDraftService,
   EventManagementError,
@@ -39,7 +41,38 @@ import {
 } from '../identity/organizer-session.service.js';
 
 type HttpRequest = { headers?: Record<string, string | string[] | undefined> };
-type HttpResponse = { setHeader(name: string, value: string | string[]): void };
+type HttpResponse = {
+  setHeader(name: string, value: string | string[]): void;
+  status?(code: number): any;
+  statusCode?: number;
+};
+
+export interface SerializedCommandReceipt {
+  operationId: string;
+  eventId: string;
+  operation: string;
+  appliedRevision: string;
+  outcome: string;
+}
+
+export interface SerializedCreateEventResponse {
+  receipt: SerializedCommandReceipt;
+  outcome: 'APPLIED' | 'REPLAYED';
+  event: {
+    id: string;
+  };
+}
+
+export interface SerializedUpdateEventNameResponse {
+  receipt: SerializedCommandReceipt;
+  outcome: 'APPLIED' | 'REPLAYED';
+  revision: string;
+  event: {
+    id: string;
+    name: string;
+    revision: string;
+  };
+}
 
 export interface SerializedOrganizerEventSummary {
   id: string;
@@ -191,6 +224,141 @@ export class OrganizerEventsService {
     }
   }
 
+  async createEvent(params: {
+    cookieHeader?: string;
+    originHeader?: string;
+    csrfToken?: string;
+    idempotencyKey?: string;
+    body: unknown;
+  }): Promise<{ httpStatus: number; data: SerializedCreateEventResponse }> {
+    const rawKey = params.idempotencyKey?.trim();
+    if (!rawKey || !/^[A-Za-z0-9_-]{1,128}$/.test(rawKey)) {
+      throw new BadRequestException(
+        'Idempotency-Key header is required and must match ^[A-Za-z0-9_-]{1,128}$'
+      );
+    }
+
+    if (!params.body || typeof params.body !== 'object' || typeof (params.body as any).name !== 'string') {
+      throw new BadRequestException('Request body must contain a name string');
+    }
+
+    const trimmedName = (params.body as any).name.trim();
+    if (trimmedName.length === 0 || trimmedName.length > 120) {
+      throw new UnprocessableEntityException('Event name must be between 1 and 120 characters');
+    }
+
+    const sessionToken = extractOrganizerSessionCookie(params.cookieHeader);
+    const validated = await this.sessionService.validateMutatingOrganizerSession({
+      sessionToken,
+      csrfToken: params.csrfToken,
+      originHeader: params.originHeader
+    });
+
+    try {
+      const result = await this.eventDraftService.createDraft({
+        actorContext: validated.actorContext,
+        name: trimmedName,
+        idempotencyKey: rawKey
+      });
+
+      const outcome = result.outcome === 'IDEMPOTENT_REPLAY' ? 'REPLAYED' : 'APPLIED';
+      const httpStatus = outcome === 'REPLAYED' ? 200 : 201;
+
+      return {
+        httpStatus,
+        data: {
+          receipt: {
+            operationId: result.receipt!.operationId,
+            eventId: result.receipt!.eventId,
+            operation: result.receipt!.operation,
+            appliedRevision: result.receipt!.appliedRevision,
+            outcome: result.receipt!.outcome
+          },
+          outcome,
+          event: {
+            id: result.event.id
+          }
+        }
+      };
+    } catch (error) {
+      this.rethrowEventError(error, false, 400);
+    }
+  }
+
+  async updateEventName(params: {
+    eventId: string;
+    cookieHeader?: string;
+    originHeader?: string;
+    csrfToken?: string;
+    idempotencyKey?: string;
+    body: unknown;
+  }): Promise<SerializedUpdateEventNameResponse> {
+    const rawKey = params.idempotencyKey?.trim();
+    if (!rawKey || !/^[A-Za-z0-9_-]{1,128}$/.test(rawKey)) {
+      throw new BadRequestException(
+        'Idempotency-Key header is required and must match ^[A-Za-z0-9_-]{1,128}$'
+      );
+    }
+
+    if (!params.body || typeof params.body !== 'object') {
+      throw new BadRequestException('Request body must be an object');
+    }
+
+    const { name, expectedRevision } = params.body as Record<string, unknown>;
+
+    if (typeof name !== 'string') {
+      throw new BadRequestException('Request body must contain a name string');
+    }
+
+    const trimmedName = name.trim();
+    if (trimmedName.length === 0 || trimmedName.length > 120) {
+      throw new UnprocessableEntityException('Event name must be between 1 and 120 characters');
+    }
+
+    if (typeof expectedRevision !== 'string' || expectedRevision.trim().length === 0) {
+      throw new BadRequestException('Request body must contain an expectedRevision string');
+    }
+
+    const sessionToken = extractOrganizerSessionCookie(params.cookieHeader);
+    const validated = await this.sessionService.validateMutatingOrganizerSession({
+      sessionToken,
+      csrfToken: params.csrfToken,
+      originHeader: params.originHeader
+    });
+
+    try {
+      const result = await this.eventDraftService.updateDraftName({
+        actorContext: validated.actorContext,
+        eventId: params.eventId,
+        name: trimmedName,
+        expectedRevision: expectedRevision.trim(),
+        idempotencyKey: rawKey
+      });
+
+      const outcome = result.outcome === 'IDEMPOTENT_REPLAY' ? 'REPLAYED' : 'APPLIED';
+      const eventRevision = String(result.event.revision);
+
+      return {
+        receipt: {
+          operationId: result.receipt?.operationId ?? '',
+          eventId: result.receipt?.eventId ?? result.event.id,
+          operation: result.receipt?.operation ?? 'UPDATE_NAME',
+          appliedRevision: result.receipt?.appliedRevision ?? eventRevision,
+          outcome: result.receipt?.outcome ?? (outcome === 'REPLAYED' ? 'REPLAYED' : 'UPDATED')
+        },
+        outcome,
+        revision: eventRevision,
+        event: {
+          id: result.event.id,
+          name: result.event.name,
+          revision: eventRevision
+        }
+      };
+    } catch (error) {
+      this.rethrowEventError(error, true, 400);
+    }
+  }
+
   async setEventSchedule(params: {
     eventId: string;
     startsAtLocal?: unknown;
@@ -303,16 +471,33 @@ export class OrganizerEventsService {
     }
   }
 
-  private rethrowEventError(error: unknown): never {
+  private rethrowEventError(
+    error: unknown,
+    hideExistence = false,
+    invalidArgumentStatus: 400 | 422 = 422
+  ): never {
     if (error instanceof HttpException) {
       throw error;
     }
     if (error instanceof EventManagementError) {
-      if (error.code === 'EVENT_NOT_FOUND' || error.code === 'CREDENTIAL_NOT_FOUND') {
-        throw new NotFoundException(error.message);
+      if (
+        error.code === 'EVENT_NOT_FOUND' ||
+        error.code === 'CREDENTIAL_NOT_FOUND' ||
+        (hideExistence && error.code === 'EVENT_NOT_IN_DRAFT')
+      ) {
+        throw new NotFoundException();
       }
       if (error.code === 'UNAUTHORIZED') {
-        throw new ForbiddenException(error.message);
+        if (hideExistence) {
+          throw new NotFoundException();
+        }
+        throw new ForbiddenException();
+      }
+      if (error.code === 'INVALID_NAME') {
+        throw new UnprocessableEntityException(error.message);
+      }
+      if (error.code === 'INVALID_ARGUMENT' && invalidArgumentStatus === 400) {
+        throw new BadRequestException(error.message);
       }
       if (
         error.code === 'INVALID_ARGUMENT' ||
@@ -437,8 +622,8 @@ const CommandReceiptSchema = {
   type: 'object',
   required: ['operationId', 'eventId', 'operation', 'appliedRevision', 'outcome'],
   properties: {
-    operationId: { type: 'string' },
-    eventId: { type: 'string' },
+    operationId: { type: 'string', format: 'uuid' },
+    eventId: { type: 'string', format: 'uuid' },
     operation: { type: 'string' },
     appliedRevision: { type: 'string' },
     outcome: { type: 'string' }
@@ -549,12 +734,163 @@ const ShareAccessSnapshotSchema = {
   }
 };
 
+const CreateEventRequestSchema = {
+  type: 'object',
+  required: ['name'],
+  properties: {
+    name: { type: 'string', minLength: 1, maxLength: 120 }
+  }
+};
+
+const CreateEventResponseSchema = {
+  type: 'object',
+  required: ['receipt', 'outcome', 'event'],
+  properties: {
+    receipt: CommandReceiptSchema,
+    outcome: { type: 'string', enum: ['APPLIED', 'REPLAYED'] },
+    event: {
+      type: 'object',
+      required: ['id'],
+      properties: {
+        id: { type: 'string', format: 'uuid' }
+      }
+    }
+  }
+};
+
+const UpdateEventNameRequestSchema = {
+  type: 'object',
+  required: ['name', 'expectedRevision'],
+  properties: {
+    name: { type: 'string', minLength: 1, maxLength: 120 },
+    expectedRevision: { type: 'string' }
+  }
+};
+
+const UpdateEventNameResponseSchema = {
+  type: 'object',
+  required: ['receipt', 'outcome', 'revision', 'event'],
+  properties: {
+    receipt: CommandReceiptSchema,
+    outcome: { type: 'string', enum: ['APPLIED', 'REPLAYED'] },
+    revision: { type: 'string' },
+    event: {
+      type: 'object',
+      required: ['id', 'name', 'revision'],
+      properties: {
+        id: { type: 'string', format: 'uuid' },
+        name: { type: 'string' },
+        revision: { type: 'string' }
+      }
+    }
+  }
+};
+
 @ApiTags('organizer-events')
 @Controller('events')
 export class OrganizerEventsController {
   constructor(
     @Inject(OrganizerEventsService) private readonly eventsService: OrganizerEventsService
   ) {}
+
+  @Post()
+  @ApiOperation({
+    operationId: 'createOrganizerEvent',
+    summary: 'Crear un nuevo borrador de evento de forma idempotente (EL-TK-224)'
+  })
+  @ApiHeader({
+    name: 'Idempotency-Key',
+    required: true,
+    description: 'Clave de idempotencia única para la operación'
+  })
+  @ApiBody({ schema: CreateEventRequestSchema })
+  @ApiResponse({ status: 201, schema: CreateEventResponseSchema })
+  @ApiResponse({ status: 200, schema: CreateEventResponseSchema })
+  @ApiResponse({ status: 400, schema: errorSchema })
+  @ApiResponse({ status: 401, schema: errorSchema })
+  @ApiResponse({ status: 403, schema: errorSchema })
+  @ApiResponse({ status: 409, schema: errorSchema })
+  @ApiResponse({ status: 422, schema: errorSchema })
+  @ApiResponse({ status: 503, schema: errorSchema })
+  async createEvent(
+    @Body() body: unknown,
+    @Req() request: HttpRequest,
+    @Res({ passthrough: true }) response: HttpResponse
+  ): Promise<SerializedCreateEventResponse> {
+    response.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    response.setHeader('Pragma', 'no-cache');
+    const cookieHeader =
+      typeof request.headers?.cookie === 'string' ? request.headers.cookie : undefined;
+    const originHeader =
+      typeof request.headers?.origin === 'string' ? request.headers.origin : undefined;
+    const rawCsrf = request.headers?.['x-csrf-token'];
+    const csrfToken = typeof rawCsrf === 'string' ? rawCsrf : undefined;
+    const rawIdempotencyKey = request.headers?.['idempotency-key'];
+    const idempotencyKey = typeof rawIdempotencyKey === 'string' ? rawIdempotencyKey : undefined;
+
+    const res = await this.eventsService.createEvent({
+      cookieHeader,
+      originHeader,
+      csrfToken,
+      idempotencyKey,
+      body
+    });
+
+    if (typeof response.status === 'function') {
+      response.status(res.httpStatus);
+    } else {
+      response.statusCode = res.httpStatus;
+    }
+
+    return res.data;
+  }
+
+  @Patch(':eventId/configuration/name')
+  @ApiOperation({
+    operationId: 'updateOrganizerEventName',
+    summary: 'Actualizar nombre de un borrador de evento con control de revisión e idempotencia (EL-TK-225)'
+  })
+  @ApiParam({ name: 'eventId', type: 'string' })
+  @ApiHeader({
+    name: 'Idempotency-Key',
+    required: true,
+    description: 'Clave de idempotencia única para la operación'
+  })
+  @ApiBody({ schema: UpdateEventNameRequestSchema })
+  @ApiResponse({ status: 200, schema: UpdateEventNameResponseSchema })
+  @ApiResponse({ status: 400, schema: errorSchema })
+  @ApiResponse({ status: 401, schema: errorSchema })
+  @ApiResponse({ status: 403, schema: errorSchema })
+  @ApiResponse({ status: 404, schema: errorSchema })
+  @ApiResponse({ status: 409, schema: errorSchema })
+  @ApiResponse({ status: 422, schema: errorSchema })
+  @ApiResponse({ status: 503, schema: errorSchema })
+  async updateEventName(
+    @Param('eventId') eventId: string,
+    @Body() body: unknown,
+    @Req() request: HttpRequest,
+    @Res({ passthrough: true }) response: HttpResponse
+  ): Promise<SerializedUpdateEventNameResponse> {
+    response.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    response.setHeader('Pragma', 'no-cache');
+    const cookieHeader =
+      typeof request.headers?.cookie === 'string' ? request.headers.cookie : undefined;
+    const originHeader =
+      typeof request.headers?.origin === 'string' ? request.headers.origin : undefined;
+    const rawCsrf = request.headers?.['x-csrf-token'];
+    const csrfToken = typeof rawCsrf === 'string' ? rawCsrf : undefined;
+    const rawIdempotencyKey = request.headers?.['idempotency-key'];
+    const idempotencyKey = typeof rawIdempotencyKey === 'string' ? rawIdempotencyKey : undefined;
+
+    return this.eventsService.updateEventName({
+      eventId,
+      cookieHeader,
+      originHeader,
+      csrfToken,
+      idempotencyKey,
+      body
+    });
+  }
 
   @Get()
   @ApiOperation({

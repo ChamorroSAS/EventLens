@@ -2,7 +2,7 @@
 ## Parent epic
 EL-EP-019
 ## Status
-READY
+DONE
 ## User story
 Como organizador, quiero crear un borrador por el contrato HTTP propietario, para abrir un evento real sin duplicarlo.
 ## Alcance funcional
