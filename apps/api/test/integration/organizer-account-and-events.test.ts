@@ -477,6 +477,189 @@ it('EL-TK-224: creates event draft idempotently via POST /events, verifies repla
   expect(conflictRes.status).toBe(409);
 }, 30000);
 
+it('EL-TK-225: updates draft event name with expectedRevision CAS, idempotency, anti-enumeration, and drift protection', async () => {
+  const owner = await seedOrganizerAccount('ACTIVE');
+  const otherOwner = await seedOrganizerAccount('ACTIVE');
+
+  const ownerSession = await sessionService.getAuthService().login({
+    email: owner.email,
+    password: owner.password,
+    origin: config.webOrigin
+  });
+
+  const otherSession = await sessionService.getAuthService().login({
+    email: otherOwner.email,
+    password: otherOwner.password,
+    origin: config.webOrigin
+  });
+
+  // Crear un evento en DRAFT para el owner
+  const createKey = `create-${randomUUID()}`;
+  const initialName = 'Evento Inicial EL-TK-225';
+  const createRes = await fetch(`${base}/api/v1/events`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: config.webOrigin,
+      'X-CSRF-Token': ownerSession.csrfToken,
+      'Idempotency-Key': createKey,
+      Cookie: `__Host-el_session=${ownerSession.sessionToken}`
+    },
+    body: JSON.stringify({ name: initialName })
+  });
+  expect(createRes.status).toBe(201);
+  const created = (await createRes.json()) as any;
+  const eventId = created.event.id;
+  expect(eventId).toBeDefined();
+
+  // Consultar configuración autorizada inicial para verificar revision y capability canEditName
+  const configRes = await fetch(`${base}/api/v1/events/${eventId}/configuration`, {
+    headers: {
+      Cookie: `__Host-el_session=${ownerSession.sessionToken}`
+    }
+  });
+  expect(configRes.status).toBe(200);
+  const configBody = (await configRes.json()) as any;
+  expect(configBody.revision).toBe('1');
+  expect(configBody.capabilities.canEditName).toBe(true);
+
+  // 1. Falta de Idempotency-Key -> 400
+  const noKeyRes = await fetch(`${base}/api/v1/events/${eventId}/configuration/name`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: config.webOrigin,
+      'X-CSRF-Token': ownerSession.csrfToken,
+      Cookie: `__Host-el_session=${ownerSession.sessionToken}`
+    },
+    body: JSON.stringify({ name: 'Nombre Modificado', expectedRevision: '1' })
+  });
+  expect(noKeyRes.status).toBe(400);
+
+  // 2. Nombre inválido (vacío o espacios) -> 422
+  const emptyNameRes = await fetch(`${base}/api/v1/events/${eventId}/configuration/name`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: config.webOrigin,
+      'X-CSRF-Token': ownerSession.csrfToken,
+      'Idempotency-Key': `patch-${randomUUID()}`,
+      Cookie: `__Host-el_session=${ownerSession.sessionToken}`
+    },
+    body: JSON.stringify({ name: '   ', expectedRevision: '1' })
+  });
+  expect(emptyNameRes.status).toBe(422);
+
+  // 3. expectedRevision inválido o faltante -> 400
+  const noRevRes = await fetch(`${base}/api/v1/events/${eventId}/configuration/name`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: config.webOrigin,
+      'X-CSRF-Token': ownerSession.csrfToken,
+      'Idempotency-Key': `patch-${randomUUID()}`,
+      Cookie: `__Host-el_session=${ownerSession.sessionToken}`
+    },
+    body: JSON.stringify({ name: 'Nombre Válido', expectedRevision: '' })
+  });
+  expect(noRevRes.status).toBe(400);
+
+  // 4. Conflicto CAS con expectedRevision obsoleta -> 409
+  const casConflictRes = await fetch(`${base}/api/v1/events/${eventId}/configuration/name`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: config.webOrigin,
+      'X-CSRF-Token': ownerSession.csrfToken,
+      'Idempotency-Key': `patch-${randomUUID()}`,
+      Cookie: `__Host-el_session=${ownerSession.sessionToken}`
+    },
+    body: JSON.stringify({ name: 'Nombre Nuevo', expectedRevision: '999' })
+  });
+  expect(casConflictRes.status).toBe(409);
+
+  // 5. Cambio permitido con revisión vigente -> 200 APPLIED
+  const validKey = `patch-valid-${randomUUID()}`;
+  const newName = 'Nombre Definitivo Actualizado';
+  const updateRes = await fetch(`${base}/api/v1/events/${eventId}/configuration/name`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: config.webOrigin,
+      'X-CSRF-Token': ownerSession.csrfToken,
+      'Idempotency-Key': validKey,
+      Cookie: `__Host-el_session=${ownerSession.sessionToken}`
+    },
+    body: JSON.stringify({ name: newName, expectedRevision: '1' })
+  });
+  expect(updateRes.status).toBe(200);
+  const updateBody = (await updateRes.json()) as any;
+  expect(updateBody.outcome).toBe('APPLIED');
+  expect(updateBody.revision).toBe('2');
+  expect(updateBody.event.name).toBe(newName);
+  expect(updateBody.receipt.operation).toBe('UPDATE_NAME');
+  expect(updateBody.receipt.appliedRevision).toBe('2');
+
+  // 6. Replay idéntico compatible -> 200 REPLAYED
+  const replayRes = await fetch(`${base}/api/v1/events/${eventId}/configuration/name`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: config.webOrigin,
+      'X-CSRF-Token': ownerSession.csrfToken,
+      'Idempotency-Key': validKey,
+      Cookie: `__Host-el_session=${ownerSession.sessionToken}`
+    },
+    body: JSON.stringify({ name: newName, expectedRevision: '1' })
+  });
+  expect(replayRes.status).toBe(200);
+  const replayBody = (await replayRes.json()) as any;
+  expect(replayBody.outcome).toBe('REPLAYED');
+  expect(replayBody.receipt.operationId).toBe(updateBody.receipt.operationId);
+
+  // 7. Conflicto de idempotencia con diferente payload -> 409
+  const idempConflictRes = await fetch(`${base}/api/v1/events/${eventId}/configuration/name`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: config.webOrigin,
+      'X-CSRF-Token': ownerSession.csrfToken,
+      'Idempotency-Key': validKey,
+      Cookie: `__Host-el_session=${ownerSession.sessionToken}`
+    },
+    body: JSON.stringify({ name: 'Otro Nombre', expectedRevision: '2' })
+  });
+  expect(idempConflictRes.status).toBe(409);
+
+  // 8. Anti-enumeración frente a organizador ajeno -> 404
+  const alienRes = await fetch(`${base}/api/v1/events/${eventId}/configuration/name`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: config.webOrigin,
+      'X-CSRF-Token': otherSession.csrfToken,
+      'Idempotency-Key': `alien-${randomUUID()}`,
+      Cookie: `__Host-el_session=${otherSession.sessionToken}`
+    },
+    body: JSON.stringify({ name: 'Intento de Invasión', expectedRevision: '2' })
+  });
+  expect(alienRes.status).toBe(404);
+
+  // 9. Evento no existente -> 404
+  const notFoundRes = await fetch(`${base}/api/v1/events/${randomUUID()}/configuration/name`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: config.webOrigin,
+      'X-CSRF-Token': ownerSession.csrfToken,
+      'Idempotency-Key': `notfound-${randomUUID()}`,
+      Cookie: `__Host-el_session=${ownerSession.sessionToken}`
+    },
+    body: JSON.stringify({ name: 'Nombre X', expectedRevision: '1' })
+  });
+  expect(notFoundRes.status).toBe(404);
+}, 30000);
+
 it('EL-TK-218: verifica guardas de aislamiento de laboratorio antes de listen', async () => {
   const { assertTestServerStartup } = await import('@eventlens/database/testing');
   // 1. Rechazo temprano con URL de desarrollo sin abrir conexión
