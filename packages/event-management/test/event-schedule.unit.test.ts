@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import type { SqlTransaction, TransactionRunner } from '@eventlens/database';
 import type { OrganizerActorContext } from '@eventlens/identity';
 import {
@@ -12,6 +12,7 @@ import {
 interface InMemoryDb {
   events: Map<string, any>;
   auditEvents: EventAuditRecord[];
+  receipts: Map<string, any>;
 }
 
 function createInMemoryRunner(db: InMemoryDb): TransactionRunner {
@@ -21,6 +22,11 @@ function createInMemoryRunner(db: InMemoryDb): TransactionRunner {
         async query<T extends object>(sql: string, ...params: unknown[]): Promise<T[]> {
           const normalized = sql.replace(/\s+/g, ' ').trim();
 
+          if (normalized.includes('pg_advisory_xact_lock')) return [];
+          if (normalized.includes('FROM event_command_receipt')) {
+            const receipt = db.receipts.get(params[0] + ':' + params[1]);
+            return receipt ? [receipt] as unknown as T[] : [];
+          }
           // SELECT ... FROM event WHERE id = $1
           if (normalized.includes('FROM event') && normalized.includes('WHERE id = $1')) {
             const id = params[0] as string;
@@ -38,9 +44,9 @@ function createInMemoryRunner(db: InMemoryDb): TransactionRunner {
             ev.starts_at_local = params[1] as string;
             ev.scheduled_at = params[2] as Date;
             ev.utc_offset_minutes = params[3] as number;
-            if (params[4]) ev.idempotency_key = params[4] as string;
-            if (params[5]) ev.idempotency_payload_hash = params[5] as string;
-            ev.updated_at = params[6] as Date;
+            ev.expires_at = params[4]; ev.grace_ends_at = params[5];
+            ev.validity_duration_days = params[6]; ev.grace_days = params[7]; ev.updated_at = params[8];
+            ev.revision = BigInt(ev.revision ?? 1n) + 1n;
 
             db.events.set(id, ev);
             return [{ ...ev }] as unknown as T[];
@@ -49,7 +55,11 @@ function createInMemoryRunner(db: InMemoryDb): TransactionRunner {
           throw new Error(`Unhandled mock SQL query: ${sql}`);
         },
 
-        async execute(_sql: string, ..._params: unknown[]): Promise<number> {
+        async execute(sql: string, ...params: unknown[]): Promise<number> {
+          if (sql.includes('INSERT INTO event_command_receipt')) {
+            db.receipts.set(params[2] + ':' + params[3], { operation_id: params[0], event_id: params[1], actor_id: params[2], operation: 'SET_SCHEDULE', fingerprint: params[4], payload_hash: params[5], applied_revision: params[6], outcome: 'UPDATED' });
+            return 1;
+          }
           return 0;
         }
       };
@@ -79,7 +89,8 @@ describe('EventScheduleService (Unit Tests — EL-TK-023)', () => {
   beforeEach(() => {
     db = {
       events: new Map(),
-      auditEvents: []
+      auditEvents: [],
+      receipts: new Map()
     };
     auditSink = {
       async record(event: EventAuditRecord): Promise<void> {
@@ -239,7 +250,7 @@ describe('EventScheduleService (Unit Tests — EL-TK-023)', () => {
     }
   });
 
-  it('Restricción de estado: solo permite definir horario en borradores DRAFT', async () => {
+  it('Restricción de estado: rechaza modificar el horario de eventos ACTIVE', async () => {
     const eventId = seedEvent({ status: 'ACTIVE' });
 
     try {
@@ -250,7 +261,7 @@ describe('EventScheduleService (Unit Tests — EL-TK-023)', () => {
       });
       expect.fail('Should have rejected non-DRAFT event');
     } catch (err: any) {
-      expect(err.code).toBe('EVENT_NOT_IN_DRAFT');
+      expect(err.code).toBe('INVALID_STATE');
     }
   });
 
@@ -284,6 +295,43 @@ describe('EventScheduleService (Unit Tests — EL-TK-023)', () => {
         idempotencyKey
       })
     ).rejects.toThrowError(EventManagementError);
+  });
+
+  it('reschedules SCHEDULED while preserving effective durations and denies previously activated events', async () => {
+    const eventId = seedEvent({ status: 'SCHEDULED', validity_duration_days: 3, grace_days: 2 });
+    const result = await service.setSchedule({ actorContext: mockActor, eventId, startsAtLocal: '2026-11-20T18:00:00' });
+    expect(result.event.status).toBe('SCHEDULED');
+    expect(result.event.expiresAt?.toISOString()).toBe('2026-11-23T23:00:00.000Z');
+    expect(result.event.graceEndsAt?.toISOString()).toBe('2026-11-25T23:00:00.000Z');
+    db.events.get(eventId).activated_at = new Date();
+    await expect(service.setSchedule({ actorContext: mockActor, eventId, startsAtLocal: '2026-11-21T18:00:00' })).rejects.toMatchObject({ code: 'INVALID_STATE' });
+  });
+
+  it('denies any restricted actor before issuing SQL', async () => {
+    const eventId = seedEvent();
+    await expect(service.setSchedule({ actorContext: { ...mockActor, restrictedContext: 'PENDING_DELETION' } as any, eventId, startsAtLocal: '2026-11-21T18:00:00' })).rejects.toMatchObject({ code: 'UNAUTHORIZED' });
+    expect(db.events.get(eventId).scheduled_at).toBeNull();
+  });
+
+  it('replays a historical receipt without rewriting it and rejects changed revision or payload', async () => {
+    const eventId = seedEvent({ status: 'ACTIVE', activated_at: new Date(), revision: 8n });
+    const startsAtLocal = '2026-11-20T18:00:00';
+    const key = 'historical-schedule';
+    const receipt = {
+      operation_id: randomUUID(), event_id: eventId, operation: 'SET_SCHEDULE', applied_revision: '6', outcome: 'UPDATED',
+      fingerprint: eventId + ':5',
+      payload_hash: createHash('sha256').update(JSON.stringify({ eventId, startsAtLocal, utcOffsetMinutes: null })).digest('hex')
+    };
+    db.receipts.set(organizerId + ':' + key, receipt);
+    const command = { actorContext: mockActor, eventId, startsAtLocal, expectedRevision: '5', idempotencyKey: key };
+    const result = await service.setSchedule(command);
+    expect(result.outcome).toBe('IDEMPOTENT_REPLAY');
+    expect(result.event.revision).toBe('8');
+    expect(db.receipts.get(organizerId + ':' + key)).toBe(receipt);
+    await expect(service.setSchedule({ ...command, expectedRevision: '8' })).rejects.toMatchObject({ code: 'IDEMPOTENCY_CONFLICT' });
+    await expect(service.setSchedule({ ...command, startsAtLocal: '2026-11-21T18:00:00' })).rejects.toMatchObject({ code: 'IDEMPOTENCY_CONFLICT' });
+    await expect(service.setSchedule({ ...command, expectedRevision: undefined })).rejects.toMatchObject({ code: 'IDEMPOTENCY_CONFLICT' });
+    expect(db.events.get(eventId).revision).toBe(8n);
   });
 
   it('CAS Concurrency (EL-TK-220/226): rechaza conflicto de revisión cuando expectedRevision difiere', async () => {

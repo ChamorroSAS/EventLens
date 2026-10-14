@@ -189,3 +189,133 @@ it('share preparation rejects nonowners, invalid Origin/CSRF and restricted sess
   expect((await prepareShare(eventId, scheduled.revision, actor.headers)).status).toBe(403);
   expect((await fetch(`${base}/api/v1/events/${eventId}/share-access`, { headers: actor.headers })).status).toBe(403);
 }, 30000);
+
+function reschedule(eventId: string, revision: string, headers: Record<string, string>, startsAtLocal: string, key = randomUUID()) {
+  return fetch(base + '/api/v1/events/' + eventId + '/configuration/schedule', { method: 'PUT', headers: { ...headers, 'Idempotency-Key': key }, body: JSON.stringify({ startsAtLocal, expectedRevision: revision }) });
+}
+
+it('reschedules before activation with preserved effective duration, QR and durable replay across later state changes', async () => {
+  const actor = await owner();
+  const eventId = await draft(actor.headers);
+  const initial = await snapshot(eventId, actor.headers);
+  expect(initial.expiresAt).toBeNull();
+  expect(initial.graceEndsAt).toBeNull();
+  await db.transactions.run(tx => tx.execute('UPDATE event SET validity_duration_days=3, grace_days=2 WHERE id=$1', eventId));
+  const configured = await snapshot(eventId, actor.headers);
+  expect((await command(eventId, 'schedule', configured.revision, actor.headers)).status).toBe(200);
+  const scheduled = await snapshot(eventId, actor.headers);
+  expect((await prepareShare(eventId, scheduled.revision, actor.headers)).status).toBe(200);
+  const share = await (await fetch(base + '/api/v1/events/' + eventId + '/share-access', { headers: actor.headers })).json() as any;
+  const key = randomUUID();
+  const local = new Date(Date.now() + 172800000).toISOString().slice(0, 19);
+  const changed = await reschedule(eventId, scheduled.revision, actor.headers, local, key);
+  expect(changed.status).toBe(200);
+  const result = await changed.json() as any;
+  expect(result.event.status).toBe('SCHEDULED');
+  const current = await snapshot(eventId, actor.headers);
+  expect(current.scheduledAt).not.toBe(scheduled.scheduledAt);
+  expect(Date.parse(current.expiresAt) - Date.parse(current.scheduledAt)).toBe(3 * 86400000);
+  expect(Date.parse(current.graceEndsAt) - Date.parse(current.expiresAt)).toBe(2 * 86400000);
+  const access = await (await fetch(base + '/api/v1/events/' + eventId + '/share-access', { headers: actor.headers })).json() as any;
+  expect(access.lookupKey).toBe(share.lookupKey);
+  expect(access.qrSvg).toBe(share.qrSvg);
+  expect((await reschedule(eventId, scheduled.revision, actor.headers, local)).status).toBe(409);
+  expect((await snapshot(eventId, actor.headers)).revision).toBe(current.revision);
+  const replay = await reschedule(eventId, scheduled.revision, actor.headers, local, key);
+  expect(replay.status).toBe(200);
+  expect((await replay.json() as any).outcome).toBe('IDEMPOTENT_REPLAY');
+  expect((await snapshot(eventId, actor.headers)).revision).toBe(current.revision);
+  expect((await reschedule(eventId, current.revision, actor.headers, local, key)).status).toBe(409);
+  expect((await command(eventId, 'activate', current.revision, actor.headers)).status).toBe(200);
+  const active = await snapshot(eventId, actor.headers);
+  const denied = await reschedule(eventId, active.revision, actor.headers, local);
+  expect(denied.status).toBe(409);
+  expect((await denied.json() as any).code).toBe('INVALID_STATE');
+  expect((await reschedule(eventId, scheduled.revision, actor.headers, local, key)).status).toBe(200);
+  expect((await snapshot(eventId, actor.headers)).revision).toBe(active.revision);
+  await db.transactions.run(tx => tx.execute("UPDATE event SET status='SCHEDULED' WHERE id=$1", eventId));
+  const everActivated = await snapshot(eventId, actor.headers);
+  const configuration = await (await fetch(base + '/api/v1/events/' + eventId + '/configuration', { headers: actor.headers })).json() as any;
+  expect(configuration.capabilities.canSetLocalSchedule).toBe(false);
+  expect((await reschedule(eventId, everActivated.revision, actor.headers, local)).status).toBe(409);
+}, 30000);
+
+it('rejects unsafe schedule writes and rolls back schedule, revision and audit on receipt failure', async () => {
+  const actor = await owner();
+  const alien = await owner();
+  const eventId = await draft(actor.headers);
+  const initial = await snapshot(eventId, actor.headers);
+  const local = new Date(Date.now() + 172800000).toISOString().slice(0, 19);
+  expect((await reschedule(eventId, initial.revision, alien.headers, local)).status).toBe(404);
+  expect((await reschedule(eventId, initial.revision, { ...actor.headers, 'X-CSRF-Token': 'invalid' }, local)).status).toBe(403);
+  expect((await reschedule(eventId, initial.revision, { ...actor.headers, Origin: 'https://untrusted.invalid' }, local)).status).toBe(403);
+  const auditCount = async () => (await db.transactions.run(tx => tx.query<{ count: bigint }>('SELECT count(*) AS count FROM admin_audit_event WHERE target_identifier=$1', eventId)))[0].count;
+  const before = await auditCount();
+  const adapter = new OrganizerEventLifecycleAdapter({ run: work => db.transactions.run(tx => work({
+    query: (sql, ...args) => tx.query(sql, ...args),
+    execute: (sql, ...args) => {
+      if (sql.includes('INSERT INTO event_command_receipt')) throw new Error('INJECTED_RECEIPT_FAILURE');
+      return tx.execute(sql, ...args);
+    }
+  })) }, sessions);
+  await expect(adapter.setSchedule({ eventId, cookieHeader: actor.headers.Cookie, originHeader: config.webOrigin, csrfToken: actor.login.csrfToken, idempotencyKey: randomUUID(), body: { startsAtLocal: local, expectedRevision: initial.revision } })).rejects.toThrow('INJECTED_RECEIPT_FAILURE');
+  expect(await snapshot(eventId, actor.headers)).toMatchObject({ scheduledAt: initial.scheduledAt, revision: initial.revision });
+  expect(await auditCount()).toBe(before);
+  await db.transactions.run(tx => tx.execute("UPDATE organizer_account SET status='PENDING_DELETION' WHERE id=$1", actor.accountId));
+  expect((await reschedule(eventId, initial.revision, actor.headers, local)).status).toBe(403);
+}, 30000);
+
+it('retains historical SET_SCHEDULE receipts while replaying exact old requests', async () => {
+  const actor = await owner();
+  const eventId = await draft(actor.headers);
+  const initial = await snapshot(eventId, actor.headers);
+  const startsAtLocal = initial.startsAtLocal;
+  const expectedRevision = String(BigInt(initial.revision) - 1n);
+  const key = randomUUID();
+  const operationId = randomUUID();
+  const fingerprint = eventId + ':' + expectedRevision;
+  const payloadHash = createHash('sha256').update(JSON.stringify({ eventId, startsAtLocal, utcOffsetMinutes: null })).digest('hex');
+  await db.transactions.run(tx => tx.execute(
+    "INSERT INTO event_command_receipt (operation_id,event_id,actor_id,operation,idempotency_key,fingerprint,payload_hash,applied_revision,outcome,created_at) VALUES ($1,$2,$3,'SET_SCHEDULE',$4,$5,$6,$7,'UPDATED',NOW())",
+    operationId, eventId, actor.accountId, key, fingerprint, payloadHash, initial.revision));
+  const replay = await reschedule(eventId, expectedRevision, actor.headers, startsAtLocal, key);
+  expect(replay.status).toBe(200);
+  expect((await replay.json() as any).outcome).toBe('IDEMPOTENT_REPLAY');
+  expect((await snapshot(eventId, actor.headers)).revision).toBe(initial.revision);
+  expect((await reschedule(eventId, initial.revision, actor.headers, startsAtLocal, key)).status).toBe(409);
+  expect((await reschedule(eventId, expectedRevision, actor.headers, '2027-01-01T18:00:00', key)).status).toBe(409);
+  const stored = await db.transactions.run(tx => tx.query<{ operation_id: string; fingerprint: string; payload_hash: string }>('SELECT operation_id,fingerprint,payload_hash FROM event_command_receipt WHERE operation_id=$1', operationId));
+  expect(stored[0]).toEqual({ operation_id: operationId, fingerprint, payload_hash: payloadHash });
+}, 30000);
+
+it('serializes activation against rescheduling at the same revision without mixed calendars or QR changes', async () => {
+  const actor = await owner();
+  const eventId = await draft(actor.headers);
+  const initial = await snapshot(eventId, actor.headers);
+  expect((await command(eventId, 'schedule', initial.revision, actor.headers)).status).toBe(200);
+  const scheduled = await snapshot(eventId, actor.headers);
+  expect((await prepareShare(eventId, scheduled.revision, actor.headers)).status).toBe(200);
+  const share = await (await fetch(base + '/api/v1/events/' + eventId + '/share-access', { headers: actor.headers })).json() as any;
+  const local = new Date(Date.now() + 172800000).toISOString().slice(0, 19);
+  const responses = await Promise.all([
+    command(eventId, 'activate', scheduled.revision, actor.headers),
+    reschedule(eventId, scheduled.revision, actor.headers, local)
+  ]);
+  expect(responses.map(response => response.status).sort()).toEqual([200, 409]);
+  const rejected = await responses.find(response => response.status === 409)!.json() as any;
+  expect(['CONCURRENCY_CONFLICT', 'INVALID_STATE']).toContain(rejected.code);
+  const final = await snapshot(eventId, actor.headers);
+  expect(BigInt(final.revision)).toBe(BigInt(scheduled.revision) + 1n);
+  if (responses[0].status === 200) {
+    expect(final).toMatchObject({ status: 'ACTIVE', startsAtLocal: scheduled.startsAtLocal, scheduledAt: scheduled.scheduledAt, expiresAt: scheduled.expiresAt, graceEndsAt: scheduled.graceEndsAt });
+  } else {
+    expect(final.status).toBe('SCHEDULED');
+    expect(final.startsAtLocal).toBe(local);
+    expect(final.scheduledAt).not.toBe(scheduled.scheduledAt);
+  }
+  expect(Date.parse(final.expiresAt) - Date.parse(final.scheduledAt)).toBe(30 * 86400000);
+  expect(Date.parse(final.graceEndsAt) - Date.parse(final.expiresAt)).toBe(7 * 86400000);
+  const retained = await (await fetch(base + '/api/v1/events/' + eventId + '/share-access', { headers: actor.headers })).json() as any;
+  expect(retained.lookupKey).toBe(share.lookupKey);
+  expect(retained.qrSvg).toBe(share.qrSvg);
+}, 30000);

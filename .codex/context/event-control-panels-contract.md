@@ -2,6 +2,8 @@
 
 Fecha: 2026-10-13. EL-EP-019 / CR-007. Incorporado desde dictamen read-only `panels_architecture`: **APPROVED_FOR_PLANNING**. [Gates y limitaciones](../product/sessions/2026-10-13-event-control-panels-gates.md). Arquitectura de planificación aprobada; no acredita runtime ni autoriza activar superficies que dependan de RecoveryAuthority no verificada.
 
+Actualización focal 2026-10-14: CR-010/EL-TK-244 permite editar el inicio de DRAFT/SCHEDULED nunca activado.
+
 ## Precedencia y ownership
 
 Baseline EL-TD-001..009, DEC-036/069/070/077/082/106/111, TC-001..004 de CR-002 con supersesión localizada DEC-106, ARCH-002/010/013 y remediaciones aceptadas de EL-TK-021/023/024. No supersede decisiones; concreta adaptadores y correctivos prospectivos para cumplir garantías aceptadas. MOD-001 autentica, MOD-002 posee configuración/receipts/revisión, MOD-007 consulta y audita administración. Monolito, PostgreSQL16, NestJS, Angular, REST/OpenAPI y cliente generado; ningún SDK ORM/DTO Nest en web ni infraestructura nueva seleccionada.
@@ -14,7 +16,7 @@ Base `/api/v1`; preservar GET `/events`, `/events/{eventId}/configuration` y `/e
 |---|---|---|
 | POST `/events` | `{name}` | 201 nuevo /200 replay compatible; DRAFT restrictivo DEC-069, owner servidor |
 | PATCH `/events/{eventId}/configuration/name` | `{name,expectedRevision}` | Nombre trim1..120, solo DRAFT |
-| PUT `/events/{eventId}/configuration/schedule` | `{startsAtLocal,utcOffsetMinutes?,expectedRevision}` | Solo DRAFT, usa TZ vigente |
+| PUT `/events/{eventId}/configuration/schedule` | `{startsAtLocal,utcOffsetMinutes?,expectedRevision}` | DRAFT o SCHEDULED nunca activado, usa TZ vigente; CR-010/EL-TK-244 |
 | PUT `/events/{eventId}/configuration/timezone` | `{timezone,utcOffsetMinutes?,expectedRevision}` | DRAFT/SCHEDULED antes ACTIVE, conserva local/recalcula UTC; warning SCHEDULED |
 
 Todos los comandos llevan `Idempotency-Key` obligatoria, string no vacío máximo128 caracteres ASCII seguros `[A-Za-z0-9_-]`; UUID aleatorio cliente válido. Shape inválido/header ausente se rechaza400 sin efecto. Actor/rol/organizerId no son entradas de autoridad. Autenticar/autorizar cada petición; no replay desde sesión revocada.

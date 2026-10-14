@@ -29,7 +29,7 @@ Organizador owner con sesión ordinaria vigente; administrador con principal/cre
 1. /mis-eventos: lista propia real, carga/vacío/error/reintento; CTA crear/primer evento.
 2. Crear DRAFT solo con nombre trim1..120, defaults DEC-069; owner servidor, receipt durable, idempotencia aun tras configuración/retry concurrente/timeout.
 3. Detalle persistente por URL, ownership revalidado, estado y datos reales.
-4. General: nombre solo DRAFT. Programación progresiva: fecha/hora DRAFT; TZ DRAFT/SCHEDULED antes ACTIVE, conforme DEC-070. Dos guardados independientes, DST gap/overlap/offset, revisión esperada y calendario propietario. Guardar no activa/programa lifecycle ni abre invitados.
+4. General: nombre solo DRAFT. Programación progresiva: fecha/hora DRAFT o SCHEDULED nunca activado conforme CR-010/EL-TK-244 y DEC-077; TZ DRAFT/SCHEDULED antes ACTIVE, conforme DEC-070. Dos guardados independientes, DST gap/overlap/offset, revisión esperada y calendario propietario. Cambiar inicio de SCHEDULED recalcula vencimiento/gracia con duraciones efectivas y conserva el QR. Guardar no activa/programa lifecycle ni abre invitados.
 5. Entrada/login/contexto/logout admin conforme MOD-001; sesión distinta; HTTPS, Origin/CSRF/CORS, revisiones y autoridad externa real. No login alternativo ni recuperación web.
 6. Búsqueda paginada eventos/organizadores según contrato existente; solo eventos abren detalle read-only con datos mínimos y disponibilidad parcial; auditoría obligatoria, sin media/invitationCode/acciones diferidas.
 7. Angular Router único, compatibilidad público/guest/base href/refresh/back, permisos server-side, descarte de respuestas tardías y capacidades granulares.
@@ -50,7 +50,7 @@ DEC-069/070 y owners conservados. Actor validado en servidor; recursos ajenos/au
 | 01 | Dado owner vigente, cuando entra /mis-eventos, entonces ve solo eventos propios; vacío verdadero ofrece primer evento y error ofrece retry |
 | 02 | Dado nombre permitido, cuando confirma, entonces un único DRAFT restrictivo se crea y abre detalle del ID confirmado; replay posterior a edición no crea otro |
 | 03 | Dado error/timeout/conflicto, cuando no hay ACK inequívoco, entonces conserva entrada/intención y no anuncia éxito ni cambia key silenciosamente |
-| 04 | Dado DRAFT propio y revisión vigente, cuando guarda nombre u horario, entonces owner confirma esa sección; rollback no conserva cambio/receipt/audit parcial |
+| 04 | Dado DRAFT propio para nombre, o DRAFT/SCHEDULED nunca activado para horario, y revisión vigente, cuando guarda la sección, entonces owner confirma y recalcula el calendario aplicable; rollback no conserva cambio/receipt/audit parcial |
 | 05 | Dado estado permitido, cuando cambia TZ, entonces conserva local/recalcula UTC; gap rechaza, overlap exige offset, SCHEDULED advierte, DRAFT sin inicio no inventa vencimiento |
 | 06 | Dado dos editores con misma revisión, cuando guardan, entonces solo una intención nueva aplica; la otra obtiene conflicto sin lost update |
 | 07 | Dado recurso ajeno/sesión restringida o revocada/authority desconocida, cuando intenta leer/crear/configurar, entonces no recibe datos ni capacidad indebida |

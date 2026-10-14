@@ -100,7 +100,7 @@ describe('EventScheduleSectionComponent (EL-TK-231)', () => {
   });
 
   it('Escenario 4: ante horario ambiguo (overlap) expone RadioGroup para desambiguar', async () => {
-    mockOrganizerService.setEventSchedule.mockRejectedValueOnce(new Error('AMBIGUOUS_LOCAL_TIME'));
+    mockOrganizerService.setEventSchedule.mockRejectedValueOnce(Object.assign(new Error('AMBIGUOUS_LOCAL_TIME'), { availableOffsets: [60, 120] }));
 
     component.startsAtLocal = '2026-10-25T02:30';
     await component.onSave();
@@ -140,5 +140,76 @@ describe('EventScheduleSectionComponent (EL-TK-231)', () => {
 
     component.onReconcile();
     expect(reconcileSpy).toHaveBeenCalled();
+  });
+
+  it('permite editar SCHEDULED autorizado y explica el recálculo conservando el QR', async () => {
+    component.event = { ...sampleEvent, status: 'SCHEDULED' };
+    component.ngOnChanges();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('El QR se conserva');
+    expect((fixture.nativeElement.querySelector('#startsAtInput') as HTMLInputElement).disabled).toBe(false);
+    mockOrganizerService.setEventSchedule.mockResolvedValue({ event: component.event, outcome: 'UPDATED' });
+    await component.onSave();
+    expect(mockOrganizerService.setEventSchedule).toHaveBeenCalledOnce();
+  });
+
+  it('distingue el rechazo por estado del conflicto CAS y bloquea guardado no autorizado', async () => {
+    mockOrganizerService.setEventSchedule.mockRejectedValueOnce(new Error('INVALID_STATE'));
+    await component.onSave();
+    expect(component.hasConflict()).toBe(false);
+    expect(component.needsReload()).toBe(true);
+    expect(component.errorMessage()).toContain('estado actual');
+    expect(component.errorMessage()).not.toContain('CAS');
+    component.canEdit = false;
+    await component.onSave();
+    expect(mockOrganizerService.setEventSchedule).toHaveBeenCalledOnce();
+  });
+
+  it('recarga revisión conservando propuesta y permite un nuevo guardado explícito', async () => {
+    mockOrganizerService.setEventSchedule.mockRejectedValueOnce(new Error('CONCURRENCY_CONFLICT'));
+    component.startsAtLocal = '2026-11-20T20:00';
+    await component.onSave();
+    component.onReconcile();
+    component.event = { ...sampleEvent, startsAtLocal: '2026-11-20T18:30:00' };
+    component.revision = '6';
+    component.ngOnChanges();
+    expect(component.startsAtLocal).toBe('2026-11-20T20:00');
+    expect(component.confirmedStartsAt()).toBe('2026-11-20T18:30:00');
+    expect(component.errorMessage()).toBeNull();
+    expect(component.hasConflict()).toBe(false);
+    mockOrganizerService.setEventSchedule.mockResolvedValue({ event: component.event, outcome: 'UPDATED' });
+    await component.onSave();
+    expect(mockOrganizerService.setEventSchedule.mock.calls[1][0].expectedRevision).toBe('6');
+  });
+
+  it('conserva la intención completa ante respuesta incierta e impide doble envío', async () => {
+    mockOrganizerService.setEventSchedule.mockRejectedValueOnce(new Error('COMMUNICATION_ERROR'));
+    await component.onSave();
+    const first = mockOrganizerService.setEventSchedule.mock.calls[0][0];
+    expect(component.uncertain()).toBe(true);
+    let done!: (value: unknown) => void;
+    mockOrganizerService.setEventSchedule.mockImplementation(() => new Promise(resolve => { done = resolve; }));
+    const saving = component.onSave();
+    await component.onSave();
+    expect(mockOrganizerService.setEventSchedule).toHaveBeenCalledTimes(2);
+    expect(mockOrganizerService.setEventSchedule.mock.calls[1][0]).toEqual(first);
+    done({ event: sampleEvent, outcome: 'IDEMPOTENT_REPLAY' });
+    await saving;
+    expect(component.uncertain()).toBe(false);
+  });
+
+  it('descarta el resultado de un guardado al cambiar de evento', async () => {
+    let done!: (value: unknown) => void;
+    mockOrganizerService.setEventSchedule.mockImplementation(() => new Promise(resolve => { done = resolve; }));
+    const saving = component.onSave();
+    const saved = vi.fn();
+    component.saved.subscribe(saved);
+    component.event = { ...sampleEvent, id: 'second-event' };
+    component.ngOnChanges();
+    done({ event: sampleEvent, outcome: 'UPDATED' });
+    await saving;
+    expect(saved).not.toHaveBeenCalled();
+    expect(component.successMessage()).toBeNull();
+    expect(component.isSaving()).toBe(false);
   });
 });

@@ -3,6 +3,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { OrganizerDashboardComponent } from './organizer-dashboard.component.js';
 import { OrganizerService } from './organizer.service.js';
 import type { OrganizerEventModel, EventConfigurationModel } from './organizer.types.js';
+import { By } from '@angular/platform-browser';
+import { EventScheduleSectionComponent } from './event-schedule-section.component.js';
 
 describe('OrganizerDashboardComponent & Organizer Navigation (EL-TK-048)', () => {
   let organizerServiceMock: {
@@ -82,6 +84,28 @@ describe('OrganizerDashboardComponent & Organizer Navigation (EL-TK-048)', () =>
     fixture.detectChanges();
     return fixture;
   }
+
+  it('updates schedule and revision from one configuration before the slower event-list refresh', async () => {
+    const fixture = await createDashboard();
+    await fixture.componentInstance.onEventSelected(sampleEvents[0].id);
+    fixture.componentInstance.onSectionChange('schedule');
+    fixture.detectChanges();
+    const section = fixture.debugElement.query(By.directive(EventScheduleSectionComponent)).componentInstance as EventScheduleSectionComponent;
+    expect(section.startsAtLocal).toBe('2026-11-20T18:00');
+    const updatedEvent = { ...sampleEvents[0], startsAtLocal: '2026-11-20T20:30:00' };
+    organizerServiceMock.getEventConfiguration.mockResolvedValue({ ...sampleConfig, revision: '6', event: updatedEvent });
+    let resolveList!: (events: OrganizerEventModel[]) => void;
+    organizerServiceMock.listEvents.mockImplementationOnce(() => new Promise<OrganizerEventModel[]>(resolve => { resolveList = resolve; }));
+    const refreshing = fixture.componentInstance.onReconcileEvent();
+    await Promise.resolve();
+    fixture.detectChanges();
+    expect(section.revision).toBe('6');
+    expect(section.startsAtLocal).toBe('2026-11-20T20:30');
+    resolveList([updatedEvent, sampleEvents[1]]);
+    await refreshing;
+    fixture.detectChanges();
+    expect(section.startsAtLocal).toBe('2026-11-20T20:30');
+  });
 
   it('Escenario 1: Renderiza lista de eventos con sus cards y badges de estado', async () => {
     const fixture = await createDashboard();

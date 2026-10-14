@@ -426,3 +426,6 @@ EL-TK-001..004 — SUPERSEDED por EL-TK-005..019; se preservan como historial. E
 
 
 
+
+
+**CONFIRMED — 2026-10-14, CR-010 / EL-TK-244 DONE:** correctivo de edición de fecha/hora en DRAFT o SCHEDULED nunca activado (DEC-077), calendario/QR coherentes y distinción entre estado, CAS e idempotencia. Pruebas focales, PostgreSQL aislado y revisión APPROVED; API/web locales actualizados. UI_REQUIRED YES, gate focal APPROVED sobre el formulario existente. Sin nuevos módulos ni reabrir cierres anteriores. [Cambio](changes/CR-010.md), [ticket](tickets/EL-TK-244.md).

@@ -241,14 +241,14 @@ export class OrganizerService {
   }
 
   /**
-   * Sets the local schedule for an event draft via generated OpenAPI client (EL-TK-226).
+   * Sets the local schedule before the first activation (EL-TK-226, EL-TK-244).
    */
   async setEventSchedule(params: {
     eventId: string;
     startsAtLocal: string;
     utcOffsetMinutes?: number;
-    expectedRevision?: string;
-    idempotencyKey?: string;
+    expectedRevision: string;
+    idempotencyKey: string;
   }): Promise<{
     event: OrganizerEventModel;
     outcome: 'UPDATED' | 'IDEMPOTENT_REPLAY';
@@ -273,7 +273,8 @@ export class OrganizerService {
       '/api/v1/events/{eventId}/configuration/schedule',
       {
         params: {
-          path: { eventId: params.eventId }
+          path: { eventId: params.eventId },
+          header: { 'Idempotency-Key': params.idempotencyKey, 'X-CSRF-Token': csrfToken }
         },
         headers: Object.keys(headers).length > 0 ? headers : undefined,
         body: {
@@ -283,15 +284,21 @@ export class OrganizerService {
           idempotencyKey: params.idempotencyKey
         }
       }
-    );
+    ).catch(() => { throw new Error('COMMUNICATION_ERROR'); });
 
     if (!response.ok || !data) {
       if (response.status === 409) {
-        throw new Error('CONCURRENCY_CONFLICT');
+        const code = (error as { code?: string } | undefined)?.code;
+        const allowed = ['CONCURRENCY_CONFLICT', 'IDEMPOTENCY_CONFLICT', 'EVENT_NOT_IN_DRAFT', 'INVALID_STATE'];
+        throw new Error(code && allowed.includes(code) ? code : 'SCHEDULE_CONFLICT');
       }
       if (response.status === 422) {
-        const errData = error as { code?: string; message?: string } | undefined;
-        throw new Error(errData?.code || 'UNPROCESSABLE_ENTITY');
+        const errData = error as { code?: string; details?: { availableOffsets?: unknown } } | undefined;
+        const scheduleError = new Error(errData?.code || 'UNPROCESSABLE_ENTITY') as Error & { availableOffsets?: number[] };
+        if (Array.isArray(errData?.details?.availableOffsets)) {
+          scheduleError.availableOffsets = errData.details.availableOffsets.filter((offset): offset is number => typeof offset === 'number' && Number.isInteger(offset) && Math.abs(offset) <= 900);
+        }
+        throw scheduleError;
       }
       if (response.status === 401 || response.status === 403) {
         throw new Error('ACCESS_DENIED');

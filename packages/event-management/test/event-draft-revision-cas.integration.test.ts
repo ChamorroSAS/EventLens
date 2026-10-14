@@ -281,7 +281,7 @@ describeIntegration('Event Revision & CAS Concurrency (Real PostgreSQL 16 — EL
       canChangeTimezone: boolean;
     }> = [
       { status: 'DRAFT', canEditName: true, canSetLocalSchedule: true, canChangeTimezone: true },
-      { status: 'SCHEDULED', canEditName: false, canSetLocalSchedule: false, canChangeTimezone: true },
+      { status: 'SCHEDULED', canEditName: false, canSetLocalSchedule: true, canChangeTimezone: true },
       { status: 'ACTIVE', canEditName: false, canSetLocalSchedule: false, canChangeTimezone: false },
       { status: 'CLOSED', canEditName: false, canSetLocalSchedule: false, canChangeTimezone: false },
       { status: 'GRACE_PERIOD', canEditName: false, canSetLocalSchedule: false, canChangeTimezone: false },

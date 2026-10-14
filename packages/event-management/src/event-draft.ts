@@ -37,7 +37,7 @@ import {
   type PreviewDraftAsGuestResult
 } from './contracts.js';
 import { resolveScheduleLocalTime } from './timezone.js';
-import { validateIanaTimezone } from './timeline.js';
+import { validateIanaTimezone, calculateEventLifecycleTimeline, DEFAULT_VALIDITY_DAYS, DEFAULT_GRACE_PERIOD_DAYS } from './timeline.js';
 
 interface ReceiptRow {
   operation_id: string;
@@ -171,7 +171,7 @@ function mapRowToSummary(row: EventRow): OrganizerEventSummary {
   };
 }
 
-function resolveCapabilities(status: EventStatus): EventConfigurationCapabilities {
+function resolveCapabilities(status: EventStatus, activatedAt?: Date | string | null): EventConfigurationCapabilities {
   const isDraftOrScheduled = status === 'DRAFT' || status === 'SCHEDULED';
   const isActive = status === 'ACTIVE';
   const isClosedOrGrace = status === 'CLOSED' || status === 'GRACE_PERIOD';
@@ -185,7 +185,7 @@ function resolveCapabilities(status: EventStatus): EventConfigurationCapabilitie
     canViewCapacity: !isTerminal,
     canPublishOrActivate: isDraftOrScheduled,
     canEditName: status === 'DRAFT',
-    canSetLocalSchedule: status === 'DRAFT',
+    canSetLocalSchedule: isDraftOrScheduled && !activatedAt,
     canChangeTimezone: status === 'DRAFT' || status === 'SCHEDULED'
   };
 }
@@ -1361,260 +1361,92 @@ export class EventDraftService {
   }
 
   /**
-   * Defines the local date and time for an event draft (EL-TK-023).
-   * Validates owner authorization, DRAFT status, IANA timezone consistency,
+   * Defines the local date and time before first activation (EL-TK-023).
+   * Validates owner authorization, DRAFT or SCHEDULED status, IANA timezone consistency,
    * DST gap (spring-forward) rejection, and DST overlap (fall-back) offset selection.
    */
   public async setSchedule(command: SetEventScheduleCommand): Promise<SetEventScheduleResult> {
-    if (!command || typeof command !== 'object') {
-      throw new EventManagementError('INVALID_ARGUMENT', 'Command is required');
-    }
-
+    if (!command || typeof command !== 'object') throw new EventManagementError('INVALID_ARGUMENT', 'Command required');
     const { actorContext, eventId, startsAtLocal, utcOffsetMinutes, expectedRevision, idempotencyKey } = command;
-
-    if (!actorContext || actorContext.actorType !== 'ORGANIZER_HUMAN' || !actorContext.accountId) {
-      throw new EventManagementError('UNAUTHORIZED', 'Authenticated organizer context is required');
+    if (!actorContext || actorContext.actorType !== 'ORGANIZER_HUMAN' || !actorContext.accountId || actorContext.restrictedContext) {
+      throw new EventManagementError('UNAUTHORIZED', 'Ordinary authenticated organizer required');
     }
-
-    if (!eventId || typeof eventId !== 'string') {
-      throw new EventManagementError('INVALID_ARGUMENT', 'Valid eventId is required');
-    }
-
+    if (!eventId || typeof eventId !== 'string') throw new EventManagementError('INVALID_ARGUMENT', 'Valid eventId required');
     validateIdempotencyKey(idempotencyKey);
     validateExpectedRevision(expectedRevision);
-
-    if (!startsAtLocal || typeof startsAtLocal !== 'string') {
-      throw new EventManagementError('INVALID_DATE_TIME', 'Valid startsAtLocal string is required');
-    }
-
-    const payloadHash = idempotencyKey
-      ? createHash('sha256')
-          .update(
-            JSON.stringify({
-              eventId,
-              startsAtLocal: startsAtLocal.trim(),
-              utcOffsetMinutes: utcOffsetMinutes ?? null
-            })
-          )
-          .digest('hex')
-      : null;
-
-    return this.runner.run(async (tx: SqlTransaction) => {
-      // 1. Fetch event with row-level lock
+    if (!startsAtLocal || typeof startsAtLocal !== 'string') throw new EventManagementError('INVALID_DATE_TIME', 'Valid startsAtLocal required');
+    const payloadHash = createHash('sha256').update(JSON.stringify({ eventId, expectedRevision: expectedRevision ?? null, startsAtLocal: startsAtLocal.trim(), utcOffsetMinutes: utcOffsetMinutes ?? null })).digest('hex');
+    const fingerprint = createHash('sha256').update(JSON.stringify({ operation: 'SET_SCHEDULE', eventId, expectedRevision: expectedRevision ?? null, payloadHash })).digest('hex');
+    // Receipts issued before the durable replay correction excluded revision from payload_hash.
+    const legacyPayloadHash = createHash('sha256').update(JSON.stringify({ eventId, startsAtLocal: startsAtLocal.trim(), utcOffsetMinutes: utcOffsetMinutes ?? null })).digest('hex');
+    return this.runner.run(async tx => {
+      if (idempotencyKey) await tx.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))::text AS locked', actorContext.accountId + ':SET_SCHEDULE:' + idempotencyKey);
       const rows = await tx.query<EventRow>(
         `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
-                uploads_enabled, guest_gallery_enabled, moderation_mode, pin_enabled,
-                idempotency_key, idempotency_payload_hash, revision, created_at, updated_at
-         FROM event
-         WHERE id = $1
-         FOR UPDATE`,
-        eventId
-      );
-
-      if (!rows.length) {
-        throw new EventManagementError('EVENT_NOT_FOUND', `Event with ID ${eventId} not found`);
-      }
-
+          expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at, suspension_reason, previous_status,
+          validity_duration_days, grace_days, uploads_enabled, guest_gallery_enabled, moderation_mode, pin_enabled,
+          welcome_message, cover_asset_id, revision, created_at, updated_at
+         FROM event WHERE id = $1 FOR UPDATE`, eventId);
+      if (!rows.length) throw new EventManagementError('EVENT_NOT_FOUND', 'Event not found');
       const current = rows[0];
-
-      // 2. Authorize owner
       if (current.organizer_id !== actorContext.accountId) {
-        await this.auditSink?.record({
-          id: randomUUID(),
-          procedure: 'EVENT_SCHEDULE_SET',
-          actorId: actorContext.accountId,
-          targetIdentifier: eventId,
-          result: 'REJECTED_UNAUTHORIZED',
-          details: 'Actor attempted to modify schedule of an event owned by another organizer',
-          timestamp: new Date()
-        });
-        throw new EventManagementError('UNAUTHORIZED', 'Actor is not authorized to edit this event draft');
+        await this.auditSink?.record({ id: randomUUID(), procedure: 'EVENT_SCHEDULE_SET', actorId: actorContext.accountId, targetIdentifier: eventId, result: 'REJECTED_UNAUTHORIZED', details: 'Actor attempted to modify schedule of another organizer event', timestamp: new Date() });
+        throw new EventManagementError('UNAUTHORIZED', 'Actor is not authorized to edit this event');
       }
-
-      // 3. Status must be DRAFT
-      if (current.status !== 'DRAFT') {
-        await this.auditSink?.record({
-          id: randomUUID(),
-          procedure: 'EVENT_SCHEDULE_SET',
-          actorId: actorContext.accountId,
-          targetIdentifier: eventId,
-          result: 'REJECTED_INVALID_STATE',
-          details: `Attempted to set schedule on event in '${current.status}' status (must be DRAFT)`,
-          timestamp: new Date()
-        });
-        throw new EventManagementError(
-          'EVENT_NOT_IN_DRAFT',
-          `Schedule can only be defined for events in DRAFT status, current is '${current.status}'`
-        );
-      }
-
-      // 4. Validar CAS (EL-TK-220)
-      if (expectedRevision !== undefined) {
-        const currentRevisionStr = String(current.revision ?? 1n);
-        if (currentRevisionStr !== expectedRevision) {
-          throw new EventManagementError(
-            'CONCURRENCY_CONFLICT',
-            `Event revision conflict: expected ${expectedRevision}, but current revision is ${currentRevisionStr}`
-          );
-        }
-      }
-
-      // 5. Check receipt in event_command_receipt (EL-TK-219, EL-TK-226)
-      const fingerprint = `${eventId}:${current.revision ?? 1n}`;
       if (idempotencyKey) {
-        let receiptRows: ReceiptRow[] = [];
-        try {
-          receiptRows = await tx.query<ReceiptRow>(
-            `SELECT operation_id, event_id, actor_id, operation, idempotency_key,
-                    fingerprint, payload_hash, applied_revision, outcome, warning, created_at
-             FROM event_command_receipt
-             WHERE actor_id = $1 AND operation = 'SET_SCHEDULE' AND idempotency_key = $2
-             FOR UPDATE`,
-            actorContext.accountId,
-            idempotencyKey
-          );
-        } catch {
-          receiptRows = [];
-        }
-
-        if (receiptRows.length > 0) {
-          const receipt = receiptRows[0];
-          if (receipt.payload_hash === payloadHash) {
-            return {
-              event: mapRowToRecord(current),
-              outcome: 'IDEMPOTENT_REPLAY',
-              receipt: {
-                operationId: receipt.operation_id,
-                eventId: receipt.event_id,
-                operation: receipt.operation,
-                appliedRevision: String(receipt.applied_revision),
-                outcome: receipt.outcome
-              }
-            };
-          }
-          throw new EventManagementError(
-            'IDEMPOTENCY_CONFLICT',
-            'Idempotency key has already been used with different parameters'
-          );
-        }
-
-        // Fallback check on event table
-        if (current.idempotency_key === idempotencyKey) {
-          if (current.idempotency_payload_hash === payloadHash) {
-            return {
-              event: mapRowToRecord(current),
-              outcome: 'IDEMPOTENT_REPLAY'
-            };
-          }
-          throw new EventManagementError(
-            'IDEMPOTENCY_CONFLICT',
-            'Idempotency key has already been used with different parameters'
-          );
+        const receipts = await tx.query<ReceiptRow>(
+          `SELECT operation_id, event_id, actor_id, operation, idempotency_key, fingerprint, payload_hash, applied_revision, outcome, created_at
+           FROM event_command_receipt WHERE actor_id = $1 AND operation = 'SET_SCHEDULE' AND idempotency_key = $2 FOR UPDATE`, actorContext.accountId, idempotencyKey);
+        if (receipts.length) {
+          const receipt = receipts[0];
+          const matchesCurrentReceipt = receipt.fingerprint === fingerprint && receipt.payload_hash === payloadHash;
+          const matchesLegacyReceipt = expectedRevision !== undefined && receipt.fingerprint === eventId + ':' + expectedRevision && receipt.payload_hash === legacyPayloadHash;
+          if (receipt.event_id !== eventId || (!matchesCurrentReceipt && !matchesLegacyReceipt)) throw new EventManagementError('IDEMPOTENCY_CONFLICT', 'Idempotency key already used with different parameters');
+          return { event: mapRowToRecord(current), outcome: 'IDEMPOTENT_REPLAY', receipt: { operationId: receipt.operation_id, eventId: receipt.event_id, operation: receipt.operation, appliedRevision: String(receipt.applied_revision), outcome: receipt.outcome } };
         }
       }
-
-      // 6. Resolve local time with DEC-070 DST validation
+      if (!['DRAFT', 'SCHEDULED'].includes(current.status) || current.activated_at) {
+        await this.auditSink?.record({ id: randomUUID(), procedure: 'EVENT_SCHEDULE_SET', actorId: actorContext.accountId, targetIdentifier: eventId, result: 'REJECTED_INVALID_STATE', details: 'Schedule change rejected in ' + current.status + ' after first activation or outside preparation', timestamp: new Date() });
+        throw new EventManagementError('INVALID_STATE', 'Schedule may only be changed before first activation in DRAFT or SCHEDULED');
+      }
+      if (expectedRevision !== undefined && String(current.revision ?? 1n) !== expectedRevision) throw new EventManagementError('CONCURRENCY_CONFLICT', 'Event revision changed');
       let resolved;
-      try {
-        resolved = resolveScheduleLocalTime(current.timezone, startsAtLocal, utcOffsetMinutes);
-      } catch (err) {
-        if (err instanceof EventManagementError) {
-          const auditResult =
-            err.code === 'DST_GAP_TIME'
-              ? 'REJECTED_DST_GAP'
-              : err.code === 'AMBIGUOUS_LOCAL_TIME'
-              ? 'REJECTED_AMBIGUOUS_TIME'
-              : err.code === 'INVALID_OFFSET'
-              ? 'REJECTED_INVALID_OFFSET'
-              : 'REJECTED_INVALID_NAME';
-
-          await this.auditSink?.record({
-            id: randomUUID(),
-            procedure: 'EVENT_SCHEDULE_SET',
-            actorId: actorContext.accountId,
-            targetIdentifier: eventId,
-            result: auditResult,
-            details: err.message,
-            timestamp: new Date()
-          });
+      try { resolved = resolveScheduleLocalTime(current.timezone, startsAtLocal, utcOffsetMinutes); }
+      catch (error) {
+        if (error instanceof EventManagementError) {
+          const result = error.code === 'DST_GAP_TIME' ? 'REJECTED_DST_GAP' : error.code === 'AMBIGUOUS_LOCAL_TIME' ? 'REJECTED_AMBIGUOUS_TIME' : error.code === 'INVALID_OFFSET' ? 'REJECTED_INVALID_OFFSET' : 'REJECTED_INVALID_NAME';
+          await this.auditSink?.record({ id: randomUUID(), procedure: 'EVENT_SCHEDULE_SET', actorId: actorContext.accountId, targetIdentifier: eventId, result, details: error.message, timestamp: new Date() });
         }
-        throw err;
+        throw error;
       }
-
-      // 7. Update event in database
+      const timeline = current.status === 'SCHEDULED' ? calculateEventLifecycleTimeline({
+        scheduledAt: resolved.scheduledAt, timezone: current.timezone,
+        validityDurationDays: current.validity_duration_days == null ? DEFAULT_VALIDITY_DAYS : Number(current.validity_duration_days),
+        graceDays: current.grace_days == null ? DEFAULT_GRACE_PERIOD_DAYS : Number(current.grace_days)
+      }) : null;
       const now = new Date();
       const updatedRows = await tx.query<EventRow>(
-        `UPDATE event
-         SET starts_at_local = $2,
-             scheduled_at = $3,
-             utc_offset_minutes = $4,
-             idempotency_key = COALESCE($5, idempotency_key),
-             idempotency_payload_hash = COALESCE($6, idempotency_payload_hash),
-             updated_at = $7
+        `UPDATE event SET starts_at_local = $2, scheduled_at = $3, utc_offset_minutes = $4,
+          expires_at = $5, grace_ends_at = $6, validity_duration_days = $7, grace_days = $8, updated_at = $9
          WHERE id = $1
          RETURNING id, organizer_id, name, status, timezone, starts_at_local, scheduled_at, utc_offset_minutes,
-                   uploads_enabled, guest_gallery_enabled, moderation_mode, pin_enabled,
-                   idempotency_key, idempotency_payload_hash, revision, created_at, updated_at`,
-        eventId,
-        resolved.startsAtLocal,
-        resolved.scheduledAt,
-        resolved.utcOffsetMinutes,
-        idempotencyKey ?? null,
-        payloadHash ?? null,
-        now
-      );
-
-      const updatedRecord = mapRowToRecord(updatedRows[0]);
-
-      let commandReceipt: CommandReceipt | undefined;
+          expires_at, grace_ends_at, activated_at, closed_at, purge_started_at, suspended_at, suspension_reason, previous_status,
+          validity_duration_days, grace_days, uploads_enabled, guest_gallery_enabled, moderation_mode, pin_enabled,
+          welcome_message, cover_asset_id, revision, created_at, updated_at`,
+        eventId, resolved.startsAtLocal, resolved.scheduledAt, resolved.utcOffsetMinutes,
+        timeline?.expiresAt ?? current.expires_at ?? null, timeline?.graceEndsAt ?? current.grace_ends_at ?? null,
+        timeline?.validityDurationDays ?? current.validity_duration_days ?? null, timeline?.graceDays ?? current.grace_days ?? null, now);
+      const event = mapRowToRecord(updatedRows[0]);
+      let receipt: CommandReceipt | undefined;
       if (idempotencyKey) {
         const operationId = randomUUID();
-        try {
-          const appliedRev = updatedRows[0].revision ?? 1n;
-          await tx.execute(
-            `INSERT INTO event_command_receipt (
-               operation_id, event_id, actor_id, operation, idempotency_key,
-               fingerprint, payload_hash, applied_revision, outcome, created_at
-             ) VALUES ($1, $2, $3, 'SET_SCHEDULE', $4, $5, $6, $7, 'UPDATED', $8)
-             ON CONFLICT (actor_id, operation, idempotency_key) DO NOTHING`,
-            operationId,
-            eventId,
-            actorContext.accountId,
-            idempotencyKey,
-            fingerprint,
-            payloadHash,
-            appliedRev,
-            now
-          );
-
-          commandReceipt = {
-            operationId,
-            eventId,
-            operation: 'SET_SCHEDULE',
-            appliedRevision: String(appliedRev),
-            outcome: 'UPDATED'
-          };
-        } catch {
-          // Si el mock in-memory no soporta event_command_receipt
-        }
+        await tx.execute(`INSERT INTO event_command_receipt
+          (operation_id,event_id,actor_id,operation,idempotency_key,fingerprint,payload_hash,applied_revision,outcome,created_at)
+          VALUES ($1,$2,$3,'SET_SCHEDULE',$4,$5,$6,$7,'UPDATED',$8)`, operationId,eventId,actorContext.accountId,idempotencyKey,fingerprint,payloadHash,String(event.revision ?? 1n),now);
+        receipt = { operationId, eventId, operation: 'SET_SCHEDULE', appliedRevision: String(event.revision ?? 1n), outcome: 'UPDATED' };
       }
-
-      // 8. Audit log
-      await this.auditSink?.record({
-        id: randomUUID(),
-        procedure: 'EVENT_SCHEDULE_SET',
-        actorId: actorContext.accountId,
-        targetIdentifier: eventId,
-        result: 'SUCCESS',
-        details: `Event schedule set to ${resolved.startsAtLocal} (${current.timezone}, UTC ${resolved.scheduledAt.toISOString()})`,
-        timestamp: now
-      });
-
-      return {
-        event: updatedRecord,
-        outcome: 'UPDATED',
-        receipt: commandReceipt
-      };
+      await this.auditSink?.record({ id: randomUUID(), procedure: 'EVENT_SCHEDULE_SET', actorId: actorContext.accountId, targetIdentifier: eventId, result: 'SUCCESS', details: 'Event schedule set to ' + resolved.startsAtLocal + ' (' + current.timezone + ')', timestamp: now });
+      return { event, outcome: 'UPDATED', receipt };
     });
   }
 
@@ -1878,7 +1710,7 @@ export class EventDraftService {
     return this.runner.run(async (tx: SqlTransaction) => {
       const rows = await tx.query<EventRow>(
         `SELECT id, organizer_id, name, status, timezone, starts_at_local, scheduled_at,
-                utc_offset_minutes, expires_at, grace_ends_at, uploads_enabled,
+                utc_offset_minutes, expires_at, grace_ends_at, activated_at, uploads_enabled,
                 guest_gallery_enabled, moderation_mode, pin_enabled, welcome_message, cover_asset_id, revision, created_at, updated_at
          FROM event
          WHERE id = $1`,
@@ -1896,7 +1728,7 @@ export class EventDraftService {
       }
 
       const summary = mapRowToSummary(row);
-      const capabilities = resolveCapabilities(summary.status);
+      const capabilities = resolveCapabilities(summary.status, row.activated_at);
       const revision = String(row.revision ?? 1n);
 
       return {

@@ -1,5 +1,7 @@
 # Convenciones de identificadores — EventLens
 
+**CONFIRMED — 2026-10-14, CR-010:** EL-TK-244 reservado al correctivo de edición del horario de DRAFT/SCHEDULED nunca activado. Serie ocupada hasta 244; no reutilizar IDs ni reabrir los cierres anteriores. [Cambio](changes/CR-010.md), [ticket](tickets/EL-TK-244.md).
+
 **CONFIRMED — 2026-10-13, CR-007:** EL-EP-019 y EL-TK-218..238 asignados a paneles/configuración mínima y correctivos prospectivos tras inventario local/originstage hasta018/217. Serie ocupada hasta019/238, incluido222 BLOCKED operacional. No reutilizar/reabrir DONE. [Gates](sessions/2026-10-13-event-control-panels-gates.md); reserva no equivale a ejecución/activación.
 
 **CONFIRMED — CR-005, 2026-10-13:** EL-TK-215..217 asignados al correctivo de aislamiento/bootstrap/recuperación excepcional. Serie ocupada hasta217; no reutiliza IDs ni reabre043..046.215/216 DONE tras ejecución y revisión;217 BLOCKED por autorización externa.

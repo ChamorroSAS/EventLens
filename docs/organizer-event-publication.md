@@ -1,11 +1,17 @@
 # Publicación manual de eventos
 
-Guardar una fecha en **Programación** configura los datos del evento, pero lo deja en estado `DRAFT`. Para publicar un borrador, abre **Configurar evento → Ciclo de vida**.
+Guardar una fecha en **Programación** configura los datos del evento, pero lo deja en estado `DRAFT`. Para publicarlo, abre **Configurar evento → Ciclo de vida**.
 
 1. Elige **Programar evento** y confirma. La programación conserva las duraciones efectivas que devuelve el servidor; si no se configuraron otras, los valores predeterminados son 30 días de vigencia y 7 días de gracia.
 2. Cuando quieras habilitar el evento, elige **Activar ahora** y confirma. El estado pasa de `SCHEDULED` a `ACTIVE`; se conservan las fechas de expiración y gracia calculadas al programarlo.
 
 La transición requiere acción manual: el servicio de ejecución automática de la programación todavía no está disponible. Si cierras la página antes de activar, vuelve a **Ciclo de vida** y revisa el estado para continuar. La activación del evento tampoco habilita por sí sola las subidas de fotos ni la galería. La configuración operativa de esas opciones no forma parte de esta corrección.
+
+## Cambiar la fecha de inicio
+
+En **Programación** puedes editar y guardar la fecha y hora local mientras el evento está en `DRAFT` o `SCHEDULED` y nunca se ha activado. Si está `SCHEDULED`, conserva ese estado y el mismo acceso/QR; se vuelven a calcular las fechas de expiración y gracia usando las duraciones efectivas existentes. La edición no programa ni activa el evento por sí sola. Después de la primera activación, ya no se puede cambiar la fecha mediante esta opción.
+
+Si otra sesión actualiza el evento antes de guardar, la interfaz informa el conflicto y permite recargar la última revisión. Recarga los datos y vuelve a comparar la fecha confirmada antes de continuar; así se descarta el aviso obsoleto y se actualiza el formulario. Si una solicitud termina con tiempo de espera, el formulario conserva esa propuesta para permitir un reintento explícito con la misma intención y clave de idempotencia. No reintenta ni modifica el evento automáticamente.
 
 ## Acceso de invitados y código QR
 
@@ -31,4 +37,4 @@ Las operaciones de organizador son:
 - `GET events/{id}/share-access`: consulta el enlace y QR vigentes.
 - `POST events/{id}/share-access`: prepara el acceso inicial conservando cualquier credencial vigente.
 
-Las operaciones `POST` requieren `expectedRevision` en el cuerpo e `Idempotency-Key`. Se autorizan con la sesión del organizador propietario y las protecciones de `Origin` y CSRF. Ante `409`, actualiza el estado y vuelve a decidir. Si el resultado de una operación queda incierto, consulta el estado antes de continuar; cualquier reintento debe conservar la misma intención y clave de idempotencia. No se reejecutan transiciones automáticamente.
+Las operaciones `POST` requieren `expectedRevision` en el cuerpo e `Idempotency-Key`. Se autorizan con la sesión del organizador propietario y las protecciones de `Origin` y CSRF. Ante un conflicto de concurrencia, recarga la última revisión, compara la fecha confirmada y vuelve a decidir. Si el resultado de una operación queda incierto, consulta el estado antes de continuar; cualquier reintento debe conservar la misma intención y clave de idempotencia. Los errores de estado (por ejemplo, un evento que ya fue activado) se informan como tales y no como conflictos de concurrencia. No se reejecutan operaciones automáticamente.

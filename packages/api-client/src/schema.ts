@@ -515,7 +515,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Definir fecha y hora local de inicio para un borrador de evento (EL-TK-226) */
+        /** Cambiar fecha y hora local de inicio antes de la primera activación (DRAFT o SCHEDULED) */
         put: operations["setEventSchedule"];
         post?: never;
         delete?: never;
@@ -3750,7 +3750,10 @@ export interface operations {
     setEventSchedule: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                "X-CSRF-Token": string;
+                "Idempotency-Key": string;
+            };
             path: {
                 eventId: string;
             };
@@ -3759,13 +3762,13 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description Fecha y hora local en formato 'YYYY-MM-DDTHH:mm' o 'YYYY-MM-DDTHH:mm:ss' */
+                    /** @description Fecha y hora local YYYY-MM-DDTHH:mm o YYYY-MM-DDTHH:mm:ss */
                     startsAtLocal: string;
-                    /** @description Offset UTC explícito en minutos para desambiguar transiciones DST (fall-back) */
+                    /** @description Offset UTC explícito en minutos para desambiguar DST */
                     utcOffsetMinutes?: number | null;
-                    /** @description Revisión esperada para control de concurrencia optimista (CAS monotónico) */
-                    expectedRevision?: string | null;
-                    /** @description Clave de idempotencia para prevención de ejecuciones duplicadas */
+                    /** @description Revisión esperada para control de concurrencia optimista */
+                    expectedRevision: string;
+                    /** @description Compatibilidad de cuerpo; se requiere cabecera Idempotency-Key */
                     idempotencyKey?: string | null;
                 };
             };

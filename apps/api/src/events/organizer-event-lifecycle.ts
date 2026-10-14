@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { SqlTransaction, TransactionRunner } from '@eventlens/database';
 import { AuthenticationError, OrganizerAuthenticationService } from '@eventlens/identity';
-import { EventLifecycleService, EventPublicAccessService, EventManagementError, DEFAULT_VALIDITY_DAYS, DEFAULT_GRACE_PERIOD_DAYS, type EventAuditSink } from '@eventlens/event-management';
+import { EventDraftService, EventLifecycleService, EventPublicAccessService, EventManagementError, DEFAULT_VALIDITY_DAYS, DEFAULT_GRACE_PERIOD_DAYS, type EventAuditSink } from '@eventlens/event-management';
 import { BadRequestException, ForbiddenException, UnauthorizedException, ServiceUnavailableException } from '@nestjs/common';
 import type { OrganizerSessionService } from '../identity/organizer-session.service.js';
 import { extractOrganizerSessionCookie } from '../identity/organizer-session.service.js';
@@ -97,6 +97,26 @@ export class OrganizerEventLifecycleAdapter {
           canActivateEarly: snapshot.capabilities.canActivateEarly && !!snapshot.expiresAt && snapshot.expiresAt.getTime() > Date.now()
         }
       };
+    });
+  }
+
+  async setSchedule(request: LifecycleRequest) {
+    this.sessions.assertTrustedOrigin(request.originHeader);
+    const key = request.idempotencyKey?.trim();
+    if (!key || !/^[A-Za-z0-9_-]{1,128}$/.test(key)) throw new BadRequestException('Valid Idempotency-Key header required');
+    if (!request.body || typeof request.body !== 'object' || Array.isArray(request.body)) throw new BadRequestException('Request body must be an object');
+    const body = request.body as Record<string, unknown>;
+    if (Object.keys(body).some(k => !['startsAtLocal', 'utcOffsetMinutes', 'expectedRevision', 'idempotencyKey'].includes(k)) ||
+        typeof body.expectedRevision !== 'string' || !/^[1-9]\d{0,11}$/.test(body.expectedRevision) ||
+        (body.utcOffsetMinutes != null && (typeof body.utcOffsetMinutes !== 'number' || !Number.isInteger(body.utcOffsetMinutes)))) throw new BadRequestException('Valid expectedRevision and optional integer utcOffsetMinutes required');
+    if (typeof body.startsAtLocal !== 'string' || !body.startsAtLocal.trim()) throw new BadRequestException('startsAtLocal required');
+    return this.database.run(async tx => {
+      const actorContext = await this.authenticate(tx, request, true);
+      return new EventDraftService({ run: work => work(tx) }, this.audit(tx)).setSchedule({
+        actorContext, eventId: request.eventId, startsAtLocal: body.startsAtLocal as string,
+        utcOffsetMinutes: body.utcOffsetMinutes == null ? undefined : body.utcOffsetMinutes as number,
+        expectedRevision: body.expectedRevision as string, idempotencyKey: key
+      });
     });
   }
 

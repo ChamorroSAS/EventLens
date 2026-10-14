@@ -6983,6 +6983,22 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -6992,27 +7008,28 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "startsAtLocal"
+                  "startsAtLocal",
+                  "expectedRevision"
                 ],
                 "properties": {
                   "startsAtLocal": {
                     "type": "string",
-                    "description": "Fecha y hora local en formato 'YYYY-MM-DDTHH:mm' o 'YYYY-MM-DDTHH:mm:ss'"
+                    "description": "Fecha y hora local YYYY-MM-DDTHH:mm o YYYY-MM-DDTHH:mm:ss"
                   },
                   "utcOffsetMinutes": {
-                    "type": "number",
+                    "type": "integer",
                     "nullable": true,
-                    "description": "Offset UTC explícito en minutos para desambiguar transiciones DST (fall-back)"
+                    "description": "Offset UTC explícito en minutos para desambiguar DST"
                   },
                   "expectedRevision": {
                     "type": "string",
-                    "nullable": true,
-                    "description": "Revisión esperada para control de concurrencia optimista (CAS monotónico)"
+                    "pattern": "^[1-9]\\d{0,11}$",
+                    "description": "Revisión esperada para control de concurrencia optimista"
                   },
                   "idempotencyKey": {
                     "type": "string",
                     "nullable": true,
-                    "description": "Clave de idempotencia para prevención de ejecuciones duplicadas"
+                    "description": "Compatibilidad de cuerpo; se requiere cabecera Idempotency-Key"
                   }
                 }
               }
@@ -7330,7 +7347,7 @@
             }
           }
         },
-        "summary": "Definir fecha y hora local de inicio para un borrador de evento (EL-TK-226)",
+        "summary": "Cambiar fecha y hora local de inicio antes de la primera activación (DRAFT o SCHEDULED)",
         "tags": [
           "organizer-events"
         ]

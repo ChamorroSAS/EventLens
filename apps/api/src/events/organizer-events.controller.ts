@@ -373,59 +373,11 @@ export class OrganizerEventsService {
     }
   }
 
-  async setEventSchedule(params: {
-    eventId: string;
-    startsAtLocal?: unknown;
-    utcOffsetMinutes?: unknown;
-    expectedRevision?: unknown;
-    idempotencyKey?: unknown;
-    cookieHeader?: string;
-  }): Promise<SerializedSetEventScheduleResult> {
-    const sessionToken = extractOrganizerSessionCookie(params.cookieHeader);
-    const validated = await this.sessionService.validateReadOrganizerSession({
-      sessionToken,
-      requireOrdinarySession: true
-    });
-
-    if (!params.startsAtLocal || typeof params.startsAtLocal !== 'string') {
-      throw new UnprocessableEntityException({
-        statusCode: 422,
-        error: 'Unprocessable Entity',
-        message: 'Valid startsAtLocal string is required in format YYYY-MM-DDTHH:mm or YYYY-MM-DDTHH:mm:ss'
-      });
-    }
-
-    const utcOffset =
-      typeof params.utcOffsetMinutes === 'number' ? params.utcOffsetMinutes : undefined;
-    const expectedRevision =
-      typeof params.expectedRevision === 'string'
-        ? params.expectedRevision
-        : typeof params.expectedRevision === 'number'
-        ? String(params.expectedRevision)
-        : undefined;
-    const idempotencyKey =
-      typeof params.idempotencyKey === 'string' && params.idempotencyKey.trim()
-        ? params.idempotencyKey.trim()
-        : undefined;
-
+  async setEventSchedule(request: LifecycleRequest): Promise<SerializedSetEventScheduleResult> {
     try {
-      const result = await this.eventDraftService.setSchedule({
-        actorContext: validated.actorContext,
-        eventId: params.eventId,
-        startsAtLocal: params.startsAtLocal.trim(),
-        utcOffsetMinutes: utcOffset,
-        expectedRevision,
-        idempotencyKey
-      });
-
-      return {
-        event: serializeOrganizerEventSummary(result.event),
-        outcome: result.outcome,
-        receipt: result.receipt
-      };
-    } catch (error) {
-      this.rethrowEventError(error);
-    }
+      const result = await this.lifecycle.setSchedule(request);
+      return { event: serializeOrganizerEventSummary(result.event), outcome: result.outcome, receipt: result.receipt };
+    } catch (error) { this.rethrowEventError(error, true); }
   }
 
   async changeEventTimezone(params: {
@@ -646,27 +598,12 @@ const CommandReceiptSchema = {
 
 const SetEventScheduleBodySchema = {
   type: 'object',
-  required: ['startsAtLocal'],
+  required: ['startsAtLocal', 'expectedRevision'],
   properties: {
-    startsAtLocal: {
-      type: 'string',
-      description: "Fecha y hora local en formato 'YYYY-MM-DDTHH:mm' o 'YYYY-MM-DDTHH:mm:ss'"
-    },
-    utcOffsetMinutes: {
-      type: 'number',
-      nullable: true,
-      description: 'Offset UTC explícito en minutos para desambiguar transiciones DST (fall-back)'
-    },
-    expectedRevision: {
-      type: 'string',
-      nullable: true,
-      description: 'Revisión esperada para control de concurrencia optimista (CAS monotónico)'
-    },
-    idempotencyKey: {
-      type: 'string',
-      nullable: true,
-      description: 'Clave de idempotencia para prevención de ejecuciones duplicadas'
-    }
+    startsAtLocal: { type: 'string', description: 'Fecha y hora local YYYY-MM-DDTHH:mm o YYYY-MM-DDTHH:mm:ss' },
+    utcOffsetMinutes: { type: 'integer', nullable: true, description: 'Offset UTC explícito en minutos para desambiguar DST' },
+    expectedRevision: { type: 'string', pattern: '^[1-9]\\d{0,11}$', description: 'Revisión esperada para control de concurrencia optimista' },
+    idempotencyKey: { type: 'string', nullable: true, description: 'Compatibilidad de cuerpo; se requiere cabecera Idempotency-Key' }
   }
 };
 
@@ -1072,8 +1009,10 @@ export class OrganizerEventsController {
   @Put(':eventId/configuration/schedule')
   @ApiOperation({
     operationId: 'setEventSchedule',
-    summary: 'Definir fecha y hora local de inicio para un borrador de evento (EL-TK-226)'
+    summary: 'Cambiar fecha y hora local de inicio antes de la primera activación (DRAFT o SCHEDULED)'
   })
+  @ApiHeader({ name: 'Idempotency-Key', required: true })
+  @ApiHeader({ name: 'X-CSRF-Token', required: true })
   @ApiParam({ name: 'eventId', type: 'string' })
   @ApiBody({ schema: SetEventScheduleBodySchema })
   @ApiResponse({ status: 200, schema: SetEventScheduleResponseSchema })
@@ -1089,7 +1028,7 @@ export class OrganizerEventsController {
     body: {
       startsAtLocal: string;
       utcOffsetMinutes?: number;
-      expectedRevision?: string;
+      expectedRevision: string;
       idempotencyKey?: string;
     },
     @Req() request: HttpRequest,
@@ -1097,21 +1036,7 @@ export class OrganizerEventsController {
   ) {
     response.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     response.setHeader('Pragma', 'no-cache');
-    const cookieHeader =
-      typeof request.headers?.cookie === 'string' ? request.headers.cookie : undefined;
-    const idempotencyKey =
-      (typeof request.headers?.['idempotency-key'] === 'string'
-        ? request.headers['idempotency-key']
-        : undefined) ?? body?.idempotencyKey;
-
-    return this.eventsService.setEventSchedule({
-      eventId,
-      startsAtLocal: body?.startsAtLocal,
-      utcOffsetMinutes: body?.utcOffsetMinutes,
-      expectedRevision: body?.expectedRevision,
-      idempotencyKey,
-      cookieHeader
-    });
+    return this.eventsService.setEventSchedule(this.lifecycleRequest(eventId, request, response, body));
   }
 
   @Put(':eventId/configuration/timezone')

@@ -99,7 +99,9 @@
                 }
               }
               @case ('schedule') {
-                <p class="capability-notice">Guardar la fecha mantiene el evento como borrador. En «Ciclo de vida» puedes programarlo y activarlo.</p>
+                @if (selectedEvent()?.status === 'DRAFT') {
+                  <p class="capability-notice">Guardar la fecha mantiene el evento como borrador. En «Ciclo de vida» puedes programarlo y activarlo.</p>
+                }
                 <button type="button" class="btn-retry" (click)="onSectionChange('lifecycle')">Ir a publicación y activación</button>
                 <div class="schedule-tab-sections">
                   <eventlens-event-timezone-section
@@ -110,9 +112,9 @@
                     (reconcile)="onReconcileEvent()"
                   />
                   <eventlens-event-schedule-section
-                    [event]="selectedEvent() ?? undefined"
+                    [event]="selectedEventConfig()?.event"
                     [revision]="selectedEventConfig()?.revision"
-                    [canEdit]="!!(selectedEventConfig()?.capabilities?.canSetLocalSchedule || selectedEventConfig()?.capabilities?.canEditSchedule)"
+                    [canEdit]="selectedEventConfig()?.capabilities?.canSetLocalSchedule === true"
                     (saved)="onScheduleSaved()"
                     (reconcile)="onReconcileEvent()"
                   />
