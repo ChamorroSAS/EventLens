@@ -153,6 +153,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Buscar eventos y organizadores para investigación administrativa */
+        get: operations["searchAdminEntities"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/events/{eventId}/aggregated-detail": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Consultar detalle administrativo mínimo de un evento */
+        get: operations["getAdminAggregatedEventDetail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/public/beta-access-requests": {
         parameters: {
             query?: never;
@@ -953,6 +987,242 @@ export interface operations {
                 };
             };
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    searchAdminEntities: {
+        parameters: {
+            query?: {
+                limit?: number;
+                page?: number;
+                status?: string;
+                entityType?: "ALL" | "EVENT" | "ORGANIZER";
+                query?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: ({
+                            /** @enum {string} */
+                            type: "EVENT";
+                            id: string;
+                            name: string;
+                            status: string;
+                            organizerId: string;
+                            timezone: string;
+                            /** Format: date-time */
+                            scheduledAt: string | null;
+                            /** Format: date-time */
+                            createdAt: string;
+                        } | {
+                            /** @enum {string} */
+                            type: "ORGANIZER";
+                            id: string;
+                            email: string;
+                            status: string;
+                            declaredAdult: boolean;
+                            /** Format: date-time */
+                            createdAt: string;
+                        })[];
+                        pagination: {
+                            page: number;
+                            limit: number;
+                            total: number;
+                            totalPages: number;
+                        };
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    getAdminAggregatedEventDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        eventId: string;
+                        name: string;
+                        /** @enum {string} */
+                        overallAvailability: "COMPLETE" | "PARTIAL";
+                        owner: {
+                            id: string;
+                            email: string;
+                            status: string;
+                            declaredAdult: boolean;
+                            /** Format: date-time */
+                            createdAt: string;
+                        };
+                        lifecycle: {
+                            status: string;
+                            timezone: string;
+                            startsAtLocal: string | null;
+                            /** Format: date-time */
+                            scheduledAt: string | null;
+                            /** Format: date-time */
+                            expiresAt: string | null;
+                            /** Format: date-time */
+                            graceEndsAt: string | null;
+                            /** Format: date-time */
+                            activatedAt: string | null;
+                            /** Format: date-time */
+                            closedAt: string | null;
+                            /** Format: date-time */
+                            suspendedAt: string | null;
+                            previousStatus: string | null;
+                            uploadsEnabled: boolean;
+                            guestGalleryEnabled: boolean;
+                        };
+                        capacity: {
+                            /** @enum {string} */
+                            availability: "AVAILABLE" | "UNAVAILABLE" | "DEGRADED";
+                            planCode?: string;
+                            storageLimitBytes?: string;
+                            storageUsedBytes?: string;
+                            fileLimit?: number;
+                            filesCount?: number;
+                        };
+                        /** Format: date-time */
+                        fetchedAt: string;
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
