@@ -206,6 +206,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/events/{eventId}/configuration/name": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Actualizar nombre de un borrador de evento con control de revisión e idempotencia (EL-TK-225) */
+        patch: operations["updateOrganizerEventName"];
+        trace?: never;
+    };
     "/api/v1/events/{eventId}/configuration": {
         parameters: {
             query?: never;
@@ -1318,6 +1335,147 @@ export interface operations {
             };
         };
     };
+    updateOrganizerEventName: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Clave de idempotencia única para la operación */
+                "Idempotency-Key": string;
+            };
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name: string;
+                    expectedRevision: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        receipt: {
+                            /** Format: uuid */
+                            operationId: string;
+                            /** Format: uuid */
+                            eventId: string;
+                            operation: string;
+                            appliedRevision: string;
+                            outcome: string;
+                        };
+                        /** @enum {string} */
+                        outcome: "APPLIED" | "REPLAYED";
+                        revision: string;
+                        event: {
+                            /** Format: uuid */
+                            id: string;
+                            name: string;
+                            revision: string;
+                        };
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
     getAuthorizedEventConfiguration: {
         parameters: {
             query?: never;
@@ -1367,6 +1525,7 @@ export interface operations {
                             canViewLifecycle: boolean;
                             canViewCapacity: boolean;
                             canPublishOrActivate: boolean;
+                            canEditName: boolean;
                         };
                     };
                 };
