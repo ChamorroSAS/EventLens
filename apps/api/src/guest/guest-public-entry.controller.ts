@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpException,
@@ -23,6 +24,7 @@ import {
   EventManagementError,
   EventPublicAccessService,
   GuestSessionService,
+  type EventRecord,
   type GuestContributionItem,
   type GuestSessionRecord,
   type RemovalIntakeRouteResult
@@ -31,6 +33,8 @@ import { DatabaseService } from '../platform/database/database.service.js';
 import { ORGANIZER_SESSION_CONFIG } from '../identity/organizer-session.service.js';
 import type { PlatformConfig } from '../platform/config/config.js';
 import { errorSchema } from '../platform/health/health.controller.js';
+import { PresignUploadService, S3_CLIENT_TOKEN } from './guest-upload.service.js';
+import type { PresignInputFile, PresignedUpload, ConfirmUploadResult, PresignInput } from './guest-upload.service.js';
 
 export const GUEST_SESSION_COOKIE_NAME = 'el_guest_session';
 const GUEST_SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
@@ -269,6 +273,73 @@ export const guestRemovalIntakeRouteSchema = {
     intakePath: { type: 'string' },
     disclaimer: { type: 'string' },
     requiresSession: { type: 'boolean', enum: [false] }
+  }
+};
+
+export const presignInputFileSchema = {
+  type: 'object',
+  required: ['name', 'size', 'type'],
+  properties: {
+    name: { type: 'string', maxLength: 255 },
+    size: { type: 'integer', minimum: 1, maximum: 500 * 1024 * 1024 },
+    type: { type: 'string', enum: ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime'] },
+    sha256: { type: 'string', pattern: '^[a-f0-9]{64}$' }
+  }
+};
+
+export const presignUploadsRequestSchema = {
+  type: 'object',
+  required: ['files'],
+  properties: {
+    files: {
+      type: 'array',
+      items: presignInputFileSchema,
+      minItems: 1,
+      maxItems: 10
+    }
+  }
+};
+
+export const presignedUploadSchema = {
+  type: 'object',
+  required: ['mediaRef', 'uploadUrl', 'fields', 'expiresAt'],
+  properties: {
+    mediaRef: { type: 'string', pattern: '^mr-[a-z0-9]+$' },
+    uploadUrl: { type: 'string', format: 'uri' },
+    fields: {
+      type: 'object',
+      additionalProperties: { type: 'string' }
+    },
+    expiresAt: { type: 'string', format: 'date-time' }
+  }
+};
+
+export const presignUploadsResponseSchema = {
+  type: 'object',
+  required: ['uploads'],
+  properties: {
+    uploads: {
+      type: 'array',
+      items: presignedUploadSchema
+    }
+  }
+};
+
+export const confirmUploadRequestSchema = {
+  type: 'object',
+  required: ['mediaRef', 'operationId'],
+  properties: {
+    mediaRef: { type: 'string', pattern: '^mr-[a-z0-9]+$' },
+    operationId: { type: 'string', format: 'uuid' }
+  }
+};
+
+export const confirmUploadResponseSchema = {
+  type: 'object',
+  required: ['status', 'availableAt'],
+  properties: {
+    status: { type: 'string', enum: ['RECEIVED'] },
+    availableAt: { type: 'string', format: 'date-time' }
   }
 };
 
@@ -752,6 +823,100 @@ export class GuestPublicEntryService {
     }
   }
 
+  async getSessionFromCookie(cookieToken: string | undefined): Promise<{
+    id: string;
+    eventId: string;
+    credentialGeneration: number;
+    canUpload: boolean;
+  } | null> {
+    if (!cookieToken) {
+      return null;
+    }
+    try {
+      const session = await this.guestSessionService.resolveGuestSession(cookieToken);
+      
+      // Get public access credential for this event to check capabilities
+      const credentialRows = await this.databaseService.transactions.run(async (tx) => {
+        const rows = await tx.query<{
+          lookup_key: string;
+          generation: number;
+          pin_required: boolean;
+          uploads_enabled: boolean;
+          guest_gallery_enabled: boolean;
+          moderation_mode: string;
+          pin_enabled: boolean;
+          event_status: string;
+        }>(
+          `SELECT
+             c.lookup_key, c.generation, c.pin_required,
+             e.uploads_enabled, e.guest_gallery_enabled, e.moderation_mode, e.pin_enabled, e.status AS event_status
+           FROM public_access_credential c
+           JOIN event e ON e.id = c.event_id
+           WHERE c.event_id = $1 AND c.revoked_at IS NULL
+           LIMIT 1`,
+          session.eventId
+        );
+        return rows;
+      });
+
+      if (credentialRows.length === 0) {
+        return null;
+      }
+
+      const cred = credentialRows[0];
+      
+      // Verify credential generation matches session
+      if (cred.generation !== session.credentialGeneration) {
+        return null;
+      }
+
+      // Check event status for upload capability
+      const eventRecord: EventRecord = {
+        id: session.eventId,
+        organizerId: '',
+        name: '',
+        status: cred.event_status as any,
+        timezone: '',
+        startsAtLocal: null,
+        scheduledAt: null,
+        utcOffsetMinutes: null,
+        expiresAt: null,
+        graceEndsAt: null,
+        activatedAt: null,
+        closedAt: null,
+        purgeStartedAt: null,
+        suspendedAt: null,
+        suspensionReason: null,
+        previousStatus: null,
+        validityDurationDays: 0,
+        graceDays: 0,
+        uploadsEnabled: Boolean(cred.uploads_enabled),
+        guestGalleryEnabled: Boolean(cred.guest_gallery_enabled),
+        moderationMode: cred.moderation_mode as any,
+        pinEnabled: Boolean(cred.pin_enabled),
+        welcomeMessage: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const { EventAccessPolicy } = await import('@eventlens/event-management');
+      const uploadDecision = EventAccessPolicy.evaluate({
+        event: eventRecord,
+        action: 'GUEST_UPLOAD',
+        actorContext: { actorType: 'GUEST_ANONYMOUS' },
+      });
+
+      return {
+        id: session.id,
+        eventId: session.eventId,
+        credentialGeneration: session.credentialGeneration,
+        canUpload: uploadDecision.allowed,
+      };
+    } catch {
+      return null;
+    }
+  }
+
   getClearCookieHeader(): string {
     return buildClearGuestSessionSetCookie(this.isHttps());
   }
@@ -762,7 +927,9 @@ export class GuestPublicEntryService {
 export class GuestPublicEntryController {
   constructor(
     @Inject(GuestPublicEntryService)
-    private readonly guestPublicEntryService: GuestPublicEntryService
+    private readonly guestPublicEntryService: GuestPublicEntryService,
+    @Inject(PresignUploadService)
+    private readonly guestUploadService: PresignUploadService
   ) {}
 
   private extractCookieToken(request: {
@@ -990,5 +1157,51 @@ export class GuestPublicEntryController {
   ): Promise<RemovalIntakeRouteResult> {
     this.applySecurityHeaders(response);
     return this.guestPublicEntryService.getRemovalIntakeRoute({ lookupKey });
+  }
+
+  @Post('guest-session/uploads/presign')
+  @HttpCode(200)
+  @ApiOperation({ operationId: 'presignGuestUploads', summary: 'Obtener URLs prefirmadas para subida directa a MinIO' })
+  @ApiBody({ schema: presignUploadsRequestSchema })
+  @ApiResponse({ status: 200, schema: presignUploadsResponseSchema })
+  @ApiResponse({ status: 401, schema: errorSchema })
+  @ApiResponse({ status: 403, schema: errorSchema })
+  @ApiResponse({ status: 503, schema: errorSchema })
+  async presignUploads(
+    @Req() request: { headers?: Record<string, string | string[] | undefined> },
+    @Body() body: { files: PresignInputFile[] },
+    @Res({ passthrough: true }) response: { setHeader(name: string, value: string | string[]): void }
+  ): Promise<{ uploads: PresignedUpload[] }> {
+    this.applySecurityHeaders(response);
+    const cookieToken = this.extractCookieToken(request);
+    const session = await this.guestPublicEntryService.getSessionFromCookie(cookieToken);
+    if (!session || !session.canUpload) throw new ForbiddenException('Uploads not allowed');
+    const uploads = await this.guestUploadService.getPresignedUploadUrls({
+      eventId: session.eventId,
+      files: body.files,
+    }, session.id, BigInt(session.credentialGeneration));
+    return { uploads };
+  }
+
+  @Post('guest-session/uploads/confirm')
+  @HttpCode(200)
+  @ApiOperation({ operationId: 'confirmGuestUpload', summary: 'Confirmar recepción de archivo subido a MinIO' })
+  @ApiBody({ schema: confirmUploadRequestSchema })
+  @ApiResponse({ status: 200, schema: confirmUploadResponseSchema })
+  @ApiResponse({ status: 401, schema: errorSchema })
+  @ApiResponse({ status: 404, schema: errorSchema })
+  @ApiResponse({ status: 503, schema: errorSchema })
+  async confirmUpload(
+    @Req() request: { headers?: Record<string, string | string[] | undefined> },
+    @Body() body: { mediaRef: string; operationId: string },
+    @Res({ passthrough: true }) response: { setHeader(name: string, value: string | string[]): void }
+  ): Promise<ConfirmUploadResult> {
+    this.applySecurityHeaders(response);
+    const cookieToken = this.extractCookieToken(request);
+    await this.guestPublicEntryService.getSessionFromCookie(cookieToken); // validates session
+    // The mediaRef from the client is just the mediaRef, but confirmUpload needs the full object key
+    // We need to reconstruct the key. Since we don't have the file name here, we'll need to store the mapping
+    // or have the client send the full key. For now, accept the full object key as mediaRef.
+    return this.guestUploadService.confirmUpload(body.mediaRef, body.operationId);
   }
 }

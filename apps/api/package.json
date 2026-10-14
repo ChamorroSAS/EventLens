@@ -12,6 +12,8 @@
                     "openapi:export":  "pnpm build \u0026\u0026 node dist/export-openapi.js"
                 },
     "dependencies":  {
+                         "@aws-sdk/client-s3": "3.1148.0",
+                         "@aws-sdk/s3-presigned-post": "3.1148.0",
                          "@eventlens/admin-support": "workspace:*",
                          "@eventlens/capacity-management": "workspace:*",
                          "@eventlens/database":  "workspace:*",
