@@ -1,0 +1,377 @@
+// EventLens shared console shell.
+//
+// One visual language for the authenticated panels (organizer and admin):
+// header with the brand mark and a role badge, collapsible sidebar with a
+// profile card and primary navigation, main area and footer.
+//
+// It consumes the canonical design tokens (--el-*) emitted in :root, so the
+// organizer and administrator panels stay aligned with the documented design
+// system instead of hard-coded colours.
+//
+// Emits CSS only; components @use it and opt in with the `console-shell` class.
+
+.console-shell {
+  min-block-size: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--el-color-background);
+  color: var(--el-color-text);
+  font-family: var(--el-font-family);
+}
+
+/* Header */
+.shell-header {
+  background-color: var(--el-color-surface);
+  border-block-end: 1px solid var(--el-color-border);
+  z-index: 20;
+}
+
+@media (min-width: 769px) {
+  .shell-header {
+    position: sticky;
+    inset-block-start: 0;
+  }
+}
+
+.shell-container {
+  inline-size: 100%;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .shell-container {
+    padding-inline: 1.75rem;
+  }
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-block-size: 64px;
+  padding-block: 0.625rem;
+}
+
+.brand-area {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.brand-link {
+  display: inline-flex;
+  text-decoration: none;
+  align-items: center;
+}
+
+.brand-title {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  font-family: inherit;
+  font-size: var(--el-font-size-h2);
+  font-weight: var(--el-font-weight-bold);
+  color: var(--el-color-text);
+}
+
+.brand-logo {
+  display: block;
+  inline-size: auto;
+  block-size: 32px;
+  aspect-ratio: 2172 / 724;
+  object-fit: contain;
+  max-inline-size: 100%;
+}
+
+.brand-fallback-text {
+  font-family: inherit;
+  font-weight: var(--el-font-weight-bold);
+  font-size: var(--el-font-size-h2);
+  color: var(--el-color-text);
+}
+
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.625rem;
+  border-radius: var(--el-radius-pill);
+  background-color: var(--el-color-info-soft);
+  color: var(--el-color-info);
+  font-size: var(--el-font-size-caption);
+  font-weight: var(--el-font-weight-semibold);
+  letter-spacing: 0.01em;
+}
+
+.btn-sidebar-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 36px;
+  block-size: 36px;
+  margin-inline-start: 0.5rem;
+  background-color: var(--el-color-primary);
+  color: var(--el-color-surface);
+  border: none;
+  border-radius: var(--el-radius-md);
+  cursor: pointer;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    background-color: var(--el-color-primary-hover);
+    box-shadow: var(--el-elevation-subtle);
+  }
+
+  &:focus-visible {
+    outline: var(--el-focus-ring-width) solid var(--el-color-focus);
+    outline-offset: var(--el-focus-ring-offset);
+  }
+}
+
+/* Layout */
+.shell-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-block: 1.75rem;
+}
+
+@media (min-width: 860px) {
+  .shell-layout {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 2rem;
+    align-items: start;
+    padding-block: 2rem;
+  }
+}
+
+.shell-sidebar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 860px) {
+  .shell-sidebar {
+    position: sticky;
+    inset-block-start: 5.5rem;
+  }
+}
+
+/* Collapsed state, driven by the header toggle. */
+.sidebar-is-collapsed .shell-sidebar {
+  display: none;
+}
+
+@media (min-width: 860px) {
+  .sidebar-is-collapsed .shell-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.sidebar-card {
+  background: var(--el-color-surface);
+  border: 1px solid var(--el-color-border);
+  border-radius: var(--el-radius-lg);
+  padding: 1.5rem 1rem;
+  box-shadow: var(--el-elevation-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Profile card */
+.sidebar-profile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-bottom: 0.5rem;
+}
+
+.sidebar-avatar-wrap {
+  inline-size: 64px;
+  block-size: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-block-end: 0.75rem;
+  box-shadow: var(--el-elevation-subtle);
+  border: 2px solid var(--el-color-surface);
+  background-color: var(--el-color-surface-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-avatar-img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.sidebar-avatar-fallback {
+  inline-size: 100%;
+  block-size: 100%;
+  background: linear-gradient(135deg, var(--el-color-info-soft) 0%, var(--el-color-surface-muted) 100%);
+  color: var(--el-color-info);
+  font-size: 1.5rem;
+  font-weight: var(--el-font-weight-bold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-user-details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  max-inline-size: 100%;
+}
+
+.sidebar-user-greeting {
+  font-size: var(--el-font-size-body);
+  font-weight: var(--el-font-weight-bold);
+  color: var(--el-color-text);
+}
+
+.sidebar-user-email {
+  font-size: 0.8125rem;
+  color: var(--el-color-text-secondary);
+  max-inline-size: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Navigation */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-block-size: var(--el-touch-target-min);
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--el-radius-md);
+  color: var(--el-color-text-secondary);
+  text-decoration: none;
+  font-size: 0.925rem;
+  font-weight: var(--el-font-weight-medium);
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  .nav-item-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .nav-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: currentColor;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background-color: var(--el-color-surface-muted);
+    color: var(--el-color-text);
+  }
+
+  &.is-active {
+    background-color: var(--el-color-primary);
+    color: var(--el-color-surface);
+    font-weight: var(--el-font-weight-semibold);
+
+    .nav-icon {
+      color: var(--el-color-surface);
+    }
+
+    .nav-chevron {
+      color: var(--el-color-surface);
+    }
+  }
+
+  &:focus-visible {
+    outline: var(--el-focus-ring-width) solid var(--el-color-focus);
+    outline-offset: 1px;
+  }
+}
+
+.sidebar-nav-item--parent {
+  inline-size: 100%;
+  box-sizing: border-box;
+}
+
+.nav-chevron {
+  color: var(--el-color-text-disabled);
+  transition: transform 0.2s ease;
+}
+
+/* Footer / logout */
+.sidebar-footer {
+  border-block-start: 1px solid var(--el-color-border);
+  padding-block-start: 1rem;
+}
+
+.sidebar-logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  inline-size: 100%;
+  min-block-size: 40px;
+  padding: 0.5rem 0.875rem;
+  background: transparent;
+  border: none;
+  border-radius: var(--el-radius-md);
+  color: var(--el-color-text-secondary);
+  font-family: inherit;
+  font-size: var(--el-font-size-body-small);
+  font-weight: var(--el-font-weight-medium);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background-color: var(--el-color-danger-soft);
+    color: var(--el-color-danger);
+  }
+
+  &:focus-visible {
+    outline: var(--el-focus-ring-width) solid var(--el-color-focus);
+    outline-offset: 1px;
+  }
+}
+
+.shell-main {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.shell-footer {
+  background-color: var(--el-color-surface);
+  border-block-start: 1px solid var(--el-color-border);
+  padding-block: 1.5rem;
+  font-size: var(--el-font-size-body-small);
+  margin-block-start: auto;
+}
+
+.footer-inner {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+
+.footer-text {
+  margin: 0;
+  color: var(--el-color-text-secondary);
+  font-size: var(--el-font-size-body-small);
+}

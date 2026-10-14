@@ -12,6 +12,7 @@ export * from './report-queue.component.js';
 export * from './report-detail.component.js';
 export * from './admin-moderation-panel.component.js';
 export * from './admin-app-shell.component.js';
+export * from './admin-console-shell.component.js';
 export * from './admin-session.service.js';
 export * from './admin-session.guard.js';
 export * from './admin-read-only-shell.component.js';
