@@ -9,7 +9,7 @@ import {
   Res
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { extractAdminSessionCookie } from '@eventlens/identity';
+import { extractHostAdminSessionCookie } from '@eventlens/identity';
 import { errorSchema } from '../platform/health/health.controller.js';
 import { AdminSessionService } from './admin-session.service.js';
 
@@ -137,7 +137,7 @@ export class AdminSessionController {
     const cookieHeader = Array.isArray(rawCookieHeader)
       ? rawCookieHeader.join('; ')
       : rawCookieHeader;
-    const sessionToken = extractAdminSessionCookie(cookieHeader);
+    const sessionToken = extractHostAdminSessionCookie(cookieHeader);
 
     const projection = await this.sessionService.getSessionProjection(sessionToken);
     response.setHeader('Cache-Control', 'no-store');
@@ -163,7 +163,7 @@ export class AdminSessionController {
     const cookieHeader = Array.isArray(rawCookieHeader)
       ? rawCookieHeader.join('; ')
       : rawCookieHeader;
-    const sessionToken = extractAdminSessionCookie(cookieHeader);
+    const sessionToken = extractHostAdminSessionCookie(cookieHeader);
     const originHeader = readSingleHeader(request.headers, 'origin');
     const clientHeader = readSingleHeader(request.headers, 'x-eventlens-admin-client');
 
@@ -195,7 +195,7 @@ export class AdminSessionController {
     const cookieHeader = Array.isArray(rawCookieHeader)
       ? rawCookieHeader.join('; ')
       : rawCookieHeader;
-    const sessionToken = extractAdminSessionCookie(cookieHeader);
+    const sessionToken = extractHostAdminSessionCookie(cookieHeader);
     const originHeader = readSingleHeader(request.headers, 'origin');
     const csrfToken = readSingleHeader(request.headers, 'x-csrf-token');
 

@@ -313,13 +313,13 @@ describe('EL-TK-147: AdminEventDetailService (Unit Tests)', () => {
       ).rejects.toMatchObject({ code: 'INVALID_ARGUMENT' });
     });
 
-    it('Rechaza si el evento no existe en base de datos (INVALID_ARGUMENT)', async () => {
+    it('Rechaza si el evento no existe en base de datos (NOT_FOUND)', async () => {
       await expect(
         service.getEventDetail({
           actorContext: validAdminContext,
           eventId: randomUUID()
         })
-      ).rejects.toMatchObject({ code: 'INVALID_ARGUMENT' });
+      ).rejects.toMatchObject({ code: 'NOT_FOUND' });
     });
   });
 
