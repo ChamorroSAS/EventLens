@@ -303,3 +303,11 @@ Referencias primarias de mecanismos/protocolos, no selección comercial/versiona
 
 **CONFIRMED — DEC-106 / [EL-TD-008](technical-baseline.md#el-td-008--local-environment-and-beta-topology):** la obligación de separación física DB/app derivada de ARCH-001 y DEC-061 queda SUPERSEDED sólo para Beta. No cambia el monolito, ownership, transacciones, jobs ni storage Beta externo. Docker fue candidato experimental en esta actualización; ARCH-015 (2026-10-09) adopta posteriormente el mecanismo multimedia tras los PASS locales060/061, sin dar por implementados/verificados los adapters productivos de ARCH-005/006. CAP-001/DR-001 deben ensayar contención y recuperación de app+DB co-localizadas; ningún gate se declara PASS.
 
+## DEC-112 — Persistencia independiente y duradera de RecoveryAuthority fuera de PITR
+
+- **Status:** RECOMMENDED — 2026-10-13, propuesta técnica formal y laboratorio de viabilidad para EL-TK-222.
+- **Decisión:** MOD-001/009 adopta journal append-only con encadenamiento criptográfico SHA-256 (`recordHash`), checkpoints consistentes con reemplazo atómico (`atomic rename`) y protocolo `PREPARE → SQL → ACK` con `fsync` síncrono en volumen/directorio aislado del tablespace y del backup de PostgreSQL.
+- **Fuente de verdad:** [DEC-112](dec-112-recovery-authority-persistence.md); contrato operacional de journal, checkpoints, epochs y reconciliación post-PITR.
+- **Impacto:** Resuelve el bloqueo operacional de EL-TK-222; garantiza que la restauración de un snapshot histórico de PostgreSQL nunca resucite credenciales o sesiones revocadas; comportamiento fail-closed ante indisponibilidad o corrupción.
+
+
