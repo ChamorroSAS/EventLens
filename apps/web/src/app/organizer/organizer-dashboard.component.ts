@@ -19,6 +19,7 @@ import {
 import { OrganizerSessionService } from '../organizer-session.service';
 
 import { EventScheduleSectionComponent } from './event-schedule-section.component.js';
+import { EventTimezoneSectionComponent } from './event-timezone-section.component.js';
 
 @Component({
   selector: 'eventlens-organizer-dashboard',
@@ -29,7 +30,8 @@ import { EventScheduleSectionComponent } from './event-schedule-section.componen
     EventSettingsNavComponent,
     EventStatusBadgeComponent,
     OrganizerMediaLibraryComponent,
-    EventScheduleSectionComponent
+    EventScheduleSectionComponent,
+    EventTimezoneSectionComponent
   ],
   template: `
     <eventlens-organizer-app-shell
@@ -143,13 +145,22 @@ import { EventScheduleSectionComponent } from './event-schedule-section.componen
                     </div>
                   }
                   @case ('schedule') {
-                    <eventlens-event-schedule-section
-                      [event]="selectedEvent() ?? undefined"
-                      [revision]="selectedEventConfig()?.revision"
-                      [canEdit]="!!(selectedEventConfig()?.capabilities?.canSetLocalSchedule || selectedEventConfig()?.capabilities?.canEditSchedule)"
-                      (saved)="onScheduleSaved()"
-                      (reconcile)="onReconcileEvent()"
-                    />
+                    <div class="schedule-tab-sections">
+                      <eventlens-event-timezone-section
+                        [event]="selectedEvent() ?? undefined"
+                        [revision]="selectedEventConfig()?.revision"
+                        [canEdit]="!!(selectedEventConfig()?.capabilities?.canChangeTimezone ?? (selectedEvent()?.status === 'DRAFT' || selectedEvent()?.status === 'SCHEDULED'))"
+                        (saved)="onTimezoneSaved()"
+                        (reconcile)="onReconcileEvent()"
+                      />
+                      <eventlens-event-schedule-section
+                        [event]="selectedEvent() ?? undefined"
+                        [revision]="selectedEventConfig()?.revision"
+                        [canEdit]="!!(selectedEventConfig()?.capabilities?.canSetLocalSchedule || selectedEventConfig()?.capabilities?.canEditSchedule)"
+                        (saved)="onScheduleSaved()"
+                        (reconcile)="onReconcileEvent()"
+                      />
+                    </div>
                   }
                   @case ('access') {
                     <div class="section-card">
@@ -275,6 +286,13 @@ export class OrganizerDashboardComponent implements OnInit {
   }
 
   async onScheduleSaved(): Promise<void> {
+    const id = this.selectedEventId();
+    if (id) {
+      await this.refreshSelectedEvent(id);
+    }
+  }
+
+  async onTimezoneSaved(): Promise<void> {
     const id = this.selectedEventId();
     if (id) {
       await this.refreshSelectedEvent(id);

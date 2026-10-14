@@ -202,3 +202,9 @@
   font-weight: var(--el-font-weight-medium);
   margin: var(--el-space-sm) 0 0 0;
 }
+
+.schedule-tab-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--el-space-lg);
+}
