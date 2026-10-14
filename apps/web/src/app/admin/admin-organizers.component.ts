@@ -1,15 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { AdminConsoleShellComponent } from './admin-console-shell.component.js';
 import { AdminSessionService } from './admin-session.service.js';
 import { AdminOrganizersApiService, type OrganizerSummary } from './admin-organizers-api.service.js';
 
 @Component({
-  selector: 'eventlens-admin-organizers', standalone: true, imports: [CommonModule, RouterLink],
+  selector: 'eventlens-admin-organizers', standalone: true, imports: [CommonModule, RouterLink, AdminConsoleShellComponent],
   template: `
-    <main class="organizers" aria-labelledby="organizers-title">
-      <header class="top"><div><p class="eyebrow">Phoeve · Consola administrativa</p><h1 id="organizers-title">Organizadores Beta</h1></div><button (click)="logout()">Cerrar sesión</button></header>
-      <nav aria-label="Administración"><a routerLink="/admin/eventos">Eventos</a><a routerLink="/admin/organizadores" aria-current="page">Organizadores</a></nav>
+    <eventlens-admin-console-shell activeNav="organizadores">
+      <section class="organizers" aria-labelledby="organizers-title">
+        <h1 id="organizers-title">Organizadores Beta</h1>
       @if (session.state() === 'ADMIN_ACTIVE' && !session.isRevalidating()) {
         <section class="toolbar"><div><h2>Acceso a la Beta</h2><p>Crea cuentas y administra su acceso. Los eventos se conservan al deshabilitar una cuenta.</p></div><button class="primary" (click)="openCreate()">Crear organizador</button></section>
         <form class="search" (submit)="search($event)"><label for="organizer-search">Buscar por correo o nombre</label><div><input id="organizer-search" [value]="query()" (input)="query.set(value($event))" maxlength="200" /><button type="submit" [disabled]="loading()">Buscar</button></div></form>
@@ -47,7 +48,8 @@ import { AdminOrganizersApiService, type OrganizerSummary } from './admin-organi
           </form>
         }
       </dialog>
-    </main>
+      </section>
+    </eventlens-admin-console-shell>
   `,
   styles: [`
     :host { display:block; } .organizers{max-width:72rem;margin:auto;padding:1.5rem;color:var(--el-color-text);font-family:var(--el-font-family)} .top,.toolbar,.pagination{display:flex;align-items:center;justify-content:space-between;gap:1rem}.top{border-bottom:1px solid var(--el-color-border);padding-bottom:1rem}.eyebrow,small{color:var(--el-color-text-secondary)}h1{font-size:clamp(1.5rem,4vw,2rem);margin:0}h2{font-size:1.25rem}nav{display:flex;gap:1.5rem;padding:1rem 0}nav a{color:var(--el-color-text);text-decoration:none;padding:.5rem 0}nav a[aria-current]{border-bottom:3px solid var(--el-color-primary);font-weight:600}.toolbar{margin:1rem 0}.toolbar p{max-width:38rem;color:var(--el-color-text-secondary)}button,input,textarea{font:inherit}button{min-height:2.75rem;padding:.55rem 1rem;border:1px solid var(--el-color-border);border-radius:.5rem;background:var(--el-color-surface);color:var(--el-color-text);cursor:pointer}button.primary{background:var(--el-color-primary);color:#fff;border-color:var(--el-color-primary)}button:disabled{opacity:.6;cursor:default}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--el-color-primary);outline-offset:3px}input,textarea{width:100%;box-sizing:border-box;padding:.7rem;border:1px solid var(--el-color-border);border-radius:.5rem;background:var(--el-color-surface);color:var(--el-color-text)}label{display:block;font-weight:500;margin:.9rem 0 .35rem}.search{max-width:36rem;margin:1rem 0}.search div{display:flex;gap:.75rem}.table{border:1px solid var(--el-color-border);border-radius:.75rem;overflow:hidden}table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:1rem;border-bottom:1px solid var(--el-color-border)}th{background:var(--el-color-surface-muted,#f4f4f1)}td span,td small{display:block;margin-top:.25rem;overflow-wrap:anywhere}.badge{font-size:.875rem}.pagination{padding:1rem 0}.pagination div,.actions{display:flex;gap:.75rem;flex-wrap:wrap}.empty{border:1px solid var(--el-color-border);padding:2rem;border-radius:.75rem}.error,.notice,.confirm{padding:1rem;background:var(--el-color-surface-muted,#f4f4f1);border:1px solid var(--el-color-border);border-radius:.5rem}.error{border-color:var(--el-color-danger,#c94a4a)}dialog{width:min(32rem,calc(100vw - 3rem));max-height:85dvh;overflow:auto;border:1px solid var(--el-color-border);border-radius:1rem;padding:1.5rem;color:var(--el-color-text);background:var(--el-color-surface)}dialog::backdrop{background:rgba(23,32,42,.45)}dialog .actions{margin-top:1rem}.confirm{margin-top:1rem}textarea{min-height:5rem}small{display:block;margin:.3rem 0}@media(max-width:639px){.organizers{padding:1rem}.top,.toolbar{align-items:stretch;flex-direction:column}.table,table,tbody,tr,td{display:block}thead{display:none}tr{padding:.75rem;border-bottom:1px solid var(--el-color-border)}td{padding:.4rem 0;border:0}td::before{content:attr(data-label);display:block;font-size:.8rem;color:var(--el-color-text-secondary)}.pagination{align-items:stretch;flex-direction:column}dialog{margin:auto auto 0;width:100%;max-height:90dvh;box-sizing:border-box;border-radius:1rem 1rem 0 0}}`
