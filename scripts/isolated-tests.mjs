@@ -228,6 +228,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     api: ['pnpm', ['--filter', '@eventlens/api', 'test:integration']],
     'organizer-panels': ['pnpm', ['--filter', '@eventlens/api', 'exec', 'vitest', 'run', 'test/integration/organizer-account-and-events.test.ts']],
     'admin-read-only': ['pnpm', ['--filter', '@eventlens/api', 'exec', 'vitest', 'run', 'test/integration/admin-read-only.test.ts']],
+    'admin-transport-denial': ['pnpm', ['--filter', '@eventlens/api', 'exec', 'vitest', 'run', 'test/integration/admin-transport-denial.test.ts']],
     'admin-support-read': ['pnpm', ['--filter', '@eventlens/admin-support', 'exec', 'vitest', 'run', 'test/admin-search.integration.test.ts', 'test/admin-event-detail.integration.test.ts', '--no-file-parallelism']],
     'event-draft-panels': ['pnpm', ['--filter', '@eventlens/event-management', 'exec', 'vitest', 'run', 'test/event-draft-receipts.integration.test.ts', 'test/event-draft-revision-cas.integration.test.ts', 'test/event-draft-timezone-preview.integration.test.ts', '--no-file-parallelism']],
     e2e: ['pnpm', ['--filter', '@eventlens/e2e', 'test']],
