@@ -16,10 +16,10 @@ import { OrganizerSessionService } from '../organizer-session.service.js';
         <div class="shell-container header-inner">
           <div class="brand-area">
             <a
-              [href]="myEventsPath"
-              (click)="onNavigate($event, myEventsPath)"
+              [href]="homePath"
+              (click)="onNavigate($event, homePath)"
               class="brand-link"
-              aria-label="Ir a Mis eventos"
+              aria-label="Ir al inicio de Phoeve"
             >
               <div class="brand-title">
                 @if (!logoFailed) {
@@ -37,6 +37,27 @@ import { OrganizerSessionService } from '../organizer-session.service.js';
               </div>
             </a>
             <span class="brand-badge">Organizador</span>
+
+            <nav class="header-nav" aria-label="Navegación principal superior">
+              <a
+                [href]="homePath"
+                (click)="onNavigate($event, homePath)"
+                class="header-nav-link"
+                aria-label="Ir a Inicio"
+              >
+                Inicio
+              </a>
+              <span class="header-nav-sep" aria-hidden="true">/</span>
+              <a
+                [href]="myEventsPath"
+                (click)="onNavigate($event, myEventsPath)"
+                class="header-nav-link"
+                [class.is-active]="activeNav === 'events'"
+                aria-label="Ir a Mis eventos"
+              >
+                Mis eventos
+              </a>
+            </nav>
           </div>
 
           <div class="header-right">
@@ -150,6 +171,7 @@ export class OrganizerAppShellComponent {
 
   readonly myEventsPath = APPROVED_PUBLIC_ENTRY_PATHS.ORGANIZER_DASHBOARD;
   readonly myAccountPath = APPROVED_PUBLIC_ENTRY_PATHS.ORGANIZER_ACCOUNT;
+  readonly homePath = APPROVED_PUBLIC_ENTRY_PATHS.HOME;
 
   logoFailed = false;
 
