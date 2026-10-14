@@ -99,6 +99,8 @@
                 }
               }
               @case ('schedule') {
+                <p class="capability-notice">Guardar la fecha mantiene el evento como borrador. En «Ciclo de vida» puedes programarlo y activarlo.</p>
+                <button type="button" class="btn-retry" (click)="onSectionChange('lifecycle')">Ir a publicación y activación</button>
                 <div class="schedule-tab-sections">
                   <eventlens-event-timezone-section
                     [event]="selectedEvent() ?? undefined"
@@ -117,6 +119,14 @@
                 </div>
               }
               @case ('access') {
+                @if (selectedEventConfig(); as configuration) {
+                  <eventlens-event-share-access
+                    [eventId]="configuration.event.id"
+                    [status]="configuration.event.status"
+                    [revision]="configuration.revision"
+                    (refreshed)="onReconcileEvent()"
+                  />
+                }
                 <div class="section-card">
                   <h3>Acceso y protección por PIN</h3>
                   <p>Protección por PIN: {{ selectedEvent()?.pinEnabled ? 'Activa' : 'Desactivada' }}</p>
@@ -133,10 +143,13 @@
                 </div>
               }
               @case ('lifecycle') {
-                <div class="section-card">
-                  <h3>Ciclo de vida</h3>
-                  <p>Vigencia y transiciones temporales del evento.</p>
-                </div>
+                @if (selectedEventId() && selectedEventConfig()?.capabilities?.canViewLifecycle) {
+                  <eventlens-event-lifecycle-actions
+                    [eventId]="selectedEventId()!"
+                    [revision]="selectedEventConfig()?.revision"
+                    (updated)="onReconcileEvent()"
+                  />
+                }
               }
               @case ('capacity') {
                 <div class="section-card">

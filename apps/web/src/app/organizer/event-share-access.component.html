@@ -1,0 +1,30 @@
+<section class="share-card" aria-labelledby="organizer-share-title" [attr.aria-busy]="loading() || saving()">
+  <h3 id="organizer-share-title">QR y tarjetas de invitación</h3>
+  @if (!canPrepare) {
+    <p>Programa el evento en «Ciclo de vida» para preparar el QR antes de la apertura.</p>
+  } @else {
+    @if (status === 'SCHEDULED') {
+      <p>Puedes descargar el QR e imprimir las tarjetas desde ahora. El mismo QR seguirá vigente al activar el evento; antes de la apertura, los invitados verán que aún no inicia.</p>
+    }
+    @if (loading()) { <p role="status">Consultando el acceso vigente…</p> }
+    @if (error()) { <p class="notice error" role="alert">{{ error() }}</p> }
+    @if (announcement()) { <p role="status">{{ announcement() }}</p> }
+    @if (snapshot(); as current) {
+      @if (isLocalLink) {
+        <p class="notice" role="status">Este QR apunta a localhost y solo sirve para pruebas en tu equipo. Antes de imprimir las tarjetas definitivas, configura la URL pública y vuelve a descargar el QR.</p>
+      }
+      <img class="qr-preview" [src]="qrSource" alt="Código QR de acceso al evento" width="240" height="240" />
+      <label for="organizer-share-link">Enlace de invitados</label>
+      <input id="organizer-share-link" type="text" readonly [value]="current.shareUrl" />
+      <div class="actions">
+        <button type="button" (click)="copyLink()">Copiar enlace</button>
+        <button type="button" class="primary" (click)="download()">Descargar QR (SVG)</button>
+      </div>
+      <p>El SVG conserva su calidad al imprimirlo. Si se cambia o regenera el enlace en el futuro, habrá que sustituir las tarjetas anteriores.</p>
+    } @else if ((missing() || uncertain()) && !needsRefresh()) {
+      <button type="button" class="primary" (click)="prepare()" [disabled]="saving() || loading()">{{ saving() ? 'Preparando…' : uncertain() ? 'Reintentar la misma operación' : 'Crear QR' }}</button>
+    }
+    @if (needsRefresh()) { <button type="button" (click)="refreshConfiguration()" [disabled]="saving() || loading()">Actualizar datos del evento</button> }
+    @if (!loading()) { <button type="button" (click)="load()" [disabled]="saving()">Consultar QR</button> }
+  }
+</section>

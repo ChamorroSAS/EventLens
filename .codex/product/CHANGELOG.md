@@ -1,5 +1,7 @@
 # Product backlog changelog
 
+- 2026-10-14: CR-009 `CHANGE_READY` y EL-TK-243 `READY`: autorizados de forma acotada derivados PNG 2x de los wordmarks Phoeve (excepción limitada a `modifyVectorizeRecolorOrReplace: NOT_AUTHORIZED` de CR-006), con originales byte-idénticos y sin cambio de arte. Manifiesto a `schemaVersion: 2` con `derivatives[]`/`derivativeGeneration` y token de opt-in endurecido; extensión del contrato de marca promovida a vigente. Gates de requisitos y arquitectura APPROVED (revisión 4-final, rondas 6-7); reparación de los dos verificadores de marca dentro del alcance de EL-TK-243 (ratificada por el owner). Sin código ni cambio de identidad. [CR-009](changes/CR-009.md).
+
 - 2026-10-13: CR-007/EL-EP-019 planificación MVP registrada; arquitectura/security planning y UI aprobados, ticketización218..238/Gate2 en sesión. Activación auth BLOCKED RA real, ejecución independiente permitida según dependencias. Sin código funcional ni reapertura DONE.
 
 - 2026-10-13: CR-005 entregado: EL-TK-215/216 DONE, EL-TK-217 BLOCKED por autorización externa; guardas/runner PostgreSQL, bootstrap atómico local y operación documentada. Evidencia aislada y revisión APPROVED; sin datos reales ni tickets históricos modificados.

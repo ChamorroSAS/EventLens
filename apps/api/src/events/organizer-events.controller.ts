@@ -6,6 +6,7 @@ import {
   ForbiddenException,
   Get,
   HttpException,
+  HttpCode,
   Inject,
   Injectable,
   NotFoundException,
@@ -24,7 +25,6 @@ import { ApiBody, ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from
 import {
   EventDraftService,
   EventManagementError,
-  EventPublicAccessService,
   type AuthorizedEventConfiguration,
   type CommandReceipt,
   type OrganizerEventSummary,
@@ -34,6 +34,7 @@ import type { PlatformConfig } from '../platform/config/config.js';
 import { resolveAuthoritativeShareBaseUrl } from '../platform/config/public-entry-serving.js';
 import { DatabaseService } from '../platform/database/database.service.js';
 import { errorSchema } from '../platform/health/health.controller.js';
+import { OrganizerEventLifecycleAdapter, type LifecycleRequest } from './organizer-event-lifecycle.js';
 import {
   ORGANIZER_SESSION_CONFIG,
   OrganizerSessionService,
@@ -137,7 +138,7 @@ function serializeOrganizerEventSummary(summary: OrganizerEventSummary): Seriali
 @Injectable()
 export class OrganizerEventsService {
   private readonly eventDraftService: EventDraftService;
-  private readonly publicAccessService: EventPublicAccessService;
+  private readonly lifecycle: OrganizerEventLifecycleAdapter;
 
   constructor(
     @Inject(ORGANIZER_SESSION_CONFIG) private readonly config: PlatformConfig,
@@ -145,7 +146,25 @@ export class OrganizerEventsService {
     @Inject(OrganizerSessionService) private readonly sessionService: OrganizerSessionService
   ) {
     this.eventDraftService = new EventDraftService(this.database.transactions);
-    this.publicAccessService = new EventPublicAccessService(this.database.transactions);
+    this.lifecycle = new OrganizerEventLifecycleAdapter(this.database.transactions, this.sessionService);
+  }
+
+  async getLifecycle(request: LifecycleRequest) {
+    try { return await this.lifecycle.snapshot(request); }
+    catch (error) { this.rethrowEventError(error, true); }
+  }
+
+  async executeLifecycle(action: 'schedule' | 'activate', request: LifecycleRequest) {
+    try { return await this.lifecycle.command(action, request); }
+    catch (error) {
+      if (error instanceof EventManagementError && ['EVENT_NOT_IN_DRAFT', 'EVENT_NOT_IN_SCHEDULED', 'INVALID_STATE', 'CONCURRENCY_CONFLICT', 'IDEMPOTENCY_CONFLICT'].includes(error.code)) {
+        throw new ConflictException({ code: error.code, message: 'Event lifecycle command cannot be applied' });
+      }
+      if (error instanceof EventManagementError && (error.code === 'SCHEDULE_NOT_CONFIGURED' || error.code === 'INCOMPLETE_CONFIGURATION')) {
+        throw new UnprocessableEntityException({ code: error.code, message: 'Event configuration is incomplete' });
+      }
+      this.rethrowEventError(error, true);
+    }
   }
 
   async listEvents(cookieHeader?: string): Promise<SerializedOrganizerEventSummary[]> {
@@ -196,12 +215,6 @@ export class OrganizerEventsService {
     untrustedBaseUrlOverride?: unknown;
     untrustedHostOverride?: unknown;
   }): Promise<ShareAccessSnapshotResult> {
-    const sessionToken = extractOrganizerSessionCookie(params.cookieHeader);
-    const validated = await this.sessionService.validateReadOrganizerSession({
-      sessionToken,
-      requireOrdinarySession: true
-    });
-
     let authoritativeBaseUrl: string;
     try {
       authoritativeBaseUrl = resolveAuthoritativeShareBaseUrl({
@@ -214,14 +227,15 @@ export class OrganizerEventsService {
     }
 
     try {
-      return await this.publicAccessService.getShareAccessSnapshot({
-        actorContext: validated.actorContext,
-        eventId: params.eventId,
-        baseUrl: authoritativeBaseUrl
-      });
+      return await this.lifecycle.shareSnapshot({ eventId: params.eventId, cookieHeader: params.cookieHeader }, authoritativeBaseUrl);
     } catch (error) {
-      this.rethrowEventError(error);
+      this.rethrowEventError(error, true);
     }
+  }
+
+  async prepareShareAccess(request: LifecycleRequest) {
+    try { return await this.lifecycle.prepareShare(request); }
+    catch (error) { this.rethrowEventError(error, true); }
   }
 
   async createEvent(params: {
@@ -786,12 +800,84 @@ const UpdateEventNameResponseSchema = {
   }
 };
 
+const LifecycleSnapshotSchema = {
+  type: 'object',
+  required: ['eventId', 'status', 'timezone', 'startsAtLocal', 'scheduledAt', 'expiresAt', 'graceEndsAt', 'revision', 'validityDurationDays', 'graceDays', 'capabilities'],
+  properties: {
+    eventId: { type: 'string' }, status: EventSummarySchema.properties.status,
+    timezone: { type: 'string' }, startsAtLocal: { type: 'string', nullable: true },
+    scheduledAt: { type: 'string', format: 'date-time', nullable: true },
+    expiresAt: { type: 'string', format: 'date-time', nullable: true },
+    graceEndsAt: { type: 'string', format: 'date-time', nullable: true },
+    revision: { type: 'string' }, validityDurationDays: { type: 'number' }, graceDays: { type: 'number' },
+    capabilities: { type: 'object', required: ['canSchedule', 'canActivateEarly'], properties: { canSchedule: { type: 'boolean' }, canActivateEarly: { type: 'boolean' } } }
+  }
+};
+const LifecycleCommandBodySchema = { type: 'object', additionalProperties: false, required: ['expectedRevision'], properties: { expectedRevision: { type: 'string', pattern: '^[1-9]\\d*$' } } };
+const LifecycleCommandResultSchema = { type: 'object', required: ['eventId', 'outcome'], properties: { eventId: { type: 'string' }, outcome: { type: 'string', enum: ['SCHEDULED', 'ACTIVATED', 'IDEMPOTENT_REPLAY'] } } };
+const PrepareShareAccessResultSchema = { type: 'object', required: ['eventId', 'outcome'], properties: { eventId: { type: 'string' }, outcome: { type: 'string', enum: ['ISSUED', 'IDEMPOTENT_REPLAY'] } } };
+
 @ApiTags('organizer-events')
 @Controller('events')
 export class OrganizerEventsController {
   constructor(
     @Inject(OrganizerEventsService) private readonly eventsService: OrganizerEventsService
   ) {}
+
+  private lifecycleRequest(eventId: string, request: HttpRequest, response: HttpResponse, body?: unknown): LifecycleRequest {
+    response.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    response.setHeader('Pragma', 'no-cache');
+    const header = (name: string) => typeof request.headers?.[name] === 'string' ? request.headers[name] as string : undefined;
+    return { eventId, body, cookieHeader: header('cookie'), originHeader: header('origin'), csrfToken: header('x-csrf-token'), idempotencyKey: header('idempotency-key') };
+  }
+
+  @Get(':eventId/lifecycle')
+  @ApiOperation({ operationId: 'getOrganizerEventLifecycle', summary: 'Obtener ciclo de vida y capacidades del evento propio' })
+  @ApiParam({ name: 'eventId', type: 'string' })
+  @ApiResponse({ status: 200, schema: LifecycleSnapshotSchema })
+  @ApiResponse({ status: 401, schema: errorSchema })
+  @ApiResponse({ status: 403, schema: errorSchema })
+  @ApiResponse({ status: 404, schema: errorSchema })
+  @ApiResponse({ status: 503, schema: errorSchema })
+  getLifecycle(@Param('eventId') eventId: string, @Req() request: HttpRequest, @Res({ passthrough: true }) response: HttpResponse) {
+    return this.eventsService.getLifecycle(this.lifecycleRequest(eventId, request, response));
+  }
+
+  @Post(':eventId/lifecycle/schedule')
+  @HttpCode(200)
+  @ApiOperation({ operationId: 'scheduleOrganizerEvent', summary: 'Publicar el borrador con la fecha guardada' })
+  @ApiParam({ name: 'eventId', type: 'string' })
+  @ApiHeader({ name: 'Idempotency-Key', required: true })
+  @ApiBody({ schema: LifecycleCommandBodySchema })
+  @ApiResponse({ status: 200, schema: LifecycleCommandResultSchema })
+  @ApiResponse({ status: 400, schema: errorSchema })
+  @ApiResponse({ status: 401, schema: errorSchema })
+  @ApiResponse({ status: 403, schema: errorSchema })
+  @ApiResponse({ status: 404, schema: errorSchema })
+  @ApiResponse({ status: 409, schema: errorSchema })
+  @ApiResponse({ status: 422, schema: errorSchema })
+  @ApiResponse({ status: 503, schema: errorSchema })
+  scheduleLifecycle(@Param('eventId') eventId: string, @Body() body: unknown, @Req() request: HttpRequest, @Res({ passthrough: true }) response: HttpResponse) {
+    return this.eventsService.executeLifecycle('schedule', this.lifecycleRequest(eventId, request, response, body));
+  }
+
+  @Post(':eventId/lifecycle/activate')
+  @HttpCode(200)
+  @ApiOperation({ operationId: 'activateOrganizerEvent', summary: 'Activar manualmente el evento programado' })
+  @ApiParam({ name: 'eventId', type: 'string' })
+  @ApiHeader({ name: 'Idempotency-Key', required: true })
+  @ApiBody({ schema: LifecycleCommandBodySchema })
+  @ApiResponse({ status: 200, schema: LifecycleCommandResultSchema })
+  @ApiResponse({ status: 400, schema: errorSchema })
+  @ApiResponse({ status: 401, schema: errorSchema })
+  @ApiResponse({ status: 403, schema: errorSchema })
+  @ApiResponse({ status: 404, schema: errorSchema })
+  @ApiResponse({ status: 409, schema: errorSchema })
+  @ApiResponse({ status: 422, schema: errorSchema })
+  @ApiResponse({ status: 503, schema: errorSchema })
+  activateLifecycle(@Param('eventId') eventId: string, @Body() body: unknown, @Req() request: HttpRequest, @Res({ passthrough: true }) response: HttpResponse) {
+    return this.eventsService.executeLifecycle('activate', this.lifecycleRequest(eventId, request, response, body));
+  }
 
   @Post()
   @ApiOperation({
@@ -964,6 +1050,23 @@ export class OrganizerEventsController {
       untrustedBaseUrlOverride,
       untrustedHostOverride
     });
+  }
+
+  @Post(':eventId/share-access')
+  @HttpCode(200)
+  @ApiOperation({ operationId: 'prepareOrganizerEventShareAccess', summary: 'Preparar el enlace y QR inicial del evento programado o activo' })
+  @ApiParam({ name: 'eventId', type: 'string' })
+  @ApiHeader({ name: 'Idempotency-Key', required: true })
+  @ApiBody({ schema: LifecycleCommandBodySchema })
+  @ApiResponse({ status: 200, schema: PrepareShareAccessResultSchema })
+  @ApiResponse({ status: 400, schema: errorSchema })
+  @ApiResponse({ status: 401, schema: errorSchema })
+  @ApiResponse({ status: 403, schema: errorSchema })
+  @ApiResponse({ status: 404, schema: errorSchema })
+  @ApiResponse({ status: 409, schema: errorSchema })
+  @ApiResponse({ status: 503, schema: errorSchema })
+  prepareShareAccess(@Param('eventId') eventId: string, @Body() body: unknown, @Req() request: HttpRequest, @Res({ passthrough: true }) response: HttpResponse) {
+    return this.eventsService.prepareShareAccess(this.lifecycleRequest(eventId, request, response, body));
   }
 
   @Put(':eventId/configuration/schedule')
