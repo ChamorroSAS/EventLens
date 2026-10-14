@@ -38,9 +38,13 @@
     "test:identity:validation": "node scripts/workspace.mjs identity-validation",
     "admin:bootstrap": "node scripts/workspace.mjs admin-bootstrap",
     "admin:status": "node scripts/workspace.mjs admin-status",
-    "admin:recover": "node scripts/workspace.mjs admin-recover"
+    "admin:recover": "node scripts/workspace.mjs admin-recover",
+    "assets:webp": "node scripts/convert-images-to-webp.mjs"
   },
   "engines": {
     "node": ">=22.0.0"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.5"
   }
 }
