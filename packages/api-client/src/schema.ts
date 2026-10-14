@@ -85,6 +85,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Iniciar sesión administrativa con credenciales de alta entropía */
+        post: operations["loginAdminSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/auth/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obtener la proyección mínima de la sesión administrativa activa */
+        get: operations["getAdminSession"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/auth/session-context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Renovar el contexto de sesión administrativa rotando únicamente el token CSRF */
+        post: operations["renewAdminSessionContext"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cerrar la sesión administrativa revocando el token de sesión */
+        post: operations["logoutAdminSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/public/beta-access-requests": {
         parameters: {
             query?: never;
@@ -648,6 +716,239 @@ export interface operations {
                                 accountStatus: "ACTIVE" | "PENDING_DELETION";
                             } | null;
                         };
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    loginAdminSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    identifier: string;
+                    secret: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        principal: {
+                            id: string;
+                            identifier: string;
+                        };
+                        csrfToken: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    getAdminSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        state: "ADMIN_ACTIVE" | "ANONYMOUS";
+                        principal: {
+                            id: string;
+                            identifier: string;
+                        } | null;
+                        /** Format: date-time */
+                        authTime?: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    renewAdminSessionContext: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        csrfToken: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    logoutAdminSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        outcome: "LOGGED_OUT";
                     };
                 };
             };

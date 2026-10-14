@@ -14,6 +14,8 @@ import {
   ReauthenticateCommand,
   RecoveryAuthorityPort,
   RegisterAdminCredentialCommand,
+  RenewSessionContextCommand,
+  RenewSessionContextResult,
   SessionCookieSpec,
   ValidateSessionCommand,
   computeCredentialDigest,
@@ -850,6 +852,127 @@ export class AdminAuthenticationService {
         details: 'Administrative session logged out successfully',
         timestamp: now
       });
+    });
+  }
+
+  /**
+   * Renews the session context for an active administrative session by rotating only its CSRF token.
+   * Does NOT issue a new session token, extend the absolute or idle TTL, or alter authTime/elevation (TB-03, EL-TK-233).
+   */
+  async renewSessionContext(command: RenewSessionContextCommand): Promise<RenewSessionContextResult> {
+    this.validateOrigin(command.origin);
+
+    if (!command.customHeaderPresent) {
+      throw new AuthenticationError('UNAUTHENTICATED', 'Missing required administrative client header');
+    }
+
+    if (!command.sessionToken) {
+      throw new AuthenticationError('SESSION_EXPIRED', 'Session token is required');
+    }
+
+    const tokenDigest = hashToken(command.sessionToken);
+    const now = new Date();
+
+    return this.transactions.run(async (tx) => {
+      // 1. Look up existing session
+      const sessionRows = await tx.query<SessionRow>(
+        `SELECT id, principal_id, token_digest, csrf_token_digest, auth_time, created_at, expires_at, last_active_at, idle_expires_at, revoked_at, session_watermark
+         FROM admin_session
+         WHERE token_digest = $1
+         FOR UPDATE`,
+        tokenDigest
+      );
+
+      if (sessionRows.length === 0 || sessionRows[0].revoked_at !== null) {
+        throw new AuthenticationError('SESSION_EXPIRED', 'Invalid or expired session');
+      }
+
+      const session = sessionRows[0];
+
+      if (!session.auth_time || !session.token_digest || !session.csrf_token_digest ||
+          session.session_watermark === null || session.session_watermark === undefined ||
+          BigInt(session.session_watermark) <= 0n) {
+        throw new AuthenticationError('SESSION_REVOKED', 'Legacy session without verifiable binding invalidated');
+      }
+
+      if (now.getTime() >= session.expires_at.getTime() || now.getTime() >= session.idle_expires_at.getTime()) {
+        throw new AuthenticationError('SESSION_EXPIRED', 'Session expired before context renewal');
+      }
+
+      // 2. Verify principal is active
+      const principalRows = await tx.query<PrincipalRow>(
+        `SELECT id, identifier, status, auth_revision FROM admin_principal WHERE id = $1 AND status = 'ACTIVE'`,
+        session.principal_id
+      );
+
+      if (principalRows.length === 0 || principalRows[0].status !== 'ACTIVE') {
+        throw new AuthenticationError('UNAUTHENTICATED', 'Principal is not active');
+      }
+      const principal = principalRows[0];
+
+      const sessionWatermark = BigInt(session.session_watermark);
+      const credRows = await tx.query<CredentialRow>(
+        `SELECT id, revision, status FROM admin_credential WHERE principal_id = $1 AND purpose = 'ADMIN_AUTHENTICATION' AND status = 'ACTIVE' ORDER BY revision DESC LIMIT 1`,
+        principal.id
+      );
+      if (credRows.length === 0 || credRows[0].status !== 'ACTIVE') {
+        throw new AuthenticationError('UNAUTHENTICATED', 'Administrative credential is not active or missing');
+      }
+      const credRev = BigInt(credRows[0].revision);
+      if (credRev > sessionWatermark || BigInt(principal.auth_revision) > sessionWatermark) {
+        throw new AuthenticationError('SESSION_REVOKED', 'Session invalidated by authentication revision');
+      }
+
+      // 3. Verify RecoveryAuthority
+      const recoveryEpoch = await this.assertRecoveryAuthorityOperational('MOD-001');
+      let watermark: bigint;
+      let authorityRevision: bigint | null;
+      try {
+        watermark = await this.recoveryAuthority!.getAdminAuthWatermark(principal.id);
+        authorityRevision = await this.recoveryAuthority!.getCredentialRevision(principal.id);
+      } catch (err) {
+        if (err instanceof AuthenticationError) throw err;
+        throw new AuthenticationError('AUTHORITY_UNAVAILABLE', `RecoveryAuthority unavailable: ${(err as Error).message}`);
+      }
+
+      if (authorityRevision === null || authorityRevision === undefined || watermark === null || watermark === undefined) {
+        throw new AuthenticationError('AUTHORITY_UNAVAILABLE', 'RecoveryAuthority credential revision is unavailable');
+      }
+      if (watermark > sessionWatermark || authorityRevision > sessionWatermark) {
+        await tx.execute(
+          `UPDATE admin_session SET revoked_at = $1, revocation_reason = 'WATERMARK_SUPERSEDED' WHERE id = $2 AND revoked_at IS NULL`,
+          now,
+          session.id
+        );
+        throw new AuthenticationError('SESSION_REVOKED', 'Session invalidated by revocation watermark');
+      }
+
+      // 4. Rotate CSRF token only (DO NOT extend TTL or alter auth_time)
+      const newCsrfToken = randomBytes(32).toString('hex');
+      const newCsrfTokenDigest = hashToken(newCsrfToken);
+
+      await tx.execute(
+        `UPDATE admin_session SET csrf_token_digest = $1 WHERE id = $2`,
+        newCsrfTokenDigest,
+        session.id
+      );
+
+      const actorContext: AdminActorContext = {
+        actorType: 'ADMIN_HUMAN',
+        principalId: principal.id,
+        identifier: principal.identifier,
+        sessionId: session.id,
+        authTime: session.auth_time,
+        credentialRevision: credRev,
+        adminAuthRevision: BigInt(principal.auth_revision),
+        sessionWatermark: BigInt(session.session_watermark),
+        recoveryEpoch
+      };
+
+      return {
+        actorContext,
+        csrfToken: newCsrfToken
+      };
     });
   }
 
