@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import {
   APPROVED_PUBLIC_ENTRY_PATHS,
   CANONICAL_PUBLIC_ENTRY_ROUTE_METADATA,
@@ -212,7 +212,7 @@ import { OrganizerSessionService } from '../organizer-session.service';
     `
   ]
 })
-export class OrganizerLoginComponent {
+export class OrganizerLoginComponent implements OnInit {
   private readonly sessionService = inject(OrganizerSessionService);
   private readonly router = inject(PublicEntryRouterService);
 
@@ -224,6 +224,34 @@ export class OrganizerLoginComponent {
   readonly isSubmitting = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly hasFieldValidationError = signal(false);
+
+  async ngOnInit(): Promise<void> {
+    const currentState = this.sessionService.state();
+    if (currentState === 'ORGANIZER_ACTIVE') {
+      const rawReturnUrl = this.router.queryParams()['returnUrl'];
+      const target = this.sessionService.resolveAuthorizedReturnDestination(rawReturnUrl);
+      void this.router.navigateByUrl(target, { replaceUrl: true });
+      return;
+    }
+    if (currentState === 'ORGANIZER_RESTRICTED_DELETION') {
+      void this.router.navigateByUrl(APPROVED_PUBLIC_ENTRY_PATHS.ORGANIZER_ACCOUNT, { replaceUrl: true });
+      return;
+    }
+    if (currentState === 'CHECKING') {
+      try {
+        const snap = await this.sessionService.refreshSessionProjection();
+        if (snap.state === 'ORGANIZER_ACTIVE') {
+          const rawReturnUrl = this.router.queryParams()['returnUrl'];
+          const target = this.sessionService.resolveAuthorizedReturnDestination(rawReturnUrl);
+          void this.router.navigateByUrl(target, { replaceUrl: true });
+        } else if (snap.state === 'ORGANIZER_RESTRICTED_DELETION') {
+          void this.router.navigateByUrl(APPROVED_PUBLIC_ENTRY_PATHS.ORGANIZER_ACCOUNT, { replaceUrl: true });
+        }
+      } catch {
+        // Ignora error transitorio de red al inicializar
+      }
+    }
+  }
 
   onEmailInput(event: Event): void {
     const target = event.target as HTMLInputElement | null;

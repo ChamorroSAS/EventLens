@@ -39,6 +39,7 @@ import { EventTimezoneSectionComponent } from './event-timezone-section.componen
   ],
   template: `
     <eventlens-organizer-app-shell
+      activeNav="events"
       [selectedEvent]="selectedEvent()"
       (exitContext)="onBackToEvents()"
     >

@@ -58,6 +58,12 @@
   flex-shrink: 0;
 }
 
+.brand-link {
+  display: inline-flex;
+  text-decoration: none;
+  align-items: center;
+}
+
 .brand-title {
   margin: 0;
   display: inline-flex;
@@ -71,9 +77,10 @@
 
 .brand-logo {
   display: block;
-  inline-size: 160px;
-  block-size: auto;
-  aspect-ratio: 1970 / 310;
+  inline-size: auto;
+  block-size: 35px;
+  aspect-ratio: 2172 / 724;
+  object-fit: contain;
   max-inline-size: 100%;
 }
 
@@ -177,9 +184,164 @@
   }
 }
 
+.shell-layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--el-space-lg);
+  padding-block: var(--el-space-lg);
+}
+
+@media (min-width: 860px) {
+  .shell-layout {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    gap: var(--el-space-xl);
+    align-items: start;
+    padding-block: var(--el-space-xl);
+  }
+}
+
+.shell-sidebar {
+  background-color: var(--el-color-surface);
+  border: 1px solid var(--el-color-border);
+  border-radius: var(--el-radius-lg);
+  padding: var(--el-space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--el-space-lg);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+@media (min-width: 860px) {
+  .shell-sidebar {
+    position: sticky;
+    inset-block-start: 5rem;
+  }
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--el-space-xs);
+}
+
+@media (max-width: 859px) {
+  .sidebar-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--el-space-xs);
+  }
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--el-space-sm);
+  min-block-size: var(--el-touch-target-min, 44px);
+  padding: var(--el-space-xs) var(--el-space-md);
+  border-radius: var(--el-radius-md);
+  color: var(--el-color-text-secondary);
+  text-decoration: none;
+  font-family: var(--el-font-family);
+  font-size: var(--el-font-size-button);
+  font-weight: var(--el-font-weight-medium);
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background-color: var(--el-color-surface-muted, #f8fafc);
+    color: var(--el-color-text);
+  }
+
+  &.is-active {
+    background-color: var(--el-color-accent-soft);
+    color: var(--el-color-primary);
+    font-weight: var(--el-font-weight-semibold);
+  }
+
+  &:focus-visible {
+    @include m.el-focus-ring;
+  }
+}
+
+.sidebar-footer {
+  border-block-start: 1px solid var(--el-color-border);
+  padding-block-start: var(--el-space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--el-space-sm);
+}
+
+@media (max-width: 859px) {
+  .sidebar-footer {
+    border-block-start: none;
+    border-inline-start: 1px solid var(--el-color-border);
+    padding-block-start: 0;
+    padding-inline-start: var(--el-space-md);
+    flex-direction: row;
+    align-items: center;
+    margin-inline-start: auto;
+  }
+}
+
+.sidebar-user-pill {
+  display: flex;
+  align-items: center;
+  gap: var(--el-space-xs);
+  overflow: hidden;
+}
+
+.sidebar-user-avatar {
+  inline-size: 28px;
+  block-size: 28px;
+  border-radius: var(--el-radius-pill);
+  background-color: var(--el-color-accent-soft);
+  color: var(--el-color-primary);
+  font-size: 0.8125rem;
+  font-weight: var(--el-font-weight-bold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sidebar-user-email {
+  font-size: 0.8125rem;
+  color: var(--el-color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--el-space-xs);
+  min-block-size: 38px;
+  padding: var(--el-space-xs) var(--el-space-sm);
+  background: none;
+  border: 1px solid var(--el-color-border);
+  border-radius: var(--el-radius-sm);
+  color: var(--el-color-text-secondary);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: var(--el-font-weight-semibold);
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background-color: #fef2f2;
+    border-color: #fecaca;
+    color: #b91c1c;
+  }
+
+  &:focus-visible {
+    @include m.el-focus-ring;
+  }
+}
+
 .shell-main {
   flex: 1;
-  padding-block: var(--el-space-xl);
+  min-inline-size: 0;
 }
 
 .shell-footer {
