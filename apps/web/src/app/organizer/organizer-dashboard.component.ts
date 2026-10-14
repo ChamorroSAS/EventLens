@@ -10,6 +10,7 @@ import { EventListComponent } from './event-list.component.js';
 import { EventSettingsNavComponent } from './event-settings-nav.component.js';
 import { EventStatusBadgeComponent } from '../lifecycle/event-status-badge.component.js';
 import { OrganizerMediaLibraryComponent } from '../media/organizer-media-library.component.js';
+import { CreateEventFormComponent } from './create-event-form.component.js';
 import {
   APPROVED_PUBLIC_ENTRY_PATHS,
   CANONICAL_PUBLIC_ENTRY_ROUTE_METADATA,
@@ -26,7 +27,8 @@ import { OrganizerSessionService } from '../organizer-session.service';
     EventListComponent,
     EventSettingsNavComponent,
     EventStatusBadgeComponent,
-    OrganizerMediaLibraryComponent
+    OrganizerMediaLibraryComponent,
+    CreateEventFormComponent
   ],
   template: `
     <eventlens-organizer-app-shell
@@ -63,10 +65,11 @@ import { OrganizerSessionService } from '../organizer-session.service';
               <p class="dashboard-subtitle">Gestiona la preparación, acceso y recuerdos de tus eventos.</p>
             </div>
             <button
+              #createBtn
               type="button"
               class="btn-create"
               aria-label="Crear un nuevo borrador de evento"
-              (click)="onCreateDraft()"
+              (click)="onCreateDraft(createBtn)"
             >
               + Crear borrador
             </button>
@@ -78,9 +81,10 @@ import { OrganizerSessionService } from '../organizer-session.service';
               <h3>Aún no tienes eventos creados</h3>
               <p>Comienza creando un borrador para definir su nombre, fecha y reglas de acceso.</p>
               <button
+                #firstCreateBtn
                 type="button"
                 class="btn-primary"
-                (click)="onCreateDraft()"
+                (click)="onCreateDraft(firstCreateBtn)"
               >
                 Crear mi primer evento
               </button>
@@ -189,6 +193,14 @@ import { OrganizerSessionService } from '../organizer-session.service';
           </div>
         }
       </div>
+
+      @if (isCreatingEvent()) {
+        <eventlens-create-event-form
+          [triggerElement]="createEventTriggerElement"
+          (eventCreated)="onEventCreated($event)"
+          (cancel)="onCancelCreateEvent()"
+        />
+      }
     </eventlens-organizer-app-shell>
   `,
   styleUrl: './organizer-dashboard.component.scss',
@@ -215,12 +227,15 @@ export class OrganizerDashboardComponent implements OnInit {
   readonly selectedEventId = signal<string | null>(null);
   readonly selectedEventConfig = signal<EventConfigurationModel | null>(null);
   readonly activeSection = signal<EventSettingsSection>('general');
+  readonly isCreatingEvent = signal<boolean>(false);
+  createEventTriggerElement: HTMLElement | null = null;
 
   constructor() {
     this.sessionService?.registerOrganizerCacheClearer(() => {
       this.events.set([]);
       this.selectedEventId.set(null);
       this.selectedEventConfig.set(null);
+      this.isCreatingEvent.set(false);
     });
   }
 
@@ -273,8 +288,23 @@ export class OrganizerDashboardComponent implements OnInit {
     this.activeSection.set(section);
   }
 
-  onCreateDraft(): void {
-    // Delegated to CreateEventForm
+  onCreateDraft(trigger?: HTMLElement): void {
+    this.createEventTriggerElement = trigger ?? null;
+    this.isCreatingEvent.set(true);
+  }
+
+  onCancelCreateEvent(): void {
+    this.isCreatingEvent.set(false);
+  }
+
+  async onEventCreated(eventRef: { id: string }): Promise<void> {
+    this.isCreatingEvent.set(false);
+    try {
+      await this.loadEvents();
+    } catch {
+      // conservar navegación si la lista falla
+    }
+    await this.onEventSelected(eventRef.id);
   }
 
   getSectionTitle(): string {
