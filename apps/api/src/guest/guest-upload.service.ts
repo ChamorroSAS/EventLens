@@ -125,6 +125,18 @@ export class PresignUploadService {
    * @param operationId The operation ID for future MediaAcceptance.confirm integration (Task 3)
    */
   async confirmUpload(mediaRef: string, objectKey: string, operationId: string): Promise<ConfirmUploadResult> {
+    // Validate mediaRef/objectKey consistency: objectKey must contain the mediaRef in its path
+    const expectedMediaRefPath = `/media/${mediaRef}/`;
+    if (!objectKey.includes(expectedMediaRefPath)) {
+      throw new HttpException(
+        {
+          code: 'MEDIAREF_OBJECTKEY_MISMATCH',
+          message: 'mediaRef does not match objectKey path',
+        },
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
     // Verify object exists in MinIO using the full object key
     await this.s3.send(new HeadObjectCommand({ Bucket: this.bucket, Key: objectKey }));
     // TODO: call MediaAcceptance.confirm with operationId (later task)

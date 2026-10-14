@@ -27,7 +27,9 @@ import {
   type EventRecord,
   type GuestContributionItem,
   type GuestSessionRecord,
-  type RemovalIntakeRouteResult
+  type RemovalIntakeRouteResult,
+  type EventStatus,
+  type ModerationMode
 } from '@eventlens/event-management';
 import { DatabaseService } from '../platform/database/database.service.js';
 import { ORGANIZER_SESSION_CONFIG } from '../identity/organizer-session.service.js';
@@ -876,7 +878,7 @@ export class GuestPublicEntryService {
         id: session.eventId,
         organizerId: '',
         name: '',
-        status: cred.event_status as any,
+        status: cred.event_status as EventStatus,
         timezone: '',
         startsAtLocal: null,
         scheduledAt: null,
@@ -893,7 +895,7 @@ export class GuestPublicEntryService {
         graceDays: 0,
         uploadsEnabled: Boolean(cred.uploads_enabled),
         guestGalleryEnabled: Boolean(cred.guest_gallery_enabled),
-        moderationMode: cred.moderation_mode as any,
+        moderationMode: cred.moderation_mode as ModerationMode,
         pinEnabled: Boolean(cred.pin_enabled),
         welcomeMessage: null,
         createdAt: new Date(),
@@ -1219,6 +1221,7 @@ export class GuestPublicEntryController {
   @ApiBody({ schema: confirmUploadRequestSchema })
   @ApiResponse({ status: 200, schema: confirmUploadResponseSchema })
   @ApiResponse({ status: 401, schema: errorSchema })
+  @ApiResponse({ status: 403, schema: errorSchema })
   @ApiResponse({ status: 404, schema: errorSchema })
   @ApiResponse({ status: 503, schema: errorSchema })
   async confirmUpload(
@@ -1228,7 +1231,27 @@ export class GuestPublicEntryController {
   ): Promise<ConfirmUploadResult> {
     this.applySecurityHeaders(response);
     const cookieToken = this.extractCookieToken(request);
-    await this.guestPublicEntryService.getSessionFromCookie(cookieToken); // validates session
+    const session = await this.guestPublicEntryService.getSessionFromCookie(cookieToken); // validates session
+    if (!session) {
+      throw new HttpException(
+        { code: 'GUEST_SESSION_REQUIRED', message: 'Se requiere una sesión de invitado activa.' },
+        HttpStatus.UNAUTHORIZED
+      );
+    }
+
+    // Extract eventId from objectKey (format: events/{eventId}/media/...) and verify it matches session
+    const objectKeyParts = body.objectKey.split('/');
+    if (objectKeyParts.length < 2 || objectKeyParts[0] !== 'events') {
+      throw new HttpException(
+        { code: 'INVALID_OBJECT_KEY', message: 'Invalid objectKey format' },
+        HttpStatus.BAD_REQUEST
+      );
+    }
+    const objectKeyEventId = objectKeyParts[1];
+    if (objectKeyEventId !== session.eventId) {
+      throw new ForbiddenException('objectKey eventId does not match session eventId');
+    }
+
     return this.guestUploadService.confirmUpload(body.mediaRef, body.objectKey, body.operationId);
   }
 }

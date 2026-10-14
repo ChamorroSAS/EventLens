@@ -166,4 +166,10 @@ describe('PresignUploadService', () => {
     await expect(service.confirmUpload('mr-abc123', 'events/evt-123/media/mr-abc123/missing.jpg', 'op-123'))
       .rejects.toThrow();
   });
+
+  it('throws when confirmUpload mediaRef does not match objectKey', async () => {
+    await expect(
+      service.confirmUpload('mr-abc123', 'events/evt-123/media/mr-xyz/photo.jpg', 'op-123')
+    ).rejects.toThrow('mediaRef does not match objectKey path');
+  });
 });
