@@ -256,6 +256,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/events/{eventId}/configuration/timezone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Cambiar zona horaria de un evento en estado DRAFT o SCHEDULED (EL-TK-227) */
+        put: operations["changeEventTimezone"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/public/guest-entry/{lookupKey}": {
         parameters: {
             query?: never;
@@ -1424,6 +1441,155 @@ export interface operations {
                         };
                         /** @enum {string} */
                         outcome: "UPDATED" | "IDEMPOTENT_REPLAY";
+                        receipt?: {
+                            operationId: string;
+                            eventId: string;
+                            operation: string;
+                            appliedRevision: string;
+                            outcome: string;
+                        } | null;
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    changeEventTimezone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Identificador IANA de la nueva zona horaria (ej. America/Bogota, UTC) */
+                    timezone: string;
+                    /** @description Offset UTC explícito en minutos para desambiguar transiciones DST (fall-back) */
+                    utcOffsetMinutes?: number | null;
+                    /** @description Revisión esperada para control de concurrencia optimista (CAS monotónico) */
+                    expectedRevision?: string | null;
+                    /** @description Clave de idempotencia para prevención de ejecuciones duplicadas */
+                    idempotencyKey?: string | null;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        event: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            organizerId: string;
+                            name: string;
+                            /** @enum {string} */
+                            status: "DRAFT" | "SCHEDULED" | "ACTIVE" | "CLOSED" | "GRACE_PERIOD" | "SUSPENDED" | "PENDING_DELETION" | "ARCHIVED";
+                            timezone: string;
+                            startsAtLocal: string | null;
+                            scheduledAt: string | null;
+                            utcOffsetMinutes: number | null;
+                            expiresAt: string | null;
+                            graceEndsAt: string | null;
+                            uploadsEnabled: boolean;
+                            guestGalleryEnabled: boolean;
+                            /** @enum {string} */
+                            moderationMode: "AUTO_PUBLISH" | "MANUAL_REVIEW";
+                            pinEnabled: boolean;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                        };
+                        previousTimezone: string;
+                        /** @enum {string|null} */
+                        warning?: "RECALCULATED_SCHEDULE" | null;
+                        /** @enum {string} */
+                        outcome: "TIMEZONE_CHANGED" | "IDEMPOTENT_REPLAY";
                         receipt?: {
                             operationId: string;
                             eventId: string;

@@ -72,6 +72,14 @@ export interface SerializedSetEventScheduleResult {
   receipt?: CommandReceipt;
 }
 
+export interface SerializedChangePreparedEventTimezoneResult {
+  event: SerializedOrganizerEventSummary;
+  previousTimezone: string;
+  warning?: 'RECALCULATED_SCHEDULE' | null;
+  outcome: 'TIMEZONE_CHANGED' | 'IDEMPOTENT_REPLAY';
+  receipt?: CommandReceipt;
+}
+
 function serializeOrganizerEventSummary(summary: OrganizerEventSummary): SerializedOrganizerEventSummary {
   return {
     id: summary.id,
@@ -230,6 +238,63 @@ export class OrganizerEventsService {
 
       return {
         event: serializeOrganizerEventSummary(result.event),
+        outcome: result.outcome,
+        receipt: result.receipt
+      };
+    } catch (error) {
+      this.rethrowEventError(error);
+    }
+  }
+
+  async changeEventTimezone(params: {
+    eventId: string;
+    timezone?: unknown;
+    utcOffsetMinutes?: unknown;
+    expectedRevision?: unknown;
+    idempotencyKey?: unknown;
+    cookieHeader?: string;
+  }): Promise<SerializedChangePreparedEventTimezoneResult> {
+    const sessionToken = extractOrganizerSessionCookie(params.cookieHeader);
+    const validated = await this.sessionService.validateReadOrganizerSession({
+      sessionToken,
+      requireOrdinarySession: true
+    });
+
+    if (!params.timezone || typeof params.timezone !== 'string') {
+      throw new UnprocessableEntityException({
+        statusCode: 422,
+        error: 'Unprocessable Entity',
+        message: 'Valid IANA timezone string is required'
+      });
+    }
+
+    const utcOffset =
+      typeof params.utcOffsetMinutes === 'number' ? params.utcOffsetMinutes : undefined;
+    const expectedRevision =
+      typeof params.expectedRevision === 'string'
+        ? params.expectedRevision
+        : typeof params.expectedRevision === 'number'
+        ? String(params.expectedRevision)
+        : undefined;
+    const idempotencyKey =
+      typeof params.idempotencyKey === 'string' && params.idempotencyKey.trim()
+        ? params.idempotencyKey.trim()
+        : undefined;
+
+    try {
+      const result = await this.eventDraftService.changeTimezone({
+        actorContext: validated.actorContext,
+        eventId: params.eventId,
+        timezone: params.timezone.trim(),
+        utcOffsetMinutes: utcOffset,
+        expectedRevision,
+        idempotencyKey
+      });
+
+      return {
+        event: serializeOrganizerEventSummary(result.event),
+        previousTimezone: result.previousTimezone,
+        warning: result.warning,
         outcome: result.outcome,
         receipt: result.receipt
       };
@@ -419,6 +484,47 @@ const SetEventScheduleResponseSchema = {
   }
 };
 
+const ChangeEventTimezoneBodySchema = {
+  type: 'object',
+  required: ['timezone'],
+  properties: {
+    timezone: {
+      type: 'string',
+      description: 'Identificador IANA de la nueva zona horaria (ej. America/Bogota, UTC)'
+    },
+    utcOffsetMinutes: {
+      type: 'number',
+      nullable: true,
+      description: 'Offset UTC explícito en minutos para desambiguar transiciones DST (fall-back)'
+    },
+    expectedRevision: {
+      type: 'string',
+      nullable: true,
+      description: 'Revisión esperada para control de concurrencia optimista (CAS monotónico)'
+    },
+    idempotencyKey: {
+      type: 'string',
+      nullable: true,
+      description: 'Clave de idempotencia para prevención de ejecuciones duplicadas'
+    }
+  }
+};
+
+const ChangeEventTimezoneResponseSchema = {
+  type: 'object',
+  required: ['event', 'previousTimezone', 'outcome'],
+  properties: {
+    event: EventSummarySchema,
+    previousTimezone: { type: 'string' },
+    warning: { type: 'string', enum: ['RECALCULATED_SCHEDULE'], nullable: true },
+    outcome: { type: 'string', enum: ['TIMEZONE_CHANGED', 'IDEMPOTENT_REPLAY'] },
+    receipt: {
+      ...CommandReceiptSchema,
+      nullable: true
+    }
+  }
+};
+
 const ShareAccessSnapshotSchema = {
   type: 'object',
   required: [
@@ -562,6 +668,51 @@ export class OrganizerEventsController {
     return this.eventsService.setEventSchedule({
       eventId,
       startsAtLocal: body?.startsAtLocal,
+      utcOffsetMinutes: body?.utcOffsetMinutes,
+      expectedRevision: body?.expectedRevision,
+      idempotencyKey,
+      cookieHeader
+    });
+  }
+
+  @Put(':eventId/configuration/timezone')
+  @ApiOperation({
+    operationId: 'changeEventTimezone',
+    summary: 'Cambiar zona horaria de un evento en estado DRAFT o SCHEDULED (EL-TK-227)'
+  })
+  @ApiParam({ name: 'eventId', type: 'string' })
+  @ApiBody({ schema: ChangeEventTimezoneBodySchema })
+  @ApiResponse({ status: 200, schema: ChangeEventTimezoneResponseSchema })
+  @ApiResponse({ status: 400, schema: errorSchema })
+  @ApiResponse({ status: 401, schema: errorSchema })
+  @ApiResponse({ status: 403, schema: errorSchema })
+  @ApiResponse({ status: 404, schema: errorSchema })
+  @ApiResponse({ status: 409, schema: errorSchema })
+  @ApiResponse({ status: 422, schema: errorSchema })
+  async changeEventTimezone(
+    @Param('eventId') eventId: string,
+    @Body()
+    body: {
+      timezone: string;
+      utcOffsetMinutes?: number;
+      expectedRevision?: string;
+      idempotencyKey?: string;
+    },
+    @Req() request: HttpRequest,
+    @Res({ passthrough: true }) response: HttpResponse
+  ) {
+    response.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    response.setHeader('Pragma', 'no-cache');
+    const cookieHeader =
+      typeof request.headers?.cookie === 'string' ? request.headers.cookie : undefined;
+    const idempotencyKey =
+      (typeof request.headers?.['idempotency-key'] === 'string'
+        ? request.headers['idempotency-key']
+        : undefined) ?? body?.idempotencyKey;
+
+    return this.eventsService.changeEventTimezone({
+      eventId,
+      timezone: body?.timezone,
       utcOffsetMinutes: body?.utcOffsetMinutes,
       expectedRevision: body?.expectedRevision,
       idempotencyKey,

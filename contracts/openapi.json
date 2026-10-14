@@ -2577,6 +2577,379 @@
         ]
       }
     },
+    "/api/v1/events/{eventId}/configuration/timezone": {
+      "put": {
+        "operationId": "changeEventTimezone",
+        "parameters": [
+          {
+            "name": "eventId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "timezone"
+                ],
+                "properties": {
+                  "timezone": {
+                    "type": "string",
+                    "description": "Identificador IANA de la nueva zona horaria (ej. America/Bogota, UTC)"
+                  },
+                  "utcOffsetMinutes": {
+                    "type": "number",
+                    "nullable": true,
+                    "description": "Offset UTC explícito en minutos para desambiguar transiciones DST (fall-back)"
+                  },
+                  "expectedRevision": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Revisión esperada para control de concurrencia optimista (CAS monotónico)"
+                  },
+                  "idempotencyKey": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Clave de idempotencia para prevención de ejecuciones duplicadas"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "event",
+                    "previousTimezone",
+                    "outcome"
+                  ],
+                  "properties": {
+                    "event": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "organizerId",
+                        "name",
+                        "status",
+                        "timezone",
+                        "startsAtLocal",
+                        "scheduledAt",
+                        "utcOffsetMinutes",
+                        "expiresAt",
+                        "graceEndsAt",
+                        "uploadsEnabled",
+                        "guestGalleryEnabled",
+                        "moderationMode",
+                        "pinEnabled",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "organizerId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "DRAFT",
+                            "SCHEDULED",
+                            "ACTIVE",
+                            "CLOSED",
+                            "GRACE_PERIOD",
+                            "SUSPENDED",
+                            "PENDING_DELETION",
+                            "ARCHIVED"
+                          ]
+                        },
+                        "timezone": {
+                          "type": "string"
+                        },
+                        "startsAtLocal": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "scheduledAt": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "utcOffsetMinutes": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "expiresAt": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "graceEndsAt": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "uploadsEnabled": {
+                          "type": "boolean"
+                        },
+                        "guestGalleryEnabled": {
+                          "type": "boolean"
+                        },
+                        "moderationMode": {
+                          "type": "string",
+                          "enum": [
+                            "AUTO_PUBLISH",
+                            "MANUAL_REVIEW"
+                          ]
+                        },
+                        "pinEnabled": {
+                          "type": "boolean"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    },
+                    "previousTimezone": {
+                      "type": "string"
+                    },
+                    "warning": {
+                      "type": "string",
+                      "enum": [
+                        "RECALCULATED_SCHEDULE"
+                      ],
+                      "nullable": true
+                    },
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "TIMEZONE_CHANGED",
+                        "IDEMPOTENT_REPLAY"
+                      ]
+                    },
+                    "receipt": {
+                      "type": "object",
+                      "required": [
+                        "operationId",
+                        "eventId",
+                        "operation",
+                        "appliedRevision",
+                        "outcome"
+                      ],
+                      "properties": {
+                        "operationId": {
+                          "type": "string"
+                        },
+                        "eventId": {
+                          "type": "string"
+                        },
+                        "operation": {
+                          "type": "string"
+                        },
+                        "appliedRevision": {
+                          "type": "string"
+                        },
+                        "outcome": {
+                          "type": "string"
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "correlationId"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Cambiar zona horaria de un evento en estado DRAFT o SCHEDULED (EL-TK-227)",
+        "tags": [
+          "organizer-events"
+        ]
+      }
+    },
     "/api/v1/public/guest-entry/{lookupKey}": {
       "get": {
         "operationId": "resolveGuestPublicEntry",
