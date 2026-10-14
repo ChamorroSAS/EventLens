@@ -285,4 +285,37 @@ describe('EventScheduleService (Unit Tests — EL-TK-023)', () => {
       })
     ).rejects.toThrowError(EventManagementError);
   });
+
+  it('CAS Concurrency (EL-TK-220/226): rechaza conflicto de revisión cuando expectedRevision difiere', async () => {
+    const eventId = seedEvent({ revision: 5n });
+
+    await expect(
+      service.setSchedule({
+        actorContext: mockActor,
+        eventId,
+        startsAtLocal: '2026-11-20T18:00:00',
+        expectedRevision: '4'
+      })
+    ).rejects.toThrowError(EventManagementError);
+
+    try {
+      await service.setSchedule({
+        actorContext: mockActor,
+        eventId,
+        startsAtLocal: '2026-11-20T18:00:00',
+        expectedRevision: '4'
+      });
+    } catch (err: any) {
+      expect(err.code).toBe('CONCURRENCY_CONFLICT');
+    }
+
+    // Acierta cuando expectedRevision coincide
+    const successful = await service.setSchedule({
+      actorContext: mockActor,
+      eventId,
+      startsAtLocal: '2026-11-20T18:00:00',
+      expectedRevision: '5'
+    });
+    expect(successful.outcome).toBe('UPDATED');
+  });
 });

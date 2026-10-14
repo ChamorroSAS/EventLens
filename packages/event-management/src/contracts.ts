@@ -237,6 +237,7 @@ export interface ChangePreparedEventTimezoneResult {
   readonly previousTimezone: string;
   readonly warning?: 'RECALCULATED_SCHEDULE' | null;
   readonly outcome: 'TIMEZONE_CHANGED' | 'IDEMPOTENT_REPLAY';
+  readonly receipt?: CommandReceipt;
 }
 
 // ==========================================
@@ -434,6 +435,7 @@ export interface SetEventScheduleCommand {
 export interface SetEventScheduleResult {
   readonly event: EventRecord;
   readonly outcome: 'UPDATED' | 'IDEMPOTENT_REPLAY';
+  readonly receipt?: CommandReceipt;
 }
 
 export interface SetInitialPinCommand {
