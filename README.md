@@ -83,6 +83,9 @@ La restauración crea una base aislada nueva y falla si el nombre ya existe. La 
 
 ## Administración local y seguridad de pruebas
 
+Para probar el ingreso con una cuenta base y credencial aleatoria guardada en
+`.env`, seguir [Acceso administrativo de desarrollo](docs/local-admin-access.md).
+
 El [runbook administrativo](docs/administrative-operations.md) explica `pnpm admin:bootstrap`, `admin:status`, la custodia de credenciales y la resolución conservadora del incidente local. `admin:recover` permanece bloqueado hasta contar con un autorizador operacional externo aceptado. El bootstrap consumido nunca se reinicia.
 
 `pnpm test:integration` y `pnpm test:identity:integration` usan `compose.test.yaml`, con PostgreSQL efímero separado de desarrollo y una política de pertenencia al runner validada contra la conexión efectiva. `pnpm test:identity:validation` produce evidencia de guardas, CLI y suites en `infra/validation/identity/evidence/bootstrap-isolation`. No ejecutar pruebas destructivas con la URL de desarrollo.

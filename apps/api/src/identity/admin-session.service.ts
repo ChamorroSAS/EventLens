@@ -12,13 +12,13 @@ import {
   AuthenticationError,
   serializeSessionCookie,
   type AdminSessionProjection,
-  type AuditEventRecord,
   type AuditSink,
   type RecoveryAuthorityPort
 } from '@eventlens/identity';
 import { DatabaseService } from '../platform/database/database.service.js';
 import type { PlatformConfig } from '../platform/config/config.js';
 import { ORGANIZER_SESSION_CONFIG } from './organizer-session.service.js';
+import { createAuditedTransactions } from './audited-transactions.js';
 
 export const ADMIN_RECOVERY_AUTHORITY = Symbol('ADMIN_RECOVERY_AUTHORITY');
 
@@ -45,30 +45,13 @@ export class AdminSessionService {
     @Inject(ORGANIZER_SESSION_CONFIG) private readonly config: PlatformConfig,
     @Optional() @Inject(ADMIN_RECOVERY_AUTHORITY) recoveryAuthorityOverride?: RecoveryAuthorityPort
   ) {
-    this.auditSink = {
-      record: async (event: AuditEventRecord) => {
-        await this.database.transactions.run((tx) =>
-          tx.execute(
-            `INSERT INTO admin_audit_event (
-               id, procedure, actor_id, target_identifier, target_principal_id, result, details, timestamp
-             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-            event.id,
-            event.procedure,
-            event.actorId,
-            event.targetIdentifier,
-            event.targetPrincipalId ?? null,
-            event.result,
-            event.details ?? null,
-            event.timestamp
-          )
-        );
-      }
-    };
+    const audited = createAuditedTransactions(this.database.transactions);
+    this.auditSink = audited.auditSink;
 
     this.authorityConfigured = recoveryAuthorityOverride != null;
     this.recoveryAuthority = recoveryAuthorityOverride ?? unavailableRecoveryAuthority();
 
-    this.authService = new AdminAuthenticationService(this.database.transactions, {
+    this.authService = new AdminAuthenticationService(audited.transactions, {
       allowedOrigins: [this.config.webOrigin],
       externalAuditSink: this.auditSink,
       recoveryAuthority: this.recoveryAuthority

@@ -9,6 +9,7 @@ export interface PlatformConfig {
   webOrigin: string;
   publicEntryBaseUrl: string;
   identityPepperSecret: string;
+  localAdminAuthorityDir?: string;
 }
 
 function integer(
@@ -49,6 +50,17 @@ export function readConfig(env: NodeJS.ProcessEnv): PlatformConfig {
     env.IDENTITY_PEPPER_SECRET ?? 'eventlens-local-dev-pepper-secret-0123456789abcdef';
   if (identityPepperSecret.trim().length < 32)
     throw new Error('INVALID_CONFIG:IDENTITY_PEPPER_SECRET');
+  let localAdminAuthorityDir: string | undefined;
+  if (env.LOCAL_ADMIN_ENABLED === 'true') {
+    if (env.NODE_ENV !== 'development' ||
+        !['localhost', '127.0.0.1', '[::1]'].includes(new URL(webOrigin).hostname) ||
+        env.LOCAL_ADMIN_AUTHORITY_DIR !== '/home/node/.eventlens/admin-authority') {
+      throw new Error('INVALID_CONFIG:LOCAL_ADMIN');
+    }
+    localAdminAuthorityDir = env.LOCAL_ADMIN_AUTHORITY_DIR;
+  } else if (env.LOCAL_ADMIN_ENABLED && env.LOCAL_ADMIN_ENABLED !== 'false') {
+    throw new Error('INVALID_CONFIG:LOCAL_ADMIN');
+  }
   return {
     port: integer(env.API_PORT, 3000, 1, 65535, 'API_PORT'),
     host,
@@ -56,6 +68,7 @@ export function readConfig(env: NodeJS.ProcessEnv): PlatformConfig {
     databaseTimeoutMs: integer(env.DATABASE_TIMEOUT_MS, 2000, 100, 30000, 'DATABASE_TIMEOUT_MS'),
     webOrigin,
     publicEntryBaseUrl,
-    identityPepperSecret
+    identityPepperSecret,
+    localAdminAuthorityDir
   };
 }

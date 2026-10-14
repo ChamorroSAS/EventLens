@@ -67,6 +67,10 @@ services:
       <<: *database
       API_PORT: 3000
       WEB_ORIGIN: http://localhost:${WEB_PORT:-4200}
+      NODE_ENV: development
+      LOCAL_ADMIN_ENABLED: ${LOCAL_ADMIN_ENABLED:-false}
+      LOCAL_ADMIN_AUTHORITY_DIR: /home/node/.eventlens/admin-authority
+    volumes: ["admin-authority:/home/node/.eventlens/admin-authority"]
     ports: ["127.0.0.1:${API_PORT:-3000}:3000"]
     read_only: true
     tmpfs: ["/tmp:size=32m,mode=1777"]
@@ -101,6 +105,17 @@ services:
     command: ["node", "scripts/workspace.mjs", "test"]
     depends_on:
       migrate: {condition: service_completed_successfully}
+  local-admin:
+    <<: *workspace
+    profiles: ["tools"]
+    environment:
+      <<: *database
+      NODE_ENV: development
+      WEB_ORIGIN: http://localhost:${WEB_PORT:-4200}
+    volumes:
+      - ./.env:/operator/local.env
+      - admin-authority:/home/node/.eventlens/admin-authority
+    command: ["node", "scripts/local-admin.mjs", "bootstrap"]
   contracts:
     <<: *workspace
     profiles: ["tools"]
@@ -127,5 +142,6 @@ services:
     depends_on:
       web: {condition: service_healthy}
 volumes:
+  admin-authority:
   postgres-data:
   objects-data:
