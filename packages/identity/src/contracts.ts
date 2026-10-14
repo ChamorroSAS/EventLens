@@ -260,6 +260,44 @@ export function serializeSessionCookie(spec: SessionCookieSpec): string {
   return `${spec.name}=${spec.value}; Path=${spec.path}; Secure; HttpOnly; SameSite=${spec.sameSite}; Max-Age=${spec.maxAgeSeconds}`;
 }
 
+export function extractAdminSessionCookie(cookieHeader: string | undefined): string | undefined {
+  if (!cookieHeader || typeof cookieHeader !== 'string') {
+    return undefined;
+  }
+  const parts = cookieHeader.split(';');
+  let fallbackSession: string | undefined;
+  for (const rawPart of parts) {
+    const trimmed = rawPart.trim();
+    const eqIndex = trimmed.indexOf('=');
+    if (eqIndex <= 0) continue;
+    const name = trimmed.slice(0, eqIndex).trim();
+    const rawValue = trimmed.slice(eqIndex + 1).trim();
+    if (!rawValue) continue;
+    let decoded = rawValue;
+    try {
+      decoded = decodeURIComponent(rawValue);
+    } catch {
+      continue;
+    }
+    if (name === '__Host-el_admin_session') {
+      return decoded;
+    }
+    if (name === 'el_admin_session' && fallbackSession === undefined) {
+      fallbackSession = decoded;
+    }
+  }
+  return fallbackSession;
+}
+
+export interface AdminSessionProjection {
+  readonly state: 'ADMIN_ACTIVE' | 'ANONYMOUS';
+  readonly principal: {
+    readonly id: string;
+    readonly identifier: string;
+  } | null;
+  readonly authTime?: string;
+}
+
 export interface AdminActorContext {
   readonly actorType: 'ADMIN_HUMAN';
   readonly principalId: string;
@@ -309,6 +347,17 @@ export interface AdminReauthResult {
 export interface LogoutCommand {
   readonly sessionToken: string;
   readonly origin: string;
+  readonly csrfToken: string;
+}
+
+export interface RenewSessionContextCommand {
+  readonly sessionToken: string;
+  readonly origin: string;
+  readonly customHeaderPresent: boolean;
+}
+
+export interface RenewSessionContextResult {
+  readonly actorContext: AdminActorContext;
   readonly csrfToken: string;
 }
 
