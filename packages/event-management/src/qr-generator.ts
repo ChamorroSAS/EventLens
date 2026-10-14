@@ -1,6 +1,6 @@
 /**
  * Pure TypeScript QR Code generator (ISO/IEC 18004) producing standalone SVG strings.
- * Self-contained without external native/network dependencies (ARCH-015 / EL-TK-081).
+ * Self-contained without external native/network dependencies.
  */
 
 // Galois Field GF(2^8) math for Reed-Solomon error correction
@@ -30,8 +30,8 @@ function rsGeneratorPoly(degree: number): Uint8Array {
   for (let i = 0; i < degree; i++) {
     const next = new Uint8Array(poly.length + 1);
     for (let j = 0; j < poly.length; j++) {
-      next[j] ^= gfMultiply(poly[j], GF256_EXP[i]);
-      next[j + 1] ^= poly[j];
+      next[j] ^= poly[j];
+      next[j + 1] ^= gfMultiply(poly[j], GF256_EXP[i]);
     }
     poly = next;
   }
@@ -46,14 +46,14 @@ function rsCompute(data: Uint8Array, numEcBytes: number): Uint8Array {
     remainder.copyWithin(0, 1);
     remainder[numEcBytes - 1] = 0;
     for (let j = 0; j < numEcBytes; j++) {
-      remainder[j] ^= gfMultiply(gen[j], factor);
+      remainder[j] ^= gfMultiply(gen[j + 1], factor);
     }
   }
   return remainder;
 }
 
 // Version table parameters for Error Correction Level M
-// Version 1..6: capacity in bytes, total codewords, ec codewords per block
+// Versions 1..7: byte-mode payload capacity, total codewords, EC codewords per block
 interface QrVersionInfo {
   version: number;
   size: number;
@@ -76,9 +76,9 @@ const QR_VERSIONS: QrVersionInfo[] = [
 
 export function generateQrMatrix(text: string): { size: number; matrix: boolean[][] } {
   const textBytes = Buffer.from(text, 'utf-8');
-  const ver = QR_VERSIONS.find((v) => v.dataCapacityBytes >= textBytes.length + 3);
+  const ver = QR_VERSIONS.find((v) => v.dataCapacityBytes >= textBytes.length);
   if (!ver) {
-    throw new Error(`Text too long for supported QR code versions: ${text.length} bytes`);
+    throw new Error(`Text too long for supported QR code versions: ${textBytes.length} bytes`);
   }
 
   // 1. Bitstream encoding: Byte mode (0100) + char count + data + terminator + padding
@@ -125,21 +125,25 @@ export function generateQrMatrix(text: string): { size: number; matrix: boolean[
 
   // 2. Error Correction computation per block
   const blockDataLen = Math.floor(dataBytes.length / ver.numBlocks);
+  const shortBlockCount = ver.numBlocks - dataBytes.length % ver.numBlocks;
   const ecPerBlock = ver.ecCodewords;
   const blocksData: Uint8Array[] = [];
   const blocksEc: Uint8Array[] = [];
 
+  let dataOffset = 0;
   for (let b = 0; b < ver.numBlocks; b++) {
-    const chunk = Uint8Array.from(dataBytes.slice(b * blockDataLen, (b + 1) * blockDataLen));
+    const length = blockDataLen + (b >= shortBlockCount ? 1 : 0);
+    const chunk = Uint8Array.from(dataBytes.slice(dataOffset, dataOffset + length));
+    dataOffset += length;
     blocksData.push(chunk);
     blocksEc.push(rsCompute(chunk, ecPerBlock));
   }
 
   // Interleave data and EC
   const interleaved: number[] = [];
-  for (let i = 0; i < blockDataLen; i++) {
+  for (let i = 0; i <= blockDataLen; i++) {
     for (let b = 0; b < ver.numBlocks; b++) {
-      interleaved.push(blocksData[b][i]);
+      if (i < blocksData[b].length) interleaved.push(blocksData[b][i]);
     }
   }
   for (let i = 0; i < ecPerBlock; i++) {
@@ -194,7 +198,10 @@ export function generateQrMatrix(text: string): { size: number; matrix: boolean[
   // Alignment patterns
   for (const posR of ver.alignmentPatternPositions) {
     for (const posC of ver.alignmentPatternPositions) {
-      if (isFunction[posR][posC]) continue;
+      // Only the three finder corners omit alignment patterns. In version 7,
+      // the intermediate alignment patterns intentionally replace timing modules.
+      const last = ver.alignmentPatternPositions[ver.alignmentPatternPositions.length - 1];
+      if ((posR === 6 && (posC === 6 || posC === last)) || (posR === last && posC === 6)) continue;
       for (let r = -2; r <= 2; r++) {
         for (let c = -2; c <= 2; c++) {
           const isBlack = Math.abs(r) === 2 || Math.abs(c) === 2 || (r === 0 && c === 0);
@@ -215,6 +222,23 @@ export function generateQrMatrix(text: string): { size: number; matrix: boolean[
   for (let i = 0; i < 8; i++) {
     if (!isFunction[8][size - 1 - i]) isFunction[8][size - 1 - i] = true;
     if (!isFunction[size - 1 - i][8]) isFunction[size - 1 - i][8] = true;
+  }
+
+  // Version 7 adds two copies of BCH-protected version information.
+  // Reserve and populate these modules before the data traversal.
+  if (ver.version >= 7) {
+    let remainder = ver.version;
+    for (let i = 0; i < 12; i++) {
+      remainder = (remainder << 1) ^ ((remainder >>> 11) * 0x1f25);
+    }
+    const versionBits = (ver.version << 12) | remainder;
+    for (let i = 0; i < 18; i++) {
+      const a = size - 11 + i % 3;
+      const b = Math.floor(i / 3);
+      const bit = ((versionBits >>> i) & 1) !== 0;
+      setFunctionModule(b, a, bit);
+      setFunctionModule(a, b, bit);
+    }
   }
 
   // 4. Place Data Codewords (zigzag traversal)
