@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { createEventLensClient } from '@eventlens/api-client';
+import { OrganizerSessionService } from '../organizer-session.service.js';
 import type { OrganizerEventModel, EventConfigurationModel } from './organizer.types.js';
 
 @Injectable({
@@ -7,6 +8,7 @@ import type { OrganizerEventModel, EventConfigurationModel } from './organizer.t
 })
 export class OrganizerService {
   private readonly client = createEventLensClient();
+  private readonly sessionService = inject(OrganizerSessionService, { optional: true });
 
   /**
    * Retrieves all events owned by the authenticated organizer via generated OpenAPI client (EL-TK-047, EL-TK-210).
@@ -53,12 +55,19 @@ export class OrganizerService {
     name: string,
     idempotencyKey: string
   ): Promise<{ id: string; outcome: 'APPLIED' | 'REPLAYED' }> {
+    const csrfToken = this.sessionService?.getCsrfToken() ?? '';
+    const headers: Record<string, string> = {};
+    if (csrfToken) {
+      headers['X-CSRF-Token'] = csrfToken;
+    }
+
     const { data, response, error } = await this.client.POST('/api/v1/events', {
       params: {
         header: {
           'Idempotency-Key': idempotencyKey
         }
       },
+      headers: Object.keys(headers).length > 0 ? headers : undefined,
       body: {
         name
       }
@@ -107,6 +116,14 @@ export class OrganizerService {
     expectedRevision: string;
     idempotencyKey: string;
   }): Promise<{ id: string; name: string; revision: string; outcome: 'APPLIED' | 'REPLAYED' }> {
+    const csrfToken = this.sessionService?.getCsrfToken() ?? '';
+    const headers: Record<string, string> = {
+      'Idempotency-Key': params.idempotencyKey
+    };
+    if (csrfToken) {
+      headers['X-CSRF-Token'] = csrfToken;
+    }
+
     const { data, response, error } = await this.client.PATCH(
       '/api/v1/events/{eventId}/configuration/name',
       {
@@ -114,6 +131,7 @@ export class OrganizerService {
           path: { eventId: params.eventId },
           header: { 'Idempotency-Key': params.idempotencyKey }
         },
+        headers,
         body: {
           name: params.name,
           expectedRevision: params.expectedRevision
@@ -183,9 +201,13 @@ export class OrganizerService {
       outcome: string;
     } | null;
   }> {
+    const csrfToken = this.sessionService?.getCsrfToken() ?? '';
     const headers: Record<string, string> = {};
     if (params.idempotencyKey) {
       headers['idempotency-key'] = params.idempotencyKey;
+    }
+    if (csrfToken) {
+      headers['X-CSRF-Token'] = csrfToken;
     }
 
     const { data, response, error } = await this.client.PUT(
@@ -246,9 +268,13 @@ export class OrganizerService {
       outcome: string;
     } | null;
   }> {
+    const csrfToken = this.sessionService?.getCsrfToken() ?? '';
     const headers: Record<string, string> = {};
     if (params.idempotencyKey) {
       headers['idempotency-key'] = params.idempotencyKey;
+    }
+    if (csrfToken) {
+      headers['X-CSRF-Token'] = csrfToken;
     }
 
     const { data, response, error } = await this.client.PUT(
