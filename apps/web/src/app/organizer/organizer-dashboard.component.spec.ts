@@ -162,8 +162,8 @@ describe('OrganizerDashboardComponent & Organizer Navigation (EL-TK-048)', () =>
     fixture.detectChanges();
 
     expect(fixture.componentInstance.activeSection()).toBe('schedule');
-    expect(fixture.nativeElement.textContent).toContain('Programación y timeline');
-    expect(fixture.nativeElement.textContent).toContain('✓ La reprogramación está permitida en este estado');
+    expect(fixture.nativeElement.textContent).toContain('Programación de inicio');
+    expect(fixture.nativeElement.textContent).toContain('America/Bogota');
   });
 
   it('Escenario 5: Botón Volver a mis eventos restablece la vista de lista sin mutaciones', async () => {

@@ -18,6 +18,8 @@ import {
 } from '../navigation/public-entry-routes.contract';
 import { OrganizerSessionService } from '../organizer-session.service';
 
+import { EventScheduleSectionComponent } from './event-schedule-section.component.js';
+
 @Component({
   selector: 'eventlens-organizer-dashboard',
   standalone: true,
@@ -26,7 +28,8 @@ import { OrganizerSessionService } from '../organizer-session.service';
     EventListComponent,
     EventSettingsNavComponent,
     EventStatusBadgeComponent,
-    OrganizerMediaLibraryComponent
+    OrganizerMediaLibraryComponent,
+    EventScheduleSectionComponent
   ],
   template: `
     <eventlens-organizer-app-shell
@@ -140,15 +143,13 @@ import { OrganizerSessionService } from '../organizer-session.service';
                     </div>
                   }
                   @case ('schedule') {
-                    <div class="section-card">
-                      <h3>Programación y timeline</h3>
-                      <p>Fecha de inicio local: {{ selectedEvent()?.startsAtLocal || 'Sin programar' }}</p>
-                      @if (selectedEventConfig()?.capabilities?.canEditSchedule) {
-                        <p class="capability-notice">✓ La reprogramación está permitida en este estado.</p>
-                      } @else {
-                        <p class="capability-disabled">⚠️ La programación no se puede modificar en el estado actual.</p>
-                      }
-                    </div>
+                    <eventlens-event-schedule-section
+                      [event]="selectedEvent() ?? undefined"
+                      [revision]="selectedEventConfig()?.revision"
+                      [canEdit]="!!(selectedEventConfig()?.capabilities?.canSetLocalSchedule || selectedEventConfig()?.capabilities?.canEditSchedule)"
+                      (saved)="onScheduleSaved()"
+                      (reconcile)="onReconcileEvent()"
+                    />
                   }
                   @case ('access') {
                     <div class="section-card">
@@ -271,6 +272,31 @@ export class OrganizerDashboardComponent implements OnInit {
 
   onSectionChange(section: EventSettingsSection): void {
     this.activeSection.set(section);
+  }
+
+  async onScheduleSaved(): Promise<void> {
+    const id = this.selectedEventId();
+    if (id) {
+      await this.refreshSelectedEvent(id);
+    }
+  }
+
+  async onReconcileEvent(): Promise<void> {
+    const id = this.selectedEventId();
+    if (id) {
+      await this.refreshSelectedEvent(id);
+    }
+  }
+
+  private async refreshSelectedEvent(eventId: string): Promise<void> {
+    try {
+      const config = await this.organizerService.getEventConfiguration(eventId);
+      this.selectedEventConfig.set(config);
+      const items = await this.organizerService.listEvents();
+      this.events.set(items);
+    } catch {
+      // Ignora errores transitorios de recarga
+    }
   }
 
   onCreateDraft(): void {
