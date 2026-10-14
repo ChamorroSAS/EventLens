@@ -1,0 +1,134 @@
+<div class="basic-info-card">
+  <header class="card-header">
+    <div class="header-titles">
+      <h3 class="card-title">Información general</h3>
+      <p class="card-description">
+        Modifica los datos principales de tu evento mientras se encuentre en estado de borrador.
+      </p>
+    </div>
+    @if (canEdit()) {
+      <span class="capability-tag editable" aria-label="Edición permitida">
+        ✓ Modo edición
+      </span>
+    } @else {
+      <span class="capability-tag readonly" aria-label="Modo solo lectura">
+        🔒 Solo lectura
+      </span>
+    }
+  </header>
+
+  <form (submit)="onSave($event)" class="info-form" novalidate>
+    <div class="form-group" [class.has-error]="errorMessage()">
+      <label for="event-name-field" class="form-label">
+        Nombre del evento
+        @if (canEdit()) {
+          <span class="required" aria-hidden="true">*</span>
+        }
+      </label>
+
+      @if (canEdit()) {
+        <input
+          id="event-name-field"
+          type="text"
+          class="form-input"
+          [value]="currentName()"
+          (input)="onNameInput($event)"
+          [disabled]="isBusy()"
+          maxlength="120"
+          aria-describedby="name-helper"
+          [attr.aria-invalid]="!!errorMessage()"
+          autocomplete="off"
+          required
+        />
+      } @else {
+        <input
+          id="event-name-field"
+          type="text"
+          class="form-input disabled"
+          [value]="event.name"
+          disabled
+          readonly
+          aria-describedby="name-helper"
+        />
+      }
+
+      <p id="name-helper" class="form-helper">
+        @if (canEdit()) {
+          El nombre puede tener hasta 120 caracteres y se actualiza de forma segura mediante control de versiones.
+        } @else {
+          El nombre solo se puede modificar mientras el evento está en borrador (DRAFT).
+        }
+      </p>
+
+      @if (errorMessage()) {
+        <div class="alert-banner error" role="alert" aria-live="polite">
+          <span class="alert-icon" aria-hidden="true">⚠️</span>
+          <span class="alert-text">{{ errorMessage() }}</span>
+        </div>
+      }
+
+      @if (conflictWarning()) {
+        <div class="alert-banner warning" role="alert" aria-live="polite">
+          <span class="alert-icon" aria-hidden="true">⚡</span>
+          <div class="alert-content">
+            <strong>Conflicto de concurrencia:</strong>
+            <span>{{ conflictWarning() }}</span>
+          </div>
+        </div>
+      }
+
+      @if (successMessage()) {
+        <div class="alert-banner success" role="status" aria-live="polite">
+          <span class="alert-icon" aria-hidden="true">✓</span>
+          <span class="alert-text">{{ successMessage() }}</span>
+        </div>
+      }
+    </div>
+
+    <!-- Metadatos de solo lectura confirmados del evento -->
+    <dl class="metadata-grid">
+      <div class="meta-item">
+        <dt>Zona horaria</dt>
+        <dd>{{ event.timezone }}</dd>
+      </div>
+      <div class="meta-item">
+        <dt>Estado de ciclo de vida</dt>
+        <dd>{{ event.status }}</dd>
+      </div>
+      <div class="meta-item">
+        <dt>Revisión actual</dt>
+        <dd class="revision-code">{{ configuration.revision }}</dd>
+      </div>
+      <div class="meta-item">
+        <dt>Identificador único</dt>
+        <dd class="id-code">{{ event.id }}</dd>
+      </div>
+    </dl>
+
+    @if (canEdit()) {
+      <footer class="form-actions">
+        <button
+          type="button"
+          class="btn-discard"
+          (click)="onDiscard()"
+          [disabled]="!isDirty() || isBusy()"
+        >
+          Descartar cambios
+        </button>
+
+        <button
+          type="submit"
+          class="btn-save"
+          [disabled]="!isDirty() || isBusy() || !currentName().trim()"
+        >
+          @if (isBusy()) {
+            <span class="spinner" aria-hidden="true">⏳</span>
+            <span aria-live="assertive">Guardando...</span>
+          } @else {
+            <span>Guardar cambios</span>
+          }
+        </button>
+      </footer>
+    }
+  </form>
+</div>

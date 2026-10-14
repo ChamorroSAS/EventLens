@@ -1,0 +1,13 @@
+<section class="events-section" aria-labelledby="events-list-heading">
+  <h2 id="events-list-heading" class="sr-only">Lista de mis eventos</h2>
+  <div class="events-grid" role="list">
+    @for (item of events; track item.id) {
+      <div role="listitem">
+        <eventlens-event-card
+          [event]="item"
+          (selectEvent)="onEventSelected($event)"
+        />
+      </div>
+    }
+  </div>
+</section>

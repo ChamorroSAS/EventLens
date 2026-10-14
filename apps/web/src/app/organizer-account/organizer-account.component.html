@@ -1,0 +1,291 @@
+<eventlens-organizer-app-shell activeNav="account" activeSubNav="datos-basicos">
+  <main class="el-account-page" aria-labelledby="organizer-account-heading">
+    <header class="el-account-header">
+      <h1 id="organizer-account-heading" tabindex="-1">Mi cuenta</h1>
+      <nav class="el-account-breadcrumb" aria-label="Ruta de navegación">
+        <span>Espacio de organizador</span>
+        <span class="breadcrumb-sep" aria-hidden="true">/</span>
+        <span class="breadcrumb-current">Mi cuenta</span>
+      </nav>
+    </header>
+
+    @if (isLoadingAccount()) {
+      <section
+        class="el-account-card"
+        role="status"
+        aria-busy="true"
+        data-testid="account-loading-state"
+      >
+        <p>Comprobando estado y permisos de tu cuenta…</p>
+      </section>
+    } @else if (loadError()) {
+      <section
+        class="el-account-card el-account-card--error"
+        role="alert"
+        data-testid="account-error-state"
+      >
+        <p>{{ loadError() }}</p>
+        <button
+          type="button"
+          class="el-btn-secondary"
+          (click)="reloadAccountSurface()"
+        >
+          Reintentar
+        </button>
+      </section>
+    } @else if (projectedAccount(); as accountData) {
+      <div class="el-account-grid">
+        <!-- Card 1: Datos básicos de la cuenta (Top-Left) -->
+        <section
+          id="datos-basicos"
+          class="el-account-card"
+          aria-labelledby="account-basics-heading"
+          data-testid="account-readonly-summary"
+        >
+          <div class="el-card-header">
+            <h2 id="account-basics-heading">Datos básicos de la cuenta</h2>
+          </div>
+
+          <div class="el-account-table-wrap">
+            <table class="el-account-table" role="presentation">
+              <tbody>
+                <tr class="el-table-row">
+                  <th scope="row" class="el-table-label">
+                    <span>Correo electrónico</span>
+                  </th>
+                  <td class="el-table-value el-table-value--bold" data-testid="account-email-value">{{ accountData.email }}</td>
+                </tr>
+
+                <tr class="el-table-row">
+                  <th scope="row" class="el-table-label">
+                    <span>Verificación de correo</span>
+                  </th>
+                  <td class="el-table-value el-table-value--right">
+                    <span data-testid="account-verified-value">
+                      @if (accountData.emailVerified) {
+                        <span class="el-status-pill el-status-pill--verified">
+                          Verificado
+                        </span>
+                      } @else {
+                        <span class="el-status-pill el-status-pill--warning">
+                          Pendiente
+                        </span>
+                      }
+                    </span>
+                  </td>
+                </tr>
+
+                <tr class="el-table-row">
+                  <th scope="row" class="el-table-label">
+                    <span>Estado de cuenta</span>
+                  </th>
+                  <td class="el-table-value el-table-value--right">
+                    <span data-testid="account-status-value">
+                      @if (accountData.accountStatus === 'PENDING_DELETION') {
+                        <span class="el-status-pill el-status-pill--danger">
+                          Eliminación pendiente
+                        </span>
+                      } @else {
+                        <span class="el-status-pill el-status-pill--active">
+                          Activa
+                        </span>
+                      }
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <footer class="el-card-footer-links">
+            <a href="#datos-basicos" class="el-card-link">Correo básicos de organizador</a>
+            <span class="link-dot" aria-hidden="true">•</span>
+            <a href="#seguridad" class="el-card-link">Seguridad</a>
+            <span class="link-dot" aria-hidden="true">•</span>
+            <a href="#opciones-cuenta" class="el-card-link">Card link</a>
+          </footer>
+        </section>
+
+        <!-- Card 2: Seguridad (Top-Right) -->
+        @if (isOrdinaryActiveSession()) {
+          <section
+            id="seguridad"
+            class="el-account-card el-account-card--security"
+            aria-labelledby="security-card-heading"
+          >
+            <div class="el-card-header">
+              <h2 id="security-card-heading">Seguridad</h2>
+            </div>
+
+            <div class="el-security-notice" data-testid="organizer-security-notice">
+              <p class="el-security-notice-text">
+                Revisa los dispositivos con sesión activa en tu cuenta de organizador. Cerrar otras
+                sesiones no afecta tus sesiones como invitado en eventos ni sesiones administrativas.
+              </p>
+            </div>
+
+            <div class="el-card-actions">
+              <button
+                type="button"
+                class="el-btn-action-blue"
+                (click)="scrollToSection('sesiones')"
+              >
+                Ver dispositivos
+              </button>
+            </div>
+          </section>
+        }
+
+        <!-- Card 3: Sesión actual (Bottom-Left) -->
+        @if (isOrdinaryActiveSession()) {
+          <section
+            id="sesiones"
+            class="el-account-card el-account-card--session"
+            aria-labelledby="account-sessions-heading"
+            data-testid="account-sessions-section"
+          >
+            <div class="el-card-header">
+              <h2 id="account-sessions-heading">Sesión actual</h2>
+            </div>
+
+            <div class="el-session-current-info">
+              @if (currentSession(); as curr) {
+                <p class="el-session-activity-text">
+                  Última actividad: {{ formatSessionDate(curr.lastActiveAt) }}
+                </p>
+              } @else {
+                <p class="el-session-activity-text">
+                  Última actividad: {{ formatSessionDate(null) }}
+                </p>
+              }
+            </div>
+
+            @if (sessionsActionAnnouncement(); as sessionNotice) {
+              <p
+                role="status"
+                aria-live="polite"
+                class="el-session-announcement"
+                data-testid="sessions-status-announcement"
+              >
+                {{ sessionNotice }}
+              </p>
+            }
+
+            @if (sessionsError(); as sessErr) {
+              <div role="alert" class="el-inline-error" data-testid="sessions-error-banner">
+                <p>{{ sessErr }}</p>
+                <button type="button" class="el-btn-secondary" (click)="loadSessions()">
+                  Reintentar carga de sesiones
+                </button>
+              </div>
+            } @else if (isLoadingSessions()) {
+              <p role="status" aria-busy="true" class="el-sessions-muted">Cargando sesiones activas…</p>
+            } @else {
+              <ul class="el-session-list" data-testid="organizer-session-list">
+                @for (sess of sessions(); track sess.id) {
+                  <li
+                    class="el-session-item"
+                    [class.el-session-item--current]="sess.isCurrent"
+                    data-testid="organizer-session-item"
+                  >
+                    <div class="el-session-item-row">
+                      <span class="el-session-device-label">
+                        {{ sess.isCurrent ? 'Sesión actual' : 'Sesión activa' }}
+                      </span>
+                      <span class="el-session-time">
+                        {{ formatSessionDate(sess.lastActiveAt) }}
+                      </span>
+                    </div>
+                    @if (!sess.isCurrent) {
+                      <button
+                        type="button"
+                        class="el-btn-revoke"
+                        data-testid="revoke-specific-session-btn"
+                        [disabled]="sessionMutationInFlight()"
+                        (click)="onRevokeSpecificSession(sess.id)"
+                      >
+                        Cerrar sesión
+                      </button>
+                    }
+                  </li>
+                }
+              </ul>
+            }
+
+            <div class="el-session-card-footer">
+              @if (hasOtherActiveSessions()) {
+                <button
+                  type="button"
+                  class="el-btn-action-blue"
+                  data-testid="sign-out-other-sessions-btn"
+                  [disabled]="sessionMutationInFlight()"
+                  (click)="onRevokeOtherSessions()"
+                >
+                  Gestionar
+                </button>
+              } @else {
+                <button
+                  type="button"
+                  class="el-btn-action-blue"
+                  (click)="scrollToSection('sesiones')"
+                >
+                  Gestionar
+                </button>
+              }
+            </div>
+          </section>
+        }
+
+        <!-- Card 4: Opciones de Cuenta (Bottom-Right) -->
+        <section
+          id="opciones-cuenta"
+          class="el-account-card el-account-card--options"
+          data-testid="account-deletion-zone"
+        >
+          <div class="el-card-header">
+            <h2>Opciones de Cuenta</h2>
+          </div>
+
+          <div class="el-account-tabs" role="tablist">
+            <button type="button" class="el-tab is-active" role="tab" aria-selected="true">
+              Activo
+            </button>
+            <button type="button" class="el-tab" role="tab" aria-selected="false">
+              Enlace
+            </button>
+            <button type="button" class="el-tab" role="tab" aria-selected="false">
+              Desactivado
+            </button>
+          </div>
+
+          @if (deletionSnapshot()?.isIrreversible) {
+            <div
+              role="status"
+              class="el-irreversible-banner"
+              data-testid="account-deletion-irreversible-banner"
+            >
+              Eliminación irreversible en curso: la ventana de cancelación expiró o la purga ya fue
+              reclamada por el coordinador.
+            </div>
+          }
+          @if (deletionSnapshot()?.isUncertainAck) {
+            <div
+              role="status"
+              class="el-uncertain-banner"
+              data-testid="account-deletion-uncertain-banner"
+            >
+              Resultado pendiente de confirmación: no se asume eliminación ni cancelación hasta
+              reconciliar con el servidor.
+            </div>
+          }
+
+          <eventlens-deletion-management
+            [mode]="'ACCOUNT_ONLY'"
+            [accountSnapshot]="deletionSnapshot()"
+            (accountStateChanged)="onAccountDeletionStateChanged($event)"
+          />
+        </section>
+      </div>
+    }
+  </main>
+</eventlens-organizer-app-shell>

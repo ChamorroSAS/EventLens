@@ -1,0 +1,94 @@
+<div
+  class="backdrop"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="create-event-title"
+  aria-describedby="create-event-desc"
+  (click)="onBackdropClick($event)"
+>
+  <div class="sheet-card" (click)="$event.stopPropagation()">
+    <header class="sheet-header">
+      <div class="header-icon-container" aria-hidden="true">
+        <span class="header-icon">✨</span>
+      </div>
+      <div>
+        <h2 id="create-event-title" class="sheet-title">Crear borrador de evento</h2>
+        <p id="create-event-desc" class="sheet-subtitle">
+          Comienza dándole un nombre a tu celebración.
+        </p>
+      </div>
+    </header>
+
+    <form (submit)="onSubmit($event)" class="create-event-form" novalidate>
+      <div class="form-group" [class.has-error]="errorMessage()">
+        <label for="event-name-input" class="form-label">
+          Nombre del evento <span class="required" aria-hidden="true">*</span>
+        </label>
+        <input
+          #nameInput
+          id="event-name-input"
+          type="text"
+          class="form-input"
+          [value]="name()"
+          (input)="onNameInput($event)"
+          [disabled]="isBusy()"
+          maxlength="120"
+          placeholder="Ej. Boda de Sofía y Mateo"
+          aria-describedby="event-name-helper"
+          [attr.aria-invalid]="!!errorMessage()"
+          autocomplete="off"
+          required
+        />
+        <p id="event-name-helper" class="form-helper">
+          Podrás configurar la fecha y el horario después.
+        </p>
+
+        @if (errorMessage()) {
+          <div class="error-banner" role="alert" aria-live="polite">
+            <span class="error-icon" aria-hidden="true">⚠️</span>
+            <span class="error-text">{{ errorMessage() }}</span>
+          </div>
+        }
+      </div>
+
+      <div class="actions">
+        <button
+          type="button"
+          class="btn-cancel"
+          (click)="onCancel()"
+          [disabled]="isBusy()"
+        >
+          Cancelar
+        </button>
+
+        @if (isUncertain()) {
+          <button
+            type="submit"
+            class="btn-submit btn-retry"
+            [disabled]="isBusy()"
+          >
+            @if (isBusy()) {
+              <span class="spinner" aria-hidden="true">⏳</span>
+              <span aria-live="assertive">Reconciliando...</span>
+            } @else {
+              <span>Reintentar reconciliación</span>
+            }
+          </button>
+        } @else {
+          <button
+            type="submit"
+            class="btn-submit"
+            [disabled]="isBusy() || !name().trim()"
+          >
+            @if (isBusy()) {
+              <span class="spinner" aria-hidden="true">⏳</span>
+              <span aria-live="assertive">Creando borrador...</span>
+            } @else {
+              <span>Crear borrador</span>
+            }
+          </button>
+        }
+      </div>
+    </form>
+  </div>
+</div>

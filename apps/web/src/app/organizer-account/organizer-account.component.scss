@@ -1,0 +1,332 @@
+.el-account-page {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+  color: #0f172a;
+}
+.el-account-header {
+  margin-bottom: 2rem;
+}
+.el-account-header h1 {
+  margin: 0 0 0.375rem 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.el-account-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+.breadcrumb-sep {
+  color: #cbd5e1;
+}
+.breadcrumb-current {
+  color: #0f172a;
+  font-weight: 500;
+}
+
+/* 2-column Grid */
+.el-account-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+@media (min-width: 900px) {
+  .el-account-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+  }
+}
+
+.el-account-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1.75rem 1.5rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+.el-card-header {
+  margin-bottom: 1rem;
+}
+.el-card-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+/* Card 1: Table */
+.el-account-table-wrap {
+  width: 100%;
+  margin-top: 0.25rem;
+}
+.el-account-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.el-table-row {
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.875rem 0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+.el-table-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #334155;
+  text-align: left;
+}
+.el-table-value {
+  font-size: 0.875rem;
+  color: #0f172a;
+  text-align: right;
+}
+.el-table-value--bold {
+  font-weight: 700;
+}
+.el-status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.el-status-pill--verified {
+  background: #dcfce7;
+  color: #15803d;
+}
+.el-status-pill--active {
+  background: #ccfbf1;
+  color: #0f766e;
+}
+.el-status-pill--warning {
+  background: #fffbeb;
+  color: #b45309;
+}
+.el-status-pill--danger {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.el-card-footer-links {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: auto;
+  padding-top: 1.5rem;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+.el-card-link {
+  color: #64748b;
+  text-decoration: none;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #0284c7;
+  }
+}
+.link-dot {
+  font-size: 0.625rem;
+  color: #cbd5e1;
+}
+
+/* Card 2: Seguridad */
+.el-security-notice {
+  background-color: #f0f9ff;
+  border: 1px solid #e0f2fe;
+  border-radius: 0.625rem;
+  padding: 1.125rem 1.25rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+.el-security-notice-text {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #0c4a6e;
+}
+.el-card-actions {
+  margin-top: auto;
+}
+.el-btn-action-blue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem 1.25rem;
+  background-color: #0284c7;
+  color: #ffffff;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(2, 132, 199, 0.2);
+  transition: all 0.15s ease;
+
+  &:hover {
+    background-color: #0369a1;
+    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #0284c7;
+    outline-offset: 2px;
+  }
+}
+
+/* Card 3: Sesión actual */
+.el-account-card--session {
+  position: relative;
+  overflow: hidden;
+}
+.el-session-activity-text {
+  margin: 0.5rem 0 1rem 0;
+  font-size: 0.875rem;
+  color: #334155;
+}
+.el-session-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+.el-session-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.5rem;
+  border: 1px solid #f1f5f9;
+  background-color: #f8fafc;
+  font-size: 0.8125rem;
+}
+.el-session-item-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.el-session-device-label {
+  font-weight: 600;
+  color: #0f172a;
+}
+.el-session-time {
+  color: #64748b;
+}
+.el-btn-revoke {
+  background: transparent;
+  border: 1px solid #fee2e2;
+  color: #dc2626;
+  border-radius: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: #fef2f2;
+  }
+}
+.el-session-card-footer {
+  margin-top: auto;
+  margin-left: -1.5rem;
+  margin-right: -1.5rem;
+  margin-bottom: -1.75rem;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(180deg, rgba(254, 215, 170, 0) 0%, rgba(254, 215, 170, 0.35) 100%);
+  border-bottom-left-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Card 4: Opciones de Cuenta */
+.el-account-tabs {
+  display: flex;
+  gap: 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 1.25rem;
+}
+.el-tab {
+  background: transparent;
+  border: none;
+  padding: 0.5rem 0.25rem;
+  font-size: 0.875rem;
+  color: #64748b;
+  cursor: pointer;
+  position: relative;
+  font-weight: 500;
+  font-family: inherit;
+}
+.el-tab.is-active {
+  color: #ea580c;
+  font-weight: 600;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #ea580c;
+  }
+}
+
+.el-session-announcement {
+  padding: 0.5rem 0.75rem;
+  background: #f0fdf4;
+  color: #166534;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  margin-bottom: 0.75rem;
+}
+.el-inline-error {
+  padding: 0.75rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  margin-bottom: 0.75rem;
+}
+.el-sessions-muted {
+  color: #64748b;
+  font-size: 0.8125rem;
+}
+.el-btn-secondary {
+  padding: 0.5rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.375rem;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.el-irreversible-banner,
+.el-uncertain-banner {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  font-size: 0.9rem;
+}

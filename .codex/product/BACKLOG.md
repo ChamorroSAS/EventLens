@@ -419,6 +419,8 @@ EL-TK-001..004 — SUPERSEDED por EL-TK-005..019; se preservan como historial. E
 - **EL-TK-165 DONE:** Suite de validación integrada de notificaciones, deduplicación y obsolescencia de extremo a extremo (`test/notifications-epic-e2e.test.ts`) cubriendo los 4 escenarios canónicos: hechos repetidos con deduplicación e idempotencia sin duplicar entregas, obsolescencia atómica antes de entrega ante cambio de fecha o retiro de participantes (DEC-090), recuperación de fallos transitorios del proveedor con reintento JobQueue sin duplicidad semántica, y orquestación transversal de los 5 tipos de avisos (Lifecycle, Capacity, Case, Export, Account Security) sin exposición de credenciales ni secrets en payload ni logs.
 - **Estado suite:** 75 pruebas unitarias + 4 pruebas E2E en `@eventlens/notifications` PASS (100%), build tsc limpio; 167 pruebas en `apps/web` PASS (100%). Épica `EL-EP-013` cerrada oficialmente como DONE.
 
+**CONFIRMED — 2026-10-14, correctivo de rendimiento de marca:** EL-TK-243 creado (DRAFT) para los `NG0913` de los PNG de marca Phoeve y el coste de bytes asociado; hallazgo de la verificación de EL-TK-242. Parent administrativo EL-EP-002 (extensión de marca). Serie ocupada 001..243; no se reutilizan IDs. DRAFT: REQUIREMENTS_READY PENDING, READY_FOR_IMPLEMENTATION NO, UI_REQUIRED NO; no bloquea capacidad funcional (el warning es dev-only). Requiere CR propio o excepción aprobada a `modifyVectorizeRecolorOrReplace: NOT_AUTHORIZED` de CR-006 antes de READY. No modifica tickets DONE ni certifica implementación. [Ticket](tickets/EL-TK-243.md).
+
 
 
 

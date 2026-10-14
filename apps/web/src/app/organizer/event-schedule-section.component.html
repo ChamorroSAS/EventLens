@@ -1,0 +1,95 @@
+<div class="schedule-section-card">
+  <div class="card-header">
+    <h3 class="card-title">Programación de inicio</h3>
+    <span class="timezone-badge" aria-label="Zona horaria confirmada del evento">
+      Zona horaria: <strong>{{ event?.timezone }}</strong>
+    </span>
+  </div>
+
+  <p class="card-description">
+    Define la fecha y hora local de inicio de tu evento. El sistema convertirá automáticamente el instante a UTC respetando la zona horaria confirmada.
+  </p>
+
+  @if (successMessage()) {
+    <div class="alert alert-success" role="status" aria-live="polite">
+      <span class="alert-icon" aria-hidden="true">✓</span>
+      <span>{{ successMessage() }}</span>
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="alert alert-danger" role="alert" aria-live="assertive">
+      <span class="alert-icon" aria-hidden="true">⚠️</span>
+      <div class="alert-content">
+        <p class="alert-message">{{ errorMessage() }}</p>
+        @if (hasConflict()) {
+          <button type="button" class="btn-reconcile" (click)="onReconcile()">
+            Recargar última revisión
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <form (ngSubmit)="onSave()" class="schedule-form" #form="ngForm">
+    <div class="form-group">
+      <label for="startsAtInput" class="form-label">
+        Fecha y hora local de inicio:
+      </label>
+      <input
+        id="startsAtInput"
+        name="startsAtInput"
+        type="datetime-local"
+        class="form-control"
+        [(ngModel)]="startsAtLocal"
+        (ngModelChange)="onDateChange()"
+        [disabled]="!canEdit || isSaving()"
+        required
+        aria-describedby="startsAtHint"
+      />
+      <small id="startsAtHint" class="form-hint">
+        Hora local exacta en {{ event?.timezone }}. Formato AAAA-MM-DD HH:mm.
+      </small>
+    </div>
+
+    @if (availableOffsets().length > 0) {
+      <fieldset class="form-group overlap-fieldset" role="radiogroup" aria-labelledby="overlapLegend">
+        <legend id="overlapLegend" class="form-label">
+          Desambiguación de horario de verano (cambio de hora / overlap):
+        </legend>
+        <p class="overlap-description">
+          La hora seleccionada ocurre dos veces durante el retroceso de reloj de otoño. Selecciona el horario exacto:
+        </p>
+        <div class="radio-options">
+          @for (offset of availableOffsets(); track offset) {
+            <label class="radio-label">
+              <input
+                type="radio"
+                name="dstOffset"
+                [value]="offset"
+                [(ngModel)]="selectedOffset"
+                [disabled]="!canEdit || isSaving()"
+              />
+              <span>{{ formatOffset(offset) }} (UTC {{ offset >= 0 ? '+' : '' }}{{ offset / 60 }}h)</span>
+            </label>
+          }
+        </div>
+      </fieldset>
+    }
+
+    <div class="form-actions">
+      <button
+        type="submit"
+        class="btn-save"
+        [disabled]="!canEdit || isSaving() || !startsAtLocal"
+        aria-label="Guardar fecha y hora local de inicio"
+      >
+        @if (isSaving()) {
+          <span>Guardando...</span>
+        } @else {
+          <span>Guardar fecha y hora</span>
+        }
+      </button>
+    </div>
+  </form>
+</div>
