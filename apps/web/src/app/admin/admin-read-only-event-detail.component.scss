@@ -1,0 +1,11 @@
+@use 'breakpoints' as bp;
+@use 'mixins' as mixins;
+
+:host { display: block; }
+section > section { border: 1px solid var(--el-color-border); border-radius: .5rem; margin-block: 1rem; padding: 1rem; }
+dl { display: grid; gap: .25rem .75rem; }
+dt { color: var(--el-color-text-secondary); }
+dd { margin: 0; overflow-wrap: anywhere; }
+button { min-block-size: 2.75rem; font: inherit; }
+button:focus-visible { @include mixins.el-focus-ring; }
+@include bp.el-media-up(tablet) { dl { grid-template-columns: 14rem 1fr; } }

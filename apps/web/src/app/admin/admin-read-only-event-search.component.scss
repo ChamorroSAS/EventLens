@@ -1,0 +1,22 @@
+@use 'breakpoints' as bp;
+@use 'mixins' as mixins;
+
+:host { display: block; }
+.search-form { display: grid; gap: .75rem; margin-block: 1rem; }
+input, select, button { min-block-size: 2.75rem; font: inherit; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { @include mixins.el-focus-ring; }
+a { display: inline-block; padding-block: .75rem; }
+section, .card, td { overflow-wrap: anywhere; }
+.cards { display: grid; gap: .75rem; }
+.card { border: 1px solid var(--el-color-border); border-radius: .5rem; padding: 1rem; }
+table { display: none; width: 100%; border-collapse: collapse; }
+td, th { border-bottom: 1px solid var(--el-color-border); padding: .75rem; text-align: left; }
+nav { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; margin-block: 1rem; }
+
+@include bp.el-media-up(desktop) {
+  .search-form { grid-template-columns: 1fr 10rem 10rem auto; align-items: end; }
+  .search-form label { grid-row: 1; }
+  .search-form input, .search-form select, .search-form button { grid-row: 2; }
+  .cards { display: none; }
+  table { display: table; }
+}
