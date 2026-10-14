@@ -198,7 +198,8 @@ export interface paths {
         /** Listar eventos pertenecientes al organizador autenticado (EL-TK-047) */
         get: operations["listOrganizerEvents"];
         put?: never;
-        post?: never;
+        /** Crear un nuevo borrador de evento de forma idempotente (EL-TK-224) */
+        post: operations["createOrganizerEvent"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1157,6 +1158,152 @@ export interface operations {
                 };
             };
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    createOrganizerEvent: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Clave de idempotencia única para la operación */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        receipt: {
+                            /** Format: uuid */
+                            operationId: string;
+                            /** Format: uuid */
+                            eventId: string;
+                            operation: string;
+                            appliedRevision: string;
+                            outcome: string;
+                        };
+                        /** @enum {string} */
+                        outcome: "APPLIED" | "REPLAYED";
+                        event: {
+                            /** Format: uuid */
+                            id: string;
+                        };
+                    };
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        receipt: {
+                            /** Format: uuid */
+                            operationId: string;
+                            /** Format: uuid */
+                            eventId: string;
+                            operation: string;
+                            appliedRevision: string;
+                            outcome: string;
+                        };
+                        /** @enum {string} */
+                        outcome: "APPLIED" | "REPLAYED";
+                        event: {
+                            /** Format: uuid */
+                            id: string;
+                        };
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
