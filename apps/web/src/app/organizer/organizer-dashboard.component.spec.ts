@@ -272,4 +272,91 @@ describe('OrganizerDashboardComponent & Organizer Navigation (EL-TK-048)', () =>
     );
     expect(restrictedRedirect).toBe('/mi-cuenta');
   });
+
+  describe('Unsaved changes navigation confirmation (EL-TK-230)', () => {
+    let fixture: ComponentFixture<OrganizerDashboardComponent>;
+    let component: OrganizerDashboardComponent;
+
+    beforeEach(async () => {
+      organizerServiceMock.listEvents.mockResolvedValue(sampleEvents);
+      organizerServiceMock.getEventConfiguration.mockResolvedValue(sampleConfig);
+      fixture = await createDashboard();
+      component = fixture.componentInstance;
+      await component.onEventSelected('event-101');
+      fixture.detectChanges();
+    });
+
+    it('interrumpe el cambio de sección cuando hay cambios sin guardar y abre el modal de confirmación', () => {
+      component.isBasicInfoDirty.set(true);
+      fixture.detectChanges();
+
+      // Intenta cambiar a la sección schedule
+      component.onSectionChange('schedule');
+      fixture.detectChanges();
+
+      // Debe permanecer en general y abrir el modal
+      expect(component.activeSection()).toBe('general');
+      expect(component.showUnsavedChangesModal()).toBe(true);
+
+      const modal = fixture.nativeElement.querySelector('.unsaved-modal-backdrop');
+      expect(modal).toBeTruthy();
+      expect(modal.textContent).toContain('¿Descartar cambios sin guardar?');
+
+      // Si elige seguir editando
+      component.onKeepEditing();
+      fixture.detectChanges();
+
+      expect(component.showUnsavedChangesModal()).toBe(false);
+      expect(component.activeSection()).toBe('general');
+    });
+
+    it('descarta cambios y continúa con la navegación cuando el usuario confirma', () => {
+      component.isBasicInfoDirty.set(true);
+      fixture.detectChanges();
+
+      // Intenta cambiar de sección
+      component.onSectionChange('schedule');
+      fixture.detectChanges();
+
+      // Confirma descartar
+      component.onDiscardAndNavigate();
+      fixture.detectChanges();
+
+      expect(component.showUnsavedChangesModal()).toBe(false);
+      expect(component.isBasicInfoDirty()).toBe(false);
+      expect(component.activeSection()).toBe('schedule');
+    });
+
+    it('interrumpe la salida a Mis eventos con cambios sin guardar y descarta al confirmar', () => {
+      component.isBasicInfoDirty.set(true);
+      fixture.detectChanges();
+
+      component.onBackToEvents();
+      fixture.detectChanges();
+
+      expect(component.selectedEventId()).toBe('event-101');
+      expect(component.showUnsavedChangesModal()).toBe(true);
+
+      component.onDiscardAndNavigate();
+      fixture.detectChanges();
+
+      expect(component.selectedEventId()).toBeNull();
+      expect(component.isBasicInfoDirty()).toBe(false);
+    });
+
+    it('actualiza el nombre del evento en la lista y configuración al recibir onEventBasicInfoUpdated', () => {
+      const updatedName = 'Cumpleaños Renovado de Valentina';
+      component.onEventBasicInfoUpdated({
+        id: 'event-101',
+        name: updatedName,
+        revision: '2'
+      });
+      fixture.detectChanges();
+
+      expect(component.selectedEvent()?.name).toBe(updatedName);
+      expect(component.selectedEventConfig()?.event.name).toBe(updatedName);
+      expect(component.selectedEventConfig()?.revision).toBe('2');
+      expect(component.isBasicInfoDirty()).toBe(false);
+    });
+  });
 });
