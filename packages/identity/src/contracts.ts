@@ -28,7 +28,8 @@ export type AuthenticationErrorCode =
   | 'CSRF_VALIDATION_FAILED'
   | 'RATE_LIMITED'
   | 'TEMPORARY_FAILURE'
-  | 'INVALID_ARGUMENT';
+  | 'INVALID_ARGUMENT'
+  | 'AUTHORITY_UNAVAILABLE';
 
 export class AuthenticationError extends Error {
   constructor(public readonly code: AuthenticationErrorCode, message?: string) {

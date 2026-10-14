@@ -6,7 +6,13 @@ export type PublicEntryRouteId =
   | 'BETA_ACCESS_REQUEST'
   | 'ORGANIZER_ACCOUNT'
   | 'ORGANIZER_DASHBOARD'
+  | 'ORGANIZER_EVENT_DETAIL'
+  | 'ORGANIZER_EVENT_CONFIG_GENERAL'
+  | 'ORGANIZER_EVENT_CONFIG_SCHEDULE'
   | 'GUEST_EVENT_ENTRY'
+  | 'ADMIN_LOGIN'
+  | 'ADMIN_EVENTS'
+  | 'ADMIN_EVENT_DETAIL'
   | 'NOT_FOUND';
 
 export type PublicEntryRouteContext =
@@ -15,6 +21,7 @@ export type PublicEntryRouteContext =
   | 'PUBLIC_FORM'
   | 'ORGANIZER_ACCOUNT'
   | 'ORGANIZER_OPERATIONS'
+  | 'ADMIN_OPERATIONS'
   | 'GUEST'
   | 'PUBLIC_ERROR';
 
@@ -36,6 +43,15 @@ export const APPROVED_PUBLIC_ENTRY_PATHS = Object.freeze({
   GUEST_PREFIX: '/g/',
   GUEST_PATTERN: '/g/:lookupKey',
   WILDCARD: '**'
+});
+
+export const APPROVED_PANEL_PATHS = Object.freeze({
+  ORGANIZER_EVENT_DETAIL: '/mis-eventos/:eventId',
+  ORGANIZER_EVENT_CONFIG_GENERAL: '/mis-eventos/:eventId/configuracion/general',
+  ORGANIZER_EVENT_CONFIG_SCHEDULE: '/mis-eventos/:eventId/configuracion/programacion',
+  ADMIN_LOGIN: '/admin/ingresar',
+  ADMIN_EVENTS: '/admin/eventos',
+  ADMIN_EVENT_DETAIL: '/admin/eventos/:eventId'
 });
 
 export interface PublicEntryRouteMetadata {
@@ -78,11 +94,47 @@ export const CANONICAL_PUBLIC_ENTRY_ROUTE_METADATA: Readonly<
     title: 'Mis eventos — Phoeve',
     context: 'ORGANIZER_OPERATIONS'
   },
+  ORGANIZER_EVENT_DETAIL: {
+    id: 'ORGANIZER_EVENT_DETAIL',
+    path: APPROVED_PANEL_PATHS.ORGANIZER_EVENT_DETAIL,
+    title: 'Detalle del evento — Phoeve',
+    context: 'ORGANIZER_OPERATIONS'
+  },
+  ORGANIZER_EVENT_CONFIG_GENERAL: {
+    id: 'ORGANIZER_EVENT_CONFIG_GENERAL',
+    path: APPROVED_PANEL_PATHS.ORGANIZER_EVENT_CONFIG_GENERAL,
+    title: 'Configuración general — Phoeve',
+    context: 'ORGANIZER_OPERATIONS'
+  },
+  ORGANIZER_EVENT_CONFIG_SCHEDULE: {
+    id: 'ORGANIZER_EVENT_CONFIG_SCHEDULE',
+    path: APPROVED_PANEL_PATHS.ORGANIZER_EVENT_CONFIG_SCHEDULE,
+    title: 'Programación del evento — Phoeve',
+    context: 'ORGANIZER_OPERATIONS'
+  },
   GUEST_EVENT_ENTRY: {
     id: 'GUEST_EVENT_ENTRY',
     path: APPROVED_PUBLIC_ENTRY_PATHS.GUEST_PATTERN,
     title: 'Acceso al evento — Phoeve',
     context: 'GUEST'
+  },
+  ADMIN_LOGIN: {
+    id: 'ADMIN_LOGIN',
+    path: APPROVED_PANEL_PATHS.ADMIN_LOGIN,
+    title: 'Acceso administrativo — Phoeve',
+    context: 'AUTH_ENTRY'
+  },
+  ADMIN_EVENTS: {
+    id: 'ADMIN_EVENTS',
+    path: APPROVED_PANEL_PATHS.ADMIN_EVENTS,
+    title: 'Búsqueda administrativa — Phoeve',
+    context: 'ADMIN_OPERATIONS'
+  },
+  ADMIN_EVENT_DETAIL: {
+    id: 'ADMIN_EVENT_DETAIL',
+    path: APPROVED_PANEL_PATHS.ADMIN_EVENT_DETAIL,
+    title: 'Detalle administrativo — Phoeve',
+    context: 'ADMIN_OPERATIONS'
   },
   NOT_FOUND: {
     id: 'NOT_FOUND',

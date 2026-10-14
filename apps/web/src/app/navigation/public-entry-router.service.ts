@@ -5,13 +5,15 @@ import {
   Injectable,
   InjectionToken,
   OnDestroy,
-   inject,
+  inject,
   makeEnvironmentProviders,
   computed,
   signal
 } from '@angular/core';
 import { Location, NgComponentOutlet } from '@angular/common';
 import { Title } from '@angular/platform-browser';
+import { Router, NavigationEnd, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs';
 import {
   APPROVED_PUBLIC_ENTRY_PATHS,
   PUBLIC_HOME_ANCHORS,
@@ -130,6 +132,48 @@ export function matchPublicEntryRoute(
         }
       };
     }
+
+    if (normalizedDescriptorPath.includes(':')) {
+      const descSegments = normalizedDescriptorPath.split('/').filter(Boolean);
+      const pathSegments = pathname.split('/').filter(Boolean);
+
+      if (descSegments.length === pathSegments.length) {
+        let matches = true;
+        const extractedParams: Record<string, string> = {};
+
+        for (let i = 0; i < descSegments.length; i++) {
+          const dSeg = descSegments[i];
+          const pSeg = pathSegments[i];
+
+          if (dSeg.startsWith(':')) {
+            const paramName = dSeg.slice(1);
+            if (/^[A-Za-z0-9_-]{1,128}$/.test(pSeg)) {
+              extractedParams[paramName] = pSeg;
+            } else {
+              matches = false;
+              break;
+            }
+          } else if (dSeg !== pSeg) {
+            matches = false;
+            break;
+          }
+        }
+
+        if (matches) {
+          const safePath = pathname.replace(extractedParams['eventId'] ?? '', '[redacted]');
+          return {
+            descriptor,
+            context: {
+              pathname,
+              safePathname: safePath,
+              params: Object.freeze(extractedParams),
+              queryParams,
+              fragment
+            }
+          };
+        }
+      }
+    }
   }
 
   const wildcard = descriptors.find((d) => d.path === APPROVED_PUBLIC_ENTRY_PATHS.WILDCARD);
@@ -155,10 +199,12 @@ export class PublicEntryRouterService implements OnDestroy {
   private readonly location = inject(Location, { optional: true });
   private readonly titleService = inject(Title, { optional: true });
   private readonly document = inject(DOCUMENT, { optional: true });
+  private readonly angularRouter = inject(Router, { optional: true });
 
   private readonly activeRouteSignal = signal<ResolvedPublicEntryRoute | null>(null);
   private readonly navigationErrorSignal = signal<string | null>(null);
   private locationSubscription: { unsubscribe(): void } | null = null;
+  private angularRouterSubscription: { unsubscribe(): void } | null = null;
   private navigationSequence = 0;
 
   readonly activeRoute = this.activeRouteSignal.asReadonly();
@@ -173,22 +219,53 @@ export class PublicEntryRouterService implements OnDestroy {
   );
   readonly navigationError = this.navigationErrorSignal.asReadonly();
 
-  constructor() {
-    if (this.location) {
-      this.locationSubscription = this.location.subscribe((event) => {
-        const nextUrl = event.url || APPROVED_PUBLIC_ENTRY_PATHS.HOME;
-        void this.navigateByUrl(nextUrl, { skipLocationUpdate: true });
-      }) as { unsubscribe(): void };
-    }
+  private get isAngularRouterActive(): boolean {
+    return (
+      !!this.angularRouter &&
+      Array.isArray(this.angularRouter.config) &&
+      this.angularRouter.config.length > 0
+    );
+  }
 
-    if (this.routes.length > 0) {
-      const initialUrl = this.location?.path(true) || APPROVED_PUBLIC_ENTRY_PATHS.HOME;
-      void this.navigateByUrl(initialUrl, { skipLocationUpdate: true });
+  constructor() {
+    if (this.isAngularRouterActive) {
+      this.angularRouterSubscription = this.angularRouter!.events
+        .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+        .subscribe((event) => {
+          this.syncFromAngularUrl(event.urlAfterRedirects || event.url);
+        });
+
+      const initialUrl = this.angularRouter!.url || APPROVED_PUBLIC_ENTRY_PATHS.HOME;
+      this.syncFromAngularUrl(initialUrl);
+    } else {
+      if (this.location) {
+        this.locationSubscription = this.location.subscribe((event) => {
+          const nextUrl = event.url || APPROVED_PUBLIC_ENTRY_PATHS.HOME;
+          void this.navigateByUrl(nextUrl, { skipLocationUpdate: true });
+        }) as { unsubscribe(): void };
+      }
+
+      if (this.routes.length > 0) {
+        const initialUrl = this.location?.path(true) || APPROVED_PUBLIC_ENTRY_PATHS.HOME;
+        void this.navigateByUrl(initialUrl, { skipLocationUpdate: true });
+      }
     }
   }
 
   ngOnDestroy(): void {
     this.locationSubscription?.unsubscribe();
+    this.angularRouterSubscription?.unsubscribe();
+  }
+
+  private syncFromAngularUrl(rawUrl: string): void {
+    const matched = matchPublicEntryRoute(rawUrl, this.routes);
+    if (matched) {
+      this.activeRouteSignal.set(matched);
+      if (this.titleService && matched.descriptor.title) {
+        this.titleService.setTitle(matched.descriptor.title);
+      }
+      this.schedulePostNavigationFocus(matched.context.fragment);
+    }
   }
 
   async navigateByUrl(
@@ -197,6 +274,24 @@ export class PublicEntryRouterService implements OnDestroy {
   ): Promise<boolean> {
     const seq = ++this.navigationSequence;
     this.navigationErrorSignal.set(null);
+
+    if (this.isAngularRouterActive) {
+      try {
+        const target = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
+        const outcome = await this.angularRouter!.navigateByUrl(target, {
+          replaceUrl: options.replaceUrl
+        });
+        if (outcome) {
+          this.syncFromAngularUrl(this.angularRouter!.url);
+        }
+        return outcome;
+      } catch {
+        this.navigationErrorSignal.set(
+          'No se pudo abrir esta vista temporalmente. Puedes volver a intentarlo.'
+        );
+        return false;
+      }
+    }
 
     try {
       const resolved = await this.resolveWithGuards(rawUrl, 0);
@@ -306,22 +401,35 @@ export class PublicEntryRouterService implements OnDestroy {
 }
 
 @Component({
-  selector: 'eventlens-router-outlet, router-outlet',
+  selector: 'eventlens-router-outlet',
   standalone: true,
-  imports: [NgComponentOutlet],
+  imports: [NgComponentOutlet, RouterOutlet],
   template: `
-    @if (router.navigationError(); as errorMsg) {
-      <section role="alert" class="el-router-error">
-        <p>{{ errorMsg }}</p>
-        <button type="button" (click)="retryNavigation()">Reintentar</button>
-      </section>
-    } @else if (router.activeComponent(); as component) {
-      <ng-container *ngComponentOutlet="component" />
+    @if (hasAngularRouter) {
+      <router-outlet></router-outlet>
+    } @else {
+      @if (router.navigationError(); as errorMsg) {
+        <section role="alert" class="el-router-error">
+          <p>{{ errorMsg }}</p>
+          <button type="button" (click)="retryNavigation()">Reintentar</button>
+        </section>
+      } @else if (router.activeComponent(); as component) {
+        <ng-container *ngComponentOutlet="component" />
+      }
     }
   `
 })
 export class PublicEntryRouterOutletComponent {
   readonly router = inject(PublicEntryRouterService);
+  private readonly angularRouter = inject(Router, { optional: true });
+
+  get hasAngularRouter(): boolean {
+    return (
+      !!this.angularRouter &&
+      Array.isArray(this.angularRouter.config) &&
+      this.angularRouter.config.length > 0
+    );
+  }
 
   retryNavigation(): void {
     const currentPath = this.router.activeContext()?.pathname ?? APPROVED_PUBLIC_ENTRY_PATHS.HOME;

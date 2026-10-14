@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, Input } from '@angular/core';
 import type {
   OrganizerEventModel,
   EventConfigurationModel,
@@ -196,6 +196,18 @@ import { OrganizerSessionService } from '../organizer-session.service';
 export class OrganizerDashboardComponent implements OnInit {
   private readonly organizerService = inject(OrganizerService);
   private readonly sessionService = inject(OrganizerSessionService, { optional: true });
+
+  @Input() set eventId(id: string | undefined) {
+    if (id) {
+      this.selectedEventId.set(id);
+    }
+  }
+
+  @Input() set section(sec: string | undefined) {
+    if (sec === 'general' || sec === 'schedule' || sec === 'programacion') {
+      this.activeSection.set(sec === 'programacion' ? 'schedule' : (sec as EventSettingsSection));
+    }
+  }
 
   readonly isLoading = signal<boolean>(false);
   readonly errorMessage = signal<string | null>(null);
