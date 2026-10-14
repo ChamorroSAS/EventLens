@@ -322,8 +322,8 @@ export class DurableRecoveryAuthorityAdapter implements RecoveryAuthorityPort {
         this.watermarks.set(entry.subjectRef, rev);
         break;
       case 'CREDENTIAL_ROTATED':
-        this.credentialRevisions.set(entry.subjectRef, rev);
-        this.watermarks.set(entry.subjectRef, rev);
+        this.credentialRevisions.set(entry.subjectRef, rev > (this.credentialRevisions.get(entry.subjectRef) ?? 0n) ? rev : this.credentialRevisions.get(entry.subjectRef)!);
+        this.watermarks.set(entry.subjectRef, rev > (this.watermarks.get(entry.subjectRef) ?? 0n) ? rev : this.watermarks.get(entry.subjectRef)!);
         break;
       case 'SESSION_REVOKED': {
         const wm = entry.data?.watermark ? BigInt(String(entry.data.watermark)) : rev;
@@ -431,6 +431,13 @@ export class DurableRecoveryAuthorityAdapter implements RecoveryAuthorityPort {
 
   async getCredentialRevision(principalId: string): Promise<bigint | null> {
     await this.assertOperational();
+    // An administrative SQL outcome not yet ACKed cannot grant the old or new access.
+    for (const entry of this.entriesByReceipt.values()) {
+      if (entry.subjectRef === principalId && entry.state === 'PREPARED' &&
+          ['CREATE','DISABLE','ENABLE','RESET_TEMPORARY_PASSWORD','INITIAL_PASSWORD_CHANGE','PASSWORD_VERIFIER_UPGRADE'].includes(String(entry.data.cause))) {
+        throw new RecoveryError('AUTHORITY_UNAVAILABLE', 'Organizer access mutation awaits recovery acknowledgement');
+      }
+    }
     return this.credentialRevisions.get(principalId) ?? null;
   }
 

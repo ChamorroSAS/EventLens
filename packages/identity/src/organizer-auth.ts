@@ -40,6 +40,10 @@ export function computeOrganizerEffectiveCapabilities(
   state: OrganizerEffectiveSessionState
 ): OrganizerEffectiveSessionCapabilities {
   switch (state) {
+    case 'PASSWORD_CHANGE_REQUIRED':
+      return { canSignIn: false, canRequestBetaAccess: true, canAccessMyEvents: false,
+        canAccessMyAccount: false, canManageSessions: false, canManageAccountDeletion: false,
+        isDeletionRestricted: false, canSignOut: true, canChangePassword: true };
     case 'ORGANIZER_ACTIVE':
       return {
         canSignIn: false,
@@ -92,7 +96,7 @@ export function projectOrganizerEffectiveSession(input: {
   }
 
   const isRestricted = actor.restrictedContext === 'DELETION_MANAGEMENT_ONLY';
-  const state: OrganizerEffectiveSessionState = isRestricted
+  const state: OrganizerEffectiveSessionState = actor.restrictedContext === 'PASSWORD_CHANGE_ONLY' ? 'PASSWORD_CHANGE_REQUIRED' : isRestricted
     ? 'ORGANIZER_RESTRICTED_DELETION'
     : 'ORGANIZER_ACTIVE';
 
@@ -111,6 +115,9 @@ export function projectOrganizerEffectiveSession(input: {
 }
 
 interface OrganizerAccountRow {
+  provisioning_source?: string;
+  password_change_required?: boolean;
+  temporary_password_expires_at?: Date | string | null;
   id: string;
   email: string;
   email_normalized: string;
@@ -133,6 +140,10 @@ interface OrganizerCredentialRow {
 }
 
 interface OrganizerSessionRow {
+  provisioning_source?: string;
+  password_change_required?: boolean;
+  temporary_password_expires_at?: Date | string | null;
+  verified_at?: Date | string | null;
   id: string;
   account_id: string;
   token_digest: string;
@@ -260,13 +271,18 @@ export class OrganizerAuthenticationService {
     // Verificación de rate limit neutro previo a consulta
     this.checkRateLimit(emailNormalized);
 
-    return this.runner.run(async (tx: SqlTransaction) => {
+    let upgradeReceipt: RecoveryPreparedReceipt | undefined;
+    let upgradeRevision: bigint | undefined;
+    let outcome: OrganizerLoginResult;
+    try {
+    outcome = await this.runner.run(async (tx: SqlTransaction) => {
       const now = new Date();
 
       // 1. Consultar cuenta del organizador bajo SELECT FOR UPDATE
       const accountRows = await tx.query<OrganizerAccountRow>(
         `SELECT id, email, email_normalized, status, declared_adult, declared_adult_at,
-                invitation_id, verified_at, created_at, updated_at
+                invitation_id, verified_at, created_at, updated_at, provisioning_source,
+                password_change_required, temporary_password_expires_at
          FROM organizer_account
          WHERE email_normalized = $1
          FOR UPDATE`,
@@ -292,6 +308,10 @@ export class OrganizerAuthenticationService {
       }
 
       const account = accountRows[0];
+      if (account.password_change_required && (!account.temporary_password_expires_at || new Date(account.temporary_password_expires_at).getTime() <= now.getTime())) {
+        await this.passwordVerifier.verifyDummy(password);
+        throw new AuthenticationError('UNAUTHENTICATED', 'Invalid credentials');
+      }
 
       // 2. Si la cuenta no está activa ni en pending_deletion -> rechazo neutro uniforme sin enumerar
       if (account.status !== 'ACTIVE' && account.status !== 'PENDING_DELETION') {
@@ -302,7 +322,7 @@ export class OrganizerAuthenticationService {
           id: randomUUID(),
           procedure: 'ORGANIZER_LOGIN',
           actorId: account.id,
-          targetIdentifier: account.email_normalized,
+          targetIdentifier: account.provisioning_source === 'ADMIN_PROVISIONED' ? account.id : account.email_normalized,
           targetPrincipalId: account.id,
           result: 'REJECTED_UNAUTHENTICATED',
           details: 'Authentication rejected: account not active',
@@ -331,7 +351,7 @@ export class OrganizerAuthenticationService {
           id: randomUUID(),
           procedure: 'ORGANIZER_LOGIN',
           actorId: account.id,
-          targetIdentifier: account.email_normalized,
+          targetIdentifier: account.provisioning_source === 'ADMIN_PROVISIONED' ? account.id : account.email_normalized,
           targetPrincipalId: account.id,
           result: 'REJECTED_UNAUTHENTICATED',
           details: 'Authentication rejected: no active credential found',
@@ -359,7 +379,7 @@ export class OrganizerAuthenticationService {
           id: randomUUID(),
           procedure: 'ORGANIZER_LOGIN',
           actorId: account.id,
-          targetIdentifier: account.email_normalized,
+          targetIdentifier: account.provisioning_source === 'ADMIN_PROVISIONED' ? account.id : account.email_normalized,
           targetPrincipalId: account.id,
           result: 'REJECTED_UNAUTHENTICATED',
           details: 'Authentication rejected: invalid secret',
@@ -402,7 +422,7 @@ export class OrganizerAuthenticationService {
           id: randomUUID(),
           procedure: 'ORGANIZER_LOGIN',
           actorId: account.id,
-          targetIdentifier: account.email_normalized,
+          targetIdentifier: account.provisioning_source === 'ADMIN_PROVISIONED' ? account.id : account.email_normalized,
           targetPrincipalId: account.id,
           result: 'REJECTED_UNAUTHENTICATED',
           details: 'Authentication rejected: credential revision mismatch with recovery authority',
@@ -436,6 +456,8 @@ export class OrganizerAuthenticationService {
                 }
               }
             });
+            upgradeReceipt = preparedReceipt;
+            upgradeRevision = nextRevision;
           } catch (prepErr) {
             this.recordFailedAttempt(emailNormalized);
             throw new AuthenticationError('UNAUTHENTICATED', `Recovery authority prepare failed: ${(prepErr as Error).message}`);
@@ -476,15 +498,8 @@ export class OrganizerAuthenticationService {
         );
 
         if (preparedReceipt) {
-          if (!this.recoveryAuthority.ackCommit) {
-            throw new AuthenticationError('UNAUTHENTICATED', 'Recovery authority does not support mandatory ACK commit');
-          }
-          try {
-            await this.recoveryAuthority.ackCommit(preparedReceipt.preparedReceipt, nextRevision);
-          } catch (ackErr) {
-            this.recordFailedAttempt(emailNormalized);
-            throw new AuthenticationError('UNAUTHENTICATED', `Failed to ACK committed operation: ${(ackErr as Error).message}`);
-          }
+          if (!this.recoveryAuthority.ackCommit) throw new AuthenticationError('AUTHORITY_UNAVAILABLE', 'Recovery authority does not support mandatory ACK commit');
+          await tx.execute(`INSERT INTO organizer_management_request (id,actor_id,payload_digest,account_id,authority_receipt,credential_revision,result) VALUES ($1,$2,$3,$2::uuid,$4,$5,$6::jsonb)`,randomUUID(),account.id,createHash('sha256').update(preparedReceipt.preparedReceipt).digest('hex'),preparedReceipt.preparedReceipt,nextRevision,JSON.stringify({outcome:'PASSWORD_VERIFIER_UPGRADE',temporaryPassword:null}));
         }
 
         credRevBigInt = nextRevision;
@@ -540,7 +555,7 @@ export class OrganizerAuthenticationService {
         id: randomUUID(),
         procedure: 'ORGANIZER_LOGIN',
         actorId: account.id,
-        targetIdentifier: account.email_normalized,
+        targetIdentifier: account.provisioning_source === 'ADMIN_PROVISIONED' ? account.id : account.email_normalized,
         targetPrincipalId: account.id,
         result: 'SUCCESS',
         details: 'Organizer authenticated and session issued',
@@ -566,7 +581,7 @@ export class OrganizerAuthenticationService {
         credentialRevision: credRevBigInt,
         sessionWatermark: watermark,
         recoveryEpoch: epoch,
-        ...(account.status === 'PENDING_DELETION' ? { restrictedContext: 'DELETION_MANAGEMENT_ONLY' as const } : {})
+        ...(account.password_change_required ? { restrictedContext: 'PASSWORD_CHANGE_ONLY' as const } : account.status === 'PENDING_DELETION' ? { restrictedContext: 'DELETION_MANAGEMENT_ONLY' as const } : {})
       };
 
       const accountRecord: OrganizerAccountRecord = {
@@ -584,7 +599,7 @@ export class OrganizerAuthenticationService {
 
       const projection = projectOrganizerEffectiveSession({
         actorContext,
-        emailVerified: Boolean(account.verified_at) || account.status === 'ACTIVE' || account.status === 'PENDING_DELETION',
+        emailVerified: account.provisioning_source === 'ADMIN_PROVISIONED' ? Boolean(account.verified_at) : Boolean(account.verified_at) || account.status === 'ACTIVE' || account.status === 'PENDING_DELETION',
         csrfToken: rawCsrfToken
       });
 
@@ -597,6 +612,15 @@ export class OrganizerAuthenticationService {
         projection
       };
     });
+    } catch (error) {
+      if (upgradeReceipt && error instanceof AuthenticationError) await this.recoveryAuthority.resolveAbort?.(upgradeReceipt.preparedReceipt,'Known authentication transaction rollback').catch(()=>{});
+      throw error;
+    }
+    if (upgradeReceipt) {
+      try { await this.recoveryAuthority.ackCommit!(upgradeReceipt.preparedReceipt,upgradeRevision!); }
+      catch { throw new AuthenticationError('AUTHORITY_UNAVAILABLE','Credential upgrade commit awaits recovery acknowledgement'); }
+    }
+    return outcome;
   }
 
   /**
@@ -614,10 +638,10 @@ export class OrganizerAuthenticationService {
 
     const trimmedToken = rawToken.trim();
     try {
-      const validation = await this.validateSession({ sessionToken: trimmedToken });
+      const validation = await this.validateSession({ sessionToken: trimmedToken, allowPasswordChangeOnly: true });
       return projectOrganizerEffectiveSession({
         actorContext: validation.actorContext,
-        emailVerified: true,
+        emailVerified: validation.projection.account?.emailVerified ?? false,
         csrfToken: deriveOrganizerCsrfToken(trimmedToken)
       });
     } catch (err) {
@@ -649,7 +673,8 @@ export class OrganizerAuthenticationService {
       const sessionRows = await tx.query<OrganizerSessionRow>(
         `SELECT s.id, s.account_id, s.token_digest, s.csrf_token_digest, s.auth_time, s.created_at,
                 s.expires_at, s.last_active_at, s.idle_expires_at, s.revoked_at, s.revocation_reason,
-                s.session_watermark, a.email, a.email_normalized, a.status as account_status
+                s.session_watermark, a.email, a.email_normalized, a.status as account_status,
+                a.provisioning_source, a.password_change_required, a.temporary_password_expires_at, a.verified_at
          FROM organizer_session s
          JOIN organizer_account a ON a.id = s.account_id
          WHERE s.token_digest = $1
@@ -662,6 +687,10 @@ export class OrganizerAuthenticationService {
       }
 
       const session = sessionRows[0];
+      if (session.password_change_required) {
+        if (!session.temporary_password_expires_at || new Date(session.temporary_password_expires_at).getTime() <= now.getTime()) throw new AuthenticationError('SESSION_EXPIRED', 'Temporary password expired');
+        if (!command.allowPasswordChangeOnly) throw new AuthenticationError('FORBIDDEN', 'Password change required');
+      }
 
       if (session.revoked_at) {
         throw new AuthenticationError('SESSION_REVOKED', `Session has been revoked: ${session.revocation_reason ?? 'REVOKED'}`);
@@ -763,7 +792,7 @@ export class OrganizerAuthenticationService {
         throw new AuthenticationError('AUTHORITY_UNAVAILABLE', `RecoveryAuthority unavailable: ${(err as Error).message}`);
       }
 
-      if (authRev !== null && authRev > sessionWatermark) {
+      if ((session.provisioning_source === 'ADMIN_PROVISIONED' && (authRev === null || authRev !== currentCredRev || currentCredRev !== sessionWatermark)) || (authRev !== null && authRev > sessionWatermark)) {
         await tx.execute(
           `UPDATE organizer_session
            SET revoked_at = $1, revocation_reason = 'RECOVERY_AUTHORITY_REVISION'
@@ -794,14 +823,14 @@ export class OrganizerAuthenticationService {
         credentialRevision: currentCredRev,
         sessionWatermark: sessionWatermark,
         recoveryEpoch: epoch,
-        ...(session.account_status === 'PENDING_DELETION'
+        ...(session.password_change_required ? { restrictedContext: 'PASSWORD_CHANGE_ONLY' as const } : session.account_status === 'PENDING_DELETION'
           ? { restrictedContext: 'DELETION_MANAGEMENT_ONLY' as const }
           : {})
       };
 
       const projection = projectOrganizerEffectiveSession({
         actorContext,
-        emailVerified: true,
+        emailVerified: session.provisioning_source === 'ADMIN_PROVISIONED' ? Boolean(session.verified_at) : true,
         csrfToken: deriveOrganizerCsrfToken(command.sessionToken)
       });
 
@@ -825,7 +854,7 @@ export class OrganizerAuthenticationService {
     }
 
     const { actorContext } = command;
-    if (actorContext.restrictedContext === 'DELETION_MANAGEMENT_ONLY') {
+    if (Boolean(actorContext.restrictedContext)) {
       throw new AuthenticationError(
         'FORBIDDEN',
         'Account in PENDING_DELETION is restricted to deletion management only'
@@ -981,7 +1010,7 @@ export class OrganizerAuthenticationService {
       throw new AuthenticationError('UNAUTHENTICATED', 'Organizer authentication required');
     }
 
-    if (command.actorContext.restrictedContext === 'DELETION_MANAGEMENT_ONLY') {
+    if (Boolean(command.actorContext.restrictedContext)) {
       throw new AuthenticationError(
         'FORBIDDEN',
         'Account in PENDING_DELETION is restricted to deletion management only'
@@ -1101,7 +1130,7 @@ export class OrganizerAuthenticationService {
       throw new AuthenticationError('UNAUTHENTICATED', 'Organizer authentication required');
     }
 
-    if (command.actorContext.restrictedContext === 'DELETION_MANAGEMENT_ONLY') {
+    if (Boolean(command.actorContext.restrictedContext)) {
       throw new AuthenticationError(
         'FORBIDDEN',
         'Account in PENDING_DELETION is restricted to deletion management only'

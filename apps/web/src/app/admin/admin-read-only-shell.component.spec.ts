@@ -15,7 +15,10 @@ describe('AdminReadOnlyShellComponent (EL-TK-235)', () => {
     const fixture = TestBed.createComponent(AdminReadOnlyShellComponent);
     fixture.detectChanges();
     const element: HTMLElement = fixture.nativeElement;
-    expect(element.querySelector('a')?.getAttribute('href')).toContain('/admin/ingresar');
+    const loginLink = Array.from(element.querySelectorAll('a')).find((anchor) =>
+      anchor.getAttribute('href')?.includes('/admin/ingresar')
+    );
+    expect(loginLink?.getAttribute('href')).toContain('/admin/ingresar');
     expect(element.textContent).toContain('Reintentar cierre');
     expect(element.textContent).not.toContain('Comprobando');
     await fixture.componentInstance.retry();
@@ -32,7 +35,7 @@ describe('AdminReadOnlyShellComponent (EL-TK-235)', () => {
     };
     await TestBed.configureTestingModule({
       imports: [AdminReadOnlyShellComponent],
-      providers: [{ provide: AdminSessionService, useValue: session }]
+      providers: [provideRouter([]), { provide: AdminSessionService, useValue: session }]
     }).compileComponents();
     const fixture: ComponentFixture<AdminReadOnlyShellComponent> =
       TestBed.createComponent(AdminReadOnlyShellComponent);

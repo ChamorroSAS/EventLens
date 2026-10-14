@@ -63,7 +63,10 @@ describe('EL-TK-223: Angular Router único para rutas de paneles y entrada públ
     isLoggingOut: signal(false).asReadonly(),
     lastLogoutAnnouncement: signal<string | null>(null).asReadonly(),
     logout: vi.fn(),
-    registerOrganizerCacheClearer: vi.fn()
+    registerOrganizerCacheClearer: vi.fn(),
+    // organizerSessionGuard revalidates the server projection before resolving
+    // guarded organizer routes; an active projection keeps route mapping asserted.
+    refreshSessionProjection: vi.fn(async () => ({ state: 'ORGANIZER_ACTIVE' as const }))
   };
 
   const mockOrganizerService = {

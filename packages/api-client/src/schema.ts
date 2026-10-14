@@ -34,6 +34,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/organizer/session/temporary-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["changeOrganizerTemporaryPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/organizer/session": {
         parameters: {
             query?: never;
@@ -181,6 +197,86 @@ export interface paths {
         get: operations["getAdminAggregatedEventDetail"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/organizers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listAdminOrganizers"];
+        put?: never;
+        post: operations["createAdminOrganizer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/organizers/{accountId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAdminOrganizer"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateAdminOrganizer"];
+        trace?: never;
+    };
+    "/api/v1/admin/organizers/{accountId}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["disableAdminOrganizer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/organizers/{accountId}/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["enableAdminOrganizer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/organizers/{accountId}/temporary-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resetAdminOrganizerTemporaryPassword"];
         delete?: never;
         options?: never;
         head?: never;
@@ -564,6 +660,89 @@ export interface operations {
             };
         };
     };
+    changeOrganizerTemporaryPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    currentPassword: string;
+                    newPassword: string;
+                    /** @enum {boolean} */
+                    declaredAdult: true;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        outcome: "PASSWORD_CHANGED_RELOGIN_REQUIRED";
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
     getOrganizerSessionProjection: {
         parameters: {
             query?: never;
@@ -580,7 +759,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        state: "ANONYMOUS" | "ORGANIZER_ACTIVE" | "ORGANIZER_RESTRICTED_DELETION";
+                        state: "ANONYMOUS" | "ORGANIZER_ACTIVE" | "ORGANIZER_RESTRICTED_DELETION" | "PASSWORD_CHANGE_REQUIRED";
                         capabilities: {
                             canSignIn: boolean;
                             canRequestBetaAccess: boolean;
@@ -590,6 +769,7 @@ export interface operations {
                             canManageAccountDeletion: boolean;
                             isDeletionRestricted: boolean;
                             canSignOut: boolean;
+                            canChangePassword?: boolean;
                         };
                         account: {
                             email: string;
@@ -639,7 +819,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        state: "ANONYMOUS" | "ORGANIZER_ACTIVE" | "ORGANIZER_RESTRICTED_DELETION";
+                        state: "ANONYMOUS" | "ORGANIZER_ACTIVE" | "ORGANIZER_RESTRICTED_DELETION" | "PASSWORD_CHANGE_REQUIRED";
                         capabilities: {
                             canSignIn: boolean;
                             canRequestBetaAccess: boolean;
@@ -649,6 +829,7 @@ export interface operations {
                             canManageAccountDeletion: boolean;
                             isDeletionRestricted: boolean;
                             canSignOut: boolean;
+                            canChangePassword?: boolean;
                         };
                         account: {
                             email: string;
@@ -732,7 +913,7 @@ export interface operations {
                         outcome: "LOGGED_OUT" | "ALREADY_EXPIRED_OR_REVOKED";
                         projection: {
                             /** @enum {string} */
-                            state: "ANONYMOUS" | "ORGANIZER_ACTIVE" | "ORGANIZER_RESTRICTED_DELETION";
+                            state: "ANONYMOUS" | "ORGANIZER_ACTIVE" | "ORGANIZER_RESTRICTED_DELETION" | "PASSWORD_CHANGE_REQUIRED";
                             capabilities: {
                                 canSignIn: boolean;
                                 canRequestBetaAccess: boolean;
@@ -742,6 +923,7 @@ export interface operations {
                                 canManageAccountDeletion: boolean;
                                 isDeletionRestricted: boolean;
                                 canSignOut: boolean;
+                                canChangePassword?: boolean;
                             };
                             account: {
                                 email: string;
@@ -1223,6 +1405,807 @@ export interface operations {
                 };
             };
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    listAdminOrganizers: {
+        parameters: {
+            query?: {
+                search?: string;
+                offset?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** @enum {string} */
+                            provisioningSource: "INVITATION" | "ADMIN_PROVISIONED";
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: email */
+                            email: string;
+                            displayName: string | null;
+                            status: string;
+                            passwordChangeRequired: boolean;
+                            /** Format: date-time */
+                            temporaryPasswordExpiresAt: string | null;
+                            revision: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            emailVerified: boolean;
+                        }[];
+                        total: number;
+                        limit: number;
+                        offset: number;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    createAdminOrganizer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                    /** Format: uuid */
+                    idempotencyKey: string;
+                    /** Format: email */
+                    email: string;
+                    displayName?: string | null;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        organizer: {
+                            /** @enum {string} */
+                            provisioningSource: "INVITATION" | "ADMIN_PROVISIONED";
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: email */
+                            email: string;
+                            displayName: string | null;
+                            status: string;
+                            passwordChangeRequired: boolean;
+                            /** Format: date-time */
+                            temporaryPasswordExpiresAt: string | null;
+                            revision: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            emailVerified: boolean;
+                        };
+                        outcome: string;
+                        temporaryPassword: string | null;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    getAdminOrganizer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        provisioningSource: "INVITATION" | "ADMIN_PROVISIONED";
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: email */
+                        email: string;
+                        displayName: string | null;
+                        status: string;
+                        passwordChangeRequired: boolean;
+                        /** Format: date-time */
+                        temporaryPasswordExpiresAt: string | null;
+                        revision: string;
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        updatedAt: string;
+                        emailVerified: boolean;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    updateAdminOrganizer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                    /** Format: uuid */
+                    idempotencyKey: string;
+                    expectedRevision: string;
+                    displayName: string | null;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        organizer: {
+                            /** @enum {string} */
+                            provisioningSource: "INVITATION" | "ADMIN_PROVISIONED";
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: email */
+                            email: string;
+                            displayName: string | null;
+                            status: string;
+                            passwordChangeRequired: boolean;
+                            /** Format: date-time */
+                            temporaryPasswordExpiresAt: string | null;
+                            revision: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            emailVerified: boolean;
+                        };
+                        outcome: string;
+                        temporaryPassword: string | null;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    disableAdminOrganizer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                    /** Format: uuid */
+                    idempotencyKey: string;
+                    expectedRevision: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        organizer: {
+                            /** @enum {string} */
+                            provisioningSource: "INVITATION" | "ADMIN_PROVISIONED";
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: email */
+                            email: string;
+                            displayName: string | null;
+                            status: string;
+                            passwordChangeRequired: boolean;
+                            /** Format: date-time */
+                            temporaryPasswordExpiresAt: string | null;
+                            revision: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            emailVerified: boolean;
+                        };
+                        outcome: string;
+                        temporaryPassword: string | null;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    enableAdminOrganizer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                    /** Format: uuid */
+                    idempotencyKey: string;
+                    expectedRevision: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        organizer: {
+                            /** @enum {string} */
+                            provisioningSource: "INVITATION" | "ADMIN_PROVISIONED";
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: email */
+                            email: string;
+                            displayName: string | null;
+                            status: string;
+                            passwordChangeRequired: boolean;
+                            /** Format: date-time */
+                            temporaryPasswordExpiresAt: string | null;
+                            revision: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            emailVerified: boolean;
+                        };
+                        outcome: string;
+                        temporaryPassword: string | null;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    resetAdminOrganizerTemporaryPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                    /** Format: uuid */
+                    idempotencyKey: string;
+                    expectedRevision: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        organizer: {
+                            /** @enum {string} */
+                            provisioningSource: "INVITATION" | "ADMIN_PROVISIONED";
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: email */
+                            email: string;
+                            displayName: string | null;
+                            status: string;
+                            passwordChangeRequired: boolean;
+                            /** Format: date-time */
+                            temporaryPasswordExpiresAt: string | null;
+                            revision: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            emailVerified: boolean;
+                        };
+                        outcome: string;
+                        temporaryPassword: string | null;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

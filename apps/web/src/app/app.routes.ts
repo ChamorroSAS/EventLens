@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { adminSessionGuard } from './admin/admin-session.guard';
+import { organizerSessionGuard } from './organizer-session.guard.js';
 
 export const routes: Routes = [
   {
@@ -16,6 +17,11 @@ export const routes: Routes = [
     title: 'Iniciar sesión — Phoeve',
   },
   {
+    path: 'cambiar-contrasena',
+    loadComponent: () => import('./organizer-auth/organizer-temporary-password.component').then(m => m.OrganizerTemporaryPasswordComponent),
+    title: 'Cambiar contraseña — Phoeve',
+  },
+  {
     path: 'solicitar-acceso',
     loadComponent: () =>
       import('./beta-access/beta-access-request.component').then(
@@ -25,6 +31,7 @@ export const routes: Routes = [
   },
   {
     path: 'mi-cuenta',
+    canActivate: [organizerSessionGuard],
     loadComponent: () =>
       import('./organizer-account/organizer-account.component').then(
         (m) => m.OrganizerAccountComponent
@@ -33,6 +40,7 @@ export const routes: Routes = [
   },
   {
     path: 'mis-eventos',
+    canActivate: [organizerSessionGuard],
     loadComponent: () =>
       import('./organizer/organizer-dashboard.component').then(
         (m) => m.OrganizerDashboardComponent
@@ -41,6 +49,7 @@ export const routes: Routes = [
   },
   {
     path: 'mis-eventos/:eventId',
+    canActivate: [organizerSessionGuard],
     loadComponent: () =>
       import('./organizer/organizer-dashboard.component').then(
         (m) => m.OrganizerDashboardComponent
@@ -49,6 +58,7 @@ export const routes: Routes = [
   },
   {
     path: 'mis-eventos/:eventId/configuracion/general',
+    canActivate: [organizerSessionGuard],
     loadComponent: () =>
       import('./organizer/organizer-dashboard.component').then(
         (m) => m.OrganizerDashboardComponent
@@ -58,6 +68,7 @@ export const routes: Routes = [
   },
   {
     path: 'mis-eventos/:eventId/configuracion/programacion',
+    canActivate: [organizerSessionGuard],
     loadComponent: () =>
       import('./organizer/organizer-dashboard.component').then(
         (m) => m.OrganizerDashboardComponent
@@ -76,6 +87,12 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./admin/admin-login.component').then((m) => m.AdminLoginComponent),
     title: 'Acceso administrativo — Phoeve',
+  },
+  {
+    path: 'admin/organizadores',
+    canActivate: [adminSessionGuard],
+    loadComponent: () => import('./admin/admin-organizers.component').then(m => m.AdminOrganizersComponent),
+    title: 'Organizadores Beta — Phoeve',
   },
   {
     path: 'admin/eventos',

@@ -20,7 +20,8 @@ import type { PlatformConfig } from '../platform/config/config.js';
 import { ORGANIZER_SESSION_CONFIG } from './organizer-session.service.js';
 import { createAuditedTransactions } from './audited-transactions.js';
 
-export const ADMIN_RECOVERY_AUTHORITY = Symbol('ADMIN_RECOVERY_AUTHORITY');
+import { ADMIN_RECOVERY_AUTHORITY } from './recovery-authority.token.js';
+export { ADMIN_RECOVERY_AUTHORITY } from './recovery-authority.token.js';
 
 function unavailableRecoveryAuthority(): RecoveryAuthorityPort {
   const unavailable = async (): Promise<never> => {

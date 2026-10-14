@@ -2,6 +2,23 @@ import { describe, expect, it, vi } from 'vitest';
 import { OrganizerSessionService } from './organizer-session.service';
 
 describe('OrganizerSessionService (EL-TK-205 & EL-TK-207)', () => {
+  it('keeps temporary-password sessions restricted and redirects every return destination to password change', () => {
+    const service = new OrganizerSessionService();
+    service.applyServerProjection({
+      state: 'PASSWORD_CHANGE_REQUIRED',
+      capabilities: { canSignIn:false, canRequestBetaAccess:true, canAccessMyEvents:false, canAccessMyAccount:false, canManageSessions:false, canManageAccountDeletion:false, isDeletionRestricted:false, canSignOut:true, canChangePassword:true },
+      account: { email:'beta@eventlens.test', emailVerified:false, accountStatus:'ACTIVE' }
+    }, 'temporary-session-csrf');
+    expect(service.state()).toBe('PASSWORD_CHANGE_REQUIRED');
+    expect(service.account()?.emailVerified).toBe(false);
+    expect(service.capabilities().canAccessMyEvents).toBe(false);
+    for (const destination of ['/mis-eventos','/mi-cuenta','https://evil.test','/']) {
+      expect(service.resolveAuthorizedReturnDestination(destination)).toBe('/cambiar-contrasena');
+    }
+    service.clearLocalSessionProjection();
+    expect(service.state()).toBe('ANONYMOUS');
+    expect(service.getCsrfToken()).toBeNull();
+  });
   it('starts in CHECKING without private capabilities or account data', () => {
     const service = new OrganizerSessionService();
     expect(service.state()).toBe('CHECKING');

@@ -185,7 +185,7 @@ export function canonicalizeAdminReturnUrl(candidate: unknown): string {
       : parsed.pathname;
 
   // Strict allowlist: only /admin/eventos or /admin/eventos/:eventId
-  if (!SAFE_ADMIN_EVENT_ID_PATTERN.test(normalizedPathname)) {
+  if (normalizedPathname !== '/admin/organizadores' && !SAFE_ADMIN_EVENT_ID_PATTERN.test(normalizedPathname)) {
     return ALLOWED_ADMIN_RETURN_PREFIX;
   }
 

@@ -118,17 +118,16 @@ it('EL-TK-211 & EL-TK-212: resolves guest public entry, enforces PIN & HttpOnly 
     idempotencyKey: `idem-draft-${randomUUID()}`
   });
   const eventId = createdDraft.event.id;
+  expect(createdDraft.event.timezone).toBe('America/Bogota');
 
   await draftService.setSchedule({
     actorContext: orgLogin.actorContext,
     eventId,
-    startsAtLocal: '2027-06-15T18:00:00',
-    timezone: 'America/Bogota'
+    startsAtLocal: '2027-06-15T18:00:00'
   });
   await draftService.setInitialPin({
     actorContext: orgLogin.actorContext,
     eventId,
-    enabled: true,
     pin: '654321'
   });
   await lifecycleService.scheduleDraft({
@@ -138,7 +137,7 @@ it('EL-TK-211 & EL-TK-212: resolves guest public entry, enforces PIN & HttpOnly 
   await lifecycleService.activateEvent({
     actorContext: orgLogin.actorContext,
     eventId,
-    trigger: 'MANUAL_EARLY_ACTIVATION'
+    trigger: 'MANUAL_EARLY'
   });
 
   const issuedCred = await publicAccessService.issueInitialCredential({

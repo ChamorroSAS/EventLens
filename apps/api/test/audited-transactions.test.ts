@@ -14,7 +14,12 @@ it('does not insert duplicate external audit while the domain transaction is ope
     await audited.auditSink.record(event);
     expect(execute).toHaveBeenCalledTimes(1);
   });
-  expect(execute).toHaveBeenCalledTimes(1);
+  // After the transaction closes, the layer re-asserts the audit idempotently
+  // (ON CONFLICT (id) DO NOTHING). This is what persists external-only events
+  // (e.g. ORGANIZER_LOGIN SUCCESS) recorded inside the transaction without a
+  // domain INSERT, and it can never produce a duplicate row.
+  expect(execute).toHaveBeenCalledTimes(2);
+  expect(String(execute.mock.calls[1][0])).toContain('ON CONFLICT (id) DO NOTHING');
 });
 
 it('persists rejected audit only after rollback and propagates the original rejection', async () => {

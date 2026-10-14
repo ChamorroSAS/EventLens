@@ -23,6 +23,20 @@ describe('DurableRecoveryAuthorityAdapter (Laboratory & Unit Tests - DEC-112)', 
     }
   });
 
+  it('never decreases organizer revisions when an older commit ACK arrives after a newer one', async () => {
+    const authority = new DurableRecoveryAuthorityAdapter({storageDir:tempDir}); await authority.initialize();
+    const older = await authority.prepare({operationId:'older-operation',subjectRef:'managed-organizer',fact:{type:'CREDENTIAL_ROTATED',data:{cause:'DISABLE'}}});
+    const newer = await authority.prepare({operationId:'newer-operation',subjectRef:'managed-organizer',fact:{type:'CREDENTIAL_ROTATED',data:{cause:'ENABLE'}}});
+    await authority.ackCommit(newer.preparedReceipt,3n);
+    await expect(authority.getCredentialRevision('managed-organizer')).rejects.toMatchObject({code:'AUTHORITY_UNAVAILABLE'});
+    await authority.ackCommit(older.preparedReceipt,2n);
+    expect(await authority.getCredentialRevision('managed-organizer')).toBe(3n);
+    expect(await authority.getAdminAuthWatermark('managed-organizer')).toBe(3n);
+    const restored = new DurableRecoveryAuthorityAdapter({storageDir:tempDir});await restored.initialize();
+    expect(await restored.getCredentialRevision('managed-organizer')).toBe(3n);
+    expect(await restored.getAdminAuthWatermark('managed-organizer')).toBe(3n);
+  });
+
   it('1. Durabilidad: persiste registros y restaura estado exacto tras reinicio del proceso', async () => {
     // Instancia 1
     const authority1 = new DurableRecoveryAuthorityAdapter({ storageDir: tempDir });

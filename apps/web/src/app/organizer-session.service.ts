@@ -11,6 +11,7 @@ export type OrganizerSessionConsumerState =
   | 'ANONYMOUS'
   | 'ORGANIZER_ACTIVE'
   | 'ORGANIZER_RESTRICTED_DELETION'
+  | 'PASSWORD_CHANGE_REQUIRED'
   | 'UNAVAILABLE';
 
 export type OrganizerEffectiveCapabilities = ServerOrganizerSessionProjection['capabilities'];
@@ -125,6 +126,7 @@ export class OrganizerSessionService {
   ): OrganizerSessionSnapshot {
     if (
       projection.state === 'ORGANIZER_ACTIVE' ||
+      projection.state === 'PASSWORD_CHANGE_REQUIRED' ||
       projection.state === 'ORGANIZER_RESTRICTED_DELETION'
     ) {
       if (csrfTokenHeader !== undefined) {
@@ -165,6 +167,7 @@ export class OrganizerSessionService {
   }
 
   resolveAuthorizedReturnDestination(rawReturnUrl?: unknown): string {
+    if (this.snapshotSignal().state === 'PASSWORD_CHANGE_REQUIRED') return '/cambiar-contrasena';
     const canonical = canonicalizeInternalReturnUrl(rawReturnUrl);
     const snap = this.snapshotSignal();
 

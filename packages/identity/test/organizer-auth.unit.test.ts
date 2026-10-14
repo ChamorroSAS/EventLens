@@ -96,6 +96,7 @@ function createInMemoryRunner(db: InMemoryDb): TransactionRunner {
 
         async execute(sql: string, ...params: unknown[]): Promise<number> {
           const normalized = sql.replace(/\s+/g, ' ').trim();
+          if (normalized.includes('INSERT INTO organizer_management_request')) return 1;
 
           // INSERT INTO organizer_session
           if (normalized.includes('INSERT INTO organizer_session')) {
@@ -806,7 +807,7 @@ describe('EL-TK-013: OrganizerAuthenticationService (Unit Tests)', () => {
           email: fixture.email,
           password: fixture.password
         })
-      ).rejects.toMatchObject({ code: 'UNAUTHENTICATED' });
+      ).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE' });
     });
   });
 

@@ -23,6 +23,7 @@ import { AdminSessionService } from './admin-session.service.js';
           <button type="button" (click)="logout()">Cerrar sesión</button>
         }
       </header>
+      <nav aria-label="Administración" class="admin-shell__nav"><a routerLink="/admin/eventos" aria-current="page">Eventos</a><a routerLink="/admin/organizadores">Organizadores</a></nav>
 
       @if (session.state() === 'UNAVAILABLE') {
         <section class="admin-shell__notice" role="status" aria-live="polite">
@@ -58,6 +59,9 @@ import { AdminSessionService } from './admin-session.service.js';
     .admin-shell { max-width: 72rem; margin: 0 auto; padding: 1.5rem; color: var(--el-color-text); }
     .admin-shell__header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--el-color-border); padding-bottom: 1rem; }
     .admin-shell__eyebrow { color: var(--el-color-text-secondary); font-size: .875rem; margin: 0 0 .25rem; }
+    .admin-shell__nav { display: flex; gap: 1.5rem; padding: 1rem 0; }
+    .admin-shell__nav a { color: var(--el-color-text); padding: .5rem 0; text-decoration: none; }
+    .admin-shell__nav a[aria-current] { font-weight: 600; border-bottom: 3px solid var(--el-color-primary); }
     h1 { margin: 0; font-size: clamp(1.5rem, 4vw, 2rem); }
     button { min-height: 2.75rem; border: 1px solid var(--el-color-border); border-radius: .5rem; padding: .5rem 1rem; background: var(--el-color-surface); color: var(--el-color-text); font: inherit; }
     button:focus-visible { outline: 2px solid var(--el-color-accent); outline-offset: 2px; }

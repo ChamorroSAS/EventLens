@@ -223,7 +223,7 @@ export class EventDraftService {
       throw new EventManagementError('UNAUTHORIZED', 'Authenticated organizer context is required');
     }
 
-    if (actorContext.restrictedContext === 'DELETION_MANAGEMENT_ONLY') {
+    if (Boolean(actorContext.restrictedContext)) {
       throw new EventManagementError(
         'UNAUTHORIZED',
         'Account is pending deletion and restricted to deletion consultation and cancellation'
@@ -1827,7 +1827,7 @@ export class EventDraftService {
     if (!actorContext || actorContext.actorType !== 'ORGANIZER_HUMAN' || !actorContext.accountId) {
       throw new EventManagementError('UNAUTHORIZED', 'Authenticated organizer context is required');
     }
-    if (actorContext.restrictedContext === 'DELETION_MANAGEMENT_ONLY') {
+    if (Boolean(actorContext.restrictedContext)) {
       throw new EventManagementError(
         'UNAUTHORIZED',
         'Account is pending deletion and restricted to deletion consultation and cancellation'
@@ -1864,7 +1864,7 @@ export class EventDraftService {
     if (!actorContext || actorContext.actorType !== 'ORGANIZER_HUMAN' || !actorContext.accountId) {
       throw new EventManagementError('UNAUTHORIZED', 'Authenticated organizer context is required');
     }
-    if (actorContext.restrictedContext === 'DELETION_MANAGEMENT_ONLY') {
+    if (Boolean(actorContext.restrictedContext)) {
       throw new EventManagementError(
         'UNAUTHORIZED',
         'Account is pending deletion and restricted to deletion consultation and cancellation'

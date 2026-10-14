@@ -139,6 +139,7 @@ export {
 } from './access-request.js';
 
 export { OrganizerRegistrationService } from './registration.js';
+export { AdminOrganizerManagementService, OrganizerManagementError, type OrganizerSummary, type OrganizerManagementResult, type OrganizerManagementCommand } from './admin-organizer-management.js';
 
 export { EmailVerificationService } from './verification.js';
 

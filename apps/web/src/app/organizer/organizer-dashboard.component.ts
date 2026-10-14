@@ -488,6 +488,7 @@ export async function organizerDashboardRouteGuard(
   if (state === 'ORGANIZER_RESTRICTED_DELETION') {
     return APPROVED_PUBLIC_ENTRY_PATHS.ORGANIZER_ACCOUNT;
   }
+  if (state === 'PASSWORD_CHANGE_REQUIRED') return '/cambiar-contrasena';
 
   if (state === 'ANONYMOUS') {
     return '/ingresar?returnUrl=%2Fmis-eventos';

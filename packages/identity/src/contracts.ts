@@ -700,7 +700,7 @@ export interface OrganizerActorContext {
   readonly credentialRevision: bigint;
   readonly sessionWatermark: bigint;
   readonly recoveryEpoch: bigint;
-  readonly restrictedContext?: 'DELETION_MANAGEMENT_ONLY';
+  readonly restrictedContext?: 'DELETION_MANAGEMENT_ONLY' | 'PASSWORD_CHANGE_ONLY';
 }
 
 export interface OrganizerSessionCookieSpec {
@@ -720,6 +720,7 @@ export function serializeOrganizerSessionCookie(spec: OrganizerSessionCookieSpec
 export type OrganizerEffectiveSessionState =
   | 'ANONYMOUS'
   | 'ORGANIZER_ACTIVE'
+  | 'PASSWORD_CHANGE_REQUIRED'
   | 'ORGANIZER_RESTRICTED_DELETION';
 
 export interface OrganizerEffectiveSessionCapabilities {
@@ -731,6 +732,7 @@ export interface OrganizerEffectiveSessionCapabilities {
   readonly canManageAccountDeletion: boolean;
   readonly isDeletionRestricted: boolean;
   readonly canSignOut: boolean;
+  readonly canChangePassword?: boolean;
 }
 
 export interface OrganizerProjectedAccountMetadata {
@@ -770,6 +772,7 @@ export interface ValidateOrganizerSessionCommand {
   readonly sessionToken: string;
   readonly csrfToken?: string | null;
   readonly requireCsrf?: boolean;
+  readonly allowPasswordChangeOnly?: boolean;
 }
 
 export interface ValidateOrganizerSessionResult {

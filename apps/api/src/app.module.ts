@@ -29,6 +29,8 @@ import { AdminReadOnlyService } from './admin/admin-read-only.service.js';
 import type { PlatformConfig } from './platform/config/config.js';
 import { createLocalAdminAuthority } from './identity/local-admin-authority.js';
 import { ADMIN_RECOVERY_AUTHORITY } from './identity/admin-session.service.js';
+import { AdminOrganizersController } from './identity/admin-organizers.controller.js';
+import { AdminOrganizersService } from './identity/admin-organizers.service.js';
 @Module({})
 export class AppModule {
   static configure(config:PlatformConfig):DynamicModule {
@@ -39,6 +41,7 @@ export class AppModule {
         OrganizerSessionController,
         AdminSessionController,
         AdminReadOnlyController,
+        AdminOrganizersController,
         BetaAccessRequestController,
         OrganizerAccountController,
         OrganizerEventsController,
@@ -54,6 +57,7 @@ export class AppModule {
         OrganizerSessionService,
         AdminSessionService,
         AdminReadOnlyService,
+        AdminOrganizersService,
         PublicBetaAccessRequestAdapterService,
         OrganizerAccountService,
         OrganizerEventsService,

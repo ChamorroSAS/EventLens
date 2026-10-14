@@ -1111,6 +1111,7 @@ export async function organizerAccountRouteGuard(
   }
 
   const state = sessionService.state();
+  if (state === 'PASSWORD_CHANGE_REQUIRED') return '/cambiar-contrasena';
   const capabilities = sessionService.capabilities();
   if (
     (state === 'ORGANIZER_ACTIVE' || state === 'ORGANIZER_RESTRICTED_DELETION') &&

@@ -29,8 +29,11 @@ export function createAuditedTransactions(database: TransactionRunner): {
     run: async work => {
       const pending: AuditEventRecord[] = [];
       try {
-        // On success, domain INSERTs already committed the same events.
-        return await scope.run(pending, () => database.run(work));
+        // Existing domain INSERTs are deduplicated; organizer external-only events
+        // are persisted after commit, without blocking their open transaction.
+        const result = await scope.run(pending, () => database.run(work));
+        for (const event of pending) await persist(event);
+        return result;
       } catch (error) {
         // Underlying run has finished rollback (or failed ambiguously). Duplicate
         // suppression also handles a commit whose response was lost.

@@ -32,6 +32,7 @@ import { OrganizerSessionService } from '../organizer-session.service';
             Ingresa con tu cuenta de organizador para acceder a tus eventos o administrar tu cuenta.
           </p>
         </header>
+        @if (passwordChanged) { <p role="status" class="el-inline-message">Contraseña actualizada. Ingresa con tu nueva contraseña.</p> }
 
         <form
           class="el-login-form"
@@ -346,6 +347,7 @@ export class OrganizerLoginComponent implements OnInit {
   toggleShowPassword(): void {
     this.showPassword.update(v => !v);
   }
+  get passwordChanged(): boolean { return this.router.queryParams()['passwordChanged'] === '1'; }
 
   async ngOnInit(): Promise<void> {
     const currentState = this.sessionService.state();
@@ -359,6 +361,10 @@ export class OrganizerLoginComponent implements OnInit {
       void this.router.navigateByUrl(APPROVED_PUBLIC_ENTRY_PATHS.ORGANIZER_ACCOUNT, { replaceUrl: true });
       return;
     }
+    if (currentState === 'PASSWORD_CHANGE_REQUIRED') {
+      void this.router.navigateByUrl('/cambiar-contrasena', { replaceUrl: true });
+      return;
+    }
     if (currentState === 'CHECKING') {
       try {
         const snap = await this.sessionService.refreshSessionProjection();
@@ -366,6 +372,8 @@ export class OrganizerLoginComponent implements OnInit {
           const rawReturnUrl = this.router.queryParams()['returnUrl'];
           const target = this.sessionService.resolveAuthorizedReturnDestination(rawReturnUrl);
           void this.router.navigateByUrl(target, { replaceUrl: true });
+        } else if (snap.state === 'PASSWORD_CHANGE_REQUIRED') {
+          void this.router.navigateByUrl('/cambiar-contrasena', { replaceUrl: true });
         } else if (snap.state === 'ORGANIZER_RESTRICTED_DELETION') {
           void this.router.navigateByUrl(APPROVED_PUBLIC_ENTRY_PATHS.ORGANIZER_ACCOUNT, { replaceUrl: true });
         }

@@ -3,6 +3,7 @@ import type { Type } from '@angular/core';
 export type PublicEntryRouteId =
   | 'PUBLIC_HOME'
   | 'ORGANIZER_LOGIN'
+  | 'ORGANIZER_PASSWORD_CHANGE'
   | 'BETA_ACCESS_REQUEST'
   | 'ORGANIZER_ACCOUNT'
   | 'ORGANIZER_DASHBOARD'
@@ -12,6 +13,7 @@ export type PublicEntryRouteId =
   | 'GUEST_EVENT_ENTRY'
   | 'ADMIN_LOGIN'
   | 'ADMIN_EVENTS'
+  | 'ADMIN_ORGANIZERS'
   | 'ADMIN_EVENT_DETAIL'
   | 'NOT_FOUND';
 
@@ -37,6 +39,7 @@ export type PublicHomeAnchorId = (typeof PUBLIC_HOME_ANCHORS)[number];
 export const APPROVED_PUBLIC_ENTRY_PATHS = Object.freeze({
   HOME: '/',
   LOGIN: '/ingresar',
+  ORGANIZER_PASSWORD_CHANGE: '/cambiar-contrasena',
   BETA_ACCESS: '/solicitar-acceso',
   ORGANIZER_ACCOUNT: '/mi-cuenta',
   ORGANIZER_DASHBOARD: '/mis-eventos',
@@ -51,6 +54,7 @@ export const APPROVED_PANEL_PATHS = Object.freeze({
   ORGANIZER_EVENT_CONFIG_SCHEDULE: '/mis-eventos/:eventId/configuracion/programacion',
   ADMIN_LOGIN: '/admin/ingresar',
   ADMIN_EVENTS: '/admin/eventos',
+  ADMIN_ORGANIZERS: '/admin/organizadores',
   ADMIN_EVENT_DETAIL: '/admin/eventos/:eventId'
 });
 
@@ -74,6 +78,12 @@ export const CANONICAL_PUBLIC_ENTRY_ROUTE_METADATA: Readonly<
     id: 'ORGANIZER_LOGIN',
     path: APPROVED_PUBLIC_ENTRY_PATHS.LOGIN,
     title: 'Iniciar sesión — Phoeve',
+    context: 'AUTH_ENTRY'
+  },
+  ORGANIZER_PASSWORD_CHANGE: {
+    id: 'ORGANIZER_PASSWORD_CHANGE',
+    path: APPROVED_PUBLIC_ENTRY_PATHS.ORGANIZER_PASSWORD_CHANGE,
+    title: 'Cambiar contraseña — Phoeve',
     context: 'AUTH_ENTRY'
   },
   BETA_ACCESS_REQUEST: {
@@ -128,6 +138,12 @@ export const CANONICAL_PUBLIC_ENTRY_ROUTE_METADATA: Readonly<
     id: 'ADMIN_EVENTS',
     path: APPROVED_PANEL_PATHS.ADMIN_EVENTS,
     title: 'Búsqueda administrativa — Phoeve',
+    context: 'ADMIN_OPERATIONS'
+  },
+  ADMIN_ORGANIZERS: {
+    id: 'ADMIN_ORGANIZERS',
+    path: APPROVED_PANEL_PATHS.ADMIN_ORGANIZERS,
+    title: 'Organizadores Beta — Phoeve',
     context: 'ADMIN_OPERATIONS'
   },
   ADMIN_EVENT_DETAIL: {
