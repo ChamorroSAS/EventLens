@@ -24,6 +24,7 @@ import { EventScheduleSectionComponent } from './event-schedule-section.componen
 import { EventTimezoneSectionComponent } from './event-timezone-section.component.js';
 import { EventLifecycleActionsComponent } from './event-lifecycle-actions.component.js';
 import { EventShareAccessComponent } from './event-share-access.component.js';
+import { EventParticipationSettingsComponent } from './event-participation-settings.component.js';
 
 @Component({
   selector: 'eventlens-organizer-dashboard',
@@ -39,7 +40,8 @@ import { EventShareAccessComponent } from './event-share-access.component.js';
     EventScheduleSectionComponent,
     EventTimezoneSectionComponent,
     EventLifecycleActionsComponent,
-    EventShareAccessComponent
+    EventShareAccessComponent,
+    EventParticipationSettingsComponent
   ],
   templateUrl: './organizer-dashboard.component.html',
   styleUrl: './organizer-dashboard.component.scss',

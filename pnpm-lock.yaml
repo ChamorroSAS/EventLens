@@ -17,6 +17,9 @@ importers:
       '@eventlens/admin-support':
         specifier: workspace:*
         version: link:../../packages/admin-support
+      '@eventlens/capacity-management':
+        specifier: workspace:*
+        version: link:../../packages/capacity-management
       '@eventlens/database':
         specifier: workspace:*
         version: link:../../packages/database

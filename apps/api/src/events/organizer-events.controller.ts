@@ -381,6 +381,11 @@ export class OrganizerEventsService {
     } catch (error) { this.rethrowEventError(error, true); }
   }
 
+  async setEventParticipation(request: LifecycleRequest) {
+    try { return await this.lifecycle.setParticipation(request); }
+    catch (error) { this.rethrowEventError(error, true); }
+  }
+
   async changeEventTimezone(params: {
     eventId: string;
     timezone?: unknown;
@@ -1005,6 +1010,23 @@ export class OrganizerEventsController {
   @ApiResponse({ status: 503, schema: errorSchema })
   prepareShareAccess(@Param('eventId') eventId: string, @Body() body: unknown, @Req() request: HttpRequest, @Res({ passthrough: true }) response: HttpResponse) {
     return this.eventsService.prepareShareAccess(this.lifecycleRequest(eventId, request, response, body));
+  }
+
+  @Put(':eventId/configuration/participation')
+  @ApiOperation({ operationId: 'setEventParticipation', summary: 'Save independent guest upload and gallery permissions' })
+  @ApiHeader({ name: 'Idempotency-Key', required: true })
+  @ApiHeader({ name: 'X-CSRF-Token', required: true })
+  @ApiParam({ name: 'eventId', type: 'string' })
+  @ApiBody({ schema: { type: 'object', additionalProperties: false, required: ['uploadsEnabled','guestGalleryEnabled','expectedRevision'], properties: { uploadsEnabled: { type: 'boolean' }, guestGalleryEnabled: { type: 'boolean' }, expectedRevision: { type: 'string', pattern: '^[1-9]\\d{0,11}$' } } } })
+  @ApiResponse({ status: 200, schema: { type: 'object', required: ['eventId','revision','uploadsEnabled','guestGalleryEnabled','outcome','receipt'], properties: { eventId: { type: 'string' }, revision: { type: 'string' }, uploadsEnabled: { type: 'boolean' }, guestGalleryEnabled: { type: 'boolean' }, outcome: { type: 'string', enum: ['UPDATED','IDEMPOTENT_REPLAY'] }, receipt: { type: 'object', required: ['operationId','eventId','operation','appliedRevision','outcome'], properties: { operationId: { type: 'string' }, eventId: { type: 'string' }, operation: { type: 'string' }, appliedRevision: { type: 'string' }, outcome: { type: 'string' } } } } } })
+  @ApiResponse({ status: 400, schema: errorSchema })
+  @ApiResponse({ status: 401, schema: errorSchema })
+  @ApiResponse({ status: 403, schema: errorSchema })
+  @ApiResponse({ status: 404, schema: errorSchema })
+  @ApiResponse({ status: 409, schema: errorSchema })
+  @ApiResponse({ status: 503, schema: errorSchema })
+  setEventParticipation(@Param('eventId') eventId: string, @Body() body: unknown, @Req() request: HttpRequest, @Res({ passthrough: true }) response: HttpResponse) {
+    return this.eventsService.setEventParticipation(this.lifecycleRequest(eventId, request, response, body));
   }
 
   @Put(':eventId/configuration/schedule')

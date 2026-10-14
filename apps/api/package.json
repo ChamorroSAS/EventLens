@@ -13,6 +13,7 @@
                 },
     "dependencies":  {
                          "@eventlens/admin-support": "workspace:*",
+                         "@eventlens/capacity-management": "workspace:*",
                          "@eventlens/database":  "workspace:*",
                          "@eventlens/event-management":  "workspace:*",
                          "@eventlens/identity":  "workspace:*",

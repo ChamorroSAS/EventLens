@@ -18,6 +18,27 @@ export class OrganizerService {
   });
   private readonly sessionService = inject(OrganizerSessionService, { optional: true });
 
+  async setEventParticipation(params: {
+    eventId: string; uploadsEnabled: boolean; guestGalleryEnabled: boolean; expectedRevision: string; idempotencyKey: string;
+  }): Promise<{ eventId: string; outcome: 'UPDATED' | 'IDEMPOTENT_REPLAY' }> {
+    const csrfToken = this.sessionService?.getCsrfToken() ?? '';
+    const { data, response, error } = await this.client.PUT('/api/v1/events/{eventId}/configuration/participation', {
+      params: { path: { eventId: params.eventId }, header: { 'Idempotency-Key': params.idempotencyKey, 'X-CSRF-Token': csrfToken } },
+      body: { uploadsEnabled: params.uploadsEnabled, guestGalleryEnabled: params.guestGalleryEnabled, expectedRevision: params.expectedRevision }
+    }).catch(() => { throw new Error('COMMUNICATION_ERROR'); });
+    if (!response.ok || !data) {
+      if (response.status === 401 || response.status === 403) throw new Error('ACCESS_DENIED');
+      if (response.status === 404) throw new Error('EVENT_NOT_FOUND');
+      if (response.status >= 500) throw new Error('COMMUNICATION_ERROR');
+      if (response.status === 409) {
+        const code = (error as { code?: string } | undefined)?.code;
+        throw new Error(code && ['CONCURRENCY_CONFLICT', 'IDEMPOTENCY_CONFLICT', 'INVALID_STATE'].includes(code) ? code : 'PARTICIPATION_CONFLICT');
+      }
+      throw new Error('INVALID_PARTICIPATION');
+    }
+    return data;
+  }
+
   async getEventShareAccess(eventId: string): Promise<OrganizerShareSnapshot> {
     const { data, response } = await this.client.GET('/api/v1/events/{eventId}/share-access', {
       params: { path: { eventId } }

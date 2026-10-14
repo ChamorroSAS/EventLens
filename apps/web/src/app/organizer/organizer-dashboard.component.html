@@ -138,11 +138,13 @@
                 </div>
               }
               @case ('guest') {
-                <div class="section-card">
-                  <h3>Participación e invitados</h3>
-                  <p>Subidas habilitadas: {{ selectedEvent()?.uploadsEnabled ? 'Sí' : 'No' }}</p>
-                  <p>Galería de invitados: {{ selectedEvent()?.guestGalleryEnabled ? 'Sí' : 'No' }}</p>
-                </div>
+                @if (selectedEventConfig(); as configuration) {
+                  <eventlens-event-participation-settings
+                    [configuration]="configuration"
+                    (saved)="onReconcileEvent()"
+                    (reconcile)="onReconcileEvent()"
+                  />
+                }
               }
               @case ('lifecycle') {
                 @if (selectedEventId() && selectedEventConfig()?.capabilities?.canViewLifecycle) {

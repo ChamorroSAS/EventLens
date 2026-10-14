@@ -5,6 +5,7 @@ import { OrganizerService } from './organizer.service.js';
 import type { OrganizerEventModel, EventConfigurationModel } from './organizer.types.js';
 import { By } from '@angular/platform-browser';
 import { EventScheduleSectionComponent } from './event-schedule-section.component.js';
+import { EventParticipationSettingsComponent } from './event-participation-settings.component.js';
 
 describe('OrganizerDashboardComponent & Organizer Navigation (EL-TK-048)', () => {
   let organizerServiceMock: {
@@ -84,6 +85,20 @@ describe('OrganizerDashboardComponent & Organizer Navigation (EL-TK-048)', () =>
     fixture.detectChanges();
     return fixture;
   }
+
+  it('binds participation flags, revision and capabilities from the same authorized configuration', async () => {
+    const fixture = await createDashboard();
+    const config = { ...sampleConfig, revision: '6', event: { ...sampleEvents[0], uploadsEnabled: true, guestGalleryEnabled: true } };
+    organizerServiceMock.getEventConfiguration.mockResolvedValue(config);
+    await fixture.componentInstance.onEventSelected(sampleEvents[0].id);
+    fixture.componentInstance.onSectionChange('guest');
+    fixture.detectChanges();
+    const section = fixture.debugElement.query(By.directive(EventParticipationSettingsComponent)).componentInstance as EventParticipationSettingsComponent;
+    expect(section.configuration).toBe(config);
+    expect(section.uploadsEnabled).toBe(true);
+    expect(section.guestGalleryEnabled).toBe(true);
+    expect(fixture.componentInstance.events()[0].uploadsEnabled).toBe(false);
+  });
 
   it('updates schedule and revision from one configuration before the slower event-list refresh', async () => {
     const fixture = await createDashboard();

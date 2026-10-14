@@ -118,6 +118,16 @@ Siguen pendientes transferencia/gateway, galería real, retiro por aporte y vers
 
 ## Pendientes acotados
 
+### Correctivo de permisos del organizador — EL-TK-264
+
+El menú correcto es **Invitados y Aportes**. La tarjeta «Participación e invitados» antes sólo mostraba los valores; ahora permite editar **Permitir subir fotos y videos** y **Permitir ver la galería**, y guardar ambos mediante **Guardar permisos**. Son independientes y editables para el owner ordinario en DRAFT/SCHEDULED/ACTIVE. Prepararlos no activa el evento ni sustituye sus políticas.
+
+El guardado usa CAS, receipt durable, Origin/CSRF y sesión scoped. Desactivar subidas cancela intentos sin confirmar y libera reservas en la misma transacción; conserva aportes VALIDATED/ACCEPTED y object keys. La consulta durante incertidumbre mantiene el intento exacto y no anuncia éxito por coincidencia de flags.
+
+Evidencia: 42 pruebas frontend, 16 unitarias y 17 PostgreSQL aisladas PASS; builds y contrato PASS; revisión independiente APPROVED. Runtime local actualizado con API/web Healthy y HTTP 200. Bundle web 934.61 KB mantiene advertencia frente a 600 KB, bajo error de 1 MB. No QA manual en teléfonos.
+
+Queda cerrada la ausencia de controles de permisos en el organizador. **La transferencia real de archivos, galería HTTP y cleanup físico siguen pendientes**; la pantalla lo comunica explícitamente. Trazabilidad: CR-012 y EL-TK-264.
+
 - Estado/capacidades reales del evento de la captura: verificar respuesta del resolver y configuración organizer sin cambiar permisos durante diagnóstico.
 - Momento del nombre/apodo: contrato actual antes del primer aporte; solicitarlo inmediatamente al entrar sería una decisión de UX adicional, no un bug de ausencia de cuenta.
 - Campos públicos adicionales: ubicación/descripción/portada y ownership/configuración, sin divulgar información no aprobada.

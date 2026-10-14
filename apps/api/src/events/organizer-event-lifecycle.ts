@@ -1,4 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { CapacityPlanService, CapacityReservationService } from '@eventlens/capacity-management';
+import { EventParticipationService } from '@eventlens/event-management';
 import type { SqlTransaction, TransactionRunner } from '@eventlens/database';
 import { AuthenticationError, OrganizerAuthenticationService } from '@eventlens/identity';
 import { EventDraftService, EventLifecycleService, EventPublicAccessService, EventManagementError, DEFAULT_VALIDITY_DAYS, DEFAULT_GRACE_PERIOD_DAYS, type EventAuditSink } from '@eventlens/event-management';
@@ -117,6 +119,21 @@ export class OrganizerEventLifecycleAdapter {
         utcOffsetMinutes: body.utcOffsetMinutes == null ? undefined : body.utcOffsetMinutes as number,
         expectedRevision: body.expectedRevision as string, idempotencyKey: key
       });
+    });
+  }
+
+  async setParticipation(request: LifecycleRequest) {
+    this.sessions.assertTrustedOrigin(request.originHeader);
+    const key = request.idempotencyKey?.trim();
+    if (!key || !/^[A-Za-z0-9_-]{1,128}$/.test(key)) throw new BadRequestException('Valid Idempotency-Key required');
+    if (!request.body || typeof request.body !== 'object' || Array.isArray(request.body)) throw new BadRequestException('Request body must be an object');
+    const body = request.body as Record<string, unknown>;
+    if (Object.keys(body).some(k => !['uploadsEnabled','guestGalleryEnabled','expectedRevision'].includes(k)) || typeof body.uploadsEnabled !== 'boolean' || typeof body.guestGalleryEnabled !== 'boolean' || typeof body.expectedRevision !== 'string' || !/^[1-9]\d{0,11}$/.test(body.expectedRevision)) throw new BadRequestException('Both boolean permissions and a positive expectedRevision string required');
+    return this.database.run(async tx => {
+      const actorContext = await this.authenticate(tx, request, true);
+      const runner: TransactionRunner = { run: work => work(tx) };
+      const capacity = new CapacityReservationService(runner, new CapacityPlanService(runner));
+      return new EventParticipationService(runner, { releaseReservation: async command => { await capacity.releaseReservation(command); } }, this.audit(tx)).setParticipation({ actorContext, eventId: request.eventId, uploadsEnabled: body.uploadsEnabled as boolean, guestGalleryEnabled: body.guestGalleryEnabled as boolean, expectedRevision: body.expectedRevision as string, idempotencyKey: key });
     });
   }
 

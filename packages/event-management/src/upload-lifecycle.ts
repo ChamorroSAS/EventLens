@@ -145,6 +145,9 @@ export class UploadLifecycleService {
 
     return this.runner.run(async (tx: SqlTransaction) => {
       // 1. Fetch Attempt with row lock
+      // Event before attempt: serialize with authorization and policy cancellation.
+      const lockedEvents = await tx.query<RawEventRow>(`SELECT * FROM event WHERE id = $1 FOR UPDATE`, session.eventId);
+      if (!lockedEvents.length) throw new EventManagementError('EVENT_NOT_FOUND', 'Event not found');
       const attempts = await tx.query<RawUploadAttemptRow>(
         `SELECT * FROM upload_attempt WHERE id = $1 FOR UPDATE`,
         attemptId
@@ -292,6 +295,9 @@ export class UploadLifecycleService {
     const session = await this.guestSessionService.resolveGuestSession(sessionToken, now);
 
     return this.runner.run(async (tx: SqlTransaction) => {
+      // Event before attempt: serialize with authorization and policy cancellation.
+      const lockedEvents = await tx.query<RawEventRow>(`SELECT * FROM event WHERE id = $1 FOR UPDATE`, session.eventId);
+      if (!lockedEvents.length) throw new EventManagementError('EVENT_NOT_FOUND', 'Event not found');
       const attempts = await tx.query<RawUploadAttemptRow>(
         `SELECT * FROM upload_attempt WHERE id = $1 FOR UPDATE`,
         attemptId
@@ -410,6 +416,9 @@ export class UploadLifecycleService {
     const session = await this.guestSessionService.resolveGuestSession(sessionToken, now);
 
     return this.runner.run(async (tx: SqlTransaction) => {
+      // Event before attempt: serialize with authorization and policy cancellation.
+      const lockedEvents = await tx.query<RawEventRow>(`SELECT * FROM event WHERE id = $1 FOR UPDATE`, session.eventId);
+      if (!lockedEvents.length) throw new EventManagementError('EVENT_NOT_FOUND', 'Event not found');
       const attempts = await tx.query<RawUploadAttemptRow>(
         `SELECT * FROM upload_attempt WHERE id = $1 FOR UPDATE`,
         attemptId
@@ -571,6 +580,9 @@ export class UploadLifecycleService {
     const session = await this.guestSessionService.resolveGuestSession(sessionToken, now);
 
     return this.runner.run(async (tx: SqlTransaction) => {
+      // Event before attempt: serialize with authorization and policy cancellation.
+      const lockedEvents = await tx.query<RawEventRow>(`SELECT * FROM event WHERE id = $1 FOR UPDATE`, session.eventId);
+      if (!lockedEvents.length) throw new EventManagementError('EVENT_NOT_FOUND', 'Event not found');
       const attempts = await tx.query<RawUploadAttemptRow>(
         `SELECT * FROM upload_attempt WHERE id = $1 FOR UPDATE`,
         attemptId
@@ -694,6 +706,9 @@ export class UploadLifecycleService {
     const session = await this.guestSessionService.resolveGuestSession(sessionToken, now);
 
     return this.runner.run(async (tx: SqlTransaction) => {
+      // Event before attempt: serialize with authorization and policy cancellation.
+      const lockedEvents = await tx.query<RawEventRow>(`SELECT * FROM event WHERE id = $1 FOR UPDATE`, session.eventId);
+      if (!lockedEvents.length) throw new EventManagementError('EVENT_NOT_FOUND', 'Event not found');
       const attempts = await tx.query<RawUploadAttemptRow>(
         `SELECT * FROM upload_attempt WHERE id = $1 FOR UPDATE`,
         attemptId
@@ -787,6 +802,7 @@ export class UploadLifecycleService {
     }
 
     return this.runner.run(async (tx: SqlTransaction) => {
+      await tx.query('SELECT id FROM event WHERE id=$1 FOR UPDATE', eventId);
       // Find all unconfirmed attempts: AUTHORIZED, UPLOADING, CONFIRMING
       let querySql = `
         SELECT id, reservation_id, object_key, status

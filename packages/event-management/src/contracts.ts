@@ -125,6 +125,25 @@ export interface CommandReceipt {
   readonly outcome: 'CREATED' | 'UPDATED' | 'TIMEZONE_CHANGED' | string;
 }
 
+export interface SetEventParticipationCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly eventId: string;
+  readonly uploadsEnabled: boolean;
+  readonly guestGalleryEnabled: boolean;
+  readonly expectedRevision: string;
+  readonly idempotencyKey: string;
+  readonly now?: Date;
+}
+
+export interface SetEventParticipationResult {
+  readonly eventId: string;
+  readonly uploadsEnabled: boolean;
+  readonly guestGalleryEnabled: boolean;
+  readonly revision: string;
+  readonly outcome: 'UPDATED' | 'IDEMPOTENT_REPLAY';
+  readonly receipt: CommandReceipt;
+}
+
 export interface CreateEventDraftCommand {
   readonly actorContext: OrganizerActorContext;
   readonly name: string;
@@ -1121,6 +1140,7 @@ export interface EventAuditRecord {
     | 'EVENT_MODERATION_MODE_SET'
     | 'EVENT_GUEST_UPLOADS_CONFIGURED'
     | 'EVENT_GUEST_GALLERY_CONFIGURED'
+    | 'EVENT_PARTICIPATION_CONFIGURED'
     | 'EVENT_SCHEDULE_SET'
     | 'EVENT_TIMEZONE_CHANGED'
     | 'ADMIN_EVENT_TIMEZONE_CORRECTED'
