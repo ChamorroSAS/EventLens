@@ -622,7 +622,7 @@
         ]
       }
     },
-    "/api/v1/api/v1/admin/auth/login": {
+    "/api/v1/admin/auth/login": {
       "post": {
         "operationId": "loginAdminSession",
         "parameters": [],
@@ -771,7 +771,7 @@
         ]
       }
     },
-    "/api/v1/api/v1/admin/auth/session": {
+    "/api/v1/admin/auth/session": {
       "get": {
         "operationId": "getAdminSession",
         "parameters": [],
@@ -880,7 +880,7 @@
         ]
       }
     },
-    "/api/v1/api/v1/admin/auth/session-context": {
+    "/api/v1/admin/auth/session-context": {
       "post": {
         "operationId": "renewAdminSessionContext",
         "parameters": [],
@@ -991,7 +991,7 @@
         ]
       }
     },
-    "/api/v1/api/v1/admin/auth/logout": {
+    "/api/v1/admin/auth/logout": {
       "post": {
         "operationId": "logoutAdminSession",
         "parameters": [],

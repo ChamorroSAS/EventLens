@@ -85,7 +85,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/api/v1/admin/auth/login": {
+    "/api/v1/admin/auth/login": {
         parameters: {
             query?: never;
             header?: never;
@@ -102,7 +102,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/api/v1/admin/auth/session": {
+    "/api/v1/admin/auth/session": {
         parameters: {
             query?: never;
             header?: never;
@@ -119,7 +119,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/api/v1/admin/auth/session-context": {
+    "/api/v1/admin/auth/session-context": {
         parameters: {
             query?: never;
             header?: never;
@@ -136,7 +136,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/api/v1/admin/auth/logout": {
+    "/api/v1/admin/auth/logout": {
         parameters: {
             query?: never;
             header?: never;
