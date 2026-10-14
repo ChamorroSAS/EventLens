@@ -65,7 +65,7 @@ services:
     environment:
       <<: *database
       API_PORT: 3000
-      WEB_ORIGIN: http://localhost:${WEB_PORT:-4200}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:${WEB_PORT:-4200}}
       PUBLIC_ENTRY_BASE_URL: ${PUBLIC_ENTRY_BASE_URL:-http://localhost:${WEB_PORT:-4200}}
       NODE_ENV: development
       LOCAL_ADMIN_ENABLED: ${LOCAL_ADMIN_ENABLED:-false}
@@ -87,7 +87,7 @@ services:
       API_PROXY_TARGET: http://api:3000
       NG_CLI_ANALYTICS: "false"
     command: ["pnpm", "--filter", "@eventlens/web", "start", "--port", "4200"]
-    ports: ["127.0.0.1:${WEB_PORT:-4200}:4200"]
+    ports: ["${WEB_BIND:-127.0.0.1}:${WEB_PORT:-4200}:4200"]
     depends_on:
       api: {condition: service_healthy}
     healthcheck:
@@ -110,7 +110,7 @@ services:
     environment:
       <<: *database
       NODE_ENV: development
-      WEB_ORIGIN: http://localhost:${WEB_PORT:-4200}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:${WEB_PORT:-4200}}
     volumes:
       - ./.env:/operator/local.env
       - admin-authority:/home/node/.eventlens/admin-authority
