@@ -13,7 +13,8 @@ import { OrganizerAccountComponent } from './organizer-account/organizer-account
 import { OrganizerDashboardComponent } from './organizer/organizer-dashboard.component';
 import { GuestContainerComponent } from './guest/guest-container.component';
 import { AdminLoginComponent } from './admin/admin-login.component';
-import { AdminAppShellComponent } from './admin/admin-app-shell.component';
+import { AdminReadOnlyShellComponent } from './admin/admin-read-only-shell.component';
+import { AdminSessionService } from './admin/admin-session.service';
 import { PublicNotFoundComponent } from './navigation/public-not-found.component';
 import {
   PublicEntryRouterService,
@@ -70,14 +71,22 @@ describe('EL-TK-223: Angular Router único para rutas de paneles y entrada públ
     createDraft: vi.fn().mockResolvedValue({ id: 'evt-created-1' }),
     getEventConfiguration: vi.fn().mockResolvedValue(null)
   };
+  const mockAdminSession = {
+    state: signal('UNAVAILABLE'),
+    isRevalidating: signal(false),
+    logoutUncertainty: signal(null),
+    refreshSession: vi.fn()
+  };
 
   beforeEach(async () => {
+    mockAdminSession.refreshSession.mockResolvedValue({ state: 'UNAVAILABLE', principal: null });
     await TestBed.configureTestingModule({
       imports: [AppComponent],
       providers: [
         provideRouter(routes, withComponentInputBinding()),
         providePublicEntryRouter(ALL_PUBLIC_ENTRY_ROUTES),
         { provide: OrganizerSessionService, useValue: mockOrganizerSession },
+        { provide: AdminSessionService, useValue: mockAdminSession },
         { provide: OrganizerService, useValue: mockOrganizerService }
       ]
     }).compileComponents();
@@ -162,11 +171,19 @@ describe('EL-TK-223: Angular Router único para rutas de paneles y entrada públ
       expect(routerFacade.activeDescriptor()?.id).toBe('ADMIN_LOGIN');
     });
 
-    it('resuelve ruta administrativa "/admin/eventos" hacia AdminAppShellComponent', async () => {
+    it('resuelve ruta administrativa hacia el shell sin datos cuando está indisponible', async () => {
       const navigated = await router.navigateByUrl('/admin/eventos');
       expect(navigated).toBe(true);
       expect(location.path()).toBe('/admin/eventos');
       expect(routerFacade.activeDescriptor()?.id).toBe('ADMIN_EVENTS');
+      expect(routerFacade.activeDescriptor()?.component).toBe(AdminReadOnlyShellComponent);
+    });
+
+    it('redirige una sesión administrativa ausente al login y revalida al entrar', async () => {
+      mockAdminSession.refreshSession.mockResolvedValueOnce({ state: 'ANONYMOUS', principal: null });
+      await router.navigateByUrl('/admin/eventos');
+      expect(mockAdminSession.refreshSession).toHaveBeenCalled();
+      expect(location.path()).toContain('/admin/ingresar?returnUrl=');
     });
 
     it('resuelve ruta administrativa "/admin/eventos/:eventId" con detalle', async () => {

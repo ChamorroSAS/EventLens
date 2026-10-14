@@ -35,6 +35,12 @@ EL-TK-237 y EL-TK-238: cierre BLOCKED. EL-TK-233–236: sólo construcción inde
 
 La primera ejecución de laboratory dio 37/38: una prueba de política ausente heredaba variables del runner. Se aisló explícitamente esa prueba; repetición 38/38 PASS. Además, el sentinel auxiliar usa ahora nombre único por ejecución y limpieza sólo tras su CREATE confirmado, evitando tocar una tabla ajena con nombre fijo. Esto no completa la validación organizadora ni el cierre de 237.
 
+## EL-TK-235 — entrada y shell inactivos
+
+Cliente generado y CSRF en memoria; guard revalida, 503 mantiene indisponibilidad sin datos, no mezcla sesiones. El login limpia secreto al salir y descarta respuestas tardías. Logout retira cachés primero; si falta CSRF obtiene contexto únicamente al pedir salida. Una salida incierta conserva su estado incluso al navegar o recargar el guard; sólo un botón explícito reintenta confirmarla. Shell separado sin componentes históricos de mutaciones.
+
+Angular ejecutado: `pnpm.cmd --filter @eventlens/web exec ng test --watch=false --include=src/app/admin/admin-session.service.spec.ts --include=src/app/admin/admin-session.guard.spec.ts --include=src/app/admin/admin-login.component.spec.ts --include=src/app/admin/admin-read-only-shell.component.spec.ts --include=src/app/app.routes.spec.ts`: 35/35 PASS. Typecheck web PASS. La revisión independiente detectó carreras y salida incierta corregidas con pruebas; su cierre final quedó pendiente por límite del agente de revisión. No declarar gate final aprobado ni DONE.
+
 ## Próximas fases verificables
 
 1. EL-TK-234: endpoints mínimos de lectura, sesión MOD-001 y auditoría durable obligatoria antes de responder; DTO explícito sin media/acciones/códigos de invitación.
