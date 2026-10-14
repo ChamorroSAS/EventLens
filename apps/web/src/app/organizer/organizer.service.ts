@@ -11,7 +11,11 @@ export type OrganizerShareSnapshot = operations['getEventShareAccessSnapshot']['
   providedIn: 'root'
 })
 export class OrganizerService {
-  private readonly client = createEventLensClient();
+  private readonly client = createEventLensClient({
+    baseUrl: typeof window !== 'undefined' && window.location?.origin && window.location.origin !== 'null'
+      ? window.location.origin
+      : 'http://localhost:4200'
+  });
   private readonly sessionService = inject(OrganizerSessionService, { optional: true });
 
   async getEventShareAccess(eventId: string): Promise<OrganizerShareSnapshot> {
@@ -276,7 +280,6 @@ export class OrganizerService {
           path: { eventId: params.eventId },
           header: { 'Idempotency-Key': params.idempotencyKey, 'X-CSRF-Token': csrfToken }
         },
-        headers: Object.keys(headers).length > 0 ? headers : undefined,
         body: {
           startsAtLocal: params.startsAtLocal,
           utcOffsetMinutes: params.utcOffsetMinutes,

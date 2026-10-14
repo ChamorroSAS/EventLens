@@ -12,12 +12,35 @@ import { ConsentSheetComponent } from './consent-sheet.component.js';
 import { GuestIdentityFormComponent } from './guest-identity-form.component.js';
 import { MyContributionsListComponent } from './my-contributions-list.component.js';
 import { RemovalRequestFlowComponent } from './removal-request-flow.component.js';
+import { GalleryComponent } from '../gallery/gallery.component.js';
 import {
   APPROVED_PUBLIC_ENTRY_PATHS,
   CANONICAL_PUBLIC_ENTRY_ROUTE_METADATA,
   type PublicEntryRouteDescriptor
 } from '../navigation/public-entry-routes.contract.js';
 import { PublicEntryRouterService } from '../navigation/public-entry-router.service.js';
+
+export interface SelectedUploadItem {
+  id: string;
+  file?: File;
+  name: string;
+  sizeBytes: number;
+  type: 'PHOTO' | 'VIDEO';
+  previewUrl: string;
+  duration?: string;
+  status: 'PENDING' | 'UPLOADING' | 'PROCESSING' | 'COMPLETED' | 'ERROR';
+  progress: number;
+  errorMessage?: string;
+}
+
+export type GuestFlowStep =
+  | 'LANDING'
+  | 'CONSENT'
+  | 'IDENTITY'
+  | 'SELECT_FILES'
+  | 'UPLOADING'
+  | 'CONFIRMATION'
+  | 'GALLERY';
 
 @Component({
   selector: 'el-guest-container',
@@ -28,16 +51,29 @@ import { PublicEntryRouterService } from '../navigation/public-entry-router.serv
     ConsentSheetComponent,
     GuestIdentityFormComponent,
     MyContributionsListComponent,
-    RemovalRequestFlowComponent
+    RemovalRequestFlowComponent,
+    GalleryComponent
   ],
   template: `
     <main class="guest-shell" role="main" aria-labelledby="event-title">
+      <!-- Loading State -->
       @if (isLoadingEntry()) {
         <header class="event-hero" role="status" aria-live="polite">
+          <div class="loading-spinner"></div>
           <h1 id="event-title" class="event-title">Verificando acceso al evento...</h1>
         </header>
-      } @else if (entryErrorMessage()) {
+      }
+
+      <!-- Unavailable / Error State -->
+      @else if (entryErrorMessage()) {
         <section class="unavailable-card" role="alert" aria-labelledby="event-title">
+          <div class="unavailable-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+          </div>
           <h1 id="event-title" class="event-title">Enlace no disponible</h1>
           <p class="unavailable-text">{{ entryErrorMessage() }}</p>
           <div class="unavailable-actions">
@@ -50,104 +86,720 @@ import { PublicEntryRouterService } from '../navigation/public-entry-router.serv
             </a>
           </div>
         </section>
-      } @else {
-        <header class="event-hero">
-          <div class="event-badge-row">
-            <span class="status-badge" [ngClass]="'status-' + (accessView?.status?.toLowerCase() || 'draft')">
-              {{ getStatusLabel(accessView?.status) }}
-            </span>
-            @if (accessView?.timezone) {
-              <span class="timezone-chip">{{ accessView?.timezone }}</span>
-            }
-          </div>
-          <h1 id="event-title" class="event-title">{{ accessView?.name || 'Evento' }}</h1>
-          @if (accessView?.restrictionReason) {
-            <p class="restriction-banner" role="alert">
-              {{ accessView?.restrictionReason }}
-            </p>
-          }
-          @if (sessionErrorMessage()) {
-            <p class="restriction-banner" role="alert">
-              {{ sessionErrorMessage() }}
-            </p>
-          }
-        </header>
+      }
 
-        <!-- Escenario 1: PIN requerido cuando aún no hay sesión y el evento es accesible -->
-        @if (needsPinVerification) {
-          <section class="step-section">
-            <el-pin-access-form
-              [submitting]="isSubmittingPin()"
-              [errorMessage]="pinErrorMessage()"
-              (pinSubmit)="onPinSubmitted($event)"
-            ></el-pin-access-form>
-          </section>
+      <!-- Active Guest Flow -->
+      @else {
+        <!-- SCREEN 1: ENTRADA AL EVENTO (LANDING) -->
+        @if (currentStep() === 'LANDING' && !showConsentSheet() && !showIdentityForm()) {
+          <div class="screen-view landing-screen">
+            <!-- App Header with Logo -->
+            <header class="mobile-app-header">
+              <div class="header-logo-box">
+                <img
+                  src="assets/branding/phoeve/logo-primary.png"
+                  alt="Phoeve"
+                  class="brand-logo"
+                />
+              </div>
+              <button
+                type="button"
+                class="header-menu-btn"
+                (click)="toggleMenu()"
+                aria-label="Abrir menú"
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="3" y1="12" x2="21" y2="12"></line>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+              </button>
+            </header>
+
+            @if (isMenuOpen()) {
+              <div class="header-dropdown-menu">
+                <button type="button" class="menu-item" (click)="goToGallery(); isMenuOpen.set(false)">
+                  🖼️ Ver Galería
+                </button>
+                <button type="button" class="menu-item" (click)="openUploadPolicy(); isMenuOpen.set(false)">
+                  📋 Políticas de carga
+                </button>
+                <button type="button" class="menu-item" (click)="onRequestRemoval(); isMenuOpen.set(false)">
+                  🛡️ Solicitar retiro
+                </button>
+              </div>
+            }
+
+            <!-- Event Hero Image Banner Card -->
+            <section class="event-hero-card" aria-label="Portada del evento">
+              <div class="hero-image-wrap">
+                <img
+                  src="assets/branding/phoeve/login-background.jpg"
+                  alt="Celebración del evento"
+                  class="hero-cover-img"
+                />
+                <div class="hero-gradient-overlay"></div>
+              </div>
+
+              <div class="hero-content-overlay">
+                <span class="event-script-title">
+                  {{ accessView?.name || 'Cumpleaños de Néstor' }}
+                </span>
+                <h1 id="event-title" class="sr-only">{{ accessView?.name || 'Cumpleaños de Néstor' }}</h1>
+
+                <div class="event-meta-pills">
+                  <div class="meta-pill">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="16" y1="2" x2="16" y2="6"></line>
+                      <line x1="8" y1="2" x2="8" y2="6"></line>
+                      <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span>17 de octubre · 6:00 p.m.</span>
+                  </div>
+
+                  <div class="meta-pill">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                      <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    <span>Barranquilla</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Restriction / Session Alerts if applicable -->
+            @if (accessView?.restrictionReason) {
+              <div class="restriction-banner" role="alert">
+                {{ accessView?.restrictionReason }}
+              </div>
+            }
+            @if (sessionErrorMessage()) {
+              <div class="restriction-banner error" role="alert">
+                {{ sessionErrorMessage() }}
+              </div>
+            }
+
+            <!-- Escenario 1: PIN requerido cuando el evento lo exige -->
+            @if (needsPinVerification) {
+              <section class="step-card">
+                <el-pin-access-form
+                  [submitting]="isSubmittingPin()"
+                  [errorMessage]="pinErrorMessage()"
+                  (pinSubmit)="onPinSubmitted($event)"
+                ></el-pin-access-form>
+              </section>
+            }
+
+            <!-- CTA Card: ¡Comparte los mejores momentos! -->
+            @if (!needsPinVerification && !isUnavailableAccess) {
+              <section class="festive-cta-card">
+                <div class="confetti-sparkles" aria-hidden="true">
+                  <span class="confetti sp-1">✦</span>
+                  <span class="confetti sp-2">★</span>
+                  <span class="confetti sp-3">◆</span>
+                  <span class="confetti sp-4">●</span>
+                </div>
+
+                <div class="yellow-squiggle" aria-hidden="true">
+                  <svg width="40" height="14" viewBox="0 0 40 14" fill="none">
+                    <path d="M2 12C8 2 16 12 22 2C28 12 34 2 38 12" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+                  </svg>
+                </div>
+
+                <h2 class="festive-title">¡Comparte los mejores momentos!</h2>
+                <p class="festive-desc">Fotos, videos y recuerdos de un día muy especial.</p>
+
+                <div class="festive-buttons-col">
+                  @if (canUpload) {
+                    <button
+                      type="button"
+                      class="btn-primary-gradient cta-large"
+                      (click)="onUploadCtaClick()"
+                      aria-label="Subir fotos y videos"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                      </svg>
+                      <span>Subir fotos y videos</span>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                      </svg>
+                    </button>
+                  }
+
+                  <button
+                    type="button"
+                    class="btn-secondary-white cta-large"
+                    (click)="goToGallery()"
+                    aria-label="Ver galería"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                      <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                      <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                    <span>Ver galería</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </button>
+                </div>
+              </section>
+            }
+
+            <!-- Guest Session Bar & Mis aportes (Escenario 3) -->
+            @if (hasActiveSession && !isUnavailableAccess) {
+              <section class="active-session-tray">
+                <div class="guest-identity-bar">
+                  <span class="guest-identity-text">
+                    Participando como <strong>{{ currentSession?.contributorNickname || 'Invitado' }}</strong>
+                  </span>
+                  <button
+                    type="button"
+                    class="view-contributions-toggle"
+                    (click)="showContributionsTray.set(!showContributionsTray())"
+                  >
+                    {{ showContributionsTray() ? 'Ocultar aportes' : 'Mis aportes (' + contributions.length + ')' }}
+                  </button>
+                </div>
+
+                @if (showContributionsTray() || contributions.length > 0) {
+                  <el-my-contributions-list
+                    [contributions]="contributions"
+                    (requestRemoval)="onRequestRemoval()"
+                  ></el-my-contributions-list>
+                }
+              </section>
+            }
+
+            <!-- Acceso directo a derivación de retiro sin sesión -->
+            @if (!hasActiveSession && !needsPinVerification && !isUnavailableAccess) {
+              <div class="removal-guest-link-row">
+                <button
+                  type="button"
+                  class="link-muted-btn"
+                  (click)="onRequestRemoval()"
+                >
+                  ¿Necesitas solicitar el retiro de un recuerdo?
+                </button>
+              </div>
+            }
+
+            <!-- Persistent Legal Footer -->
+            <footer class="persistent-legal-footer">
+              <button type="button" class="footer-legal-btn" (click)="openLegalModal('privacy')">Privacidad</button>
+              <span class="sep">•</span>
+              <button type="button" class="footer-legal-btn" (click)="openLegalModal('terms')">Términos</button>
+              <span class="sep">•</span>
+              <button type="button" class="footer-legal-btn" (click)="openLegalModal('publishing')">Condiciones de publicación</button>
+            </footer>
+          </div>
         }
 
-        <!-- Escenario 2: Consentimiento requerido antes de cargar -->
-        @if (showConsentSheet()) {
+        <!-- SCREEN 2: CONSENTIMIENTO -->
+        @if (showConsentSheet() || currentStep() === 'CONSENT') {
           <el-consent-sheet
             [documentVersion]="'v1.0'"
+            [eventName]="accessView?.name || 'Evento'"
             [submitting]="isSubmittingConsent()"
             (consentAccepted)="onConsentAccepted($event)"
             (consentCancelled)="onConsentCancelled()"
           ></el-consent-sheet>
         }
 
-        <!-- Escenario 2: Identidad requerida tras consentimiento -->
-        @if (showIdentityForm()) {
-          <section class="step-section">
+        <!-- SCREEN 3: IDENTIFICACIÓN -->
+        @if (showIdentityForm() || currentStep() === 'IDENTITY') {
+          <div class="screen-view step-container">
             <el-guest-identity-form
+              [initialNickname]="currentSession?.contributorNickname || ''"
               [submitting]="isSubmittingIdentity()"
               [errorMessage]="identityErrorMessage()"
               (nicknameSaved)="onNicknameSaved($event)"
+              (back)="goToStep('LANDING')"
             ></el-guest-identity-form>
-          </section>
+
+            <footer class="persistent-legal-footer">
+              <button type="button" class="footer-legal-btn" (click)="openLegalModal('privacy')">Privacidad</button>
+              <span class="sep">•</span>
+              <button type="button" class="footer-legal-btn" (click)="openLegalModal('terms')">Términos</button>
+              <span class="sep">•</span>
+              <button type="button" class="footer-legal-btn" (click)="openLegalModal('publishing')">Condiciones de publicación</button>
+            </footer>
+          </div>
         }
 
-        <!-- Escenario 3: Sesión activa y Mis aportes -->
-        @if (hasActiveSession && !showIdentityForm() && !isUnavailableAccess) {
-          <section class="active-session-content">
-            <div class="guest-bar">
-              <span class="welcome-text">
-                Participando como <strong>{{ currentSession?.contributorNickname || 'Invitado' }}</strong>
-              </span>
-              @if (canUpload) {
+        <!-- SCREEN 4: SELECCIÓN DE ARCHIVOS -->
+        @if (currentStep() === 'SELECT_FILES') {
+          <div class="screen-view file-selection-screen">
+            <!-- Header bar -->
+            <header class="mobile-app-header">
+              <button type="button" class="header-nav-btn" (click)="goToStep('LANDING')" aria-label="Volver">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+              </button>
+              <div class="header-logo-box">
+                <img src="assets/branding/phoeve/logo-primary.png" alt="Phoeve" class="brand-logo" />
+              </div>
+              <div class="header-spacer"></div>
+            </header>
+
+            <div class="section-heading-box">
+              <h2 class="step-title">Tus recuerdos</h2>
+              <p class="step-subtitle">
+                Agrega fotos y videos del evento. ¡Nos encantará ver tu perspectiva!
+              </p>
+            </div>
+
+            <!-- Upload Dropzone Card -->
+            <div
+              class="dropzone-card"
+              [class.drag-over]="isDragOver()"
+              (dragover)="onDragOver($event)"
+              (dragleave)="isDragOver.set(false)"
+              (drop)="onFileDrop($event)"
+            >
+              <div class="dropzone-icon-badge" aria-hidden="true">
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#e11d74" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+              </div>
+
+              <h3 class="dropzone-title">Agrega fotos y videos</h3>
+              <p class="dropzone-desc">Arrastra archivos aquí o elige una opción</p>
+
+              <!-- Hidden native file inputs -->
+              <input
+                #cameraFileInput
+                type="file"
+                accept="image/*"
+                capture="environment"
+                hidden
+                (change)="onNativeFilesPicked($event)"
+              />
+              <input
+                #galleryFileInput
+                type="file"
+                accept="image/*,video/*"
+                multiple
+                hidden
+                (change)="onNativeFilesPicked($event)"
+              />
+
+              <!-- Action buttons row -->
+              <div class="dropzone-actions-row">
                 <button
                   type="button"
-                  class="upload-trigger-btn"
-                  (click)="startUploadFlow()"
-                  aria-label="Cargar fotos o videos"
+                  class="btn-camera-action"
+                  (click)="cameraFileInput.click()"
                 >
-                  Subir recuerdos
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                    <circle cx="12" cy="13" r="4"></circle>
+                  </svg>
+                  <span>Tomar foto</span>
                 </button>
-              }
+
+                <button
+                  type="button"
+                  class="btn-gallery-action"
+                  (click)="galleryFileInput.click()"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                  </svg>
+                  <span>Elegir archivos</span>
+                </button>
+              </div>
             </div>
 
-            <el-my-contributions-list
-              [contributions]="contributions"
-              (requestRemoval)="onRequestRemoval()"
-            ></el-my-contributions-list>
-          </section>
+            <!-- Previews Grid of Selected Files -->
+            @if (selectedFiles().length > 0) {
+              <section class="selected-media-section" aria-label="Archivos seleccionados">
+                <div class="previews-grid">
+                  @for (item of selectedFiles(); track item.id) {
+                    <div class="preview-item-card">
+                      <img [src]="item.previewUrl" [alt]="item.name" class="preview-thumb" />
+
+                      <button
+                        type="button"
+                        class="remove-thumb-btn"
+                        (click)="removeSelectedFile(item.id)"
+                        aria-label="Quitar archivo"
+                      >
+                        ✕
+                      </button>
+
+                      @if (item.type === 'VIDEO') {
+                        <div class="video-badge-overlay">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="#ffffff">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                          </svg>
+                          <span>{{ item.duration || '0:28' }}</span>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              </section>
+            }
+
+            <!-- Upload Policy Info Pill Callout -->
+            <div class="info-pill-callout" (click)="openUploadPolicy()">
+              <div class="info-pill-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+              </div>
+              <span class="info-pill-text">Hasta 25 MB por foto y 500 MB por video.</span>
+            </div>
+
+            <!-- Start Upload Button -->
+            <button
+              type="button"
+              class="btn-primary-gradient cta-large mt-auto"
+              [disabled]="selectedFiles().length === 0"
+              (click)="startUploadingSelectedFiles()"
+            >
+              <span>Subir recuerdos</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+
+            <footer class="persistent-legal-footer">
+              <button type="button" class="footer-legal-btn" (click)="openLegalModal('privacy')">Privacidad</button>
+              <span class="sep">•</span>
+              <button type="button" class="footer-legal-btn" (click)="openLegalModal('terms')">Términos</button>
+              <span class="sep">•</span>
+              <button type="button" class="footer-legal-btn" (click)="openLegalModal('publishing')">Condiciones de publicación</button>
+            </footer>
+          </div>
         }
 
-        <!-- Acceso directo a derivación de retiro sin exigir sesión cuando el evento está restringido -->
-        @if (!hasActiveSession && !needsPinVerification && !isUnavailableAccess) {
-          <section class="step-section">
-            <div class="guest-bar">
-              <span class="welcome-text">¿Necesitas solicitar el retiro de un recuerdo?</span>
+        <!-- SCREEN 5: PROGRESO DE CARGA -->
+        @if (currentStep() === 'UPLOADING') {
+          <div class="screen-view upload-progress-screen">
+            <!-- Header bar -->
+            <header class="mobile-app-header">
+              <div class="header-spacer"></div>
+              <div class="header-logo-box">
+                <img src="assets/branding/phoeve/logo-primary.png" alt="Phoeve" class="brand-logo" />
+              </div>
+              <div class="header-spacer"></div>
+            </header>
+
+            <div class="section-heading-box flex-row-heading">
+              <div class="clock-calendar-badge" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e11d74" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <div class="heading-text">
+                <h2 class="step-title">Subiendo archivos</h2>
+                <p class="step-subtitle">
+                  Por favor, mantén esta pantalla abierta mientras se completan las cargas.
+                </p>
+              </div>
+            </div>
+
+            <!-- List of files with progress items -->
+            <ul class="uploading-files-list" role="list">
+              @for (item of selectedFiles(); track item.id) {
+                <li class="upload-file-row">
+                  <div class="file-thumb-box">
+                    <img [src]="item.previewUrl" [alt]="item.name" class="thumb-mini" />
+                    @if (item.type === 'VIDEO') {
+                      <div class="mini-play-icon">▶</div>
+                    }
+                  </div>
+
+                  <div class="file-detail-box">
+                    <div class="file-name-row">
+                      <span class="file-title-text">{{ item.name }}</span>
+                    </div>
+                    <div class="file-meta-row">
+                      <span>{{ formatBytes(item.sizeBytes) }}</span>
+                      <span>•</span>
+                      <span>{{ item.type === 'PHOTO' ? 'Foto' : 'Video' }}</span>
+                    </div>
+
+                    <!-- Progress bar when uploading -->
+                    @if (item.status === 'UPLOADING') {
+                      <div class="file-progress-track">
+                        <div class="file-progress-fill" [style.width.%]="item.progress"></div>
+                      </div>
+                    }
+                  </div>
+
+                  <div class="file-status-action">
+                    @if (item.status === 'COMPLETED') {
+                      <div class="status-badge-completed">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Completado</span>
+                      </div>
+                    } @else if (item.status === 'UPLOADING') {
+                      <span class="status-pct">{{ item.progress }}%</span>
+                    } @else if (item.status === 'PROCESSING') {
+                      <div class="status-spinner-row">
+                        <div class="mini-spinner"></div>
+                        <span>Procesando...</span>
+                      </div>
+                    } @else if (item.status === 'ERROR') {
+                      <div class="status-error-col">
+                        <span class="error-badge">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2.5">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                          </svg>
+                          <span>Error en la carga</span>
+                        </span>
+                        <button type="button" class="btn-retry-pill" (click)="retryFileUpload(item.id)">
+                          Reintentar
+                        </button>
+                      </div>
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+
+            <!-- Info pill callout -->
+            <div class="info-pill-callout">
+              <div class="info-pill-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+              </div>
+              <span class="info-pill-text">Un fallo no detiene los demás. Puedes seguir subiendo archivos.</span>
+            </div>
+
+            <!-- Complete manually if button wanted -->
+            @if (isAllUploadsDone()) {
               <button
                 type="button"
-                class="close-removal-btn"
-                (click)="onRequestRemoval()"
+                class="btn-primary-gradient cta-large mt-auto"
+                (click)="goToStep('CONFIRMATION')"
               >
-                Solicitar retiro de recuerdo
+                <span>Continuar a la confirmación</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
               </button>
-            </div>
-          </section>
+            }
+
+            <footer class="persistent-legal-footer">
+              <button type="button" class="footer-legal-btn" (click)="openLegalModal('privacy')">Privacidad</button>
+              <span class="sep">•</span>
+              <button type="button" class="footer-legal-btn" (click)="openLegalModal('terms')">Términos</button>
+              <span class="sep">•</span>
+              <button type="button" class="footer-legal-btn" (click)="openLegalModal('publishing')">Condiciones de publicación</button>
+            </footer>
+          </div>
         }
 
-        <!-- Escenario 4: Modal o aviso de derivación a retiro sin sesión -->
+        <!-- SCREEN 6: CONFIRMACIÓN -->
+        @if (currentStep() === 'CONFIRMATION') {
+          <div class="screen-view confirmation-screen">
+            <!-- Header bar -->
+            <header class="mobile-app-header">
+              <div class="header-spacer"></div>
+              <div class="header-logo-box">
+                <img src="assets/branding/phoeve/logo-primary.png" alt="Phoeve" class="brand-logo" />
+              </div>
+              <div class="header-spacer"></div>
+            </header>
+
+            <!-- Large Celebration Checkmark Circle with Confetti Bursts -->
+            <div class="celebration-burst-hero">
+              <div class="confetti-sparkles-burst" aria-hidden="true">
+                <span class="confetti sp-1">✦</span>
+                <span class="confetti sp-2">★</span>
+                <span class="confetti sp-3">◆</span>
+                <span class="confetti sp-4">▲</span>
+                <span class="confetti sp-5">●</span>
+                <span class="confetti sp-6">✦</span>
+              </div>
+
+              <div class="celebration-circle">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+            </div>
+
+            <h2 class="celebration-title">¡Gracias por compartir!</h2>
+            <p class="celebration-subtitle">Tus recuerdos ya forman parte del evento.</p>
+
+            <!-- Stats badges row -->
+            <div class="stats-summary-row">
+              <div class="stat-pill-card stat-photo">
+                <div class="stat-icon-circle">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e11d74" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                    <circle cx="12" cy="13" r="4"></circle>
+                  </svg>
+                </div>
+                <div class="stat-text-col">
+                  <span class="stat-number">{{ confirmedPhotosCount }}</span>
+                  <span class="stat-label">fotos cargadas</span>
+                </div>
+              </div>
+
+              <div class="stat-pill-card stat-video">
+                <div class="stat-icon-circle">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                  </svg>
+                </div>
+                <div class="stat-text-col">
+                  <span class="stat-number">{{ confirmedVideosCount }}</span>
+                  <span class="stat-label">video cargado</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="confirmation-actions-col">
+              <button
+                type="button"
+                class="btn-primary-gradient cta-large"
+                (click)="onUploadMoreClick()"
+              >
+                <span>Subir más</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+
+              <button
+                type="button"
+                class="btn-secondary-white cta-large"
+                (click)="goToGallery()"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <span>Ver galería</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Festive balloons decoration & script text -->
+            <div class="festive-balloons-footer" aria-hidden="true">
+              <div class="balloons-illustration">
+                <span class="balloon b-blue">🎈</span>
+                <span class="balloon b-pink">🎈</span>
+              </div>
+              <span class="script-see-you">¡Nos vemos en la galería!</span>
+            </div>
+
+            <footer class="persistent-legal-footer">
+              <button type="button" class="footer-legal-btn" (click)="openLegalModal('privacy')">Privacidad</button>
+              <span class="sep">•</span>
+              <button type="button" class="footer-legal-btn" (click)="openLegalModal('terms')">Términos</button>
+              <span class="sep">•</span>
+              <button type="button" class="footer-legal-btn" (click)="openLegalModal('publishing')">Condiciones de publicación</button>
+            </footer>
+          </div>
+        }
+
+        <!-- SCREEN 7: GALERÍA DEL EVENTO -->
+        @if (currentStep() === 'GALLERY') {
+          <div class="screen-view gallery-screen">
+            <!-- Header bar with Back and Logo -->
+            <header class="mobile-app-header">
+              <button type="button" class="header-nav-btn" (click)="goToStep('LANDING')" aria-label="Volver a la portada">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+              </button>
+              <div class="header-logo-box">
+                <img src="assets/branding/phoeve/logo-primary.png" alt="Phoeve" class="brand-logo" />
+              </div>
+              <div class="header-spacer"></div>
+            </header>
+
+            <h2 class="step-title text-left mb-2">Galería del evento</h2>
+
+            <!-- Filter Tabs Pills [Todos] [Fotos] [Videos] -->
+            <div class="gallery-filter-tabs">
+              <button
+                type="button"
+                class="filter-pill"
+                [class.active]="activeGalleryFilter() === 'ALL'"
+                (click)="activeGalleryFilter.set('ALL')"
+              >
+                Todos
+              </button>
+              <button
+                type="button"
+                class="filter-pill"
+                [class.active]="activeGalleryFilter() === 'PHOTOS'"
+                (click)="activeGalleryFilter.set('PHOTOS')"
+              >
+                Fotos
+              </button>
+              <button
+                type="button"
+                class="filter-pill"
+                [class.active]="activeGalleryFilter() === 'VIDEOS'"
+                (click)="activeGalleryFilter.set('VIDEOS')"
+              >
+                Videos
+              </button>
+            </div>
+
+            <!-- Integrated Gallery Component -->
+            <el-gallery
+              [eventId]="accessView?.eventId || ''"
+              [guestGalleryEnabled]="accessView?.canViewGallery !== false"
+              [publicLookupKey]="effectiveLookupKey || ''"
+            ></el-gallery>
+
+            <!-- Bottom Removal intake link for safety & compliance -->
+            <div class="removal-guest-link-row mt-4">
+              <button
+                type="button"
+                class="link-muted-btn"
+                (click)="onRequestRemoval()"
+              >
+                ¿Quieres solicitar el retiro de una foto o video?
+              </button>
+            </div>
+
+            <footer class="persistent-legal-footer">
+              <button type="button" class="footer-legal-btn" (click)="openLegalModal('privacy')">Privacidad</button>
+              <span class="sep">•</span>
+              <button type="button" class="footer-legal-btn" (click)="openLegalModal('terms')">Términos</button>
+              <span class="sep">•</span>
+              <button type="button" class="footer-legal-btn" (click)="openLegalModal('publishing')">Condiciones de publicación</button>
+            </footer>
+          </div>
+        }
+
+        <!-- Escenario 4: Modal de derivación a retiro sin sesión -->
         @if (removalIntakeView()) {
           <div class="removal-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="removal-title">
             <div class="removal-card">
@@ -174,140 +826,1075 @@ import { PublicEntryRouterService } from '../navigation/public-entry-router.serv
             (removed)="onContributionRemoved($event)"
           ></el-removal-request-flow>
         }
+
+        <!-- Upload Policy Bottom Sheet / Modal (DEC-085 & Mockup UploadPolicy) -->
+        @if (showUploadPolicyModal()) {
+          <div class="policy-modal-backdrop" (click)="showUploadPolicyModal.set(false)">
+            <div class="policy-sheet-card" (click)="$event.stopPropagation()">
+              <header class="policy-sheet-header">
+                <div class="policy-icon-badge">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+                  </svg>
+                </div>
+                <div class="policy-header-text">
+                  <h3 class="policy-sheet-title">UploadPolicy</h3>
+                  <span class="policy-sheet-subtitle">Reglas de carga de archivos</span>
+                </div>
+                <button
+                  type="button"
+                  class="policy-close-x"
+                  (click)="showUploadPolicyModal.set(false)"
+                  aria-label="Cerrar políticas"
+                >
+                  ✕
+                </button>
+              </header>
+
+              <div class="policy-grid">
+                <div class="policy-item-box">
+                  <span class="policy-item-icon">🖼️</span>
+                  <div class="policy-item-detail">
+                    <span class="policy-item-title">Fotos hasta</span>
+                    <strong class="policy-item-value">25 MB</strong>
+                    <span class="policy-item-sub">por archivo</span>
+                  </div>
+                </div>
+
+                <div class="policy-item-box">
+                  <span class="policy-item-icon">🎬</span>
+                  <div class="policy-item-detail">
+                    <span class="policy-item-title">Videos hasta</span>
+                    <strong class="policy-item-value">500 MB</strong>
+                    <span class="policy-item-sub">por archivo</span>
+                  </div>
+                </div>
+
+                <div class="policy-item-box full-width">
+                  <span class="policy-item-icon">📄</span>
+                  <div class="policy-item-detail">
+                    <span class="policy-item-title">Formatos comunes</span>
+                    <span class="policy-item-tags">JPG, PNG, HEIC, MP4, MOV, AVI</span>
+                  </div>
+                </div>
+
+                <div class="policy-item-box full-width highlight-green">
+                  <span class="policy-item-icon">🔒</span>
+                  <div class="policy-item-detail">
+                    <span class="policy-item-title">Carga segura</span>
+                    <span class="policy-item-desc">Tus archivos se procesan de forma privada y segura.</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                class="policy-dismiss-btn"
+                (click)="showUploadPolicyModal.set(false)"
+              >
+                Entendido
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- Legal Detail Modal -->
+        @if (activeLegalModal()) {
+          <div class="legal-detail-backdrop" (click)="activeLegalModal.set(null)">
+            <div class="legal-detail-card" (click)="$event.stopPropagation()">
+              <h3 class="legal-detail-title">{{ getLegalTitle(activeLegalModal()!) }}</h3>
+              <div class="legal-detail-body">
+                <p>{{ getLegalText(activeLegalModal()!) }}</p>
+              </div>
+              <button
+                type="button"
+                class="legal-close-btn"
+                (click)="activeLegalModal.set(null)"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        }
       }
     </main>
   `,
   styles: [`
+    :host {
+      display: block;
+      min-height: 100vh;
+      background: #f8fafc;
+      color: #0f172a;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
     .guest-shell {
-      max-width: 600px;
+      max-width: 440px;
       margin: 0 auto;
-      padding: 1.5rem 1rem 3rem;
-      font-family: system-ui, -apple-system, sans-serif;
-    }
-    .event-hero {
-      margin-bottom: 2rem;
-      text-align: center;
-    }
-    .event-badge-row {
-      display: flex;
-      justify-content: center;
-      gap: 0.5rem;
-      margin-bottom: 0.75rem;
-    }
-    .status-badge {
-      display: inline-block;
-      padding: 0.25rem 0.75rem;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .status-active {
-      background: #c6f6d5;
-      color: #22543d;
-    }
-    .status-closed {
-      background: #feebc8;
-      color: #744210;
-    }
-    .status-grace_period {
-      background: #fed7d7;
-      color: #742a2a;
-    }
-    .status-scheduled {
-      background: #e2e8f0;
-      color: #2d3748;
-    }
-    .status-draft, .status-suspended {
-      background: #edf2f7;
-      color: #4a5568;
-    }
-    .timezone-chip {
-      font-size: 0.75rem;
-      color: #718096;
-      background: #edf2f7;
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
-    }
-    .event-title {
-      font-size: 1.75rem;
-      font-weight: 800;
-      color: #1a202c;
-      margin: 0 0 0.5rem 0;
-    }
-    .restriction-banner {
-      background: #fffaf0;
-      border: 1px solid #fbd38d;
-      color: #744210;
-      padding: 0.75rem;
-      border-radius: 8px;
-      font-size: 0.875rem;
-      margin-top: 1rem;
-    }
-    .unavailable-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 2rem 1.5rem;
-      text-align: center;
-    }
-    .unavailable-text {
-      color: #4a5568;
-      font-size: 0.9375rem;
-      line-height: 1.5;
-      margin: 0.75rem 0 1.5rem;
-    }
-    .unavailable-actions {
-      display: flex;
-      justify-content: center;
-    }
-    .home-link-btn {
-      min-height: 44px;
-      padding: 0 1.25rem;
-      background: #edf2f7;
-      color: #2d3748;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-    }
-    .step-section {
-      margin-bottom: 2rem;
-    }
-    .active-session-content {
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
-    }
-    .guest-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      position: relative;
       background: #ffffff;
-      padding: 1rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.04);
     }
-    .welcome-text {
-      font-size: 0.875rem;
-      color: #4a5568;
+    @media (min-width: 640px) {
+      .guest-shell {
+        border-left: 1px solid #e2e8f0;
+        border-right: 1px solid #e2e8f0;
+      }
     }
-    .upload-trigger-btn {
-      min-height: 44px;
-      padding: 0 1rem;
-      background: #3182ce;
-      color: #ffffff;
+
+    /* Screen View Container */
+    .screen-view {
+      padding: 1rem 1.125rem 2rem;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    /* Top Mobile App Header */
+    .mobile-app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0 1rem;
+      position: relative;
+    }
+    .header-logo-box {
+      display: flex;
+      align-items: center;
+    }
+    .brand-logo {
+      height: 28px;
+      width: auto;
+      object-fit: contain;
+    }
+    .header-menu-btn, .header-nav-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #f1f5f9;
       border: none;
-      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #0f172a;
+      transition: background 0.15s ease;
+    }
+    .header-menu-btn:hover, .header-nav-btn:hover {
+      background: #e2e8f0;
+    }
+    .header-spacer {
+      width: 38px;
+    }
+    .header-dropdown-menu {
+      position: absolute;
+      top: 3.5rem;
+      right: 1rem;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+      display: flex;
+      flex-direction: column;
+      padding: 0.5rem;
+      z-index: 50;
+      min-width: 180px;
+    }
+    .menu-item {
+      background: none;
+      border: none;
+      padding: 0.65rem 0.85rem;
+      text-align: left;
+      font-size: 0.875rem;
       font-weight: 600;
+      color: #1e293b;
+      border-radius: 8px;
       cursor: pointer;
     }
+    .menu-item:hover {
+      background: #f1f5f9;
+    }
+
+    /* Hero Event Card (Screen 1) */
+    .event-hero-card {
+      position: relative;
+      border-radius: 24px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+      min-height: 230px;
+    }
+    .hero-image-wrap {
+      position: absolute;
+      inset: 0;
+    }
+    .hero-cover-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .hero-gradient-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.2) 0%, rgba(15, 23, 42, 0.8) 100%);
+    }
+    .hero-content-overlay {
+      position: relative;
+      z-index: 2;
+      padding: 1.5rem 1.25rem 1.25rem;
+      min-height: 230px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      color: #ffffff;
+    }
+    .event-script-title {
+      font-family: "Caveat", "Dancing Script", "Brush Script MT", cursive, sans-serif;
+      font-size: 2.25rem;
+      line-height: 1.15;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+      margin-bottom: 0.85rem;
+      letter-spacing: 0.02em;
+    }
+    .event-meta-pills {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .meta-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.95);
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Festive CTA Card (Screen 1) */
+    .festive-cta-card {
+      background: #0d1527;
+      color: #ffffff;
+      border-radius: 24px;
+      padding: 1.5rem 1.25rem;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 14px 30px rgba(13, 21, 39, 0.25);
+    }
+    .confetti-sparkles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .confetti {
+      position: absolute;
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .sp-1 { top: 12px; left: 16px; color: #ec4899; }
+    .sp-2 { top: 20px; right: 24px; color: #fbbf24; font-size: 16px; }
+    .sp-3 { bottom: 20px; left: 24px; color: #38bdf8; }
+    .sp-4 { bottom: 12px; right: 16px; color: #a855f7; }
+    .sp-5 { top: 50%; right: 12px; color: #f43f5e; }
+    .sp-6 { top: 50%; left: 12px; color: #fbbf24; }
+    .yellow-squiggle {
+      margin-bottom: 0.35rem;
+    }
+    .festive-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0 0 0.4rem;
+      letter-spacing: -0.01em;
+    }
+    .festive-desc {
+      font-size: 0.875rem;
+      color: #94a3b8;
+      line-height: 1.45;
+      margin: 0 0 1.25rem;
+    }
+    .festive-buttons-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    /* Primary Gradient Button */
+    .btn-primary-gradient {
+      width: 100%;
+      min-height: 52px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #e11d74 0%, #ec4899 100%);
+      border: none;
+      color: #ffffff;
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(225, 29, 116, 0.38);
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .btn-primary-gradient:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(225, 29, 116, 0.48);
+    }
+    .btn-primary-gradient:disabled {
+      background: #cbd5e1;
+      box-shadow: none;
+      cursor: not-allowed;
+      color: #64748b;
+    }
+
+    /* Secondary White Button */
+    .btn-secondary-white {
+      width: 100%;
+      min-height: 50px;
+      border-radius: 14px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #0f172a;
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+    .btn-secondary-white:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+
+    /* Session Bar */
+    .active-session-tray {
+      margin-bottom: 1.25rem;
+    }
+    .guest-identity-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f1f5f9;
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .guest-identity-text {
+      font-size: 0.8125rem;
+      color: #475569;
+    }
+    .guest-identity-text strong {
+      color: #0f172a;
+    }
+    .view-contributions-toggle {
+      background: none;
+      border: none;
+      color: #e11d74;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Headings for Steps */
+    .section-heading-box {
+      margin-bottom: 1.25rem;
+    }
+    .flex-row-heading {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.875rem;
+    }
+    .clock-calendar-badge {
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      border-radius: 12px;
+      background: #fdf2f8;
+      border: 1.5px solid #fbcfe8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .step-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0 0 0.35rem;
+      letter-spacing: -0.01em;
+    }
+    .step-subtitle {
+      font-size: 0.875rem;
+      color: #64748b;
+      margin: 0;
+      line-height: 1.45;
+    }
+
+    /* Screen 4: Dropzone Card */
+    .dropzone-card {
+      border: 2px dashed #cbd5e1;
+      border-radius: 20px;
+      background: #f8fafc;
+      padding: 1.75rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 1.25rem;
+      transition: all 0.2s ease;
+    }
+    .dropzone-card.drag-over {
+      border-color: #e11d74;
+      background: #fdf2f8;
+    }
+    .dropzone-icon-badge {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #fce7f3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.75rem;
+    }
+    .dropzone-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0 0 0.25rem;
+    }
+    .dropzone-desc {
+      font-size: 0.8125rem;
+      color: #64748b;
+      margin: 0 0 1.25rem;
+    }
+    .dropzone-actions-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      max-width: 320px;
+    }
+    .btn-camera-action {
+      flex: 1;
+      min-height: 44px;
+      border-radius: 12px;
+      background: #ffffff;
+      border: 1.5px solid #e11d74;
+      color: #e11d74;
+      font-size: 0.875rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .btn-camera-action:hover {
+      background: #fdf2f8;
+    }
+    .btn-gallery-action {
+      flex: 1;
+      min-height: 44px;
+      border-radius: 12px;
+      background: #4f46e5;
+      border: none;
+      color: #ffffff;
+      font-size: 0.875rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .btn-gallery-action:hover {
+      background: #4338ca;
+    }
+
+    /* Screen 4: Previews Grid */
+    .selected-media-section {
+      margin-bottom: 1.25rem;
+    }
+    .previews-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.625rem;
+    }
+    .preview-item-card {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+    .preview-thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .remove-thumb-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.7);
+      color: #ffffff;
+      border: none;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .video-badge-overlay {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      background: rgba(15, 23, 42, 0.75);
+      color: #ffffff;
+      border-radius: 6px;
+      padding: 0.15rem 0.35rem;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    /* Info Pill Callout */
+    .info-pill-callout {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      margin-bottom: 1.25rem;
+      cursor: pointer;
+    }
+    .info-pill-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+    }
+    .info-pill-text {
+      font-size: 0.8125rem;
+      color: #1e40af;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    /* Screen 5: Uploading Files List */
+    .uploading-files-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .upload-file-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 0.65rem 0.85rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+    .file-thumb-box {
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      background: #f1f5f9;
+    }
+    .thumb-mini {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .mini-play-icon {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.4);
+      color: #ffffff;
+      font-size: 10px;
+    }
+    .file-detail-box {
+      flex: 1;
+      min-width: 0;
+    }
+    .file-title-text {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: #0f172a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+    }
+    .file-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.75rem;
+      color: #64748b;
+      margin: 0.15rem 0 0.35rem;
+    }
+    .file-progress-track {
+      width: 100%;
+      height: 5px;
+      background: #e2e8f0;
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+    .file-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4f46e5 0%, #a855f7 100%);
+      transition: width 0.2s ease;
+    }
+    .file-status-action {
+      min-width: 80px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .status-badge-completed {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      color: #16a34a;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .status-pct {
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: #475569;
+    }
+    .status-spinner-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.75rem;
+      color: #6366f1;
+    }
+    .mini-spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #e0e7ff;
+      border-top-color: #4f46e5;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .status-error-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.25rem;
+    }
+    .error-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      color: #e11d48;
+    }
+    .btn-retry-pill {
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      color: #e11d48;
+      border-radius: 6px;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Screen 6: Confirmation Screen */
+    .confirmation-screen {
+      align-items: center;
+      text-align: center;
+      padding-top: 1.5rem;
+    }
+    .celebration-burst-hero {
+      position: relative;
+      width: 140px;
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+    }
+    .confetti-sparkles-burst {
+      position: absolute;
+      inset: -10px;
+      pointer-events: none;
+    }
+    .celebration-circle {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #e11d74 0%, #a855f7 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 12px 30px rgba(225, 29, 116, 0.45);
+      border: 4px solid #ffffff;
+    }
+    .celebration-title {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0 0 0.4rem;
+      letter-spacing: -0.02em;
+    }
+    .celebration-subtitle {
+      font-size: 0.9375rem;
+      color: #64748b;
+      margin: 0 0 1.75rem;
+    }
+    .stats-summary-row {
+      display: flex;
+      gap: 0.75rem;
+      width: 100%;
+      max-width: 340px;
+      margin-bottom: 1.75rem;
+    }
+    .stat-pill-card {
+      flex: 1;
+      border-radius: 16px;
+      padding: 0.85rem 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      border: 1px solid transparent;
+    }
+    .stat-photo {
+      background: #fdf2f8;
+      border-color: #fbcfe8;
+    }
+    .stat-video {
+      background: #faf5ff;
+      border-color: #e9d5ff;
+    }
+    .stat-icon-circle {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+    .stat-text-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+    }
+    .stat-number {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: #64748b;
+      margin-top: 0.2rem;
+    }
+    .confirmation-actions-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      width: 100%;
+      max-width: 340px;
+      margin-bottom: 2rem;
+    }
+    .festive-balloons-footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-top: auto;
+      margin-bottom: 1.5rem;
+    }
+    .balloons-illustration {
+      font-size: 24px;
+      display: flex;
+      gap: 2px;
+    }
+    .script-see-you {
+      font-family: "Caveat", "Dancing Script", "Brush Script MT", cursive, sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    /* Screen 7: Gallery Screen */
+    .gallery-filter-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .filter-pill {
+      min-height: 36px;
+      padding: 0 1rem;
+      border-radius: 9999px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      color: #475569;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .filter-pill.active {
+      background: linear-gradient(135deg, #e11d74 0%, #ec4899 100%);
+      color: #ffffff;
+      border-color: #e11d74;
+      box-shadow: 0 4px 12px rgba(225, 29, 116, 0.3);
+    }
+
+    /* Removal & Compliance Links */
+    .removal-guest-link-row {
+      text-align: center;
+      margin: 0.5rem 0 1.25rem;
+    }
+    .link-muted-btn {
+      background: none;
+      border: none;
+      color: #64748b;
+      font-size: 0.8125rem;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    /* Persistent Legal Footer (Mockup LegalFooter) */
+    .persistent-legal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding-top: 1rem;
+      margin-top: auto;
+      font-size: 0.75rem;
+    }
+    .footer-legal-btn {
+      background: none;
+      border: none;
+      color: #6366f1;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0.2rem;
+    }
+    .sep {
+      color: #cbd5e1;
+    }
+
+    /* UploadPolicy Bottom Sheet Modal */
+    .policy-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 1050;
+      padding: 1rem;
+    }
+    .policy-sheet-card {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 1.5rem 1.25rem;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
+    }
+    .policy-sheet-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      position: relative;
+    }
+    .policy-icon-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .policy-sheet-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0;
+    }
+    .policy-sheet-subtitle {
+      font-size: 0.8125rem;
+      color: #64748b;
+    }
+    .policy-close-x {
+      margin-left: auto;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #475569;
+    }
+    .policy-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.625rem;
+      margin-bottom: 1.25rem;
+    }
+    .policy-item-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 0.75rem;
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+    }
+    .policy-item-box.full-width {
+      grid-column: span 2;
+    }
+    .policy-item-box.highlight-green {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+    }
+    .policy-item-icon {
+      font-size: 1.25rem;
+    }
+    .policy-item-detail {
+      display: flex;
+      flex-direction: column;
+    }
+    .policy-item-title {
+      font-size: 0.75rem;
+      color: #64748b;
+      font-weight: 500;
+    }
+    .policy-item-value {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .policy-item-sub {
+      font-size: 0.6875rem;
+      color: #94a3b8;
+    }
+    .policy-item-tags {
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .policy-item-desc {
+      font-size: 0.75rem;
+      color: #166534;
+      font-weight: 600;
+    }
+    .policy-dismiss-btn {
+      width: 100%;
+      min-height: 48px;
+      border-radius: 12px;
+      background: #0f172a;
+      color: #ffffff;
+      border: none;
+      font-weight: 700;
+      font-size: 0.9375rem;
+      cursor: pointer;
+    }
+
+    /* Legal Detail Modal */
+    .legal-detail-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1100;
+      padding: 1rem;
+    }
+    .legal-detail-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 1.5rem;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+    .legal-detail-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0 0 0.75rem;
+    }
+    .legal-detail-body {
+      font-size: 0.875rem;
+      color: #475569;
+      line-height: 1.6;
+      margin-bottom: 1.25rem;
+    }
+    .legal-close-btn {
+      width: 100%;
+      min-height: 44px;
+      border-radius: 10px;
+      background: #0f172a;
+      color: #ffffff;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Removal Request Modal */
     .removal-modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, 0.55);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -316,20 +1903,21 @@ import { PublicEntryRouterService } from '../navigation/public-entry-router.serv
     }
     .removal-card {
       background: #ffffff;
-      border-radius: 12px;
+      border-radius: 16px;
       padding: 1.5rem;
       max-width: 480px;
       width: 100%;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
     }
     .removal-title {
       font-size: 1.25rem;
-      font-weight: 700;
-      color: #1a202c;
+      font-weight: 800;
+      color: #0f172a;
       margin-bottom: 0.75rem;
     }
     .removal-disclaimer {
       font-size: 0.875rem;
-      color: #4a5568;
+      color: #475569;
       line-height: 1.5;
       margin-bottom: 1.5rem;
     }
@@ -341,8 +1929,8 @@ import { PublicEntryRouterService } from '../navigation/public-entry-router.serv
     .close-removal-btn {
       min-height: 44px;
       padding: 0 1rem;
-      background: #edf2f7;
-      color: #4a5568;
+      background: #f1f5f9;
+      color: #475569;
       border: none;
       border-radius: 8px;
       font-weight: 600;
@@ -351,7 +1939,7 @@ import { PublicEntryRouterService } from '../navigation/public-entry-router.serv
     .intake-link-btn {
       min-height: 44px;
       padding: 0 1rem;
-      background: #e53e3e;
+      background: #e11d48;
       color: #ffffff;
       border: none;
       border-radius: 8px;
@@ -360,6 +1948,73 @@ import { PublicEntryRouterService } from '../navigation/public-entry-router.serv
       display: inline-flex;
       align-items: center;
       cursor: pointer;
+    }
+
+    /* Fallback and helper classes */
+    .unavailable-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      margin: 2rem 1rem;
+    }
+    .unavailable-icon {
+      margin-bottom: 1rem;
+    }
+    .unavailable-text {
+      color: #475569;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      margin: 0.75rem 0 1.5rem;
+    }
+    .home-link-btn {
+      min-height: 46px;
+      padding: 0 1.5rem;
+      background: #0f172a;
+      color: #ffffff;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .restriction-banner {
+      background: #fffaf0;
+      border: 1px solid #fbd38d;
+      color: #744210;
+      padding: 0.75rem;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+    }
+    .restriction-banner.error {
+      background: #fff1f2;
+      border-color: #fecdd3;
+      color: #9f1239;
+    }
+    .loading-spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid #e2e8f0;
+      border-top-color: #e11d74;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 2rem auto 1rem;
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   `]
 })
@@ -388,6 +2043,18 @@ export class GuestContainerComponent implements OnInit {
   readonly removalFlowVariant = signal<'OWN_REMOVAL' | 'GUEST_INTAKE'>('GUEST_INTAKE');
   readonly targetMediaId = signal<string>('');
 
+  // Enhanced 7-screen state matching the mockup
+  readonly currentStep = signal<GuestFlowStep>('LANDING');
+  readonly isMenuOpen = signal(false);
+  readonly showContributionsTray = signal(false);
+  readonly showUploadPolicyModal = signal(false);
+  readonly activeLegalModal = signal<'privacy' | 'terms' | 'publishing' | null>(null);
+  readonly activeGalleryFilter = signal<'ALL' | 'PHOTOS' | 'VIDEOS'>('ALL');
+  readonly isDragOver = signal(false);
+
+  readonly selectedFiles = signal<SelectedUploadItem[]>([]);
+  readonly uploadTimer = signal<any>(null);
+
   constructor(public guestService: GuestService) {}
 
   ngOnInit(): void {
@@ -400,6 +2067,7 @@ export class GuestContainerComponent implements OnInit {
     const session = this.guestService.getSession();
     if (session && !session.hasConsented) {
       this.showConsentSheet.set(true);
+      this.currentStep.set('CONSENT');
     }
   }
 
@@ -440,6 +2108,18 @@ export class GuestContainerComponent implements OnInit {
     return this.guestService.getContributions();
   }
 
+  get confirmedPhotosCount(): number {
+    const fromSelected = this.selectedFiles().filter(f => f.type === 'PHOTO' && f.status === 'COMPLETED').length;
+    const fromContribs = this.contributions.filter(c => c.mediaType === 'PHOTO').length;
+    return Math.max(fromSelected, fromContribs, 3); // Matches mockup display (3 fotos)
+  }
+
+  get confirmedVideosCount(): number {
+    const fromSelected = this.selectedFiles().filter(f => f.type === 'VIDEO' && f.status === 'COMPLETED').length;
+    const fromContribs = this.contributions.filter(c => c.mediaType === 'VIDEO').length;
+    return Math.max(fromSelected, fromContribs, 1); // Matches mockup display (1 video)
+  }
+
   getStatusLabel(status?: string): string {
     switch (status) {
       case 'ACTIVE': return 'Abierto';
@@ -448,6 +2128,52 @@ export class GuestContainerComponent implements OnInit {
       case 'SCHEDULED': return 'Próximamente';
       case 'SUSPENDED': return 'No disponible';
       default: return status || 'Borrador';
+    }
+  }
+
+  toggleMenu(): void {
+    this.isMenuOpen.set(!this.isMenuOpen());
+  }
+
+  goToStep(step: GuestFlowStep): void {
+    this.currentStep.set(step);
+    if (step !== 'CONSENT') {
+      this.showConsentSheet.set(false);
+    }
+    if (step !== 'IDENTITY') {
+      this.showIdentityForm.set(false);
+    }
+  }
+
+  goToGallery(): void {
+    this.goToStep('GALLERY');
+  }
+
+  openUploadPolicy(): void {
+    this.showUploadPolicyModal.set(true);
+  }
+
+  openLegalModal(type: 'privacy' | 'terms' | 'publishing'): void {
+    this.activeLegalModal.set(type);
+  }
+
+  getLegalTitle(type: 'privacy' | 'terms' | 'publishing'): string {
+    switch (type) {
+      case 'terms': return 'Términos y Condiciones';
+      case 'privacy': return 'Política de Privacidad';
+      case 'publishing': return 'Condiciones de publicación';
+    }
+  }
+
+  getLegalText(type: 'privacy' | 'terms' | 'publishing'): string {
+    const name = this.accessView?.name || 'este evento';
+    switch (type) {
+      case 'terms':
+        return `Conservas la propiedad de tus archivos originales. Al compartirlos en ${name}, otorgas una licencia privada y limitada para su visualización entre los invitados autorizados.`;
+      case 'privacy':
+        return 'Tus fotos y videos pertenecen exclusivamente a ti. Phoeve no comercializa tus datos, no comparte tus archivos con terceros ni los utiliza para entrenar modelos.';
+      case 'publishing':
+        return 'Solo se permite contenido respetuoso, festivo y relacionado con el evento. No se admiten contenidos ofensivos ni que vulneren la intimidad de las personas.';
     }
   }
 
@@ -491,6 +2217,10 @@ export class GuestContainerComponent implements OnInit {
     }
   }
 
+  onUploadCtaClick(): void {
+    this.startUploadFlow();
+  }
+
   startUploadFlow(): void {
     const session = this.guestService.getSession();
     if (!session) {
@@ -499,12 +2229,18 @@ export class GuestContainerComponent implements OnInit {
     }
     if (!session.hasConsented) {
       this.showConsentSheet.set(true);
+      this.currentStep.set('CONSENT');
       return;
     }
     if (!session.contributorNickname) {
       this.showIdentityForm.set(true);
+      this.currentStep.set('IDENTITY');
       return;
     }
+
+    // Both consented and named: go straight to file selection
+    this.initializeDefaultMockFilesIfEmpty();
+    this.goToStep('SELECT_FILES');
   }
 
   async onConsentAccepted(version: string): Promise<void> {
@@ -523,11 +2259,16 @@ export class GuestContainerComponent implements OnInit {
     this.showConsentSheet.set(false);
     if (!outcome.session.contributorNickname) {
       this.showIdentityForm.set(true);
+      this.currentStep.set('IDENTITY');
+    } else {
+      this.initializeDefaultMockFilesIfEmpty();
+      this.goToStep('SELECT_FILES');
     }
   }
 
   onConsentCancelled(): void {
     this.showConsentSheet.set(false);
+    this.currentStep.set('LANDING');
   }
 
   async onNicknameSaved(nickname: string): Promise<void> {
@@ -549,6 +2290,168 @@ export class GuestContainerComponent implements OnInit {
     }
 
     this.showIdentityForm.set(false);
+    this.initializeDefaultMockFilesIfEmpty();
+    this.goToStep('SELECT_FILES');
+  }
+
+  initializeDefaultMockFilesIfEmpty(): void {
+    if (this.selectedFiles().length === 0) {
+      // Mock files matching the mockup display:
+      this.selectedFiles.set([
+        {
+          id: 'file-mock-1',
+          name: 'IMG_2345.jpg',
+          sizeBytes: 2.4 * 1024 * 1024,
+          type: 'PHOTO',
+          previewUrl: 'assets/branding/phoeve/login-background.jpg',
+          status: 'PENDING',
+          progress: 0
+        },
+        {
+          id: 'file-mock-2',
+          name: 'VID_4821.mp4',
+          sizeBytes: 120 * 1024 * 1024,
+          type: 'VIDEO',
+          duration: '0:28',
+          previewUrl: 'assets/branding/phoeve/admin-login-background.jpg',
+          status: 'PENDING',
+          progress: 0
+        },
+        {
+          id: 'file-mock-3',
+          name: 'IMG_7778.jpg',
+          sizeBytes: 3.1 * 1024 * 1024,
+          type: 'PHOTO',
+          previewUrl: 'assets/branding/phoeve/login-background.jpg',
+          status: 'PENDING',
+          progress: 0
+        },
+        {
+          id: 'file-mock-4',
+          name: 'VID_9901.mp4',
+          sizeBytes: 310 * 1024 * 1024,
+          type: 'VIDEO',
+          duration: '1:12',
+          previewUrl: 'assets/branding/phoeve/admin-login-background.jpg',
+          status: 'PENDING',
+          progress: 0
+        }
+      ]);
+    }
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragOver.set(true);
+  }
+
+  onFileDrop(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragOver.set(false);
+    if (event.dataTransfer?.files) {
+      this.addLocalFiles(Array.from(event.dataTransfer.files));
+    }
+  }
+
+  onNativeFilesPicked(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files) {
+      this.addLocalFiles(Array.from(input.files));
+      input.value = '';
+    }
+  }
+
+  addLocalFiles(files: File[]): void {
+    const newItems: SelectedUploadItem[] = files.map((file, idx) => {
+      const isVideo = file.type.startsWith('video/') || /\.(mp4|mov|webm)$/i.test(file.name);
+      return {
+        id: `sel-${Date.now()}-${idx}`,
+        file,
+        name: file.name,
+        sizeBytes: file.size,
+        type: isVideo ? 'VIDEO' : 'PHOTO',
+        previewUrl: URL.createObjectURL(file),
+        duration: isVideo ? '0:28' : undefined,
+        status: 'PENDING',
+        progress: 0
+      };
+    });
+
+    this.selectedFiles.set([...this.selectedFiles(), ...newItems]);
+  }
+
+  removeSelectedFile(id: string): void {
+    this.selectedFiles.set(this.selectedFiles().filter(f => f.id !== id));
+  }
+
+  startUploadingSelectedFiles(): void {
+    this.goToStep('UPLOADING');
+
+    // Simulate progress per file matching Screen 5 from mockup:
+    // Item 1: Completed
+    // Item 2: Progress 63%
+    // Item 3: Processing spinner
+    // Item 4: Error with retry
+    const files = [...this.selectedFiles()];
+    if (files.length > 0) files[0].status = 'COMPLETED';
+    if (files.length > 1) {
+      files[1].status = 'UPLOADING';
+      files[1].progress = 63;
+    }
+    if (files.length > 2) files[2].status = 'PROCESSING';
+    if (files.length > 3) {
+      files[3].status = 'ERROR';
+      files[3].errorMessage = 'Error en la carga';
+    }
+    this.selectedFiles.set(files);
+
+    // Auto complete after short interval to allow viewing the progress step and advancing
+    setTimeout(() => {
+      const updated = this.selectedFiles().map(f => {
+        if (f.status === 'UPLOADING' || f.status === 'PROCESSING') {
+          return { ...f, status: 'COMPLETED' as const, progress: 100 };
+        }
+        return f;
+      });
+      this.selectedFiles.set(updated);
+    }, 2500);
+  }
+
+  retryFileUpload(id: string): void {
+    const files = this.selectedFiles().map(f => {
+      if (f.id === id) {
+        return { ...f, status: 'UPLOADING' as const, progress: 45, errorMessage: undefined };
+      }
+      return f;
+    });
+    this.selectedFiles.set(files);
+
+    setTimeout(() => {
+      const updated = this.selectedFiles().map(f => {
+        if (f.id === id) {
+          return { ...f, status: 'COMPLETED' as const, progress: 100 };
+        }
+        return f;
+      });
+      this.selectedFiles.set(updated);
+    }, 1500);
+  }
+
+  isAllUploadsDone(): boolean {
+    const files = this.selectedFiles();
+    if (files.length === 0) return true;
+    return files.every(f => f.status === 'COMPLETED' || f.status === 'ERROR');
+  }
+
+  onUploadMoreClick(): void {
+    this.goToStep('SELECT_FILES');
+  }
+
+  formatBytes(bytes: number): string {
+    if (bytes >= 1024 * 1024) {
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+    return (bytes / 1024).toFixed(0) + ' KB';
   }
 
   async refreshContributions(): Promise<void> {

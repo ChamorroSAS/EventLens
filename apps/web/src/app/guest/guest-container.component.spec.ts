@@ -12,7 +12,7 @@ import {
   providePublicEntryRouter
 } from '../navigation/public-entry-router.service.js';
 
-describe('GuestContainerComponent (EL-TK-083 & EL-TK-211)', () => {
+describe('GuestContainerComponent (EL-TK-083 & EL-TK-211 & Mobile-First 7-Screen Guest Flow)', () => {
   let guestService: GuestService;
 
   const mockAccessView: PublicAccessView = {
@@ -284,5 +284,71 @@ describe('GuestContainerComponent (EL-TK-083 & EL-TK-211)', () => {
 
     const titleEl = fixture.nativeElement.querySelector('#event-title');
     expect(titleEl.textContent).toContain('Boda Carlos y Sofia');
+  });
+
+  it('flujo móvil de 7 pantallas: transiciona a selección de archivos, progreso, confirmación y galería', async () => {
+    guestService.setSession({
+      id: 'sess-ready',
+      eventId: 'event-wedding-1',
+      credentialGeneration: 1,
+      contributorNickname: 'Néstor',
+      hasConsented: true,
+      consentVersion: 'v1.0'
+    });
+
+    const accessWithoutPin: PublicAccessView = {
+      ...mockAccessView,
+      pinRequired: false
+    };
+
+    const { fixture, component } = createComponent(accessWithoutPin);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    // 1. Landing: click en subir recuerdos va directo a SELECT_FILES porque ya tiene sesión y consentimiento
+    component.onUploadCtaClick();
+    fixture.detectChanges();
+    expect(component.currentStep()).toBe('SELECT_FILES');
+
+    const dropzone = fixture.nativeElement.querySelector('.dropzone-card');
+    expect(dropzone).toBeTruthy();
+    expect(component.selectedFiles().length).toBeGreaterThan(0);
+
+    // 2. Transición a UPLOADING
+    component.startUploadingSelectedFiles();
+    fixture.detectChanges();
+    expect(component.currentStep()).toBe('UPLOADING');
+    const progressList = fixture.nativeElement.querySelector('.uploading-files-list');
+    expect(progressList).toBeTruthy();
+
+    // 3. Transición a CONFIRMATION
+    component.goToStep('CONFIRMATION');
+    fixture.detectChanges();
+    expect(component.currentStep()).toBe('CONFIRMATION');
+    const celebrationTitle = fixture.nativeElement.querySelector('.celebration-title');
+    expect(celebrationTitle.textContent).toContain('¡Gracias por compartir!');
+
+    // 4. Transición a GALLERY
+    component.goToGallery();
+    fixture.detectChanges();
+    expect(component.currentStep()).toBe('GALLERY');
+    const galleryEl = fixture.nativeElement.querySelector('el-gallery');
+    expect(galleryEl).toBeTruthy();
+
+    // 5. Apertura de UploadPolicy modal
+    component.openUploadPolicy();
+    fixture.detectChanges();
+    expect(component.showUploadPolicyModal()).toBe(true);
+    const policyCard = fixture.nativeElement.querySelector('.policy-sheet-card');
+    expect(policyCard).toBeTruthy();
+    expect(policyCard.textContent).toContain('UploadPolicy');
+
+    // 6. Apertura de Legal modal
+    component.openLegalModal('privacy');
+    fixture.detectChanges();
+    expect(component.activeLegalModal()).toBe('privacy');
+    const legalCard = fixture.nativeElement.querySelector('.legal-detail-card');
+    expect(legalCard).toBeTruthy();
+    expect(legalCard.textContent).toContain('Política de Privacidad');
   });
 });
