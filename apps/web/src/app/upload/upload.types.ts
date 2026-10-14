@@ -27,6 +27,8 @@ export interface UploadLocalFile {
   localValidationError?: string;
   rejectionReason?: string;
   objectKey?: string;
+  sha256?: string;
+  mediaRef?: string;
 }
 
 export interface UploadBatchSummary {

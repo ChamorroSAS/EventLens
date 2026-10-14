@@ -149,4 +149,15 @@ export class UploadService {
       return file;
     });
   }
+
+  /**
+   * Calcula el hash SHA-256 de un archivo para idempotencia en subida presignada.
+   * Usa Web Crypto API (crypto.subtle.digest).
+   */
+  public async calculateSha256(file: File): Promise<string> {
+    const buffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+  }
 }
