@@ -2,7 +2,10 @@
 ## Parent epic
 EL-EP-019
 ## Status
-READY
+IN_PROGRESS
+
+## Evidencia de ejecución actual
+Implementación independiente inactiva: búsqueda/detalle mínimos mediante cliente generado, cards/tabla, paginación real, PARTIAL, caché privada y generaciones para descartar respuestas tardías. Integrada en shell sin UI administrativa histórica. Suite Angular completa 246/246 PASS; typecheck y build verificados. Revisión independiente permite integración inactiva; gates HTTPS/Playwright y accesibilidad manual pendientes, activación bloqueada por EL-TK-222. Véase `.codex/product/sessions/2026-10-13-admin-console-inactive-delivery.md`.
 ## User story
 Como administrador, quiero buscar y leer eventos en una interfaz responsive, para revisar información autorizada sin ejecutar acciones.
 ## Alcance funcional

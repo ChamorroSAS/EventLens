@@ -41,6 +41,14 @@ Cliente generado y CSRF en memoria; guard revalida, 503 mantiene indisponibilida
 
 Angular ejecutado: `pnpm.cmd --filter @eventlens/web exec ng test --watch=false --include=src/app/admin/admin-session.service.spec.ts --include=src/app/admin/admin-session.guard.spec.ts --include=src/app/admin/admin-login.component.spec.ts --include=src/app/admin/admin-read-only-shell.component.spec.ts --include=src/app/app.routes.spec.ts`: 35/35 PASS. Typecheck web PASS. La revisión independiente detectó carreras y salida incierta corregidas con pruebas; su cierre final quedó pendiente por límite del agente de revisión. No declarar gate final aprobado ni DONE.
 
+## EL-TK-236 — consulta mínima inactiva
+
+Componentes separados de la UI histórica: búsqueda/estado privado/detalle y API con tipos generados. Sin media, mutaciones, jobs ni IDs de actor del cliente. Generaciones descartan datos y errores obsoletos tras otra consulta o cambio de sesión. El detalle se limpia e invalida al cerrar sesión/destruirse. Cards y tabla comparten campos, tabla con caption/scope, links semánticos, foco al resultado visible al volver. Pérdida de autorización ofrece login seguro; indisponibilidad no inventa datos/cero.
+
+Ejecutado `pnpm.cmd --filter @eventlens/web test`: 42 archivos, 246/246 PASS, incluidos regresiones del organizador y rutas. La selección previa de pruebas admin/rutas dio 45/45 antes del último caso de shell; no sumar suites repetidas. Typecheck PASS; build de producción PASS con aviso de presupuesto inicial (736.79 kB frente a 600 kB en esa ejecución).
+
+Revisión independiente final de 235/236: APPROVED_WITH_MINOR para integración INACTIVA. MAJOR de shell anónimo resuelto con login/reconciliación explícita y prueba; MINOR de fecha en cards resuelto y comprobado en suite completa. No hallazgos bloqueantes en ese alcance. Retorno integrado de foco, responsive real, HTTPS, Playwright y accesibilidad manual siguen PENDING; no certifica activación ni DONE.
+
 ## Próximas fases verificables
 
 1. EL-TK-234: endpoints mínimos de lectura, sesión MOD-001 y auditoría durable obligatoria antes de responder; DTO explícito sin media/acciones/códigos de invitación.
