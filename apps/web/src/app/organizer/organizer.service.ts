@@ -2,6 +2,9 @@ import { Injectable, inject } from '@angular/core';
 import { createEventLensClient } from '@eventlens/api-client';
 import { OrganizerSessionService } from '../organizer-session.service.js';
 import type { OrganizerEventModel, EventConfigurationModel } from './organizer.types.js';
+import type { operations } from '@eventlens/api-client';
+
+export type OrganizerLifecycleSnapshot = operations['getOrganizerEventLifecycle']['responses'][200]['content']['application/json'];
 
 @Injectable({
   providedIn: 'root'
@@ -9,6 +12,36 @@ import type { OrganizerEventModel, EventConfigurationModel } from './organizer.t
 export class OrganizerService {
   private readonly client = createEventLensClient();
   private readonly sessionService = inject(OrganizerSessionService, { optional: true });
+
+  async getEventLifecycle(eventId: string): Promise<OrganizerLifecycleSnapshot> {
+    const { data, response } = await this.client.GET('/api/v1/events/{eventId}/lifecycle', {
+      params: { path: { eventId } }
+    });
+    if (!response.ok || !data) throw new Error('LIFECYCLE_UNAVAILABLE');
+    return data;
+  }
+
+  async transitionEventLifecycle(params: {
+    eventId: string;
+    action: 'schedule' | 'activate';
+    expectedRevision: string;
+    idempotencyKey: string;
+  }): Promise<void> {
+    const options = {
+      params: { path: { eventId: params.eventId }, header: { 'Idempotency-Key': params.idempotencyKey } },
+      headers: { 'X-CSRF-Token': this.sessionService?.getCsrfToken() ?? '' },
+      body: { expectedRevision: params.expectedRevision }
+    };
+    const result = params.action === 'schedule'
+      ? await this.client.POST('/api/v1/events/{eventId}/lifecycle/schedule', options)
+      : await this.client.POST('/api/v1/events/{eventId}/lifecycle/activate', options);
+    if (!result.response.ok || !result.data) {
+      const error = new Error('LIFECYCLE_COMMAND_FAILED') as Error & { status: number; code?: string };
+      error.status = result.response.status;
+      error.code = (result.error as { code?: string } | undefined)?.code;
+      throw error;
+    }
+  }
 
   /**
    * Retrieves all events owned by the authenticated organizer via generated OpenAPI client (EL-TK-047, EL-TK-210).

@@ -1,0 +1,28 @@
+.lifecycle-card {
+  padding: 1.5rem;
+  border: 1px solid var(--el-color-border, #e2e8f0);
+  border-radius: .75rem;
+  background: var(--el-color-surface, #fff);
+  color: var(--el-color-text, #0f172a);
+}
+h3 { margin: 0 0 1rem; }
+p { line-height: 1.6; }
+dl div { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; margin: .75rem 0; }
+dt { font-weight: 600; }
+dd { margin: 0; overflow-wrap: anywhere; }
+.notice, .error, .confirmation { padding: 1rem; border-radius: .5rem; background: var(--el-color-background, #f8fafc); }
+.error { border: 1px solid var(--el-color-danger, #c94a4a); }
+.actions { display: flex; flex-wrap: wrap; gap: .75rem; margin: 1rem 0; }
+button {
+  min-height: 44px;
+  padding: .65rem 1rem;
+  border: 1px solid var(--el-color-border, #e2e8f0);
+  border-radius: .5rem;
+  background: var(--el-color-surface, #fff);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+button.primary { background: var(--el-color-primary, #2563eb); color: #fff; }
+button:disabled { opacity: .6; cursor: default; }
+button:focus-visible { outline: 2px solid var(--el-color-primary, #2563eb); outline-offset: 3px; }

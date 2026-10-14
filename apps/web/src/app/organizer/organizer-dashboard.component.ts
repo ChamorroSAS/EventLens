@@ -22,6 +22,7 @@ import { OrganizerSessionService } from '../organizer-session.service';
 
 import { EventScheduleSectionComponent } from './event-schedule-section.component.js';
 import { EventTimezoneSectionComponent } from './event-timezone-section.component.js';
+import { EventLifecycleActionsComponent } from './event-lifecycle-actions.component.js';
 
 @Component({
   selector: 'eventlens-organizer-dashboard',
@@ -35,7 +36,8 @@ import { EventTimezoneSectionComponent } from './event-timezone-section.componen
     CreateEventFormComponent,
     EventBasicInfoFormComponent,
     EventScheduleSectionComponent,
-    EventTimezoneSectionComponent
+    EventTimezoneSectionComponent,
+    EventLifecycleActionsComponent
   ],
   templateUrl: './organizer-dashboard.component.html',
   styleUrl: './organizer-dashboard.component.scss',
@@ -233,8 +235,10 @@ export class OrganizerDashboardComponent implements OnInit {
   private async refreshSelectedEvent(eventId: string): Promise<void> {
     try {
       const config = await this.organizerService.getEventConfiguration(eventId);
+      if (this.selectedEventId() !== eventId) return;
       this.selectedEventConfig.set(config);
       const items = await this.organizerService.listEvents();
+      if (this.selectedEventId() !== eventId) return;
       this.events.set(items);
     } catch {
       // Ignora errores transitorios de recarga
