@@ -2,7 +2,10 @@
 ## Parent epic
 EL-EP-019
 ## Status
-READY
+IN_PROGRESS
+
+## Evidencia de ejecución actual
+Implementación independiente e inactiva autorizada por el usuario; integrada y validada sin activar RecoveryAuthority. Unitarias owners 33/33, API 31/31; PostgreSQL aislado owners 6/6 y API 2/2; generación y drift del cliente PASS. Auditoría durable, cookies host estrictas y DTO mínimo. La autoridad de laboratorio simulada no acredita EL-TK-222. Cierre/activación pendientes de dependencias y validación final. Véase `.codex/product/sessions/2026-10-13-admin-console-inactive-delivery.md`.
 ## User story
 Como administrador autorizado, quiero buscar y abrir detalle mínimo de eventos, para investigar sin ejecutar acciones administrativas.
 ## Alcance funcional
