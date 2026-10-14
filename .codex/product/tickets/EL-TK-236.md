@@ -44,7 +44,7 @@ EL-EP-019; UI admin; EL-TK-234/235.
 - [x] Gate 2 de planificación aprobado
 ## Condiciones de ejecución pendientes
 - [ ] Autoridad operacional acreditada y dependencias validadas, incluido EL-TK-222, antes de ejecutar/activar
-REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: NO actual (PENDING_DEPENDENCIES); IMPLEMENTABLE_AFTER_DEPENDENCIES: YES. Validar depends_on antes de ejecutar; no repetir Gate2 salvo cambio material. Activación nuevas mutaciones/admin BLOCKED por EL-TK-221/222 y evidencias finales. IMPLEMENTED: NO.
+REQUIREMENTS_READY: YES. TECHNICAL_GATE: APPROVED_FOR_PLANNING. READY_FOR_IMPLEMENTATION: NO actual (PENDING_DEPENDENCIES); IMPLEMENTABLE_AFTER_DEPENDENCIES: YES. Validar depends_on antes de ejecutar; no repetir Gate2 salvo cambio material. Activación nuevas mutaciones/admin BLOCKED por EL-TK-221/222 y evidencias finales. IMPLEMENTED: PARTIAL (alcance independiente; activación/cierre pendientes).
 ## Definition of Done
 UI read-only responsive verificada sin presentación insegura ante fallo.
 ## Archivos candidatos

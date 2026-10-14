@@ -24,7 +24,15 @@ const queryFor = (rows: object[]) => ({ query: async <T extends object>() => row
 describe('destructive test isolation is fail closed before writes', () => {
   it('requires a runner-issued policy, including with a test-looking name', () => {
     expect(() => readTestIsolationPolicy({ PGDATABASE: 'eventlens_test' })).toThrow('TEST_ISOLATION_REQUIRED');
-    expect(() => createPrismaClient('postgresql://role:secret@localhost/eventlens')).toThrow('TEST_ISOLATION_REQUIRED');
+    // Exercise missing policy independently of a parent isolated runner's environment.
+    try {
+      for (const key of ['EVENTLENS_TEST_DATABASE', 'EVENTLENS_TEST_ROLE', 'EVENTLENS_TEST_TOKEN']) {
+        vi.stubEnv(key, undefined);
+      }
+      expect(() => createPrismaClient('postgresql://role:secret@localhost/eventlens')).toThrow('TEST_ISOLATION_REQUIRED');
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it('rejects DATABASE_URL development targets and alternate roles', () => {
