@@ -45,4 +45,121 @@ export class OrganizerService {
     }
     return data;
   }
+
+  /**
+   * Creates a new draft event idempotently (EL-TK-224, EL-TK-229).
+   */
+  async createEvent(
+    name: string,
+    idempotencyKey: string
+  ): Promise<{ id: string; outcome: 'APPLIED' | 'REPLAYED' }> {
+    const { data, response, error } = await this.client.POST('/api/v1/events', {
+      params: {
+        header: {
+          'Idempotency-Key': idempotencyKey
+        }
+      },
+      body: {
+        name
+      }
+    });
+
+    if (!response.ok || !data) {
+      if (response.status === 422) {
+        const message = (error as any)?.message || 'El nombre del evento debe tener entre 1 y 120 caracteres';
+        const err = new Error(message);
+        (err as any).status = 422;
+        (err as any).code = 'INVALID_NAME';
+        throw err;
+      }
+      if (response.status === 409) {
+        const message = (error as any)?.message || 'Conflicto de idempotencia al crear el evento';
+        const err = new Error(message);
+        (err as any).status = 409;
+        (err as any).code = 'IDEMPOTENCY_CONFLICT';
+        throw err;
+      }
+      if (response.status === 401 || response.status === 403) {
+        const err = new Error('Sesión no autorizada');
+        (err as any).status = response.status;
+        (err as any).code = 'UNAUTHORIZED';
+        throw err;
+      }
+      const err = new Error('COMMUNICATION_ERROR');
+      (err as any).status = response.status;
+      (err as any).code = 'NETWORK_ERROR';
+      throw err;
+    }
+
+    const resData = data as any;
+    return {
+      id: resData.event.id,
+      outcome: resData.outcome
+    };
+  }
+
+  /**
+   * Updates the name of a draft event with revision check and idempotency (EL-TK-225, EL-TK-230).
+   */
+  async updateEventName(params: {
+    eventId: string;
+    name: string;
+    expectedRevision: string;
+    idempotencyKey: string;
+  }): Promise<{ id: string; name: string; revision: string; outcome: 'APPLIED' | 'REPLAYED' }> {
+    const { data, response, error } = await this.client.PATCH(
+      '/api/v1/events/{eventId}/configuration/name',
+      {
+        params: {
+          path: { eventId: params.eventId },
+          header: { 'Idempotency-Key': params.idempotencyKey }
+        },
+        body: {
+          name: params.name,
+          expectedRevision: params.expectedRevision
+        }
+      }
+    );
+
+    if (!response.ok || !data) {
+      if (response.status === 409) {
+        const message = (error as any)?.message || 'Conflicto de revisión (CAS)';
+        const err = new Error(message);
+        (err as any).status = 409;
+        (err as any).code = 'CONCURRENCY_CONFLICT';
+        throw err;
+      }
+      if (response.status === 422) {
+        const message = (error as any)?.message || 'El nombre del evento debe tener entre 1 y 120 caracteres';
+        const err = new Error(message);
+        (err as any).status = 422;
+        (err as any).code = 'INVALID_NAME';
+        throw err;
+      }
+      if (response.status === 404) {
+        const err = new Error('EVENT_NOT_FOUND');
+        (err as any).status = 404;
+        (err as any).code = 'EVENT_NOT_FOUND';
+        throw err;
+      }
+      if (response.status === 401 || response.status === 403) {
+        const err = new Error('UNAUTHORIZED');
+        (err as any).status = response.status;
+        (err as any).code = 'UNAUTHORIZED';
+        throw err;
+      }
+      const err = new Error('COMMUNICATION_ERROR');
+      (err as any).status = response.status;
+      (err as any).code = 'NETWORK_ERROR';
+      throw err;
+    }
+
+    const resData = data as any;
+    return {
+      id: resData.event.id,
+      name: resData.event.name,
+      revision: resData.revision,
+      outcome: resData.outcome
+    };
+  }
 }
