@@ -358,5 +358,59 @@ describe('OrganizerDashboardComponent & Organizer Navigation (EL-TK-048)', () =>
       expect(component.selectedEventConfig()?.revision).toBe('2');
       expect(component.isBasicInfoDirty()).toBe(false);
     });
+
+    it('descarta respuestas tardías de evento A cuando el usuario navega a evento B (carrera A->B - EL-TK-228)', async () => {
+      let resolveA!: (value: any) => void;
+      const promiseA = new Promise((res) => { resolveA = res; });
+      const configB: EventConfigurationModel = {
+        event: sampleEvents[1],
+        revision: '200',
+        capabilities: {
+          canEditName: false,
+          canEditSchedule: false,
+          canChangeTimezone: false,
+          canEditSettings: false,
+          canManageAccess: false,
+          canViewLifecycle: false,
+          canViewCapacity: false,
+          canPublishOrActivate: false
+        }
+      };
+
+      organizerServiceMock.getEventConfiguration.mockImplementation((id: string) => {
+        if (id === 'event-101') return promiseA;
+        if (id === 'event-102') return Promise.resolve(configB);
+        return Promise.reject(new Error('NOT_FOUND'));
+      });
+
+      // 1. Usuario selecciona evento A
+      const selectionA = component.onEventSelected('event-101');
+      expect(component.selectedEventId()).toBe('event-101');
+      expect(component.selectedEventConfig()).toBeNull();
+
+      // 2. Antes de que A responda, usuario selecciona evento B
+      await component.onEventSelected('event-102');
+      expect(component.selectedEventId()).toBe('event-102');
+      expect(component.selectedEventConfig()).toBe(configB);
+
+      // 3. Respuesta tardía de A llega ahora
+      resolveA(sampleConfig);
+      await selectionA;
+
+      // 4. Configuración bajo B NO fue sobreescrita por A
+      expect(component.selectedEventId()).toBe('event-102');
+      expect(component.selectedEventConfig()).toBe(configB);
+      expect(component.selectedEventConfig()?.event.id).toBe('event-102');
+    });
+
+    it('devuelve resultado neutro sin datos ni capacidades si el evento es ajeno o inexistente (EL-TK-228)', async () => {
+      organizerServiceMock.getEventConfiguration.mockRejectedValueOnce(new Error('ACCESS_DENIED'));
+
+      await component.onEventSelected('event-ajeno-999');
+
+      expect(component.selectedEventId()).toBeNull();
+      expect(component.selectedEventConfig()).toBeNull();
+      expect(component.errorMessage()).toContain('El evento seleccionado no existe o no tienes permisos');
+    });
   });
 });

@@ -309,13 +309,25 @@ export class OrganizerDashboardComponent implements OnInit {
 
   async onEventSelected(eventId: string): Promise<void> {
     this.selectedEventId.set(eventId);
+    // Limpiar datos y capacidades A antes de leer B
+    this.selectedEventConfig.set(null);
     this.activeSection.set('general');
     this.isBasicInfoDirty.set(false);
     try {
       const config = await this.organizerService.getEventConfiguration(eventId);
+      // Carrera A->B: si el usuario navegó a otro evento mientras cargaba, descartar
+      if (this.selectedEventId() !== eventId) {
+        return;
+      }
       this.selectedEventConfig.set(config);
     } catch (err) {
-      this.errorMessage.set('No se pudo obtener la configuración del evento seleccionado.');
+      if (this.selectedEventId() !== eventId) {
+        return;
+      }
+      // Detalle seguro: si el evento es ajeno o ausente, resultado neutro sin datos ni capacidades
+      this.selectedEventId.set(null);
+      this.selectedEventConfig.set(null);
+      this.errorMessage.set('El evento seleccionado no existe o no tienes permisos para acceder a él.');
     }
   }
 

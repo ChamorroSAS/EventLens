@@ -47,7 +47,6 @@ export class OrganizerService {
   }
 
   /**
-<<<<<<< HEAD
    * Creates a new draft event idempotently (EL-TK-224, EL-TK-229).
    */
   async createEvent(
