@@ -1,5 +1,6 @@
 export type UploadItemStatus =
   | 'QUEUED'
+  | 'HASHING'
   | 'AUTHORIZING'
   | 'UPLOADING'
   | 'CONFIRMING'
@@ -10,11 +11,7 @@ export type UploadItemStatus =
 
 export interface UploadLocalFile {
   id: string;
-  file: {
-    name: string;
-    size: number;
-    type: string;
-  };
+  file: File;
   name: string;
   size: number;
   type: string;

@@ -4,6 +4,7 @@ import { UploadFileItemComponent } from './upload-file-item.component.js';
 import { UploadProgressSummaryComponent } from './upload-progress-summary.component.js';
 import { UsageLimitAlertComponent } from './usage-limit-alert.component.js';
 import { UploadService } from './upload.service.js';
+import { UploadOrchestratorService } from './upload-orchestrator.service.js';
 import type { UploadLocalFile, UploadBatchSummary } from './upload.types.js';
 
 @Component({
@@ -121,7 +122,10 @@ export class UploadContainerComponent {
     allCompleted: false
   };
 
-  constructor(private readonly uploadService: UploadService) {}
+  constructor(
+    private readonly uploadService: UploadService,
+    private readonly orchestrator: UploadOrchestratorService
+  ) {}
 
   private refreshSummary(): void {
     this.batchSummary = this.uploadService.calculateBatchSummary(this.files);
@@ -151,6 +155,14 @@ export class UploadContainerComponent {
 
       this.files.push(localFile);
       this.fileQueued.emit(localFile);
+
+      // Start upload for valid files
+      if (validation.valid) {
+        this.orchestrator.startUpload(localFile, {
+          onProgress: (id, pct) => this.updateFileProgress(id, pct),
+          onStatusChange: (id, status, opts) => this.updateFileStatus(id, status, opts),
+        });
+      }
     }
     this.refreshSummary();
   }
@@ -170,6 +182,11 @@ export class UploadContainerComponent {
 
     this.refreshSummary();
     this.fileRetried.emit(fileId);
+
+    this.orchestrator.retryUpload(fileId, item, {
+      onProgress: (id, pct) => this.updateFileProgress(id, pct),
+      onStatusChange: (id, status, opts) => this.updateFileStatus(id, status, opts),
+    });
   }
 
   /**

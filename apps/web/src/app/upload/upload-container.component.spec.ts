@@ -1,13 +1,24 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { UploadContainerComponent } from './upload-container.component.js';
 import { UploadService } from './upload.service.js';
+import { UploadOrchestratorService } from './upload-orchestrator.service.js';
 
 describe('UploadContainerComponent (EL-TK-094 Mobile Upload Flow & WCAG 2.2 AA)', () => {
+  let mockOrchestrator: { startUpload: ReturnType<typeof vi.fn>; retryUpload: ReturnType<typeof vi.fn> };
+
   beforeEach(() => {
+    mockOrchestrator = {
+      startUpload: vi.fn(),
+      retryUpload: vi.fn()
+    };
+
     TestBed.configureTestingModule({
       imports: [UploadContainerComponent],
-      providers: [UploadService]
+      providers: [
+        UploadService,
+        { provide: UploadOrchestratorService, useValue: mockOrchestrator }
+      ]
     });
   });
 
