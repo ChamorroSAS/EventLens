@@ -1,13 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, computed, inject } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { of } from 'rxjs';
+import { AdminReadOnlyEventSearchComponent } from './admin-read-only-event-search.component.js';
+import { AdminReadOnlyEventDetailComponent } from './admin-read-only-event-detail.component.js';
 import { AdminSessionService } from './admin-session.service.js';
 
-/** Temporary routed boundary for the read-only MVP; it intentionally imports no legacy admin UI. */
+/** Routed read-only boundary, without historical administrative mutation components. */
 @Component({
   selector: 'eventlens-admin-read-only-shell',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink, AdminReadOnlyEventSearchComponent, AdminReadOnlyEventDetailComponent],
   template: `
     <main class="admin-shell" aria-labelledby="admin-shell-title">
       <header class="admin-shell__header">
@@ -26,9 +30,22 @@ import { AdminSessionService } from './admin-session.service.js';
           @if (session.logoutUncertainty(); as message) { <p>{{ message }}</p> }
           <button type="button" (click)="retry()">{{ session.logoutUncertainty() ? 'Reintentar cierre de sesión' : 'Reintentar' }}</button>
         </section>
+      } @else if (session.state() === 'ANONYMOUS') {
+        <section class="admin-shell__notice" role="status">
+          <p>La sesión administrativa ya no permite consultar estos datos.</p>
+          <a routerLink="/admin/ingresar" [queryParams]="{returnUrl: '/admin/eventos'}">Volver al acceso administrativo</a>
+          @if (session.logoutUncertainty(); as message) {
+            <p>{{ message }}</p>
+            <button type="button" (click)="retry()">Reintentar cierre de sesión</button>
+          }
+        </section>
       } @else if (session.state() === 'ADMIN_ACTIVE' && !session.isRevalidating()) {
         <section class="admin-shell__content" aria-live="polite">
-          <p>La búsqueda administrativa estará disponible aquí.</p>
+          @if (eventId(); as id) {
+            <eventlens-admin-read-only-event-detail [eventId]="id" />
+          } @else {
+            <eventlens-admin-read-only-event-search />
+          }
         </section>
       } @else {
         <section class="admin-shell__content" role="status" aria-live="polite">
@@ -50,6 +67,8 @@ import { AdminSessionService } from './admin-session.service.js';
 export class AdminReadOnlyShellComponent {
   readonly session = inject(AdminSessionService);
   private readonly router = inject(Router, { optional: true });
+  private readonly params = toSignal(inject(ActivatedRoute, { optional: true })?.paramMap ?? of(null));
+  readonly eventId = computed(() => this.params()?.get('eventId') ?? null);
 
   async retry(): Promise<void> {
     if (this.session.logoutUncertainty()) {
