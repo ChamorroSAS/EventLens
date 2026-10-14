@@ -2,7 +2,10 @@
 ## Parent epic
 EL-EP-019
 ## Status
-READY
+IN_PROGRESS
+
+## Evidencia de ejecución actual
+Implementación inactiva autorizada: cliente generado, sesión/guard separados, limpieza privada, revalidación y logout incierto con confirmación explícita. Rutas usan un shell de sólo lectura sin UI histórica de mutaciones. Activación/cierre pendientes de EL-TK-222 y laboratorio HTTPS. Evidencia y límites en `.codex/product/sessions/2026-10-13-admin-console-inactive-delivery.md`.
 ## User story
 Como administrador, quiero entrar y salir por una interfaz separada, para mantener aislada la sesión administrativa.
 ## Alcance funcional
