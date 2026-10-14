@@ -423,7 +423,9 @@ Orden:205 y206 independientes →207/208/209/210/211 según sus propias predeces
 | EL-TK-235 (IN_PROGRESS) | EL-TK-223, EL-TK-233 | EL-TK-236, EL-TK-238 |
 | EL-TK-236 (IN_PROGRESS) | EL-TK-234, EL-TK-235 | EL-TK-238 |
 | EL-TK-237 (BLOCKED) | EL-TK-218, EL-TK-219, EL-TK-220, EL-TK-221, EL-TK-222, EL-TK-223, EL-TK-224, EL-TK-225, EL-TK-226, EL-TK-227, EL-TK-228, EL-TK-229, EL-TK-230, EL-TK-231, EL-TK-232 | EL-TK-238 |
-| EL-TK-238 (READY) | EL-TK-218, EL-TK-221, EL-TK-222, EL-TK-233, EL-TK-234, EL-TK-235, EL-TK-236, EL-TK-237 | — |
+| EL-TK-238 (BLOCKED) | EL-TK-218, EL-TK-221, EL-TK-222, EL-TK-233, EL-TK-234, EL-TK-235, EL-TK-236, EL-TK-237 | — |
+
+**CONFIRMED — reevaluación y entrega inactiva, 2026-10-14:** EL-TK-234..236 implementados parcialmente y validados para integración inactiva; EL-TK-237/238 BLOCKED para cierre. Las etiquetas históricas DONE de identidad/autoridad no acreditan las garantías operacionales. DEC-112 sigue RECOMMENDED; no se habilita RecoveryAuthority automática ni se reabre trabajo histórico. [Evidencias, límites y matriz pendiente](../../docs/reports/event-control-panels-validation-2026-10-14.md).
 
 **CONFIRMED — planificación y estado de entrega, 2026-10-13:** [Épica](epics/EL-EP-019.md) / [gates](sessions/2026-10-13-event-control-panels-gates.md) / [contrato](../context/event-control-panels-contract.md) / [plan](../../docs/reports/event-control-panels-backlog-2026-10-13.md). Veintiún tickets en el paquete de trabajo: catorce tickets completados (EL-TK-218, EL-TK-219, EL-TK-220, EL-TK-221, EL-TK-222, EL-TK-223, EL-TK-226, EL-TK-227, EL-TK-228, EL-TK-229, EL-TK-230, EL-TK-231, EL-TK-232, EL-TK-233 DONE), y siete tickets restantes READY sujetos a sus dependencias validadas. READY no implica predecesoras ejecutadas ni activación productiva.
 
