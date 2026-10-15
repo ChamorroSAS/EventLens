@@ -1,0 +1,29 @@
+# Phoeve Beta bootstrap — example variables.
+#
+# Copy to terraform.tfvars (not committed). This root creates the GitHub OIDC
+# provider, the deployment role and, when HCP Terraform is authorised, the plan
+# and apply roles.
+
+project     = "phoeve"
+environment = "beta"
+region      = "us-east-1"
+
+# owner/name form. A wildcard subject is rejected by a precondition.
+github_repository  = "owner/EventLens"
+github_environment = "beta"
+
+# Set exactly one of these.
+create_github_oidc_provider = false
+github_oidc_provider_arn    = "arn:aws:iam::000000000000:oidc-provider/token.actions.githubusercontent.com"
+
+# HCP Terraform stays disabled until the remote backend is authorised.
+hcp_organization         = ""
+hcp_project              = ""
+hcp_workspace            = ""
+create_hcp_oidc_provider = false
+hcp_oidc_provider_arn    = null
+
+# Optional guard rail: an existing permissions boundary to attach to every role.
+permissions_boundary_arn = null
+
+ssm_parameter_prefix = "/phoeve/beta"

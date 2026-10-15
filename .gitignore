@@ -44,3 +44,18 @@ packages/database/prisma/migration-manifest.json
 .pnpm-store/
 opencode/
 opencode.json
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+# Remote state backend configuration is generated locally, never committed.
+**/backend.hcp.tf
+# Real variable files stay local; the committed examples are the contract.
+*.tfvars
+!*.tfvars.example

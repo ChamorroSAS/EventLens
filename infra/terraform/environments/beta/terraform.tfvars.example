@@ -1,0 +1,37 @@
+# Phoeve Beta — example variables.
+#
+# Copy to terraform.tfvars (not committed), fill in the reviewed values and run a
+# plan. Nothing here provisions anything by itself; see
+# docs/aws-preview-deployment.md for the approvals required before an apply.
+
+project     = "phoeve"
+environment = "beta"
+region      = "us-east-1"
+
+# Existing hosted zone for phoeve.com. The zone is never created by Terraform.
+hosted_zone_id = "Z0000000000000000000"
+record_name    = "beta"
+domain         = "phoeve.com"
+
+# Instance class must be confirmed before applying: it drives the monthly cost.
+instance_type        = "t4g.medium"
+root_volume_size_gb  = 30
+
+db_volume_size_gb    = 30
+media_volume_size_gb = 40
+
+# Blocked capabilities stay off. Enabling either of these requires the matching
+# acknowledgement below, which is only set after the corresponding gate is closed.
+enable_authority_volume       = false
+authority_gate_acknowledged   = false
+
+enable_ebs_snapshot_policy      = false
+acknowledge_complementary_backups = false
+
+# Each address must confirm its SNS subscription by email.
+alert_emails       = ["REPLACE_WITH_OPERATOR_MAILBOX"]
+monthly_budget_usd = 60
+
+# Secrets are never set here: the host reads them from SSM SecureString at
+# deployment time.
+ssm_parameter_prefix = "/phoeve/beta"

@@ -1,0 +1,44 @@
+#!/bin/bash
+# First-boot preparation for the Phoeve Beta host.
+#
+# This file is deliberately minimal and contains no secret: user data is readable
+# through the instance metadata service. The host is prepared in two steps on
+# purpose.
+#
+#   1. cloud-init (this file) only makes the host identifiable and creates the
+#      data root with restrictive ownership. It installs nothing from a third
+#      party and starts no application.
+#   2. infra/beta/deploy/bootstrap-host.sh, run by an operator over SSM Session
+#      Manager, installs the container runtime, attaches the data volumes and
+#      installs the stable deployment entry point.
+#
+# Administrators reach the host only through SSM Session Manager: there is no key
+# pair and no inbound port other than 80/443 on the edge security group.
+
+set -euo pipefail
+
+environment='${environment}'
+data_root='/srv/phoeve/beta'
+
+if command -v hostnamectl >/dev/null 2>&1; then
+  hostnamectl set-hostname --static "phoeve-$environment" || true
+fi
+
+# Records which stage this host belongs to. It is written by root and world
+# readable, so it can never hold anything sensitive.
+install -d -m 0755 -o root -g root /etc/phoeve
+printf 'environment=%s\n' "$environment" >/etc/phoeve/environment
+chmod 0644 /etc/phoeve/environment
+
+# The data root is the mount point for the persistent volumes. The volumes
+# themselves are attached and mounted by the preparation script.
+install -d -m 0755 -o root -g root /srv/phoeve
+install -d -m 0755 -o root -g root "/srv/phoeve/beta"
+
+# Administration depends on the SSM agent. It ships with the base image; this
+# only makes sure it is running.
+systemctl enable --now amazon-ssm-agent.service || true
+
+install -d -m 0755 -o root -g root /var/lib/phoeve
+printf 'host preparation for the %s stage completed\n' '${environment}' \
+  >> /var/log/phoeve-bootstrap.log
