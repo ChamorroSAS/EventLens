@@ -36,6 +36,11 @@ export {
   computeCredentialDigest,
   computeDummyCredentialDigest,
   serializeSessionCookie,
+  extractAdminSessionCookie,
+  extractHostAdminSessionCookie,
+  type AdminSessionProjection,
+  type RenewSessionContextCommand,
+  type RenewSessionContextResult,
   assertPublicRegistrationSafe,
   type RegistrationErrorCode,
   RegistrationError,
@@ -134,6 +139,7 @@ export {
 } from './access-request.js';
 
 export { OrganizerRegistrationService } from './registration.js';
+export { AdminOrganizerManagementService, OrganizerManagementError, type OrganizerSummary, type OrganizerManagementResult, type OrganizerManagementCommand } from './admin-organizer-management.js';
 
 export { EmailVerificationService } from './verification.js';
 
@@ -177,3 +183,8 @@ export {
   toBase64NoPadding,
   fromBase64NoPadding
 } from './password-verifier.js';
+
+export {
+  DurableRecoveryAuthorityAdapter,
+  type DurableRecoveryAuthorityOptions
+} from './recovery-authority-adapter.js';

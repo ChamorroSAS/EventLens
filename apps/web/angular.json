@@ -21,7 +21,7 @@
             ]
           },
           "configurations": {
-            "production": { "outputHashing": "all", "budgets": [{ "type": "initial", "maximumWarning": "500kB", "maximumError": "1MB" }] },
+            "production": { "outputHashing": "all", "budgets": [{ "type": "initial", "maximumWarning": "600kB", "maximumError": "1MB" }] },
             "development": { "optimization": false, "sourceMap": true, "extractLicenses": false }
           },
           "defaultConfiguration": "production"

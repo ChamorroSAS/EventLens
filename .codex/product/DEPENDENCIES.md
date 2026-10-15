@@ -1,5 +1,9 @@
 # EventLens — dependencias funcionales
 
+## EL-EP-019 — montaje y correctivos prospectivos
+
+[Plan y grafo](../../docs/reports/event-control-panels-backlog-2026-10-13.md) / [contrato](../context/event-control-panels-contract.md).218 aislamiento;219 receipts→220 CAS;221 binding identidad;223 Router.224..227 transporte→228..232 UI mínima.222 RA real operacional BLOCKED condiciona activación nuevas mutaciones/admin.233..236 consola read-only,237/238 cierre. Detalles depends_on/blocks en218..238; sin ciclo owners ni dependencias retroactivas DONE. Métricas DEFERRED. [Gate2](sessions/2026-10-13-event-control-panels-gates.md).
+
 **RECOMMENDED:** mapa de planificación. Una dependencia dura necesita contrato/resultado previo para completar la capacidad; no significa que todo diseño deba esperar. Las referencias entre módulos describen colaboración, pueden ser bidireccionales y no equivalen a dependencias de código. Los tickets vigentes de EL-EP-001 se registran en Tickets vigentes. **HISTÓRICO CONFIRMED:** EL-TK-001..004 fueron aprobados el 2026-10-07 y ahora están SUPERSEDED; EL-TK-005..019 los reemplazaron y quedaron READY en ese dictamen. **CONFIRMED — 2026-10-08:** el [dictamen final](sessions/2026-10-08-el-ep-001-ticket-remediation-review.md) aprobó los 19 activos EL-TK-005..019 y EL-TK-043..046, READY de requisitos; READY_FOR_IMPLEMENTATION: PARTIAL.
 
 ## Modules
@@ -291,11 +295,11 @@ EL-TK-048 compone navegación frontend compartida. Los formularios existentes co
 | EL-TK-158 (DONE) | 156 | 164,165 |
 | EL-TK-159 (DONE) | 156; contratos EL-EP-003/015 | 164,165 |
 | EL-TK-160 (DONE) | 156; contrato 138 | 164,165 |
-| EL-TK-161 | 156; contrato EL-EP-010 | 164,165 |
+| EL-TK-161 (DONE) | 156; contrato EL-EP-010 | 164,165 |
 | EL-TK-162 (DONE) | 156; hechos de dominio EL-EP-001/003 | 164,165 |
 | EL-TK-163 (DONE) | 156; hechos de dominio EL-EP-009; contrato EL-EP-014 | 164,165 |
-| EL-TK-164 | 157..163 | 165 |
-| EL-TK-165 | 156..164 | validación EL-EP-013 |
+| EL-TK-164 (DONE) | 157..163 | 165 |
+| EL-TK-165 (DONE) | 156..164 | validación EL-EP-013 |
 
 10 activos READY de requisitos tras dictamen de requirements_reviewer de 2026-10-10; REQUIREMENTS_READY: YES; READY_FOR_IMPLEMENTATION: YES para el alcance propio de persistencia de NotificationIntent idempotente a partir de hechos de dominio confirmados, procesamiento asíncrono de correos con puerto desacoplado mediante JobQueue durable (DEC-021, DEC-061..064), proyección de avisos contextuales vigentes para el panel del organizador sin duplicados ni avisos obsoletos, generación de avisos de lifecycle/gracia/eliminación próxima, capacidad al 80% y 100%, exportación disponible/expirada, cuenta/seguridad/cambios, denuncias e intervenciones según severidad, e integración UI de avisos y plantillas de correo accesibles. Superficies UI reutilizadas del catálogo canónico (ui-mvp-epic-review.md §EL-EP-013), sin NotificationCenter obligatorio ni nuevos componentes. Proveedor de correo desacoplado por puerto.
 
@@ -394,6 +398,41 @@ La proyección de sesión autoritativa y su correctivo ACTIVE preceden al consum
 READY describe el alcance revisado, no predecesoras ejecutadas. Cada salida debe verificarse antes del consumidor. No se alteran dependencias históricas de los owners.
 
 Orden:205 y206 independientes →207/208/209/210/211 según sus propias predecesoras →212 y213 →214.209 espera también201, aún READY.206 no activa bootstrap ni importa componentes futuros;213 ensambla descriptores reales una vez entregados207..211.212 puede avanzar junto a213 tras211;214 requiere ambos. Todo paralelo está sujeto a dependencias y propiedad de archivos sin solapamiento. EP017/Q029 conserva aprobación de apertura pública separada.
+
+## Tickets vigentes — EL-EP-019 (quality gate APPROVED)
+
+| Ticket | Depende de | Bloquea |
+|---|---|---|
+| EL-TK-218 (DONE) | EL-TK-215 | EL-TK-219, EL-TK-221, EL-TK-222, EL-TK-223, EL-TK-237, EL-TK-238 |
+| EL-TK-219 (DONE) | EL-TK-218 | EL-TK-220, EL-TK-224, EL-TK-225, EL-TK-226, EL-TK-227, EL-TK-237 |
+| EL-TK-220 (DONE) | EL-TK-219 | EL-TK-224, EL-TK-225, EL-TK-226, EL-TK-227, EL-TK-228, EL-TK-237 |
+| EL-TK-221 (DONE) | EL-TK-218 | EL-TK-222, EL-TK-224, EL-TK-225, EL-TK-226, EL-TK-227, EL-TK-228, EL-TK-233, EL-TK-237, EL-TK-238 |
+| EL-TK-222 (DONE) | EL-TK-218, EL-TK-221 | EL-TK-233, EL-TK-237, EL-TK-238 |
+| EL-TK-223 (DONE) | EL-TK-218, EL-TK-210, EL-TK-213 | EL-TK-228, EL-TK-235, EL-TK-237 |
+| EL-TK-224 (DONE) | EL-TK-219, EL-TK-220, EL-TK-221 | EL-TK-229, EL-TK-237 |
+| EL-TK-225 (DONE) | EL-TK-219, EL-TK-220, EL-TK-221 | EL-TK-230, EL-TK-237 |
+| EL-TK-226 (DONE) | EL-TK-219, EL-TK-220, EL-TK-221 | EL-TK-231, EL-TK-237 |
+| EL-TK-227 (DONE) | EL-TK-219, EL-TK-220, EL-TK-221 | EL-TK-232, EL-TK-237 |
+| EL-TK-228 (DONE) | EL-TK-223, EL-TK-220, EL-TK-221 | EL-TK-229, EL-TK-230, EL-TK-231, EL-TK-232, EL-TK-237 |
+| EL-TK-229 (DONE) | EL-TK-224, EL-TK-228 | EL-TK-237 |
+| EL-TK-230 (DONE) | EL-TK-225, EL-TK-228 | EL-TK-237 |
+| EL-TK-231 (DONE) | EL-TK-226, EL-TK-228 | EL-TK-232, EL-TK-237 |
+| EL-TK-232 (DONE) | EL-TK-227, EL-TK-228, EL-TK-231 | EL-TK-237 |
+| EL-TK-233 (DONE) | EL-TK-221, EL-TK-222 | EL-TK-234, EL-TK-235, EL-TK-238 |
+| EL-TK-234 (IN_PROGRESS) | EL-TK-233 | EL-TK-236, EL-TK-238 |
+| EL-TK-235 (IN_PROGRESS) | EL-TK-223, EL-TK-233 | EL-TK-236, EL-TK-238 |
+| EL-TK-236 (IN_PROGRESS) | EL-TK-234, EL-TK-235 | EL-TK-238 |
+| EL-TK-237 (BLOCKED) | EL-TK-218, EL-TK-219, EL-TK-220, EL-TK-221, EL-TK-222, EL-TK-223, EL-TK-224, EL-TK-225, EL-TK-226, EL-TK-227, EL-TK-228, EL-TK-229, EL-TK-230, EL-TK-231, EL-TK-232 | EL-TK-238 |
+| EL-TK-238 (BLOCKED) | EL-TK-218, EL-TK-221, EL-TK-222, EL-TK-233, EL-TK-234, EL-TK-235, EL-TK-236, EL-TK-237 | — |
+
+**CONFIRMED — reevaluación y entrega inactiva, 2026-10-14:** EL-TK-234..236 implementados parcialmente y validados para integración inactiva; EL-TK-237/238 BLOCKED para cierre. Las etiquetas históricas DONE de identidad/autoridad no acreditan las garantías operacionales. DEC-112 sigue RECOMMENDED; no se habilita RecoveryAuthority automática ni se reabre trabajo histórico. [Evidencias, límites y matriz pendiente](../../docs/reports/event-control-panels-validation-2026-10-14.md).
+
+**CONFIRMED — planificación y estado de entrega, 2026-10-13:** [Épica](epics/EL-EP-019.md) / [gates](sessions/2026-10-13-event-control-panels-gates.md) / [contrato](../context/event-control-panels-contract.md) / [plan](../../docs/reports/event-control-panels-backlog-2026-10-13.md). Veintiún tickets en el paquete de trabajo: catorce tickets completados (EL-TK-218, EL-TK-219, EL-TK-220, EL-TK-221, EL-TK-222, EL-TK-223, EL-TK-226, EL-TK-227, EL-TK-228, EL-TK-229, EL-TK-230, EL-TK-231, EL-TK-232, EL-TK-233 DONE), y siete tickets restantes READY sujetos a sus dependencias validadas. READY no implica predecesoras ejecutadas ni activación productiva.
+
+
+Orden: EL-TK-218 → EL-TK-219/221/223 según sus predecesoras; EL-TK-219 → EL-TK-220; EL-TK-224/225/226/227 consumen los mismos correctivos de dominio e identidad, sin una cadena artificial entre comandos. Las superficies de organizador EL-TK-228..232 y admin EL-TK-233..236 siguen la tabla; EL-TK-237/238 cierran la validación integrada. EL-TK-222 condiciona la activación de nuevas mutaciones y administración, sin bloquear las unidades independientes de laboratorio, receipts, CAS y router.
+
+Paralelismo explícito: EL-TK-219 con EL-TK-221, tras separar archivos y migraciones propietarias. Toda integración de OpenAPI/cliente y archivos compartidos se coordina secuencialmente; el resto conserva `can_parallelize_with` de sus tickets. No asignaciones personales, dependencias retroactivas sobre DONE ni nuevas capacidades de recuperación excepcional EL-TK-217. Métricas y herramientas posteriores siguen diferidas.
 
 ## Tickets vigentes — EL-EP-006 (quality gate APPROVED)
 
@@ -575,3 +614,10 @@ TB-01/TB-02 dejan de bloquear.033/035/036/041/042/056 YES propio;058 NO ejecuci�
 
 
 **CONFIRMED — EL-EP-018 DONE, 2026-10-13:** [Épica](epics/EL-EP-018.md). Implementación y validación integrada de todos los tickets EL-TK-205..214: proyección de sesión adaptativa (205), router desacoplado y 404 (206), login organizador (207), solicitud Beta pública (208), cuenta y reautenticación Argon2id (209), Mis eventos (210), guest entry directo por QR/deep link (211), serving SPA y redacción (212), Home público oficial y cabecera accesible (213), y validación integrada E2E (214). Suites completas PASS: Web 154/154, API PostgreSQL 16 9/9, Playwright 7/7, OpenAPI y cliente tipado sincronizados. Véase la [sesión de cierre](sessions/2026-10-13-el-ep-018-closure.md).
+
+**CONFIRMED — EL-EP-013 CIERRE DEFINITIVO, 2026-10-13:** [Épica](epics/EL-EP-013.md). Implementación y validación integrada de todos los tickets EL-TK-156..165 completada (10/10 tickets DONE):
+- **EL-TK-161 DONE:** Servicio de avisos de exportación (`ExportNoticeService`) para disponibilidad, expiración e invalidación atómica ante retiros (DEC-090). 5/5 pruebas unitarias PASS.
+- **EL-TK-164 DONE:** Integración de avisos contextuales WCAG 2.2 AA (`InAppNoticeComponent` en `apps/web`) y plantillas responsive/accesibles (`EmailRenderer`). 5/5 pruebas unitarias frontend PASS, 167/167 tests web PASS.
+- **EL-TK-165 DONE:** Suite de integración E2E transversal (`packages/notifications/test/notifications-epic-e2e.test.ts`) con 4/4 escenarios PASS: hechos repetidos con deduplicación/idempotencia, obsolescencia previa a entrega, tolerancia a fallos de proveedor de email y orquestación multi-dominio sin fuga de secretos en auditoría.
+- Todas las dependencias de notificación para organizadores quedan satisfechas y operativas. Véase la [sesión de cierre](sessions/2026-10-13-el-ep-013-closure.md).
+

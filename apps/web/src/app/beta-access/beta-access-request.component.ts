@@ -48,7 +48,7 @@ export class PublicBetaAccessRequestService {
           status: 'RECEIVED',
           title: 'Solicitud recibida',
           message:
-            'Recibimos tu solicitud para la Beta de EventLens. Enviar esta solicitud no crea una cuenta ni garantiza una invitación.'
+            'Recibimos tu solicitud para la Beta de Phoeve. Enviar esta solicitud no crea una cuenta ni garantiza una invitación.'
         };
       }
 

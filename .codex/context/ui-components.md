@@ -1082,4 +1082,6 @@ Este catálogo es una guía UI/UX y no obliga a implementar todos los componente
 
 # 25. Entrada pública — PublicHomePage
 
+Extensiones acotadas de paneles EL-EP-019: [handoff](ui-event-control-panels.md) y [gates](../product/sessions/2026-10-13-event-control-panels-gates.md). Reutiliza secciones7/10/12 y patrones genéricos: creación/nombre/programación separados y admin read-only/session states. Sin componentes/tokens nuevos; READY en diseño tras reevaluación, no IMPLEMENTED/VALIDATED ni aprobación de activación RA.
+
 PRODUCT_COMPONENT nuevo de EL-EP-018: composición editorial pública / sin auth, directorio o administración. Reutiliza AppHeader.public, patrones/secciones y LegalFooter; única responsabilidad visual nueva. [Handoff](ui-public-entry.md) / [contrato](public-entry-contract.md). Madurez READY_FOR_IMPLEMENTATION en diseño tras gate final; no eleva madurez de los componentes de cuenta/eventos ni certifica código.

@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const command = process.argv[2];
-const allowed = ['build', 'test', 'typecheck', 'integration', 'identity-integration', 'identity-validation', 'admin-bootstrap', 'admin-status', 'admin-recover', 'e2e', 'prepare', 'db-generate', 'db-migrate', 'openapi', 'client', 'client-check', 'up', 'down', 'watch', 'logs', 'backup', 'restore'];
+const allowed = ['build', 'test', 'typecheck', 'integration', 'identity-integration', 'identity-validation', 'laboratory', 'admin-bootstrap', 'admin-status', 'admin-recover', 'e2e', 'prepare', 'db-generate', 'db-migrate', 'openapi', 'client', 'client-check', 'up', 'down', 'watch', 'logs', 'backup', 'restore'];
 if (!allowed.includes(command)) throw new Error('UNKNOWN_WORKSPACE_COMMAND');
 function run(bin, args) {
   const result = spawnSync(bin, args, { cwd: root, stdio: 'inherit', env: process.env, shell: bin === 'pnpm' && process.platform === 'win32' });
@@ -43,8 +43,14 @@ if (command.startsWith('admin-')) {
 } else if (command === 'openapi' || command === 'client') {
   node('apps/api/dist/export-openapi.js');
   if (command === 'client') node('scripts/api-client.mjs');
+} else if (command === 'laboratory') {
+  node('scripts/isolated-tests.mjs', 'laboratory');
 } else if (command === 'e2e') {
-  filter('e2e', 'test');
+  if (process.env.EVENTLENS_TEST_ADMIN_URL) {
+    node('scripts/isolated-tests.mjs', 'e2e');
+  } else {
+    filter('e2e', 'test');
+  }
 } else {
   // Explicit dependency order; generated Prisma types stay inside infrastructure.
   node('scripts/database.mjs', 'generate');

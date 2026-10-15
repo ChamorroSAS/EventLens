@@ -34,6 +34,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/organizer/session/temporary-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["changeOrganizerTemporaryPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/organizer/session": {
         parameters: {
             query?: never;
@@ -79,6 +95,188 @@ export interface paths {
         put?: never;
         /** Cerrar la sesión actual de organizador preservando otros contextos */
         post: operations["logoutOrganizerSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Iniciar sesión administrativa con credenciales de alta entropía */
+        post: operations["loginAdminSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/auth/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obtener la proyección mínima de la sesión administrativa activa */
+        get: operations["getAdminSession"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/auth/session-context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Renovar el contexto de sesión administrativa rotando únicamente el token CSRF */
+        post: operations["renewAdminSessionContext"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cerrar la sesión administrativa revocando el token de sesión */
+        post: operations["logoutAdminSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Buscar eventos y organizadores para investigación administrativa */
+        get: operations["searchAdminEntities"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/events/{eventId}/aggregated-detail": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Consultar detalle administrativo mínimo de un evento */
+        get: operations["getAdminAggregatedEventDetail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/organizers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listAdminOrganizers"];
+        put?: never;
+        post: operations["createAdminOrganizer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/organizers/{accountId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAdminOrganizer"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateAdminOrganizer"];
+        trace?: never;
+    };
+    "/api/v1/admin/organizers/{accountId}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["disableAdminOrganizer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/organizers/{accountId}/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["enableAdminOrganizer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/organizers/{accountId}/temporary-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resetAdminOrganizerTemporaryPassword"];
         delete?: never;
         options?: never;
         head?: never;
@@ -188,6 +386,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/events/{eventId}/lifecycle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obtener ciclo de vida y capacidades del evento propio */
+        get: operations["getOrganizerEventLifecycle"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{eventId}/lifecycle/schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publicar el borrador con la fecha guardada */
+        post: operations["scheduleOrganizerEvent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{eventId}/lifecycle/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Activar manualmente el evento programado */
+        post: operations["activateOrganizerEvent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/events": {
         parameters: {
             query?: never;
@@ -198,11 +447,29 @@ export interface paths {
         /** Listar eventos pertenecientes al organizador autenticado (EL-TK-047) */
         get: operations["listOrganizerEvents"];
         put?: never;
-        post?: never;
+        /** Crear un nuevo borrador de evento de forma idempotente (EL-TK-224) */
+        post: operations["createOrganizerEvent"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{eventId}/configuration/name": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Actualizar nombre de un borrador de evento con control de revisión e idempotencia (EL-TK-225) */
+        patch: operations["updateOrganizerEventName"];
         trace?: never;
     };
     "/api/v1/events/{eventId}/configuration": {
@@ -232,6 +499,58 @@ export interface paths {
         /** Obtener enlace público /g/:lookupKey y QR SVG usando la base pública confiable del servidor (EL-TK-081, EL-TK-212) */
         get: operations["getEventShareAccessSnapshot"];
         put?: never;
+        /** Preparar el enlace y QR inicial del evento programado o activo */
+        post: operations["prepareOrganizerEventShareAccess"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{eventId}/configuration/participation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save independent guest upload and gallery permissions */
+        put: operations["setEventParticipation"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{eventId}/configuration/schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Cambiar fecha y hora local de inicio antes de la primera activación (DRAFT o SCHEDULED) */
+        put: operations["setEventSchedule"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{eventId}/configuration/timezone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Cambiar zona horaria de un evento en estado DRAFT o SCHEDULED (EL-TK-227) */
+        put: operations["changeEventTimezone"];
         post?: never;
         delete?: never;
         options?: never;
@@ -410,6 +729,89 @@ export interface operations {
             };
         };
     };
+    changeOrganizerTemporaryPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    currentPassword: string;
+                    newPassword: string;
+                    /** @enum {boolean} */
+                    declaredAdult: true;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        outcome: "PASSWORD_CHANGED_RELOGIN_REQUIRED";
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
     getOrganizerSessionProjection: {
         parameters: {
             query?: never;
@@ -426,7 +828,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        state: "ANONYMOUS" | "ORGANIZER_ACTIVE" | "ORGANIZER_RESTRICTED_DELETION";
+                        state: "ANONYMOUS" | "ORGANIZER_ACTIVE" | "ORGANIZER_RESTRICTED_DELETION" | "PASSWORD_CHANGE_REQUIRED";
                         capabilities: {
                             canSignIn: boolean;
                             canRequestBetaAccess: boolean;
@@ -436,6 +838,7 @@ export interface operations {
                             canManageAccountDeletion: boolean;
                             isDeletionRestricted: boolean;
                             canSignOut: boolean;
+                            canChangePassword?: boolean;
                         };
                         account: {
                             email: string;
@@ -485,7 +888,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        state: "ANONYMOUS" | "ORGANIZER_ACTIVE" | "ORGANIZER_RESTRICTED_DELETION";
+                        state: "ANONYMOUS" | "ORGANIZER_ACTIVE" | "ORGANIZER_RESTRICTED_DELETION" | "PASSWORD_CHANGE_REQUIRED";
                         capabilities: {
                             canSignIn: boolean;
                             canRequestBetaAccess: boolean;
@@ -495,6 +898,7 @@ export interface operations {
                             canManageAccountDeletion: boolean;
                             isDeletionRestricted: boolean;
                             canSignOut: boolean;
+                            canChangePassword?: boolean;
                         };
                         account: {
                             email: string;
@@ -578,7 +982,7 @@ export interface operations {
                         outcome: "LOGGED_OUT" | "ALREADY_EXPIRED_OR_REVOKED";
                         projection: {
                             /** @enum {string} */
-                            state: "ANONYMOUS" | "ORGANIZER_ACTIVE" | "ORGANIZER_RESTRICTED_DELETION";
+                            state: "ANONYMOUS" | "ORGANIZER_ACTIVE" | "ORGANIZER_RESTRICTED_DELETION" | "PASSWORD_CHANGE_REQUIRED";
                             capabilities: {
                                 canSignIn: boolean;
                                 canRequestBetaAccess: boolean;
@@ -588,6 +992,7 @@ export interface operations {
                                 canManageAccountDeletion: boolean;
                                 isDeletionRestricted: boolean;
                                 canSignOut: boolean;
+                                canChangePassword?: boolean;
                             };
                             account: {
                                 email: string;
@@ -600,6 +1005,1276 @@ export interface operations {
                 };
             };
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    loginAdminSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    identifier: string;
+                    secret: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        principal: {
+                            id: string;
+                            identifier: string;
+                        };
+                        csrfToken: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    getAdminSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        state: "ADMIN_ACTIVE" | "ANONYMOUS";
+                        principal: {
+                            id: string;
+                            identifier: string;
+                        } | null;
+                        /** Format: date-time */
+                        authTime?: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    renewAdminSessionContext: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        csrfToken: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    logoutAdminSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        outcome: "LOGGED_OUT";
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    searchAdminEntities: {
+        parameters: {
+            query?: {
+                limit?: number;
+                page?: number;
+                status?: string;
+                entityType?: "ALL" | "EVENT" | "ORGANIZER";
+                query?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: ({
+                            /** @enum {string} */
+                            type: "EVENT";
+                            id: string;
+                            name: string;
+                            status: string;
+                            organizerId: string;
+                            timezone: string;
+                            /** Format: date-time */
+                            scheduledAt: string | null;
+                            /** Format: date-time */
+                            createdAt: string;
+                        } | {
+                            /** @enum {string} */
+                            type: "ORGANIZER";
+                            id: string;
+                            email: string;
+                            status: string;
+                            declaredAdult: boolean;
+                            /** Format: date-time */
+                            createdAt: string;
+                        })[];
+                        pagination: {
+                            page: number;
+                            limit: number;
+                            total: number;
+                            totalPages: number;
+                        };
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    getAdminAggregatedEventDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        eventId: string;
+                        name: string;
+                        /** @enum {string} */
+                        overallAvailability: "COMPLETE" | "PARTIAL";
+                        owner: {
+                            id: string;
+                            email: string;
+                            status: string;
+                            declaredAdult: boolean;
+                            /** Format: date-time */
+                            createdAt: string;
+                        };
+                        lifecycle: {
+                            status: string;
+                            timezone: string;
+                            startsAtLocal: string | null;
+                            /** Format: date-time */
+                            scheduledAt: string | null;
+                            /** Format: date-time */
+                            expiresAt: string | null;
+                            /** Format: date-time */
+                            graceEndsAt: string | null;
+                            /** Format: date-time */
+                            activatedAt: string | null;
+                            /** Format: date-time */
+                            closedAt: string | null;
+                            /** Format: date-time */
+                            suspendedAt: string | null;
+                            previousStatus: string | null;
+                            uploadsEnabled: boolean;
+                            guestGalleryEnabled: boolean;
+                        };
+                        capacity: {
+                            /** @enum {string} */
+                            availability: "AVAILABLE" | "UNAVAILABLE" | "DEGRADED";
+                            planCode?: string;
+                            storageLimitBytes?: string;
+                            storageUsedBytes?: string;
+                            fileLimit?: number;
+                            filesCount?: number;
+                        };
+                        /** Format: date-time */
+                        fetchedAt: string;
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    listAdminOrganizers: {
+        parameters: {
+            query?: {
+                search?: string;
+                offset?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** @enum {string} */
+                            provisioningSource: "INVITATION" | "ADMIN_PROVISIONED";
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: email */
+                            email: string;
+                            displayName: string | null;
+                            status: string;
+                            passwordChangeRequired: boolean;
+                            /** Format: date-time */
+                            temporaryPasswordExpiresAt: string | null;
+                            revision: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            emailVerified: boolean;
+                        }[];
+                        total: number;
+                        limit: number;
+                        offset: number;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    createAdminOrganizer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                    /** Format: uuid */
+                    idempotencyKey: string;
+                    /** Format: email */
+                    email: string;
+                    displayName?: string | null;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        organizer: {
+                            /** @enum {string} */
+                            provisioningSource: "INVITATION" | "ADMIN_PROVISIONED";
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: email */
+                            email: string;
+                            displayName: string | null;
+                            status: string;
+                            passwordChangeRequired: boolean;
+                            /** Format: date-time */
+                            temporaryPasswordExpiresAt: string | null;
+                            revision: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            emailVerified: boolean;
+                        };
+                        outcome: string;
+                        temporaryPassword: string | null;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    getAdminOrganizer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        provisioningSource: "INVITATION" | "ADMIN_PROVISIONED";
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: email */
+                        email: string;
+                        displayName: string | null;
+                        status: string;
+                        passwordChangeRequired: boolean;
+                        /** Format: date-time */
+                        temporaryPasswordExpiresAt: string | null;
+                        revision: string;
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        updatedAt: string;
+                        emailVerified: boolean;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    updateAdminOrganizer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                    /** Format: uuid */
+                    idempotencyKey: string;
+                    expectedRevision: string;
+                    displayName: string | null;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        organizer: {
+                            /** @enum {string} */
+                            provisioningSource: "INVITATION" | "ADMIN_PROVISIONED";
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: email */
+                            email: string;
+                            displayName: string | null;
+                            status: string;
+                            passwordChangeRequired: boolean;
+                            /** Format: date-time */
+                            temporaryPasswordExpiresAt: string | null;
+                            revision: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            emailVerified: boolean;
+                        };
+                        outcome: string;
+                        temporaryPassword: string | null;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    disableAdminOrganizer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                    /** Format: uuid */
+                    idempotencyKey: string;
+                    expectedRevision: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        organizer: {
+                            /** @enum {string} */
+                            provisioningSource: "INVITATION" | "ADMIN_PROVISIONED";
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: email */
+                            email: string;
+                            displayName: string | null;
+                            status: string;
+                            passwordChangeRequired: boolean;
+                            /** Format: date-time */
+                            temporaryPasswordExpiresAt: string | null;
+                            revision: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            emailVerified: boolean;
+                        };
+                        outcome: string;
+                        temporaryPassword: string | null;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    enableAdminOrganizer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                    /** Format: uuid */
+                    idempotencyKey: string;
+                    expectedRevision: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        organizer: {
+                            /** @enum {string} */
+                            provisioningSource: "INVITATION" | "ADMIN_PROVISIONED";
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: email */
+                            email: string;
+                            displayName: string | null;
+                            status: string;
+                            passwordChangeRequired: boolean;
+                            /** Format: date-time */
+                            temporaryPasswordExpiresAt: string | null;
+                            revision: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            emailVerified: boolean;
+                        };
+                        outcome: string;
+                        temporaryPassword: string | null;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    resetAdminOrganizerTemporaryPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                    /** Format: uuid */
+                    idempotencyKey: string;
+                    expectedRevision: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        organizer: {
+                            /** @enum {string} */
+                            provisioningSource: "INVITATION" | "ADMIN_PROVISIONED";
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: email */
+                            email: string;
+                            displayName: string | null;
+                            status: string;
+                            passwordChangeRequired: boolean;
+                            /** Format: date-time */
+                            temporaryPasswordExpiresAt: string | null;
+                            revision: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            emailVerified: boolean;
+                        };
+                        outcome: string;
+                        temporaryPassword: string | null;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1103,6 +2778,346 @@ export interface operations {
             };
         };
     };
+    getOrganizerEventLifecycle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        eventId: string;
+                        /** @enum {string} */
+                        status: "DRAFT" | "SCHEDULED" | "ACTIVE" | "CLOSED" | "GRACE_PERIOD" | "SUSPENDED" | "PENDING_DELETION" | "ARCHIVED";
+                        timezone: string;
+                        startsAtLocal: string | null;
+                        /** Format: date-time */
+                        scheduledAt: string | null;
+                        /** Format: date-time */
+                        expiresAt: string | null;
+                        /** Format: date-time */
+                        graceEndsAt: string | null;
+                        revision: string;
+                        validityDurationDays: number;
+                        graceDays: number;
+                        capabilities: {
+                            canSchedule: boolean;
+                            canActivateEarly: boolean;
+                        };
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    scheduleOrganizerEvent: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expectedRevision: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        eventId: string;
+                        /** @enum {string} */
+                        outcome: "SCHEDULED" | "ACTIVATED" | "IDEMPOTENT_REPLAY";
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    activateOrganizerEvent: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expectedRevision: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        eventId: string;
+                        /** @enum {string} */
+                        outcome: "SCHEDULED" | "ACTIVATED" | "IDEMPOTENT_REPLAY";
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
     listOrganizerEvents: {
         parameters: {
             query?: never;
@@ -1171,6 +3186,293 @@ export interface operations {
             };
         };
     };
+    createOrganizerEvent: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Clave de idempotencia única para la operación */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        receipt: {
+                            /** Format: uuid */
+                            operationId: string;
+                            /** Format: uuid */
+                            eventId: string;
+                            operation: string;
+                            appliedRevision: string;
+                            outcome: string;
+                        };
+                        /** @enum {string} */
+                        outcome: "APPLIED" | "REPLAYED";
+                        event: {
+                            /** Format: uuid */
+                            id: string;
+                        };
+                    };
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        receipt: {
+                            /** Format: uuid */
+                            operationId: string;
+                            /** Format: uuid */
+                            eventId: string;
+                            operation: string;
+                            appliedRevision: string;
+                            outcome: string;
+                        };
+                        /** @enum {string} */
+                        outcome: "APPLIED" | "REPLAYED";
+                        event: {
+                            /** Format: uuid */
+                            id: string;
+                        };
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    updateOrganizerEventName: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Clave de idempotencia única para la operación */
+                "Idempotency-Key": string;
+            };
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name: string;
+                    expectedRevision: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        receipt: {
+                            /** Format: uuid */
+                            operationId: string;
+                            /** Format: uuid */
+                            eventId: string;
+                            operation: string;
+                            appliedRevision: string;
+                            outcome: string;
+                        };
+                        /** @enum {string} */
+                        outcome: "APPLIED" | "REPLAYED";
+                        revision: string;
+                        event: {
+                            /** Format: uuid */
+                            id: string;
+                            name: string;
+                            revision: string;
+                        };
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
     getAuthorizedEventConfiguration: {
         parameters: {
             query?: never;
@@ -1220,6 +3522,9 @@ export interface operations {
                             canViewLifecycle: boolean;
                             canViewCapacity: boolean;
                             canPublishOrActivate: boolean;
+                            canEditName: boolean;
+                            canSetLocalSchedule: boolean;
+                            canChangeTimezone: boolean;
                         };
                     };
                 };
@@ -1348,6 +3653,543 @@ export interface operations {
             };
         };
     };
+    prepareOrganizerEventShareAccess: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expectedRevision: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        eventId: string;
+                        /** @enum {string} */
+                        outcome: "ISSUED" | "IDEMPOTENT_REPLAY";
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    setEventParticipation: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    uploadsEnabled: boolean;
+                    guestGalleryEnabled: boolean;
+                    expectedRevision: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        eventId: string;
+                        revision: string;
+                        uploadsEnabled: boolean;
+                        guestGalleryEnabled: boolean;
+                        /** @enum {string} */
+                        outcome: "UPDATED" | "IDEMPOTENT_REPLAY";
+                        receipt: {
+                            operationId: string;
+                            eventId: string;
+                            operation: string;
+                            appliedRevision: string;
+                            outcome: string;
+                        };
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    setEventSchedule: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Fecha y hora local YYYY-MM-DDTHH:mm o YYYY-MM-DDTHH:mm:ss */
+                    startsAtLocal: string;
+                    /** @description Offset UTC explícito en minutos para desambiguar DST */
+                    utcOffsetMinutes?: number | null;
+                    /** @description Revisión esperada para control de concurrencia optimista */
+                    expectedRevision: string;
+                    /** @description Compatibilidad de cuerpo; se requiere cabecera Idempotency-Key */
+                    idempotencyKey?: string | null;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        event: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            organizerId: string;
+                            name: string;
+                            /** @enum {string} */
+                            status: "DRAFT" | "SCHEDULED" | "ACTIVE" | "CLOSED" | "GRACE_PERIOD" | "SUSPENDED" | "PENDING_DELETION" | "ARCHIVED";
+                            timezone: string;
+                            startsAtLocal: string | null;
+                            scheduledAt: string | null;
+                            utcOffsetMinutes: number | null;
+                            expiresAt: string | null;
+                            graceEndsAt: string | null;
+                            uploadsEnabled: boolean;
+                            guestGalleryEnabled: boolean;
+                            /** @enum {string} */
+                            moderationMode: "AUTO_PUBLISH" | "MANUAL_REVIEW";
+                            pinEnabled: boolean;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                        };
+                        /** @enum {string} */
+                        outcome: "UPDATED" | "IDEMPOTENT_REPLAY";
+                        receipt?: {
+                            /** Format: uuid */
+                            operationId: string;
+                            /** Format: uuid */
+                            eventId: string;
+                            operation: string;
+                            appliedRevision: string;
+                            outcome: string;
+                        } | null;
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
+    changeEventTimezone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Identificador IANA de la nueva zona horaria (ej. America/Bogota, UTC) */
+                    timezone: string;
+                    /** @description Offset UTC explícito en minutos para desambiguar transiciones DST (fall-back) */
+                    utcOffsetMinutes?: number | null;
+                    /** @description Revisión esperada para control de concurrencia optimista (CAS monotónico) */
+                    expectedRevision?: string | null;
+                    /** @description Clave de idempotencia para prevención de ejecuciones duplicadas */
+                    idempotencyKey?: string | null;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        event: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            organizerId: string;
+                            name: string;
+                            /** @enum {string} */
+                            status: "DRAFT" | "SCHEDULED" | "ACTIVE" | "CLOSED" | "GRACE_PERIOD" | "SUSPENDED" | "PENDING_DELETION" | "ARCHIVED";
+                            timezone: string;
+                            startsAtLocal: string | null;
+                            scheduledAt: string | null;
+                            utcOffsetMinutes: number | null;
+                            expiresAt: string | null;
+                            graceEndsAt: string | null;
+                            uploadsEnabled: boolean;
+                            guestGalleryEnabled: boolean;
+                            /** @enum {string} */
+                            moderationMode: "AUTO_PUBLISH" | "MANUAL_REVIEW";
+                            pinEnabled: boolean;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                        };
+                        previousTimezone: string;
+                        /** @enum {string|null} */
+                        warning?: "RECALCULATED_SCHEDULE" | null;
+                        /** @enum {string} */
+                        outcome: "TIMEZONE_CHANGED" | "IDEMPOTENT_REPLAY";
+                        receipt?: {
+                            /** Format: uuid */
+                            operationId: string;
+                            /** Format: uuid */
+                            eventId: string;
+                            operation: string;
+                            appliedRevision: string;
+                            outcome: string;
+                        } | null;
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        message: string;
+                        /** Format: uuid */
+                        correlationId: string;
+                    };
+                };
+            };
+        };
+    };
     resolveGuestPublicEntry: {
         parameters: {
             query?: never;
@@ -1373,6 +4215,9 @@ export interface operations {
                             name: string;
                             status: string;
                             timezone: string;
+                            /** Format: date-time */
+                            scheduledAt?: string | null;
+                            welcomeMessage?: string | null;
                             generation: number;
                             pinRequired: boolean;
                             canViewLanding: boolean;

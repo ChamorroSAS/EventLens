@@ -1,0 +1,54 @@
+<section class="lifecycle-card" aria-labelledby="lifecycle-actions-title" [attr.aria-busy]="loading() || saving()">
+  <h3 id="lifecycle-actions-title">Publicación y activación</h3>
+  @if (loading()) { <p role="status">Consultando el estado del evento…</p> }
+  @if (success()) { <p class="notice" role="status">{{ success() }}</p> }
+  @if (error()) { <p id="lifecycle-actions-error" class="error" role="alert">{{ error() }}</p> }
+  @if (snapshot(); as current) {
+    <eventlens-event-status-badge [status]="current.status" />
+    <dl>
+      <div><dt>Inicio</dt><dd>{{ formatDate(current.scheduledAt) }} · {{ current.timezone }}</dd></div>
+      <div><dt>Vencimiento</dt><dd>{{ current.expiresAt ? formatDate(current.expiresAt) : 'Se calcula al programar' }}</dd></div>
+      @if (current.graceEndsAt) { <div><dt>Fin del periodo de gracia</dt><dd>{{ formatDate(current.graceEndsAt) }}</dd></div> }
+    </dl>
+    @if (current.status === 'DRAFT') {
+      <p>Guardar la fecha solo configura el borrador. Para publicarlo, pulsa «Programar evento».</p>
+      @if (!current.scheduledAt) { <p>Primero guarda una fecha de inicio en «Fecha y horario».</p> }
+    }
+    @if (current.status === 'SCHEDULED') {
+      @if (current.capabilities.canActivateEarly) {
+        <p>El evento está programado. Pulsa «Activar ahora» para abrirlo. La activación conserva el vencimiento indicado.</p>
+      } @else {
+        <p>El evento está programado, pero no puede activarse con su vigencia actual.</p>
+      }
+      <p class="notice">En este entorno la apertura es manual: llegar a la hora de inicio no lo activa automáticamente.</p>
+    }
+    @if (current.status === 'ACTIVE') { <p>El evento está activo. Los permisos de subida y galería se configuran por separado.</p> }
+    @if (!confirmation() && !uncertain()) {
+      <div class="actions">
+        @if (current.capabilities.canSchedule) {
+          <button type="button" class="primary" (click)="begin('schedule')" [disabled]="saving() || !current.scheduledAt">Programar evento</button>
+        }
+        @if (current.capabilities.canActivateEarly) {
+          <button type="button" class="primary" (click)="begin('activate')" [disabled]="saving()">Activar ahora</button>
+        }
+      </div>
+    }
+    @if (confirmation() && !uncertain()) {
+      <section class="confirmation" aria-label="Confirmación de la transición">
+        @if (confirmation() === 'schedule') {
+          <p>Se publicará con una vigencia de {{ current.validityDurationDays }} días desde el inicio guardado y {{ current.graceDays }} días de gracia. Después podrás activarlo manualmente.</p>
+        } @else {
+          <p>El evento pasará a activo ahora. Esta acción no cambia su fecha de inicio ni amplía su vencimiento.</p>
+        }
+        <div class="actions">
+          <button type="button" class="primary" (click)="confirm()" [disabled]="saving()">{{ saving() ? 'Guardando…' : confirmation() === 'schedule' ? 'Confirmar programación' : 'Confirmar activación' }}</button>
+          <button type="button" (click)="cancel()" [disabled]="saving()">Cancelar</button>
+        </div>
+      </section>
+    }
+  }
+  @if (uncertain()) {
+    <button type="button" (click)="confirm()" [disabled]="saving()">Reintentar la misma operación</button>
+  }
+  @if (!loading()) { <button type="button" (click)="reconcile()" [disabled]="saving()">Consultar estado</button> }
+</section>

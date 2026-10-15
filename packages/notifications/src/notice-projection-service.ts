@@ -243,27 +243,55 @@ export class NoticeProjectionService {
       }
 
       case 'EXPORT_AVAILABLE': {
-        title = 'Descarga de recuerdos disponible';
-        fact = 'El archivo comprimido con los recuerdos originales está listo.';
+        title = typeof payload.title === 'string' ? payload.title : 'Descarga de recuerdos disponible';
+        fact = typeof payload.fact === 'string' ? payload.fact : 'El archivo comprimido con los recuerdos originales está listo.';
         consequence =
-          'El enlace privado de descarga permanecerá activo durante 48 horas antes de expirar.';
+          typeof payload.consequence === 'string'
+            ? payload.consequence
+            : 'El enlace privado de descarga permanecerá activo durante 48 horas antes de expirar.';
         severity = 'INFO';
         action = {
-          label: 'Descargar recuerdos',
-          destination: `/events/${resourceRef}/exports`
+          label: typeof payload.actionLabel === 'string' ? payload.actionLabel : 'Descargar recuerdos',
+          destination:
+            typeof payload.actionDestination === 'string'
+              ? payload.actionDestination
+              : `/events/${resourceRef}/exports`
         };
         break;
       }
 
       case 'EXPORT_EXPIRED': {
-        title = 'Enlace de exportación caducado';
-        fact = 'El enlace de descarga anterior ha expirado por motivos de seguridad.';
+        title = typeof payload.title === 'string' ? payload.title : 'Enlace de exportación caducado';
+        fact = typeof payload.fact === 'string' ? payload.fact : 'El enlace de descarga anterior ha expirado por motivos de seguridad.';
         consequence =
-          'Debes solicitar una nueva exportación desde la biblioteca para descargar tus fotos y videos.';
+          typeof payload.consequence === 'string'
+            ? payload.consequence
+            : 'Debes solicitar una nueva exportación desde la biblioteca para descargar tus fotos y videos.';
         severity = 'WARNING';
         action = {
-          label: 'Solicitar nueva exportación',
-          destination: `/events/${resourceRef}/exports`
+          label: typeof payload.actionLabel === 'string' ? payload.actionLabel : 'Solicitar nueva exportación',
+          destination:
+            typeof payload.actionDestination === 'string'
+              ? payload.actionDestination
+              : `/events/${resourceRef}/exports`
+        };
+        break;
+      }
+
+      case 'EXPORT_INVALIDATED': {
+        title = typeof payload.title === 'string' ? payload.title : 'Exportación no disponible por actualización de privacidad';
+        fact = typeof payload.fact === 'string' ? payload.fact : 'Se actualizaron permisos o se retiró contenido incluido en la exportación.';
+        consequence =
+          typeof payload.consequence === 'string'
+            ? payload.consequence
+            : 'Por motivos de privacidad y seguridad (DEC-090), la exportación anterior ha sido invalidada.';
+        severity = 'WARNING';
+        action = {
+          label: typeof payload.actionLabel === 'string' ? payload.actionLabel : 'Ir a la biblioteca',
+          destination:
+            typeof payload.actionDestination === 'string'
+              ? payload.actionDestination
+              : `/events/${resourceRef}/exports`
         };
         break;
       }

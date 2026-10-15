@@ -1,0 +1,119 @@
+<div class="timezone-section-card" role="region" aria-labelledby="tz-section-title">
+  <div class="card-header">
+    <div>
+      <h3 id="tz-section-title" class="card-title">Zona horaria del evento</h3>
+      <p class="card-description">
+        Define la zona horaria IANA bajo la cual se interpretan todas las fechas y horas del evento.
+      </p>
+    </div>
+    <span class="timezone-badge" aria-label="Zona horaria confirmada del evento">
+      Zona horaria confirmada: <strong>{{ event?.timezone }}</strong>
+    </span>
+  </div>
+
+  @if (successMessage()) {
+    <div class="alert alert-success" role="status" aria-live="polite">
+      <span class="alert-icon" aria-hidden="true">✓</span>
+      <div class="alert-content">
+        <p class="alert-message">{{ successMessage() }}</p>
+      </div>
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="alert alert-danger" role="alert" aria-live="assertive">
+      <span class="alert-icon" aria-hidden="true">⚠️</span>
+      <div class="alert-content">
+        <p class="alert-message">{{ errorMessage() }}</p>
+        @if (isConflictError()) {
+          <button
+            type="button"
+            class="btn-reconcile"
+            (click)="onReconcileClick()"
+            aria-label="Reconciliar cambios con la versión más reciente del servidor"
+          >
+            Reconciliar datos del evento
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  @if (event?.status === 'SCHEDULED' && hasSelectedDifferentTimezone()) {
+    <div class="alert alert-warning" role="alert">
+      <span class="alert-icon" aria-hidden="true">⚠️</span>
+      <div class="alert-content">
+        <p class="alert-message">
+          <strong>Aviso de recálculo:</strong> Este evento ya se encuentra programado. Al cambiar la zona horaria,
+          la hora UTC del evento será recalculada automáticamente por el servidor para coincidir con la nueva zona horaria.
+        </p>
+      </div>
+    </div>
+  }
+
+  @if (event?.status === 'ACTIVE') {
+    <div class="alert alert-info" role="status">
+      <span class="alert-icon" aria-hidden="true">ℹ️</span>
+      <div class="alert-content">
+        <p class="alert-message">
+          El evento está <strong>ACTIVO</strong>. Por integridad y trazabilidad, no se permite cambiar la zona horaria de un evento activo.
+        </p>
+      </div>
+    </div>
+  }
+
+  <form (submit)="onSubmit($event)" class="timezone-form">
+    <div class="form-group">
+      <label for="tz-search-input" class="form-label">
+        Buscar zona horaria IANA:
+      </label>
+      <input
+        id="tz-search-input"
+        type="search"
+        class="form-control"
+        placeholder="Filtrar por nombre o región (ej. Bogota, Madrid, Mexico)..."
+        [value]="searchQuery()"
+        (input)="onSearchInput($event)"
+        [disabled]="isControlsDisabled()"
+        aria-label="Filtrar zonas horarias IANA"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="tz-select-input" class="form-label">
+        Seleccionar zona horaria:
+      </label>
+      <select
+        id="tz-select-input"
+        class="form-control select-control"
+        [value]="selectedTimezone()"
+        (change)="onTimezoneChange($event)"
+        [disabled]="isControlsDisabled()"
+        aria-label="Zona horaria IANA seleccionada"
+        required
+      >
+        @for (tz of filteredTimezones(); track tz) {
+          <option [value]="tz">{{ tz }}</option>
+        }
+      </select>
+      <span class="form-hint">
+        Zona seleccionada actualmente: <strong>{{ selectedTimezone() }}</strong>
+      </span>
+    </div>
+
+    <div class="form-actions">
+      <button
+        type="submit"
+        class="btn-save"
+        [disabled]="isControlsDisabled() || !hasSelectedDifferentTimezone()"
+        aria-label="Guardar zona horaria"
+      >
+        @if (isSaving()) {
+          <span>Guardando zona horaria...</span>
+        } @else {
+          <span>Guardar zona horaria</span>
+        }
+      </button>
+    </div>
+  </form>
+</div>

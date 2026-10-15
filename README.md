@@ -1,6 +1,8 @@
-# EventLens
+# Phoeve (repositorio técnico EventLens)
 
-EventLens es un monorepo pnpm con una base común para desarrollo local. Esta base arranca PostgreSQL, la API NestJS y la aplicación Angular con Docker Compose; expone OpenAPI y genera el cliente TypeScript que consume Angular. Incluye infraestructura de MinIO para desarrollo local. La interfaz actual es un placeholder de plataforma, sin flujos de negocio.
+Phoeve es la identidad pública del producto. Los paquetes `@eventlens/*`, el nombre GitHub y los contratos técnicos conservan EventLens por compatibilidad. [Manual de marca Phoeve](docs/branding/PHOEVE-MANUAL-DE-MARCA.md) · [CR-006](.codex/product/changes/CR-006.md).
+
+El repositorio técnico EventLens es un monorepo pnpm con una base común para desarrollo local. Esta base arranca PostgreSQL, la API NestJS y la aplicación Angular con Docker Compose; expone OpenAPI y genera el cliente TypeScript que consume Angular. Incluye infraestructura de MinIO para desarrollo local. La interfaz actual es un placeholder de plataforma, sin flujos de negocio.
 
 ## Requisitos
 
@@ -80,6 +82,9 @@ pnpm db:restore -- .local/backups/<archivo>.dump eventlens_restore_<nombre>
 La restauración crea una base aislada nueva y falla si el nombre ya existe. La copia cubre PostgreSQL; no incluye objetos MinIO. Este procedimiento local no configura copias fuera del host, PITR ni acredita recuperación de Beta/producción.
 
 ## Administración local y seguridad de pruebas
+
+Para probar el ingreso con una cuenta base y credencial aleatoria guardada en
+`.env`, seguir [Acceso administrativo de desarrollo](docs/local-admin-access.md).
 
 El [runbook administrativo](docs/administrative-operations.md) explica `pnpm admin:bootstrap`, `admin:status`, la custodia de credenciales y la resolución conservadora del incidente local. `admin:recover` permanece bloqueado hasta contar con un autorizador operacional externo aceptado. El bootstrap consumido nunca se reinicia.
 

@@ -67,8 +67,25 @@ describeIntegration('EventDraftConfig (Real PostgreSQL Integration Tests — EL-
         welcome_message TEXT,
         idempotency_key TEXT UNIQUE,
         idempotency_payload_hash TEXT,
+        revision BIGINT NOT NULL DEFAULT 1,
         created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS event_command_receipt (
+        operation_id UUID PRIMARY KEY,
+        event_id UUID NOT NULL,
+        actor_id UUID NOT NULL,
+        operation TEXT NOT NULL,
+        idempotency_key TEXT NOT NULL,
+        fingerprint TEXT NOT NULL,
+        payload_hash TEXT NOT NULL,
+        applied_revision BIGINT NOT NULL DEFAULT 1,
+        outcome TEXT NOT NULL,
+        warning TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        expires_at TIMESTAMPTZ,
+        CONSTRAINT uq_event_command_receipt_actor_op_key UNIQUE (actor_id, operation, idempotency_key)
       );
     `);
     // Ensure column exists in case table was created previously without it
@@ -77,6 +94,7 @@ describeIntegration('EventDraftConfig (Real PostgreSQL Integration Tests — EL-
 
   beforeEach(async () => {
     recordedAudits.length = 0;
+    await sql('DELETE FROM event_command_receipt');
     await sql('DELETE FROM event');
 
     ownerContext = {

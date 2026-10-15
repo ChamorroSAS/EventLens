@@ -5,6 +5,7 @@ RUN corepack enable && corepack prepare pnpm@10.30.3 --activate && chmod -R a+rX
 WORKDIR /workspace
 RUN chown node:node /workspace
 USER node
+RUN mkdir -p /home/node/.eventlens/admin-authority && chmod 700 /home/node/.eventlens/admin-authority
 ENV EVENTLENS_DOCKER=1 CI=true
 COPY --chown=node:node package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY --chown=node:node packages ./packages

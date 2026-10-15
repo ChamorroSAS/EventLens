@@ -12,3 +12,11 @@ it('accepts PostgreSQL fields without treating password characters as URL syntax
   const config = readConfig({PGHOST:'postgres',PGPORT:'5432',PGUSER:'local',PGPASSWORD:'p%@#/:',PGDATABASE:'eventlens'});
   expect(decodeURIComponent(new URL(config.databaseUrl).password)).toBe('p%@#/:');
 });
+it('only enables local administrative authority explicitly in loopback development', () => {
+  const env = { DATABASE_URL: 'postgresql://local:local@postgres:5432/local', NODE_ENV: 'development', LOCAL_ADMIN_ENABLED: 'true', LOCAL_ADMIN_AUTHORITY_DIR: '/home/node/.eventlens/admin-authority' };
+  expect(readConfig(env).localAdminAuthorityDir).toBe(env.LOCAL_ADMIN_AUTHORITY_DIR);
+  for (const override of [{ NODE_ENV: 'production' }, { NODE_ENV: undefined }, { WEB_ORIGIN: 'https://public.example.test' }, { LOCAL_ADMIN_AUTHORITY_DIR: '/tmp/authority' }, { LOCAL_ADMIN_ENABLED: 'yes' }]) {
+    expect(() => readConfig({ ...env, ...override })).toThrow('INVALID_CONFIG:LOCAL_ADMIN');
+  }
+  expect(readConfig({ ...env, LOCAL_ADMIN_ENABLED: 'false' }).localAdminAuthorityDir).toBeUndefined();
+});

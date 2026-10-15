@@ -54,6 +54,41 @@ export type GuestRemovalIntakeOutcome =
 })
 export class GuestService {
   private readonly client = createEventLensClient();
+  private contextVersion = 0;
+  private activeLookupKey: string | null = null;
+  private readonly pendingRequests = new Set<AbortController>();
+
+  /** Cancels requests for the previous route/session before they can publish receipts. */
+  public getContextVersion(): number { return this.contextVersion; }
+
+  public invalidatePendingRequests(expectedVersion?: number): number | null {
+    if (expectedVersion !== undefined && expectedVersion !== this.contextVersion) return null;
+    this.contextVersion++;
+    for (const controller of this.pendingRequests) controller.abort();
+    this.pendingRequests.clear();
+    return this.contextVersion;
+  }
+
+  private captureRequest() {
+    const controller = new AbortController();
+    this.pendingRequests.add(controller);
+    return { version: this.contextVersion, controller, session: this.currentSession(), access: this.currentAccessView() };
+  }
+
+  private isCurrentRequest(request: ReturnType<GuestService['captureRequest']>): boolean {
+    const current = this.currentSession();
+    return request.version === this.contextVersion &&
+      (!request.session || (current?.id === request.session.id && current.eventId === request.session.eventId && current.credentialGeneration === request.session.credentialGeneration));
+  }
+
+  private receiptMatches(request: ReturnType<GuestService['captureRequest']>, receipt: GuestSessionState): boolean {
+    return (!request.session || (request.session.id === receipt.id && request.session.eventId === receipt.eventId && request.session.credentialGeneration === receipt.credentialGeneration)) &&
+      (!request.access || (request.access.eventId === receipt.eventId && request.access.generation === receipt.credentialGeneration));
+  }
+
+  private obsoleteOutcome() {
+    return { ok: false as const, status: 409, code: 'OBSOLETE_GUEST_CONTEXT', message: 'La solicitud pertenece a un acceso anterior. Vuelve a intentarlo desde el evento actual.' };
+  }
 
   readonly currentSession = signal<GuestSessionState | null>(null);
   readonly contributions = signal<GuestContributionView[]>([]);
@@ -64,10 +99,12 @@ export class GuestService {
   }
 
   public setSession(session: GuestSessionState | null): void {
+    this.invalidatePendingRequests();
     this.currentSession.set(session);
   }
 
   public clearSession(): void {
+    this.invalidatePendingRequests();
     this.currentSession.set(null);
     this.contributions.set([]);
   }
@@ -112,7 +149,12 @@ export class GuestService {
    * Never stores raw session tokens in JavaScript; session lives in HttpOnly cookie.
    */
   public async resolvePublicEntry(lookupKey: string): Promise<GuestEntryResolutionOutcome> {
+    this.invalidatePendingRequests();
+    this.currentSession.set(null);
+    this.contributions.set([]);
+    this.currentAccessView.set(null);
     const trimmedKey = lookupKey.trim();
+    this.activeLookupKey = trimmedKey || null;
     if (!trimmedKey) {
       this.clearSession();
       this.currentAccessView.set(null);
@@ -124,13 +166,17 @@ export class GuestService {
       };
     }
 
+    const request = this.captureRequest();
     try {
       const { data, error, response } = await this.client.GET(
         '/api/v1/public/guest-entry/{lookupKey}',
         {
+          signal: request.controller.signal,
           params: { path: { lookupKey: trimmedKey } }
         }
       );
+
+      if (!this.isCurrentRequest(request)) return this.obsoleteOutcome();
 
       if (!response.ok || !data) {
         this.clearSession();
@@ -154,6 +200,8 @@ export class GuestService {
         name: data.access.name,
         status: data.access.status,
         timezone: data.access.timezone,
+        scheduledAt: data.access.scheduledAt ?? null,
+        welcomeMessage: data.access.welcomeMessage ?? null,
         generation: data.access.generation,
         pinRequired: data.access.pinRequired,
         canViewLanding: data.access.canViewLanding,
@@ -164,6 +212,7 @@ export class GuestService {
           : {})
       };
 
+      if (data.session && (data.session.eventId !== accessView.eventId || data.session.credentialGeneration !== accessView.generation)) return this.obsoleteOutcome();
       this.currentAccessView.set(accessView);
 
       if (data.session && data.access.accessState !== 'UNAVAILABLE') {
@@ -196,7 +245,8 @@ export class GuestService {
         };
       }
 
-      this.clearSession();
+      this.currentSession.set(null);
+      this.contributions.set([]);
       return {
         ok: true,
         access: accessView,
@@ -204,12 +254,15 @@ export class GuestService {
         contributions: []
       };
     } catch {
+      if (!this.isCurrentRequest(request)) return this.obsoleteOutcome();
       return {
         ok: false,
         status: 503,
         code: 'DEPENDENCY_UNAVAILABLE',
         message: 'No se pudo conectar con el evento temporalmente. Intenta de nuevo.'
       };
+    } finally {
+      this.pendingRequests.delete(request.controller);
     }
   }
 
@@ -220,14 +273,19 @@ export class GuestService {
     lookupKey: string,
     pin: string
   ): Promise<GuestSessionActionOutcome> {
+    if (this.activeLookupKey && this.activeLookupKey !== lookupKey.trim()) return this.obsoleteOutcome();
+    const request = this.captureRequest();
     try {
       const { data, error, response } = await this.client.POST(
         '/api/v1/public/guest-entry/{lookupKey}/session',
         {
+          signal: request.controller.signal,
           params: { path: { lookupKey: lookupKey.trim() } },
           body: { pin }
         }
       );
+
+      if (!this.isCurrentRequest(request)) return this.obsoleteOutcome();
 
       if (!response.ok || !data) {
         if (response.status === 404 || response.status === 403) {
@@ -266,6 +324,7 @@ export class GuestService {
         rejectionReason: item.rejectionReason
       }));
 
+      if (!this.receiptMatches(request, sessionReceipt)) return this.obsoleteOutcome();
       this.currentSession.set(sessionReceipt);
       this.contributions.set(items);
 
@@ -275,12 +334,15 @@ export class GuestService {
         contributions: items
       };
     } catch {
+      if (!this.isCurrentRequest(request)) return this.obsoleteOutcome();
       return {
         ok: false,
         status: 503,
         code: 'DEPENDENCY_UNAVAILABLE',
         message: 'No se pudo verificar el PIN temporalmente. Intenta de nuevo.'
       };
+    } finally {
+      this.pendingRequests.delete(request.controller);
     }
   }
 
@@ -292,13 +354,17 @@ export class GuestService {
     documentVersion: string,
     accepted = true
   ): Promise<GuestSessionActionOutcome> {
+    const request = this.captureRequest();
     try {
       const { data, error, response } = await this.client.POST(
         '/api/v1/public/guest-session/consent',
         {
+          signal: request.controller.signal,
           body: { documentVersion, accepted }
         }
       );
+
+      if (!this.isCurrentRequest(request)) return this.obsoleteOutcome();
 
       if (!response.ok || !data) {
         if (response.status === 401) {
@@ -325,18 +391,22 @@ export class GuestService {
         hasConsented: data.session.hasConsented,
         consentVersion: data.session.consentVersion
       };
+      if (!this.receiptMatches(request, sessionReceipt)) return this.obsoleteOutcome();
       this.currentSession.set(sessionReceipt);
       return {
         ok: true,
         session: sessionReceipt
       };
     } catch {
+      if (!this.isCurrentRequest(request)) return this.obsoleteOutcome();
       return {
         ok: false,
         status: 503,
         code: 'DEPENDENCY_UNAVAILABLE',
         message: 'No se pudo registrar el consentimiento temporalmente.'
       };
+    } finally {
+      this.pendingRequests.delete(request.controller);
     }
   }
 
@@ -347,13 +417,17 @@ export class GuestService {
   public async saveContributorNickname(
     nickname: string
   ): Promise<GuestSessionActionOutcome> {
+    const request = this.captureRequest();
     try {
       const { data, error, response } = await this.client.POST(
         '/api/v1/public/guest-session/nickname',
         {
+          signal: request.controller.signal,
           body: { nickname }
         }
       );
+
+      if (!this.isCurrentRequest(request)) return this.obsoleteOutcome();
 
       if (!response.ok || !data) {
         if (response.status === 401) {
@@ -380,18 +454,22 @@ export class GuestService {
         hasConsented: data.session.hasConsented,
         consentVersion: data.session.consentVersion
       };
+      if (!this.receiptMatches(request, sessionReceipt)) return this.obsoleteOutcome();
       this.currentSession.set(sessionReceipt);
       return {
         ok: true,
         session: sessionReceipt
       };
     } catch {
+      if (!this.isCurrentRequest(request)) return this.obsoleteOutcome();
       return {
         ok: false,
         status: 503,
         code: 'DEPENDENCY_UNAVAILABLE',
         message: 'No se pudo guardar tu nombre temporalmente.'
       };
+    } finally {
+      this.pendingRequests.delete(request.controller);
     }
   }
 
@@ -400,10 +478,14 @@ export class GuestService {
    * If the session was revoked or expired (401), clears local receipt and contributions immediately.
    */
   public async refreshOwnContributions(): Promise<GuestSessionActionOutcome> {
+    const request = this.captureRequest();
     try {
       const { data, error, response } = await this.client.GET(
-        '/api/v1/public/guest-session/contributions'
+        '/api/v1/public/guest-session/contributions',
+        { signal: request.controller.signal }
       );
+
+      if (!this.isCurrentRequest(request)) return this.obsoleteOutcome();
 
       if (!response.ok || !data) {
         if (response.status === 401) {
@@ -440,6 +522,7 @@ export class GuestService {
         rejectionReason: item.rejectionReason
       }));
 
+      if (!this.receiptMatches(request, sessionReceipt)) return this.obsoleteOutcome();
       this.currentSession.set(sessionReceipt);
       this.contributions.set(items);
 
@@ -449,12 +532,15 @@ export class GuestService {
         contributions: items
       };
     } catch {
+      if (!this.isCurrentRequest(request)) return this.obsoleteOutcome();
       return {
         ok: false,
         status: 503,
         code: 'DEPENDENCY_UNAVAILABLE',
         message: 'No se pudieron consultar tus aportes temporalmente.'
       };
+    } finally {
+      this.pendingRequests.delete(request.controller);
     }
   }
 

@@ -1,0 +1,123 @@
+<main class="el-auth-entry" aria-labelledby="organizer-login-heading">
+  <div class="el-auth-card">
+    <div class="el-auth-logo">
+      <img
+        src="assets/branding/phoeve/logo-primary.png"
+        alt="Phoeve"
+        class="auth-brand-logo"
+        width="120"
+        height="40"
+      />
+    </div>
+
+    <header class="el-auth-header">
+      <p class="el-auth-eyebrow">Acceso de organizadores</p>
+      <h1 id="organizer-login-heading" tabindex="-1">Iniciar sesión</h1>
+      <p class="el-auth-subtitle">
+        Ingresa con tu cuenta de organizador para acceder a tus eventos o administrar tu cuenta.
+      </p>
+    </header>
+    @if (passwordChanged) { <p role="status" class="el-inline-message">Contraseña actualizada. Ingresa con tu nueva contraseña.</p> }
+
+    <form
+      class="el-login-form"
+      (submit)="onSubmit($event)"
+      novalidate
+      aria-labelledby="organizer-login-heading"
+    >
+      @if (errorMessage(); as errorText) {
+        <div
+          id="organizer-login-error"
+          role="alert"
+          aria-live="assertive"
+          class="el-inline-message el-inline-message--error"
+        >
+          {{ errorText }}
+        </div>
+      }
+
+      <div class="el-form-field">
+        <label for="organizer-login-email">Correo electrónico</label>
+        <input
+          id="organizer-login-email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          placeholder="ejemplo@correo.com"
+          required
+          [value]="email()"
+          [disabled]="isSubmitting()"
+          [attr.aria-invalid]="hasFieldValidationError() ? 'true' : null"
+          [attr.aria-describedby]="errorMessage() ? 'organizer-login-error' : null"
+          (input)="onEmailInput($event)"
+        />
+      </div>
+
+      <div class="el-form-field">
+        <label for="organizer-login-password">Contraseña</label>
+        <div class="el-password-wrap">
+          <input
+            id="organizer-login-password"
+            name="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            autocomplete="current-password"
+            placeholder="••••••••••••"
+            required
+            [value]="password()"
+            [disabled]="isSubmitting()"
+            [attr.aria-invalid]="hasFieldValidationError() ? 'true' : null"
+            [attr.aria-describedby]="errorMessage() ? 'organizer-login-error' : null"
+            (input)="onPasswordInput($event)"
+          />
+          <button
+            type="button"
+            class="el-btn-password-toggle"
+            (click)="toggleShowPassword()"
+            [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Ver contraseña'"
+            tabindex="-1"
+          >
+            @if (showPassword()) {
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            } @else {
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            }
+          </button>
+        </div>
+      </div>
+
+      <div class="el-form-actions">
+        <button
+          type="submit"
+          class="el-btn el-btn--primary"
+          [disabled]="isSubmitting()"
+          [attr.aria-busy]="isSubmitting() ? 'true' : null"
+        >
+          {{ isSubmitting() ? 'Iniciando sesión…' : 'Iniciar sesión' }}
+        </button>
+      </div>
+    </form>
+
+    <footer class="el-auth-footer">
+      <a
+        class="el-link-secondary"
+        [href]="homePath"
+        (click)="onReturnHome($event)"
+      >
+        Volver al inicio
+      </a>
+      <a
+        class="el-link-secondary"
+        [href]="betaAccessPath"
+        (click)="onNavigateBetaAccess($event)"
+      >
+        Solicitar acceso a la Beta
+      </a>
+    </footer>
+  </div>
+</main>

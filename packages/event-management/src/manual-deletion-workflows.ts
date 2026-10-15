@@ -575,7 +575,7 @@ export class ManualDeletionWorkflowService {
       throw new DeletionCoordinationError('UNAUTHORIZED_ACTOR', 'Authenticated organizer context is required');
     }
 
-    if (actorContext.restrictedContext === 'DELETION_MANAGEMENT_ONLY') {
+    if (Boolean(actorContext.restrictedContext)) {
       throw new DeletionCoordinationError(
         'UNAUTHORIZED_ACTOR',
         'Account is pending deletion and restricted to account deletion management only'

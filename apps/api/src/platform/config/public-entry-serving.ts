@@ -7,6 +7,16 @@ const STATIC_ASSET_EXTENSION_REGEX =
 
 export interface ValidatePublicEntryBaseOptions {
   readonly allowInsecureLocalHttp?: boolean;
+  readonly allowPrivateNetworkHttp?: boolean;
+}
+
+function isPrivateIpv4(hostname: string): boolean {
+  if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(hostname)) return false;
+  const octets = hostname.split('.').map(Number);
+  if (octets.some(value => value > 255)) return false;
+  return octets[0] === 10 ||
+    (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) ||
+    (octets[0] === 192 && octets[1] === 168);
 }
 
 /**
@@ -14,6 +24,7 @@ export interface ValidatePublicEntryBaseOptions {
  * (EL-TK-212, public-entry-contract.md).
  * - Rejects credentials, query strings, fragments, and non-HTTP(S) schemes.
  * - Enforces HTTPS for non-local origins; allows HTTP only for local/laboratory fixtures.
+ * - Private IPv4 HTTP additionally requires the trusted development-only policy.
  * - Supports root (`/`) or a clean sub-prefix (e.g. `/app`) while rejecting reserved prefixes (`/api`, `/media`, `/assets`, `/g`).
  * - Returns the normalized base URL without trailing slashes so `/g/:lookupKey` can be appended deterministically.
  */
@@ -46,7 +57,8 @@ export function validateTrustedPublicEntryBaseUrl(
   const allowInsecureLocal = options.allowInsecureLocalHttp ?? true;
 
   if (parsed.protocol === 'http:') {
-    if (!allowInsecureLocal || !isLocalFixtureHost) {
+    const allowedPrivateNetwork = options.allowPrivateNetworkHttp === true && isPrivateIpv4(hostname);
+    if (!allowInsecureLocal || !(isLocalFixtureHost || allowedPrivateNetwork)) {
       throw new Error('INVALID_CONFIG:PUBLIC_ENTRY_BASE_URL');
     }
   } else if (parsed.protocol !== 'https:') {
@@ -83,6 +95,7 @@ export function resolveAuthoritativeShareBaseUrl(params: {
   readonly trustedPublicEntryBaseUrl: string;
   readonly untrustedBaseUrlOverride?: unknown;
   readonly untrustedHostOverride?: unknown;
+  readonly allowPrivateNetworkHttp?: boolean;
 }): string {
   if (
     params.untrustedBaseUrlOverride !== undefined &&
@@ -100,7 +113,9 @@ export function resolveAuthoritativeShareBaseUrl(params: {
     throw new Error('UNTRUSTED_SHARE_HOST_OVERRIDE');
   }
 
-  return validateTrustedPublicEntryBaseUrl(params.trustedPublicEntryBaseUrl);
+  return validateTrustedPublicEntryBaseUrl(params.trustedPublicEntryBaseUrl, {
+    allowPrivateNetworkHttp: params.allowPrivateNetworkHttp === true
+  });
 }
 
 /**

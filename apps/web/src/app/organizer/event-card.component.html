@@ -1,0 +1,46 @@
+<article
+  class="event-card"
+  [attr.aria-label]="'Evento ' + event.name"
+>
+  <header class="card-header">
+    <div class="card-cover-placeholder" aria-hidden="true">
+      <span class="cover-icon">🎉</span>
+    </div>
+    <div class="header-content">
+      <h3 class="event-title">{{ event.name }}</h3>
+      <eventlens-event-status-badge [status]="event.status" />
+    </div>
+  </header>
+
+  <div class="card-body">
+    <dl class="metadata-list">
+      <div class="metadata-item">
+        <dt>Fecha de inicio:</dt>
+        <dd>{{ formatStartsAt() }}</dd>
+      </div>
+      <div class="metadata-item">
+        <dt>Zona horaria:</dt>
+        <dd>{{ event.timezone }}</dd>
+      </div>
+      <div class="metadata-item">
+        <dt>Subidas de fotos:</dt>
+        <dd>{{ event.uploadsEnabled ? 'Habilitadas' : 'Deshabilitadas' }}</dd>
+      </div>
+      <div class="metadata-item">
+        <dt>Protección por PIN:</dt>
+        <dd>{{ event.pinEnabled ? 'Configurado' : 'Sin PIN' }}</dd>
+      </div>
+    </dl>
+  </div>
+
+  <footer class="card-actions">
+    <button
+      type="button"
+      class="btn-primary"
+      [attr.aria-label]="'Configurar evento ' + event.name"
+      (click)="onSelect()"
+    >
+      Configurar evento
+    </button>
+  </footer>
+</article>

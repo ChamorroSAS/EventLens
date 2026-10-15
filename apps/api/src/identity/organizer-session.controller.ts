@@ -1,5 +1,6 @@
 import {
   Body,
+  BadRequestException,
   Controller,
   Get,
   HttpCode,
@@ -36,7 +37,8 @@ export const organizerCapabilitiesSchema = {
     canManageSessions: { type: 'boolean' },
     canManageAccountDeletion: { type: 'boolean' },
     isDeletionRestricted: { type: 'boolean' },
-    canSignOut: { type: 'boolean' }
+    canSignOut: { type: 'boolean' },
+    canChangePassword: { type: 'boolean' }
   }
 };
 
@@ -60,7 +62,7 @@ export const organizerSessionProjectionSchema = {
   properties: {
     state: {
       type: 'string',
-      enum: ['ANONYMOUS', 'ORGANIZER_ACTIVE', 'ORGANIZER_RESTRICTED_DELETION']
+      enum: ['ANONYMOUS', 'ORGANIZER_ACTIVE', 'ORGANIZER_RESTRICTED_DELETION', 'PASSWORD_CHANGE_REQUIRED']
     },
     capabilities: organizerCapabilitiesSchema,
     account: organizerProjectedAccountSchema
@@ -106,6 +108,22 @@ export class OrganizerSessionController {
     @Inject(OrganizerSessionService)
     private readonly sessionService: OrganizerSessionService
   ) {}
+
+  @Post('temporary-password')
+  @HttpCode(200)
+  @ApiOperation({operationId:'changeOrganizerTemporaryPassword'})
+  @ApiBody({schema:{type:'object',additionalProperties:false,required:['currentPassword','newPassword','declaredAdult'],properties:{currentPassword:{type:'string'},newPassword:{type:'string',minLength:8,maxLength:1024},declaredAdult:{type:'boolean',enum:[true]}}}})
+  @ApiResponse({status:200,schema:{type:'object',required:['outcome'],properties:{outcome:{type:'string',enum:['PASSWORD_CHANGED_RELOGIN_REQUIRED']}}}})
+  @ApiResponse({status:401,schema:errorSchema}) @ApiResponse({status:403,schema:errorSchema}) @ApiResponse({status:422,schema:errorSchema}) @ApiResponse({status:503,schema:errorSchema})
+  async changeTemporaryPassword(@Body() body:unknown,@Req() request:{headers?:Record<string,string|string[]|undefined>},@Res({passthrough:true}) response:{setHeader(name:string,value:string|string[]):void}) {
+    if(!body || typeof body!=='object' || Array.isArray(body)) throw new BadRequestException();
+    const data=body as Record<string,unknown>;
+    if(Object.keys(data).some(key=>!['currentPassword','newPassword','declaredAdult'].includes(key)) || typeof data.currentPassword!=='string' || typeof data.newPassword!=='string' || data.declaredAdult!==true) throw new BadRequestException({code:'INVALID_ARGUMENT'});
+    const raw=request.headers?.cookie;
+    const result=await this.sessionService.changeTemporaryPassword({sessionToken:extractOrganizerSessionCookie(Array.isArray(raw)?raw.join('; '):raw),csrfToken:readSingleHeader(request.headers,'x-csrf-token'),originHeader:readSingleHeader(request.headers,'origin'),currentPassword:data.currentPassword,newPassword:data.newPassword,declaredAdult:true});
+    response.setHeader('Cache-Control','no-store'); response.setHeader('Set-Cookie',result.setCookieHeaders);
+    return {outcome:result.outcome};
+  }
 
   @Get()
   @ApiOperation({

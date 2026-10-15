@@ -1,77 +1,89 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Input, Output, inject, computed, signal } from '@angular/core';
 import type { OrganizerEventModel } from './organizer.types.js';
 import { EventStatusBadgeComponent } from '../lifecycle/event-status-badge.component.js';
+import { APPROVED_PUBLIC_ENTRY_PATHS } from '../navigation/public-entry-routes.contract.js';
+import { PublicEntryRouterService } from '../navigation/public-entry-router.service.js';
+import { OrganizerSessionService } from '../organizer-session.service.js';
 
 @Component({
   selector: 'eventlens-organizer-app-shell',
   standalone: true,
-  imports: [EventStatusBadgeComponent],
-  template: `
-    <div class="organizer-shell">
-      <header class="shell-header" role="banner">
-        <div class="shell-container header-inner">
-          <div class="brand-area">
-            <h1 class="brand-title">
-              @if (!logoFailed) {
-                <img
-                  src="assets/branding/logo-primary.svg"
-                  alt="EventLens"
-                  class="brand-logo"
-                  width="160"
-                  height="25"
-                  (error)="onLogoError()"
-                />
-              } @else {
-                <span class="brand-fallback-text">EventLens</span>
-              }
-            </h1>
-            <span class="brand-badge">Organizador</span>
-          </div>
-
-          @if (selectedEvent) {
-            <div class="event-context-area" role="region" aria-label="Contexto del evento activo">
-              <span class="context-label">Evento activo:</span>
-              <span class="context-event-name">{{ selectedEvent.name }}</span>
-              <eventlens-event-status-badge [status]="selectedEvent.status" />
-              <button
-                type="button"
-                class="btn-exit-context"
-                aria-label="Salir de la configuración del evento"
-                (click)="onExitContext()"
-              >
-                Mis eventos
-              </button>
-            </div>
-          }
-        </div>
-      </header>
-
-      <main id="main-content" class="shell-main" role="main">
-        <div class="shell-container">
-          <ng-content></ng-content>
-        </div>
-      </main>
-
-      <footer class="shell-footer" role="contentinfo">
-        <div class="shell-container footer-inner">
-          <p class="footer-text">EventLens BETA — Plataforma segura de recuerdos colaborativos.</p>
-        </div>
-      </footer>
-    </div>
-  `,
+  imports: [CommonModule, EventStatusBadgeComponent],
+  templateUrl: './organizer-app-shell.component.html',
   styleUrl: './organizer-app-shell.component.scss',
 })
 export class OrganizerAppShellComponent {
+  private readonly sessionService = inject(OrganizerSessionService, { optional: true });
+  private readonly router = inject(PublicEntryRouterService, { optional: true });
+
   @Input() selectedEvent?: OrganizerEventModel | null = null;
+  @Input() activeNav: 'events' | 'account' | string = 'events';
+  @Input() activeSubNav: 'datos-basicos' | 'seguridad' | 'sesiones' | string = 'datos-basicos';
   @Output() exitContext = new EventEmitter<void>();
 
+  readonly myEventsPath = APPROVED_PUBLIC_ENTRY_PATHS.ORGANIZER_DASHBOARD;
+  readonly myAccountPath = APPROVED_PUBLIC_ENTRY_PATHS.ORGANIZER_ACCOUNT;
+  readonly homePath = APPROVED_PUBLIC_ENTRY_PATHS.HOME;
+
   logoFailed = false;
+  avatarFailed = false;
+  readonly isSidebarCollapsed = signal(false);
+
+  readonly userEmail = computed(() => this.sessionService?.account()?.email ?? '');
+  readonly userInitial = computed(() => {
+    const email = this.userEmail();
+    return email ? email.charAt(0).toUpperCase() : 'O';
+  });
+  readonly canAccessEvents = computed(
+    () => this.sessionService?.capabilities()?.canAccessMyEvents ?? true
+  );
+  readonly canAccessAccount = computed(
+    () => this.sessionService?.capabilities()?.canAccessMyAccount ?? true
+  );
+
+  toggleSidebar(): void {
+    this.isSidebarCollapsed.update(v => !v);
+  }
 
   onLogoError(): void {
     this.logoFailed = true;
   }
 
+  onAvatarError(): void {
+    this.avatarFailed = true;
+  }
+
   onExitContext(): void {
     this.exitContext.emit();
+  }
+
+  onSubNavClick(event: Event, targetId: string): void {
+    event.preventDefault();
+    this.activeSubNav = targetId;
+    const targetEl = document.getElementById(targetId);
+    if (targetEl) {
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  onNavigate(event: Event, path: string): void {
+    event.preventDefault();
+    if (this.router) {
+      void this.router.navigateByUrl(path);
+    } else {
+      window.location.href = path;
+    }
+  }
+
+  async onLogout(): Promise<void> {
+    if (this.sessionService) {
+      await this.sessionService.logout();
+    }
+    if (this.router) {
+      void this.router.navigateByUrl(APPROVED_PUBLIC_ENTRY_PATHS.LOGIN);
+    } else {
+      window.location.href = APPROVED_PUBLIC_ENTRY_PATHS.LOGIN;
+    }
   }
 }

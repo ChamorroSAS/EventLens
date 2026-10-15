@@ -29,13 +29,6 @@ beforeAll(async () => {
   db = application.app.get(DatabaseService);
   sessionService = application.app.get(OrganizerSessionService);
 
-  await db.transactions.run(async (tx) => {
-    await tx.execute(`
-      ALTER TABLE event
-        ADD COLUMN IF NOT EXISTS pin_hash TEXT,
-        ADD COLUMN IF NOT EXISTS pin_salt TEXT;
-    `);
-  });
 });
 
 afterAll(async () => {
@@ -118,17 +111,28 @@ it('EL-TK-211 & EL-TK-212: resolves guest public entry, enforces PIN & HttpOnly 
     idempotencyKey: `idem-draft-${randomUUID()}`
   });
   const eventId = createdDraft.event.id;
+  expect(createdDraft.event.timezone).toBe('America/Bogota');
 
-  await draftService.setSchedule({
+  await draftService.setWelcomeMessage({
     actorContext: orgLogin.actorContext,
     eventId,
-    startsAtLocal: '2027-06-15T18:00:00',
-    timezone: 'America/Bogota'
+    welcomeMessage: 'Bienvenidos a la boda',
+    idempotencyKey: `idem-welcome-${randomUUID()}`
+  });
+  await draftService.setGuestUploads({
+    actorContext: orgLogin.actorContext,
+    eventId,
+    uploadsEnabled: false,
+    idempotencyKey: `idem-uploads-${randomUUID()}`
+  });
+  const scheduled = await draftService.setSchedule({
+    actorContext: orgLogin.actorContext,
+    eventId,
+    startsAtLocal: '2027-06-15T18:00:00'
   });
   await draftService.setInitialPin({
     actorContext: orgLogin.actorContext,
     eventId,
-    enabled: true,
     pin: '654321'
   });
   await lifecycleService.scheduleDraft({
@@ -138,7 +142,7 @@ it('EL-TK-211 & EL-TK-212: resolves guest public entry, enforces PIN & HttpOnly 
   await lifecycleService.activateEvent({
     actorContext: orgLogin.actorContext,
     eventId,
-    trigger: 'MANUAL_EARLY_ACTIVATION'
+    trigger: 'MANUAL_EARLY'
   });
 
   const issuedCred = await publicAccessService.issueInitialCredential({
@@ -187,6 +191,12 @@ it('EL-TK-211 & EL-TK-212: resolves guest public entry, enforces PIN & HttpOnly 
   const entryBeforePinBody = (await entryBeforePinRes.json()) as any;
   expect(entryBeforePinBody.access.accessState).toBe('ALLOWED');
   expect(entryBeforePinBody.access.pinRequired).toBe(true);
+  expect(entryBeforePinBody.access.scheduledAt).toBe(
+    scheduled.event.scheduledAt?.toISOString()
+  );
+  expect(entryBeforePinBody.access.welcomeMessage).toBe('Bienvenidos a la boda');
+  expect(entryBeforePinBody.access.canUpload).toBe(false);
+  expect(entryBeforePinBody.access.restrictionReason).toBeTruthy();
   expect(entryBeforePinBody.session).toBeNull();
 
   // 4. PIN incorrecto devuelve 401 y no emite cookie

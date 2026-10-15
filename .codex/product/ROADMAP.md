@@ -1,5 +1,9 @@
 # EventLens — roadmap funcional propuesto
 
+## Incremento de integración — EL-EP-019, 2026-10-13
+
+[MVP y fases0..7](../../docs/reports/event-control-panels-backlog-2026-10-13.md): laboratorio → core/contratos → crear/configurar/detalle organizador → entrada admin segura/búsqueda/detalle → pruebas/revisión ambos. Gate planning aprobado, ejecución PARTIAL/activación BLOCKED RA real222. Sin redefinir prioridades/lanzamiento previos. Fase6 métricas y herramientas adicionales posteriores DEFERRED; no tickets fuera MVP sin gates propios.
+
 **RECOMMENDED:** secuencia por resultados y riesgo, sin fechas inventadas. No recorta el alcance confirmado del MVP; todos EL-EP-001 a EL-EP-016 pertenecen a la beta operativa. Las etapas son hitos de entrega, no permiso para abrir una beta sin privacidad, purga o soporte básicos.
 
 ## MVP / BETA privada

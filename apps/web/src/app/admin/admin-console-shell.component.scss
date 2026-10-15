@@ -1,0 +1,5 @@
+// The administrator console reuses the shared console shell (header, sidebar,
+// main and footer) so it matches the organizer panel. All visual rules live in
+// the shared partial; this file only opts into it.
+
+@use 'console-shell';

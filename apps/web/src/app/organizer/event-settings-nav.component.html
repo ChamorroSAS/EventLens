@@ -1,0 +1,31 @@
+<nav class="settings-nav" aria-label="Secciones de configuración del evento">
+  <div class="nav-header">
+    <button
+      type="button"
+      class="btn-back"
+      aria-label="Volver a la lista de eventos"
+      (click)="onBack()"
+    >
+      <span aria-hidden="true">←</span> Volver a mis eventos
+    </button>
+  </div>
+
+  <ul class="nav-list" role="tablist">
+    @for (item of navItems; track item.id) {
+      <li role="presentation">
+        <button
+          type="button"
+          role="tab"
+          class="nav-tab"
+          [class.active]="activeSection === item.id"
+          [attr.aria-selected]="activeSection === item.id"
+          [attr.aria-current]="activeSection === item.id ? 'page' : null"
+          (click)="onSectionSelect(item.id)"
+        >
+          <span class="nav-icon" aria-hidden="true">{{ item.icon }}</span>
+          <span class="nav-label">{{ item.label }}</span>
+        </button>
+      </li>
+    }
+  </ul>
+</nav>

@@ -4,7 +4,7 @@
 EL-EP-013
 
 ## Status
-READY
+DONE
 
 ## User story
 **Como** sistema, **quiero** avisar cuándo una exportación puede descargarse y hasta cuándo, **para** ayudar al organizador a recuperar recuerdos dentro de la ventana real.

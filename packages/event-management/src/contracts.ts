@@ -37,6 +37,7 @@ export interface EventRecord {
   readonly pinEnabled: boolean;
   readonly welcomeMessage?: string | null;
   readonly coverAssetId?: string | null;
+  readonly revision?: string;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -116,6 +117,33 @@ export class EventManagementError extends Error {
   }
 }
 
+export interface CommandReceipt {
+  readonly operationId: string;
+  readonly eventId: string;
+  readonly operation: string;
+  readonly appliedRevision: string;
+  readonly outcome: 'CREATED' | 'UPDATED' | 'TIMEZONE_CHANGED' | string;
+}
+
+export interface SetEventParticipationCommand {
+  readonly actorContext: OrganizerActorContext;
+  readonly eventId: string;
+  readonly uploadsEnabled: boolean;
+  readonly guestGalleryEnabled: boolean;
+  readonly expectedRevision: string;
+  readonly idempotencyKey: string;
+  readonly now?: Date;
+}
+
+export interface SetEventParticipationResult {
+  readonly eventId: string;
+  readonly uploadsEnabled: boolean;
+  readonly guestGalleryEnabled: boolean;
+  readonly revision: string;
+  readonly outcome: 'UPDATED' | 'IDEMPOTENT_REPLAY';
+  readonly receipt: CommandReceipt;
+}
+
 export interface CreateEventDraftCommand {
   readonly actorContext: OrganizerActorContext;
   readonly name: string;
@@ -125,6 +153,7 @@ export interface CreateEventDraftCommand {
 export interface CreateEventDraftResult {
   readonly event: EventRecord;
   readonly outcome: 'CREATED' | 'IDEMPOTENT_REPLAY';
+  readonly receipt?: CommandReceipt;
 }
 
 // ==========================================
@@ -135,12 +164,14 @@ export interface UpdateEventDraftNameCommand {
   readonly actorContext: OrganizerActorContext;
   readonly eventId: string;
   readonly name: string;
+  readonly expectedRevision?: string;
   readonly idempotencyKey?: string;
 }
 
 export interface UpdateEventDraftNameResult {
   readonly event: EventRecord;
   readonly outcome: 'UPDATED' | 'IDEMPOTENT_REPLAY';
+  readonly receipt?: CommandReceipt;
 }
 
 // ==========================================
@@ -216,6 +247,7 @@ export interface ChangePreparedEventTimezoneCommand {
   readonly eventId: string;
   readonly timezone: string;
   readonly utcOffsetMinutes?: number;
+  readonly expectedRevision?: string;
   readonly idempotencyKey?: string;
 }
 
@@ -224,6 +256,7 @@ export interface ChangePreparedEventTimezoneResult {
   readonly previousTimezone: string;
   readonly warning?: 'RECALCULATED_SCHEDULE' | null;
   readonly outcome: 'TIMEZONE_CHANGED' | 'IDEMPOTENT_REPLAY';
+  readonly receipt?: CommandReceipt;
 }
 
 // ==========================================
@@ -414,12 +447,14 @@ export interface SetEventScheduleCommand {
   readonly eventId: string;
   readonly startsAtLocal: string;
   readonly utcOffsetMinutes?: number;
+  readonly expectedRevision?: string;
   readonly idempotencyKey?: string;
 }
 
 export interface SetEventScheduleResult {
   readonly event: EventRecord;
   readonly outcome: 'UPDATED' | 'IDEMPOTENT_REPLAY';
+  readonly receipt?: CommandReceipt;
 }
 
 export interface SetInitialPinCommand {
@@ -685,6 +720,13 @@ export interface ResolvePublicAccessResult {
   readonly name: string;
   readonly status: EventStatus;
   readonly timezone: string;
+  /**
+   * Public landing metadata. It is null whenever the landing itself is not
+   * available, so callers cannot use a valid credential to discover event
+   * details for an unavailable event.
+   */
+  readonly scheduledAt?: string | null;
+  readonly welcomeMessage?: string | null;
   readonly generation: number;
   readonly pinRequired: boolean;
   readonly capabilities: PublicAccessCapabilities;
@@ -1098,6 +1140,7 @@ export interface EventAuditRecord {
     | 'EVENT_MODERATION_MODE_SET'
     | 'EVENT_GUEST_UPLOADS_CONFIGURED'
     | 'EVENT_GUEST_GALLERY_CONFIGURED'
+    | 'EVENT_PARTICIPATION_CONFIGURED'
     | 'EVENT_SCHEDULE_SET'
     | 'EVENT_TIMEZONE_CHANGED'
     | 'ADMIN_EVENT_TIMEZONE_CORRECTED'
@@ -1235,6 +1278,7 @@ export interface OrganizerEventSummary {
   readonly pinEnabled: boolean;
   readonly welcomeMessage?: string | null;
   readonly coverAssetId?: string | null;
+  readonly revision?: string;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -1246,6 +1290,9 @@ export interface EventConfigurationCapabilities {
   readonly canViewLifecycle: boolean;
   readonly canViewCapacity: boolean;
   readonly canPublishOrActivate: boolean;
+  readonly canEditName: boolean;
+  readonly canSetLocalSchedule: boolean;
+  readonly canChangeTimezone: boolean;
 }
 
 export interface AuthorizedEventConfiguration {

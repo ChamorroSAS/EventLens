@@ -6,6 +6,8 @@ export interface PublicAccessView {
   name: string;
   status: string;
   timezone: string;
+  scheduledAt?: string | null;
+  welcomeMessage?: string | null;
   generation: number;
   pinRequired: boolean;
   canViewLanding: boolean;

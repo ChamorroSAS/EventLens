@@ -1,5 +1,9 @@
 # Convenciones de identificadores — EventLens
 
+**CONFIRMED — 2026-10-14, CR-010:** EL-TK-244 reservado al correctivo de edición del horario de DRAFT/SCHEDULED nunca activado. Serie ocupada hasta 244; no reutilizar IDs ni reabrir los cierres anteriores. [Cambio](changes/CR-010.md), [ticket](tickets/EL-TK-244.md).
+
+**CONFIRMED — 2026-10-13, CR-007:** EL-EP-019 y EL-TK-218..238 asignados a paneles/configuración mínima y correctivos prospectivos tras inventario local/originstage hasta018/217. Serie ocupada hasta019/238, incluido222 BLOCKED operacional. No reutilizar/reabrir DONE. [Gates](sessions/2026-10-13-event-control-panels-gates.md); reserva no equivale a ejecución/activación.
+
 **CONFIRMED — CR-005, 2026-10-13:** EL-TK-215..217 asignados al correctivo de aislamiento/bootstrap/recuperación excepcional. Serie ocupada hasta217; no reutiliza IDs ni reabre043..046.215/216 DONE tras ejecución y revisión;217 BLOCKED por autorización externa.
 
 **CONFIRMED — 2026-10-07:** convención solicitada por el usuario y aplicada por backlog_manager.
@@ -85,3 +89,7 @@ Cambio exclusivamente documental; no requiere una nueva change request conforme 
 Se actualizaron referencias tanto actuales como históricas al identificador canónico, manteniendo intactos sus hechos y estados en cada momento. El mapa anterior y el inventario de rutas en la [sesión de migración](sessions/2026-10-07-identifier-convention.md) son las únicas excepciones históricas; no deben utilizarse como rutas vigentes.
 
 **CONFIRMED — 2026-10-12, EL-EP-018:** EL-TK-205..214 asignados definitivamente tras búsqueda dirigida sin IDs previos. Serie001..214 ocupada; no reutilizar ni renumerar históricos. Diez tickets READY tras Gate 2, no IMPLEMENTED. [Dictámenes](sessions/2026-10-12-el-ep-018-review-gates.md).
+
+**CONFIRMED — 2026-10-14, correctivo de rendimiento de marca (NG0913):** EL-TK-243 asignado a la optimización de carga de los assets de marca Phoeve y eliminación del warning NG0913. Búsqueda dirigida local sin IDs previos ni duplicados (serie ocupada hasta 242). **READY** (2026-10-14): REQUIREMENTS_READY YES y READY_FOR_IMPLEMENTATION YES tras ambos gates APPROVED; autorizado por CR-009 (`CHANGE_READY`, excepción acotada a `modifyVectorizeRecolorOrReplace: NOT_AUTHORIZED` de CR-006). No reutiliza ni renumera históricos. [Ticket](tickets/EL-TK-243.md).
+
+**CONFIRMED - 2026-10-14, CR-009 (CHANGE_READY):** CR-009 registrado como change request `CHANGE_READY` para la optimizacion de carga de los assets de marca Phoeve (excepcion acotada a la restriccion de bytes `modifyVectorizeRecolorOrReplace: NOT_AUTHORIZED` de CR-006). Alcance: EL-TK-243; derivados PNG a 2x del render con originales byte-identicos; sin cambio de arte ni de identidad tecnica. Gates sobre la revision 4-final: rondas 1-5 NEEDS_CHANGES; ronda 6 **APPROVED** del gate tecnico y NEEDS_CHANGES de requisitos solo por registro; ronda 7 **APPROVED** del Gate 1. Token de opt-in emitido (`AUTHORIZED_DERIVATIVES: CR-009`) con autorizacion del owner el 2026-10-14; EL-TK-243 pasa a `READY`. La revision aplica todas las correcciones (token opt-in endurecido sin auto-autorizacion, dominio de `role`, retencion de la lectura del `.ts` para `styleUrl`/SCSS, unidades, nomenclatura, recuento de rondas). Registrado en CHANGELOG y en la extension del contrato de marca (promovida a vigente). [CR](changes/CR-009.md).

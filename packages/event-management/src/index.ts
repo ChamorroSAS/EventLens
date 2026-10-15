@@ -4,6 +4,7 @@ export {
   type EventRecord,
   type EventManagementErrorCode,
   EventManagementError,
+  type CommandReceipt,
   type CreateEventDraftCommand,
   type CreateEventDraftResult,
   type SetEventScheduleCommand,
@@ -136,6 +137,8 @@ export { EventPublicAccessService } from './event-public-access.js';
 export { GuestSessionService } from './guest-session.js';
 export { UploadAuthorizationService } from './upload-authorization.js';
 export { UploadLifecycleService } from './upload-lifecycle.js';
+export { EventParticipationService } from './event-participation.js';
+export { type SetEventParticipationCommand, type SetEventParticipationResult } from './contracts.js';
 export { UploadMediaValidator } from './upload-media-validator.js';
 export { resolveScheduleLocalTime, type ResolvedLocalSchedule } from './timezone.js';
 export {

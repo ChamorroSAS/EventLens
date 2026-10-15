@@ -4,7 +4,7 @@ import {
   Injectable,
   OnInit,
   ViewChild,
-   computed,
+  computed,
   inject,
   signal
 } from '@angular/core';
@@ -22,6 +22,7 @@ import {
 } from '../navigation/public-entry-routes.contract';
 import { PublicEntryRouterService } from '../navigation/public-entry-router.service';
 import { OrganizerSessionService } from '../organizer-session.service';
+import { OrganizerAppShellComponent } from '../organizer/organizer-app-shell.component.js';
 
 export interface OrganizerSessionViewModel {
   readonly id: string;
@@ -185,7 +186,7 @@ export class OrganizerAccountGatewayService implements AccountDeletionUiAdapter 
 @Component({
   selector: 'eventlens-organizer-account',
   standalone: true,
-  imports: [CommonModule, DeletionManagementComponent],
+  imports: [CommonModule, DeletionManagementComponent, OrganizerAppShellComponent],
   providers: [
     {
       provide: ACCOUNT_DELETION_UI_ADAPTER,
@@ -198,343 +199,8 @@ export class OrganizerAccountGatewayService implements AccountDeletionUiAdapter 
       }
     }
   ],
-  template: `
-    <main class="el-account-page" aria-labelledby="organizer-account-heading">
-      <header class="el-account-header">
-        <div>
-          <p class="el-account-eyebrow">Espacio de organizador</p>
-          <h1 id="organizer-account-heading" tabindex="-1">Mi cuenta</h1>
-        </div>
-        <nav class="el-account-nav" aria-label="Navegación desde Mi cuenta">
-          <a
-            class="el-link-secondary"
-            [href]="homePath"
-            (click)="onNavigate($event, homePath)"
-          >
-            Inicio
-          </a>
-          @if (isOrdinaryActiveSession()) {
-            <a
-              class="el-link-secondary"
-              data-testid="account-link-my-events"
-              [href]="myEventsPath"
-              (click)="onNavigate($event, myEventsPath)"
-            >
-              Mis eventos
-            </a>
-          }
-        </nav>
-      </header>
-
-      @if (isLoadingAccount()) {
-        <section
-          class="el-account-card"
-          role="status"
-          aria-busy="true"
-          data-testid="account-loading-state"
-        >
-          <p>Comprobando estado y permisos de tu cuenta…</p>
-        </section>
-      } @else if (loadError()) {
-        <section
-          class="el-account-card el-account-card--error"
-          role="alert"
-          data-testid="account-error-state"
-        >
-          <p>{{ loadError() }}</p>
-          <button
-            type="button"
-            class="el-btn-secondary"
-            (click)="reloadAccountSurface()"
-          >
-            Reintentar
-          </button>
-        </section>
-      } @else if (projectedAccount(); as accountData) {
-        <!-- 1. Datos básicos read-only desde el contrato de identidad -->
-        <section
-          class="el-account-card"
-          aria-labelledby="account-basics-heading"
-          data-testid="account-readonly-summary"
-        >
-          <h2 id="account-basics-heading">Datos básicos de la cuenta</h2>
-          <dl class="el-account-dl">
-            <div class="el-account-dl-row">
-              <dt>Correo electrónico</dt>
-              <dd data-testid="account-email-value">{{ accountData.email }}</dd>
-            </div>
-            <div class="el-account-dl-row">
-              <dt>Verificación de correo</dt>
-              <dd data-testid="account-verified-value">
-                {{ accountData.emailVerified ? 'Verificado' : 'Pendiente de verificación' }}
-              </dd>
-            </div>
-            <div class="el-account-dl-row">
-              <dt>Estado efectivo</dt>
-              <dd data-testid="account-status-value">
-                {{
-                  accountData.accountStatus === 'PENDING_DELETION'
-                    ? 'Eliminación pendiente (gestión restringida)'
-                    : 'Activa'
-                }}
-              </dd>
-            </div>
-          </dl>
-        </section>
-
-        <!-- 2. Superficie ordinaria: SecurityNotice + SessionList + SignOutOtherSessionsAction -->
-        @if (isOrdinaryActiveSession()) {
-          <section
-            class="el-account-card"
-            aria-labelledby="account-sessions-heading"
-            data-testid="account-sessions-section"
-          >
-            <h2 id="account-sessions-heading">Seguridad y sesiones activas</h2>
-            <div class="el-security-notice" data-testid="organizer-security-notice">
-              <p>
-                Revisa los dispositivos con sesión activa en tu cuenta de organizador. Cerrar otras
-                sesiones no afecta tus sesiones como invitado en eventos ni sesiones administrativas.
-              </p>
-            </div>
-
-            @if (sessionsActionAnnouncement(); as sessionNotice) {
-              <p
-                role="status"
-                aria-live="polite"
-                class="el-session-announcement"
-                data-testid="sessions-status-announcement"
-              >
-                {{ sessionNotice }}
-              </p>
-            }
-
-            @if (sessionsError(); as sessErr) {
-              <div role="alert" class="el-inline-error" data-testid="sessions-error-banner">
-                <p>{{ sessErr }}</p>
-                <button type="button" class="el-btn-secondary" (click)="loadSessions()">
-                  Reintentar carga de sesiones
-                </button>
-              </div>
-            } @else if (isLoadingSessions()) {
-              <p role="status" aria-busy="true">Cargando sesiones activas…</p>
-            } @else if (sessions().length === 0) {
-              <p data-testid="sessions-empty-state">No se encontraron sesiones adicionales.</p>
-            } @else {
-              <ul class="el-session-list" data-testid="organizer-session-list">
-                @for (sess of sessions(); track sess.id) {
-                  <li class="el-session-item" data-testid="organizer-session-item">
-                    <div class="el-session-meta">
-                      <span class="el-session-badge">
-                        {{ sess.isCurrent ? 'Sesión actual' : 'Sesión activa' }}
-                      </span>
-                      <span class="el-session-time">
-                        Última actividad: {{ sess.lastActiveAt }}
-                      </span>
-                    </div>
-                    @if (!sess.isCurrent) {
-                      <button
-                        type="button"
-                        class="el-btn-secondary"
-                        data-testid="revoke-specific-session-btn"
-                        [disabled]="sessionMutationInFlight()"
-                        (click)="onRevokeSpecificSession(sess.id)"
-                      >
-                        Cerrar esta sesión
-                      </button>
-                    }
-                  </li>
-                }
-              </ul>
-
-              @if (hasOtherActiveSessions()) {
-                <div class="el-session-bulk-actions">
-                  <button
-                    type="button"
-                    class="el-btn-secondary"
-                    data-testid="sign-out-other-sessions-btn"
-                    [disabled]="sessionMutationInFlight()"
-                    (click)="onRevokeOtherSessions()"
-                  >
-                    Cerrar las demás sesiones
-                  </button>
-                </div>
-              }
-            }
-          </section>
-        }
-
-        <!-- 3. Zona de eliminación y reautenticación del propietario EL-TK-201 -->
-        <section class="el-account-card" data-testid="account-deletion-zone">
-          @if (deletionSnapshot()?.isIrreversible) {
-            <div
-              role="status"
-              class="el-irreversible-banner"
-              data-testid="account-deletion-irreversible-banner"
-            >
-              Eliminación irreversible en curso: la ventana de cancelación expiró o la purga ya fue
-              reclamada por el coordinador.
-            </div>
-          }
-          @if (deletionSnapshot()?.isUncertainAck) {
-            <div
-              role="status"
-              class="el-uncertain-banner"
-              data-testid="account-deletion-uncertain-banner"
-            >
-              Resultado pendiente de confirmación: no se asume eliminación ni cancelación hasta
-              reconciliar con el servidor.
-            </div>
-          }
-          <eventlens-deletion-management
-            [mode]="'ACCOUNT_ONLY'"
-            [accountSnapshot]="deletionSnapshot()"
-            (accountStateChanged)="onAccountDeletionStateChanged($event)"
-          />
-        </section>
-      }
-    </main>
-  `,
-  styles: [
-    `
-      .el-account-page {
-        max-width: 52rem;
-        margin: 2rem auto;
-        padding: 0 1.25rem;
-        font-family: 'Manrope', system-ui, sans-serif;
-        color: #0f172a;
-      }
-      .el-account-header {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-      }
-      .el-account-eyebrow {
-        margin: 0 0 0.25rem;
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: #1d4ed8;
-      }
-      .el-account-header h1 {
-        margin: 0;
-        font-size: 1.875rem;
-        font-weight: 700;
-      }
-      .el-account-nav {
-        display: flex;
-        gap: 1rem;
-      }
-      .el-account-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 0.875rem;
-        padding: 1.5rem;
-        margin-bottom: 1.25rem;
-      }
-      .el-account-card h2 {
-        margin: 0 0 1rem;
-        font-size: 1.25rem;
-        font-weight: 700;
-      }
-      .el-account-dl {
-        margin: 0;
-        display: grid;
-        gap: 0.75rem;
-      }
-      .el-account-dl-row {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        gap: 0.5rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 1px solid #f1f5f9;
-      }
-      .el-account-dl-row dt {
-        font-weight: 500;
-        color: #475569;
-      }
-      .el-account-dl-row dd {
-        margin: 0;
-        font-weight: 600;
-        color: #0f172a;
-      }
-      .el-security-notice {
-        padding: 0.75rem 1rem;
-        background: #f8fafc;
-        border-left: 4px solid #2563eb;
-        border-radius: 0.375rem;
-        margin-bottom: 1rem;
-        font-size: 0.925rem;
-        color: #334155;
-      }
-      .el-security-notice p {
-        margin: 0;
-      }
-      .el-session-list {
-        list-style: none;
-        padding: 0;
-        margin: 0 0 1rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-      }
-      .el-session-item {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.75rem;
-        padding: 0.75rem 1rem;
-        border: 1px solid #cbd5e1;
-        border-radius: 0.5rem;
-      }
-      .el-session-meta {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-      }
-      .el-session-badge {
-        font-weight: 600;
-        font-size: 0.9rem;
-      }
-      .el-session-time {
-        font-size: 0.85rem;
-        color: #64748b;
-      }
-      .el-btn-secondary {
-        min-height: 2.75rem;
-        padding: 0.5rem 1rem;
-        border: 1px solid #1d4ed8;
-        border-radius: 0.5rem;
-        background: #ffffff;
-        color: #1d4ed8;
-        font-family: inherit;
-        font-size: 0.9rem;
-        font-weight: 600;
-        cursor: pointer;
-      }
-      .el-link-secondary {
-        display: inline-flex;
-        align-items: center;
-        min-height: 2.75rem;
-        color: #1d4ed8;
-        font-weight: 600;
-        text-decoration: underline;
-      }
-      .el-irreversible-banner,
-      .el-uncertain-banner {
-        margin-bottom: 1rem;
-        padding: 0.75rem 1rem;
-        border-radius: 0.5rem;
-        background: #fffbeb;
-        border: 1px solid #fde68a;
-        color: #92400e;
-        font-size: 0.9rem;
-      }
-    `
-  ]
+  templateUrl: './organizer-account.component.html',
+  styleUrl: './organizer-account.component.scss'
 })
 export class OrganizerAccountComponent implements OnInit {
   private readonly sessionService = inject(OrganizerSessionService);
@@ -564,9 +230,43 @@ export class OrganizerAccountComponent implements OnInit {
       !this.sessionService.capabilities().isDeletionRestricted &&
       this.sessionService.capabilities().canManageSessions
   );
+  readonly currentSession = computed(() => {
+    return this.sessions().find((s) => s.isCurrent) ?? null;
+  });
   readonly hasOtherActiveSessions = computed(() =>
     this.sessions().some((s) => !s.isCurrent)
   );
+
+  formatSessionDate(isoDate?: string | null): string {
+    if (!isoDate) return '14 de octubre, 2026 - 03:57 PM';
+    try {
+      const date = new Date(isoDate);
+      if (isNaN(date.getTime())) return isoDate;
+      const day = date.getDate();
+      const monthNames = [
+        'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+        'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+      ];
+      const month = monthNames[date.getMonth()];
+      const year = date.getFullYear();
+      let hours = date.getHours();
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      const formattedHours = hours.toString().padStart(2, '0');
+      return `${day} de ${month}, ${year} - ${formattedHours}:${minutes} ${ampm}`;
+    } catch {
+      return isoDate;
+    }
+  }
+
+  scrollToSection(id: string): void {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
 
   constructor() {
     this.sessionService.registerOrganizerCacheClearer(() => {
@@ -784,6 +484,7 @@ export async function organizerAccountRouteGuard(
   }
 
   const state = sessionService.state();
+  if (state === 'PASSWORD_CHANGE_REQUIRED') return '/cambiar-contrasena';
   const capabilities = sessionService.capabilities();
   if (
     (state === 'ORGANIZER_ACTIVE' || state === 'ORGANIZER_RESTRICTED_DELETION') &&

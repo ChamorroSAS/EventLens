@@ -93,7 +93,12 @@ model OrganizerAccount {
   status          String    @default("PENDING_VERIFICATION")
   declaredAdult   Boolean   @default(false) @map("declared_adult")
   declaredAdultAt DateTime? @map("declared_adult_at") @db.Timestamptz
-  invitationId    String    @map("invitation_id") @db.Uuid
+  invitationId    String?   @map("invitation_id") @db.Uuid
+  provisioningSource String @default("INVITATION") @map("provisioning_source")
+  displayName String? @map("display_name")
+  passwordChangeRequired Boolean @default(false) @map("password_change_required")
+  administrativeRevision BigInt @default(1) @map("administrative_revision")
+  temporaryPasswordExpiresAt DateTime? @map("temporary_password_expires_at") @db.Timestamptz
   verifiedAt      DateTime? @map("verified_at") @db.Timestamptz
   createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt       DateTime  @default(now()) @map("updated_at") @db.Timestamptz
@@ -113,6 +118,18 @@ model OrganizerCredential {
 
   @@index([accountId, purpose, status])
   @@map("organizer_credential")
+}
+
+model OrganizerManagementRequest {
+ id String @id @db.Uuid
+ actorId String @map("actor_id") @db.Uuid
+ payloadDigest String @map("payload_digest")
+ accountId String @map("account_id") @db.Uuid
+ authorityReceipt String? @map("authority_receipt")
+ credentialRevision BigInt? @map("credential_revision")
+ result Json
+ createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+ @@map("organizer_management_request")
 }
 
 model EmailVerificationIntent {

@@ -133,17 +133,17 @@ describe('PublicHomePageComponent & AppHeaderComponent (EL-TK-213)', () => {
     const footer = element.querySelector('footer.el-footer');
     expect(footer).toBeTruthy();
     expect(footer?.textContent).toContain('Los recuerdos de cada celebración, reunidos en un solo lugar');
-    expect(footer?.textContent).toContain('2026 EventLens. Todos los derechos reservados.');
+    expect(footer?.textContent).toContain('Phoeve · Beta privada');
   });
 
-  it('cabecera anónima: muestra enlaces públicos, Iniciar sesión y Solicitar Beta, ocultando acciones privadas', () => {
+  it('cabecera anónima: muestra enlaces públicos e Iniciar sesión, sin botón Beta en header y ocultando acciones privadas', () => {
     sessionStateSignal.set(createSnapshot('ANONYMOUS'));
     fixture.detectChanges();
 
     const desktopActions = element.querySelector('.el-header__actions--desktop');
     expect(desktopActions).toBeTruthy();
     expect(desktopActions?.textContent).toContain('Iniciar sesión');
-    expect(desktopActions?.textContent).toContain('Solicitar acceso a la Beta');
+    expect(desktopActions?.textContent).not.toContain('Solicitar acceso a la Beta');
     expect(desktopActions?.textContent).not.toContain('Mis eventos');
     expect(desktopActions?.textContent).not.toContain('Mi cuenta');
     expect(desktopActions?.textContent).not.toContain('Cerrar sesión');
@@ -196,4 +196,56 @@ describe('PublicHomePageComponent & AppHeaderComponent (EL-TK-213)', () => {
     heroCta.click();
     expect(navigateSpy).toHaveBeenCalledWith(APPROVED_PUBLIC_ENTRY_PATHS.BETA_ACCESS);
   });
+
+  describe('Motion & Accesibilidad (M1..M8 — ui-phoeve-home-motion-proposal.md)', () => {
+    it('onScrollTo usa behavior smooth por defecto cuando reduced-motion no está activo', () => {
+      component.isReducedMotion.set(false);
+      const targetElem = document.createElement('div');
+      targetElem.id = 'target-test-smooth';
+      const scrollSpy = vi.fn();
+      targetElem.scrollIntoView = scrollSpy;
+      document.body.appendChild(targetElem);
+
+      const mouseEvent = new MouseEvent('click');
+      component.onScrollTo(mouseEvent, 'target-test-smooth');
+
+      expect(scrollSpy).toHaveBeenCalledWith({ behavior: 'smooth' });
+      document.body.removeChild(targetElem);
+    });
+
+    it('onScrollTo usa behavior auto cuando reduced-motion está activo (M4)', () => {
+      component.isReducedMotion.set(true);
+      const targetElem = document.createElement('div');
+      targetElem.id = 'target-test-reduced';
+      const scrollSpy = vi.fn();
+      targetElem.scrollIntoView = scrollSpy;
+      document.body.appendChild(targetElem);
+
+      const mouseEvent = new MouseEvent('click');
+      component.onScrollTo(mouseEvent, 'target-test-reduced');
+
+      expect(scrollSpy).toHaveBeenCalledWith({ behavior: 'auto' });
+      document.body.removeChild(targetElem);
+    });
+
+    it('renderiza elementos con clases .el-reveal y estructura sticky para pasos', () => {
+      const revealElements = element.querySelectorAll('.el-reveal');
+      expect(revealElements.length).toBeGreaterThan(5);
+
+      const stickyVisual = element.querySelector('.el-steps-sticky-visual');
+      expect(stickyVisual).toBeTruthy();
+      expect(stickyVisual?.getAttribute('aria-hidden')).toBe('true');
+
+      const stepItems = element.querySelectorAll('.el-step');
+      expect(stepItems.length).toBe(4);
+      expect(stepItems[0].getAttribute('data-step')).toBe('1');
+    });
+
+    it('ngOnDestroy desconecta observers sin fallar (M6)', () => {
+      expect(() => {
+        fixture.destroy();
+      }).not.toThrow();
+    });
+  });
 });
+

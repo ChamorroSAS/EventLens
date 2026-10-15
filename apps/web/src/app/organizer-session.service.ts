@@ -11,6 +11,7 @@ export type OrganizerSessionConsumerState =
   | 'ANONYMOUS'
   | 'ORGANIZER_ACTIVE'
   | 'ORGANIZER_RESTRICTED_DELETION'
+  | 'PASSWORD_CHANGE_REQUIRED'
   | 'UNAVAILABLE';
 
 export type OrganizerEffectiveCapabilities = ServerOrganizerSessionProjection['capabilities'];
@@ -125,6 +126,7 @@ export class OrganizerSessionService {
   ): OrganizerSessionSnapshot {
     if (
       projection.state === 'ORGANIZER_ACTIVE' ||
+      projection.state === 'PASSWORD_CHANGE_REQUIRED' ||
       projection.state === 'ORGANIZER_RESTRICTED_DELETION'
     ) {
       if (csrfTokenHeader !== undefined) {
@@ -165,6 +167,7 @@ export class OrganizerSessionService {
   }
 
   resolveAuthorizedReturnDestination(rawReturnUrl?: unknown): string {
+    if (this.snapshotSignal().state === 'PASSWORD_CHANGE_REQUIRED') return '/cambiar-contrasena';
     const canonical = canonicalizeInternalReturnUrl(rawReturnUrl);
     const snap = this.snapshotSignal();
 
@@ -180,6 +183,18 @@ export class OrganizerSessionService {
         snap.capabilities.canAccessMyAccount
         ? APPROVED_PUBLIC_ENTRY_PATHS.ORGANIZER_ACCOUNT
         : APPROVED_PUBLIC_ENTRY_PATHS.HOME;
+    }
+
+    if (!canonical) {
+      if (snap.state === 'ORGANIZER_ACTIVE' && snap.capabilities.canAccessMyEvents) {
+        return APPROVED_PUBLIC_ENTRY_PATHS.ORGANIZER_DASHBOARD;
+      }
+      if (
+        snap.state === 'ORGANIZER_RESTRICTED_DELETION' &&
+        snap.capabilities.canAccessMyAccount
+      ) {
+        return APPROVED_PUBLIC_ENTRY_PATHS.ORGANIZER_ACCOUNT;
+      }
     }
 
     return APPROVED_PUBLIC_ENTRY_PATHS.HOME;

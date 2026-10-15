@@ -17,6 +17,7 @@ import {
   type AdminJobsPort,
   type AdminReportsPort,
   type AdminSupportAuditSink,
+  type AdminReadAuditOptions,
   type SqlTransaction,
   type TransactionRunner
 } from './contracts.js';
@@ -140,7 +141,8 @@ export class AdminEventDetailService {
     private readonly auditSink?: AdminSupportAuditSink,
     private readonly invitationsPort?: AdminInvitationsPort,
     private readonly capacityRequestsPort?: AdminCapacityRequestsPort,
-    private readonly reportsPort?: AdminReportsPort
+    private readonly reportsPort?: AdminReportsPort,
+    private readonly auditOptions: AdminReadAuditOptions = {}
   ) {
     if (!runner) {
       throw new AdminSupportError('INVALID_ARGUMENT', 'TransactionRunner is required');
@@ -159,6 +161,9 @@ export class AdminEventDetailService {
     // 1. Control de acceso administrativo (EL-TK-044)
     if (!actorContext || actorContext.actorType !== 'ADMIN_HUMAN' || !actorContext.principalId) {
       throw new AdminSupportError('UNAUTHORIZED', 'Authorized administrative principal required');
+    }
+    if (this.auditOptions.requireDurableAudit && !this.auditSink) {
+      throw new AdminSupportError('INTERNAL_ERROR', 'Administrative audit is unavailable');
     }
 
     // 2. Validación de identificador UUID
@@ -204,7 +209,11 @@ export class AdminEventDetailService {
     });
 
     if (!row) {
-      throw new AdminSupportError('INVALID_ARGUMENT', `Event '${cleanEventId}' not found`);
+      throw new AdminSupportError('NOT_FOUND', 'Event not found');
+    }
+    if (this.auditOptions.requireDurableAudit &&
+        (!row.owner_id || !row.owner_email || !row.owner_status || !row.owner_created_at || row.owner_declared_adult == null)) {
+      throw new AdminSupportError('INTERNAL_ERROR', 'Event owner information is unavailable');
     }
 
     // 4. Mapeo de secciones directas (Owner y Lifecycle)
@@ -348,6 +357,9 @@ export class AdminEventDetailService {
           timestamp: new Date()
         });
       } catch {
+        if (this.auditOptions.requireDurableAudit) {
+          throw new AdminSupportError('INTERNAL_ERROR', 'Administrative audit is unavailable');
+        }
         // Ignorar falla de auditoría asíncrona no bloqueante
       }
     }

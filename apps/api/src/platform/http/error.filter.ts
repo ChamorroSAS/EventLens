@@ -14,6 +14,41 @@ const publicErrors: Record<number, { code: string; message: string }> = {
   503: { code: 'DEPENDENCY_UNAVAILABLE', message: 'El servicio no está disponible temporalmente.' }
 };
 
+/**
+ * Explicit allowlist of domain error codes that may cross the public boundary
+ * (EL-TK-242, BLOCKER-1), each paired with a fixed public message. Sanitization stays
+ * intact: the client only ever receives the `code`/`message` declared here, never the
+ * message carried by the exception. Any code absent from this map keeps the
+ * status-derived behavior in `publicErrors`, so an exception body can never inject an
+ * unvetted code (for example `UNTRUSTED_CODE`) or leak internal detail. The vocabulary
+ * distinguishes optimistic revision/replay/binding conflicts as required by
+ * `.codex/context/api-conventions.md`.
+ */
+const publicDomainErrors: Record<string, { code: string; message: string }> = {
+  EMAIL_EXISTS: { code: 'EMAIL_EXISTS', message: 'Ya existe una cuenta con ese correo.' },
+  IDEMPOTENCY_CONFLICT: { code: 'IDEMPOTENCY_CONFLICT', message: 'La operación ya estaba registrada con otros datos.' },
+  STALE_REVISION: { code: 'STALE_REVISION', message: 'La cuenta cambió desde que se abrió el formulario. Recarga antes de continuar.' },
+  CONCURRENCY_CONFLICT: { code: 'CONCURRENCY_CONFLICT', message: 'La operación entra en conflicto con un cambio concurrente. Recarga antes de continuar.' },
+  INVALID_STATE: { code: 'INVALID_STATE', message: 'La cuenta no permite esa operación en su estado actual.' },
+  INVALID_ARGUMENT: { code: 'INVALID_ARGUMENT', message: 'La solicitud contiene datos no válidos.' },
+  AUTHORITY_UNAVAILABLE: { code: 'AUTHORITY_UNAVAILABLE', message: 'No se confirmó la operación. Consulta el estado antes de reintentar.' }
+};
+
+/** Returns the allowlisted public error for a domain `code` carried by an exception, if any. */
+function allowlistedDomainError(error: unknown): { code: string; message: string } | undefined {
+  if (!(error instanceof HttpException)) {
+    return undefined;
+  }
+  const body = error.getResponse();
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return undefined;
+  }
+  const code = (body as { code?: unknown }).code;
+  return typeof code === 'string' && Object.prototype.hasOwnProperty.call(publicDomainErrors, code)
+    ? publicDomainErrors[code]
+    : undefined;
+}
+
 @Catch()
 export class PublicErrorFilter implements ExceptionFilter {
   constructor(private readonly operationalLogSink?: (redactedLine: string) => void) {}
@@ -23,10 +58,11 @@ export class PublicErrorFilter implements ExceptionFilter {
     const request = host.switchToHttp().getRequest();
     const correlationId = request.correlationId ?? randomUUID();
     const status = error instanceof HttpException ? error.getStatus() : 500;
-    const publicError = publicErrors[status] ?? {
-      code: 'INTERNAL_ERROR',
-      message: 'No se pudo completar la solicitud.'
-    };
+    const publicError = allowlistedDomainError(error) ??
+      publicErrors[status] ?? {
+        code: 'INTERNAL_ERROR',
+        message: 'No se pudo completar la solicitud.'
+      };
 
     if (this.operationalLogSink) {
       const rawUrl = String(request?.originalUrl ?? request?.url ?? '');

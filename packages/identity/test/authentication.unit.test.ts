@@ -44,6 +44,13 @@ describe('AdminAuthenticationService (Unit Tests)', () => {
     }
   };
 
+  const defaultRecoveryAuthority: RecoveryAuthorityPort = {
+    getRecoveryEpoch: async () => 1n,
+    getCredentialRevision: async () => 1n,
+    getAdminAuthWatermark: async () => 1n,
+    isRecoveryBarrierActive: async () => false
+  };
+
   beforeEach(() => {
     auditEvents = [];
   });
@@ -176,7 +183,8 @@ describe('AdminAuthenticationService (Unit Tests)', () => {
 
       const service = new AdminAuthenticationService(runner, {
         allowedOrigins,
-        externalAuditSink: auditSink
+        externalAuditSink: auditSink,
+        recoveryAuthority: defaultRecoveryAuthority
       });
 
       const result = await service.authenticate({
@@ -349,6 +357,9 @@ describe('AdminAuthenticationService (Unit Tests)', () => {
         if (sql.includes('FROM admin_principal')) {
           return [{ id: principalId, identifier: principalIdentifier, status: 'ACTIVE', auth_revision: 1n }];
         }
+        if (sql.includes('FROM admin_credential')) {
+          return [{ id: 'cred-1', principal_id: principalId, purpose: 'ADMIN_AUTHENTICATION', secret_digest: secretDigest, revision: 1n, status: 'ACTIVE' }];
+        }
         if (sql.includes('UPDATE admin_session') && sql.includes('last_active_at')) {
           updatedIdleExpiry = args[1] as Date;
           return 1;
@@ -356,7 +367,10 @@ describe('AdminAuthenticationService (Unit Tests)', () => {
         return 1;
       });
 
-      const service = new AdminAuthenticationService(runner, { allowedOrigins });
+      const service = new AdminAuthenticationService(runner, {
+        allowedOrigins,
+        recoveryAuthority: defaultRecoveryAuthority
+      });
       const context = await service.validateSession({ sessionToken: 'valid-token' });
 
       expect(context.actorType).toBe('ADMIN_HUMAN');
@@ -407,7 +421,8 @@ describe('AdminAuthenticationService (Unit Tests)', () => {
 
       const service = new AdminAuthenticationService(runner, {
         allowedOrigins,
-        externalAuditSink: auditSink
+        externalAuditSink: auditSink,
+        recoveryAuthority: defaultRecoveryAuthority
       });
 
       const reauthResult = await service.reauthenticate({
@@ -529,6 +544,235 @@ describe('AdminAuthenticationService (Unit Tests)', () => {
       expect(prepared).toBe(true);
       expect(acked).toBe(true);
       expect(result.actorContext.sessionId).toBeDefined();
+    });
+  });
+
+  describe('EL-TK-221: Session Binding, Credential Revision, Epoch and Recovery Authority (Admin)', () => {
+    const sessionId = 'session-tk221-admin';
+    const now = new Date();
+
+    it('fails closed with AUTHORITY_UNAVAILABLE when RecoveryAuthority is missing or throws', async () => {
+      const runner = new InMemoryTransactionRunner(async (sql) => {
+        if (sql.includes('FROM admin_session')) {
+          return [{
+            id: sessionId,
+            principal_id: principalId,
+            token_digest: 'token-digest',
+            csrf_token_digest: 'csrf-digest',
+            auth_time: now,
+            created_at: now,
+            expires_at: new Date(now.getTime() + 3600000),
+            last_active_at: now,
+            idle_expires_at: new Date(now.getTime() + 1800000),
+            revoked_at: null,
+            revocation_reason: null,
+            session_watermark: 1n
+          }];
+        }
+        if (sql.includes('FROM admin_principal')) {
+          return [{ id: principalId, identifier: principalIdentifier, status: 'ACTIVE', auth_revision: 1n }];
+        }
+        if (sql.includes('FROM admin_credential')) {
+          return [{ id: 'cred-1', principal_id: principalId, purpose: 'ADMIN_AUTHENTICATION', secret_digest: secretDigest, revision: 1n, status: 'ACTIVE' }];
+        }
+        return 1;
+      });
+
+      // 1. Missing authority in options
+      const serviceNoAuth = new AdminAuthenticationService(runner, { allowedOrigins });
+      await expect(
+        serviceNoAuth.validateSession({ sessionToken: 'token' })
+      ).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE' });
+
+      // 2. Failing authority
+      const failingAuthority: RecoveryAuthorityPort = {
+        getRecoveryEpoch: vi.fn().mockRejectedValue(new Error('NETWORK_TIMEOUT')),
+        getCredentialRevision: vi.fn().mockResolvedValue(1n),
+        getAdminAuthWatermark: vi.fn().mockResolvedValue(1n)
+      };
+      const serviceFailing = new AdminAuthenticationService(runner, {
+        allowedOrigins,
+        recoveryAuthority: failingAuthority
+      });
+      await expect(
+        serviceFailing.validateSession({ sessionToken: 'token' })
+      ).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE' });
+    });
+
+    it('fails closed with AUTHORITY_UNAVAILABLE when Recovery Barrier is active for MOD-001', async () => {
+      const runner = new InMemoryTransactionRunner(async (sql) => {
+        if (sql.includes('FROM admin_session')) {
+          return [{
+            id: sessionId,
+            principal_id: principalId,
+            token_digest: 'token-digest',
+            csrf_token_digest: 'csrf-digest',
+            auth_time: now,
+            created_at: now,
+            expires_at: new Date(now.getTime() + 3600000),
+            last_active_at: now,
+            idle_expires_at: new Date(now.getTime() + 1800000),
+            revoked_at: null,
+            revocation_reason: null,
+            session_watermark: 1n
+          }];
+        }
+        if (sql.includes('FROM admin_principal')) {
+          return [{ id: principalId, identifier: principalIdentifier, status: 'ACTIVE', auth_revision: 1n }];
+        }
+        if (sql.includes('FROM admin_credential')) {
+          return [{ id: 'cred-1', principal_id: principalId, purpose: 'ADMIN_AUTHENTICATION', secret_digest: secretDigest, revision: 1n, status: 'ACTIVE' }];
+        }
+        return 1;
+      });
+
+      const barrierAuthority: RecoveryAuthorityPort = {
+        getRecoveryEpoch: async () => 2n,
+        getCredentialRevision: async () => 1n,
+        getAdminAuthWatermark: async () => 1n,
+        isRecoveryBarrierActive: async (epoch, scope) => scope === 'MOD-001'
+      };
+
+      const service = new AdminAuthenticationService(runner, {
+        allowedOrigins,
+        recoveryAuthority: barrierAuthority
+      });
+
+      await expect(
+        service.validateSession({ sessionToken: 'token' })
+      ).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE' });
+    });
+
+    it('fails with UNAUTHENTICATED when admin credential is missing or not ACTIVE', async () => {
+      const runner = new InMemoryTransactionRunner(async (sql) => {
+        if (sql.includes('FROM admin_session')) {
+          return [{
+            id: sessionId,
+            principal_id: principalId,
+            token_digest: 'token-digest',
+            csrf_token_digest: 'csrf-digest',
+            auth_time: now,
+            created_at: now,
+            expires_at: new Date(now.getTime() + 3600000),
+            last_active_at: now,
+            idle_expires_at: new Date(now.getTime() + 1800000),
+            revoked_at: null,
+            revocation_reason: null,
+            session_watermark: 1n
+          }];
+        }
+        if (sql.includes('FROM admin_principal')) {
+          return [{ id: principalId, identifier: principalIdentifier, status: 'ACTIVE', auth_revision: 1n }];
+        }
+        if (sql.includes('FROM admin_credential')) {
+          return []; // Missing active credential
+        }
+        return 1;
+      });
+
+      const service = new AdminAuthenticationService(runner, {
+        allowedOrigins,
+        recoveryAuthority: defaultRecoveryAuthority
+      });
+
+      await expect(
+        service.validateSession({ sessionToken: 'token' })
+      ).rejects.toMatchObject({ code: 'UNAUTHENTICATED' });
+    });
+
+    it('derives credentialRevision strictly from admin_credential and never from principal.auth_revision', async () => {
+      const runner = new InMemoryTransactionRunner(async (sql) => {
+        if (sql.includes('FROM admin_session')) {
+          return [{
+            id: sessionId,
+            principal_id: principalId,
+            token_digest: 'token-digest',
+            csrf_token_digest: 'csrf-digest',
+            auth_time: now,
+            created_at: now,
+            expires_at: new Date(now.getTime() + 3600000),
+            last_active_at: now,
+            idle_expires_at: new Date(now.getTime() + 1800000),
+            revoked_at: null,
+            revocation_reason: null,
+            session_watermark: 3n
+          }];
+        }
+        if (sql.includes('FROM admin_principal')) {
+          // principal auth_revision is 99n
+          return [{ id: principalId, identifier: principalIdentifier, status: 'ACTIVE', auth_revision: 99n }];
+        }
+        if (sql.includes('FROM admin_credential')) {
+          // admin_credential revision is 3n
+          return [{ id: 'cred-1', principal_id: principalId, purpose: 'ADMIN_AUTHENTICATION', secret_digest: secretDigest, revision: 3n, status: 'ACTIVE' }];
+        }
+        return 1;
+      });
+
+      const service = new AdminAuthenticationService(runner, {
+        allowedOrigins,
+        recoveryAuthority: defaultRecoveryAuthority
+      });
+
+      const actorContext = await service.validateSession({ sessionToken: 'token' });
+      expect(actorContext.credentialRevision).toBe(3n);
+      expect(actorContext.adminAuthRevision).toBe(99n);
+      expect(actorContext.credentialRevision).not.toBe(actorContext.adminAuthRevision);
+    });
+
+    it('invalidates legacy session lacking verifiable binding conservatively with LEGACY_UNVERIFIABLE', async () => {
+      let markedRevokedReason: string | null = null;
+      const runner = new InMemoryTransactionRunner(async (sql, ...args) => {
+        if (sql.includes('FROM admin_session')) {
+          return [{
+            id: sessionId,
+            principal_id: principalId,
+            token_digest: '', // corrupt/empty
+            csrf_token_digest: 'csrf',
+            auth_time: now,
+            created_at: now,
+            expires_at: new Date(now.getTime() + 3600000),
+            last_active_at: now,
+            idle_expires_at: new Date(now.getTime() + 1800000),
+            revoked_at: null,
+            revocation_reason: null,
+            session_watermark: 0n // non-positive watermark
+          }];
+        }
+        if (sql.includes('UPDATE admin_session') && sql.includes('LEGACY_UNVERIFIABLE')) {
+          markedRevokedReason = 'LEGACY_UNVERIFIABLE';
+          return 1;
+        }
+        return 1;
+      });
+
+      const service = new AdminAuthenticationService(runner, {
+        allowedOrigins,
+        recoveryAuthority: defaultRecoveryAuthority
+      });
+
+      await expect(
+        service.validateSession({ sessionToken: 'token' })
+      ).rejects.toMatchObject({ code: 'SESSION_REVOKED' });
+      expect(markedRevokedReason).toBe('LEGACY_UNVERIFIABLE');
+    });
+
+    it('logout revalidates against RecoveryAuthority failure and fails closed with AUTHORITY_UNAVAILABLE', async () => {
+      const runner = new InMemoryTransactionRunner(async () => 1);
+      const failingAuthority: RecoveryAuthorityPort = {
+        getRecoveryEpoch: vi.fn().mockRejectedValue(new Error('OUTAGE')),
+        getCredentialRevision: vi.fn().mockResolvedValue(1n),
+        getAdminAuthWatermark: vi.fn().mockResolvedValue(1n)
+      };
+
+      const service = new AdminAuthenticationService(runner, {
+        allowedOrigins,
+        recoveryAuthority: failingAuthority
+      });
+
+      await expect(
+        service.logout({ sessionToken: 'token', csrfToken: 'csrf', origin: allowedOrigins[0] })
+      ).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE' });
     });
   });
 });

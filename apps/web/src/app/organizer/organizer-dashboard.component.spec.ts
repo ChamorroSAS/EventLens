@@ -3,6 +3,9 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { OrganizerDashboardComponent } from './organizer-dashboard.component.js';
 import { OrganizerService } from './organizer.service.js';
 import type { OrganizerEventModel, EventConfigurationModel } from './organizer.types.js';
+import { By } from '@angular/platform-browser';
+import { EventScheduleSectionComponent } from './event-schedule-section.component.js';
+import { EventParticipationSettingsComponent } from './event-participation-settings.component.js';
 
 describe('OrganizerDashboardComponent & Organizer Navigation (EL-TK-048)', () => {
   let organizerServiceMock: {
@@ -83,6 +86,42 @@ describe('OrganizerDashboardComponent & Organizer Navigation (EL-TK-048)', () =>
     return fixture;
   }
 
+  it('binds participation flags, revision and capabilities from the same authorized configuration', async () => {
+    const fixture = await createDashboard();
+    const config = { ...sampleConfig, revision: '6', event: { ...sampleEvents[0], uploadsEnabled: true, guestGalleryEnabled: true } };
+    organizerServiceMock.getEventConfiguration.mockResolvedValue(config);
+    await fixture.componentInstance.onEventSelected(sampleEvents[0].id);
+    fixture.componentInstance.onSectionChange('guest');
+    fixture.detectChanges();
+    const section = fixture.debugElement.query(By.directive(EventParticipationSettingsComponent)).componentInstance as EventParticipationSettingsComponent;
+    expect(section.configuration).toBe(config);
+    expect(section.uploadsEnabled).toBe(true);
+    expect(section.guestGalleryEnabled).toBe(true);
+    expect(fixture.componentInstance.events()[0].uploadsEnabled).toBe(false);
+  });
+
+  it('updates schedule and revision from one configuration before the slower event-list refresh', async () => {
+    const fixture = await createDashboard();
+    await fixture.componentInstance.onEventSelected(sampleEvents[0].id);
+    fixture.componentInstance.onSectionChange('schedule');
+    fixture.detectChanges();
+    const section = fixture.debugElement.query(By.directive(EventScheduleSectionComponent)).componentInstance as EventScheduleSectionComponent;
+    expect(section.startsAtLocal).toBe('2026-11-20T18:00');
+    const updatedEvent = { ...sampleEvents[0], startsAtLocal: '2026-11-20T20:30:00' };
+    organizerServiceMock.getEventConfiguration.mockResolvedValue({ ...sampleConfig, revision: '6', event: updatedEvent });
+    let resolveList!: (events: OrganizerEventModel[]) => void;
+    organizerServiceMock.listEvents.mockImplementationOnce(() => new Promise<OrganizerEventModel[]>(resolve => { resolveList = resolve; }));
+    const refreshing = fixture.componentInstance.onReconcileEvent();
+    await Promise.resolve();
+    fixture.detectChanges();
+    expect(section.revision).toBe('6');
+    expect(section.startsAtLocal).toBe('2026-11-20T20:30');
+    resolveList([updatedEvent, sampleEvents[1]]);
+    await refreshing;
+    fixture.detectChanges();
+    expect(section.startsAtLocal).toBe('2026-11-20T20:30');
+  });
+
   it('Escenario 1: Renderiza lista de eventos con sus cards y badges de estado', async () => {
     const fixture = await createDashboard();
     await fixture.whenStable();
@@ -162,8 +201,8 @@ describe('OrganizerDashboardComponent & Organizer Navigation (EL-TK-048)', () =>
     fixture.detectChanges();
 
     expect(fixture.componentInstance.activeSection()).toBe('schedule');
-    expect(fixture.nativeElement.textContent).toContain('Programación y timeline');
-    expect(fixture.nativeElement.textContent).toContain('✓ La reprogramación está permitida en este estado');
+    expect(fixture.nativeElement.textContent).toContain('Programación de inicio');
+    expect(fixture.nativeElement.textContent).toContain('America/Bogota');
   });
 
   it('Escenario 5: Botón Volver a mis eventos restablece la vista de lista sin mutaciones', async () => {
@@ -271,5 +310,146 @@ describe('OrganizerDashboardComponent & Organizer Navigation (EL-TK-048)', () =>
       })
     );
     expect(restrictedRedirect).toBe('/mi-cuenta');
+  });
+
+  describe('Unsaved changes navigation confirmation (EL-TK-230)', () => {
+    let fixture: ComponentFixture<OrganizerDashboardComponent>;
+    let component: OrganizerDashboardComponent;
+
+    beforeEach(async () => {
+      organizerServiceMock.listEvents.mockResolvedValue(sampleEvents);
+      organizerServiceMock.getEventConfiguration.mockResolvedValue(sampleConfig);
+      fixture = await createDashboard();
+      component = fixture.componentInstance;
+      await component.onEventSelected('event-101');
+      fixture.detectChanges();
+    });
+
+    it('interrumpe el cambio de sección cuando hay cambios sin guardar y abre el modal de confirmación', () => {
+      component.isBasicInfoDirty.set(true);
+      fixture.detectChanges();
+
+      // Intenta cambiar a la sección schedule
+      component.onSectionChange('schedule');
+      fixture.detectChanges();
+
+      // Debe permanecer en general y abrir el modal
+      expect(component.activeSection()).toBe('general');
+      expect(component.showUnsavedChangesModal()).toBe(true);
+
+      const modal = fixture.nativeElement.querySelector('.unsaved-modal-backdrop');
+      expect(modal).toBeTruthy();
+      expect(modal.textContent).toContain('¿Descartar cambios sin guardar?');
+
+      // Si elige seguir editando
+      component.onKeepEditing();
+      fixture.detectChanges();
+
+      expect(component.showUnsavedChangesModal()).toBe(false);
+      expect(component.activeSection()).toBe('general');
+    });
+
+    it('descarta cambios y continúa con la navegación cuando el usuario confirma', () => {
+      component.isBasicInfoDirty.set(true);
+      fixture.detectChanges();
+
+      // Intenta cambiar de sección
+      component.onSectionChange('schedule');
+      fixture.detectChanges();
+
+      // Confirma descartar
+      component.onDiscardAndNavigate();
+      fixture.detectChanges();
+
+      expect(component.showUnsavedChangesModal()).toBe(false);
+      expect(component.isBasicInfoDirty()).toBe(false);
+      expect(component.activeSection()).toBe('schedule');
+    });
+
+    it('interrumpe la salida a Mis eventos con cambios sin guardar y descarta al confirmar', () => {
+      component.isBasicInfoDirty.set(true);
+      fixture.detectChanges();
+
+      component.onBackToEvents();
+      fixture.detectChanges();
+
+      expect(component.selectedEventId()).toBe('event-101');
+      expect(component.showUnsavedChangesModal()).toBe(true);
+
+      component.onDiscardAndNavigate();
+      fixture.detectChanges();
+
+      expect(component.selectedEventId()).toBeNull();
+      expect(component.isBasicInfoDirty()).toBe(false);
+    });
+
+    it('actualiza el nombre del evento en la lista y configuración al recibir onEventBasicInfoUpdated', () => {
+      const updatedName = 'Cumpleaños Renovado de Valentina';
+      component.onEventBasicInfoUpdated({
+        id: 'event-101',
+        name: updatedName,
+        revision: '2'
+      });
+      fixture.detectChanges();
+
+      expect(component.selectedEvent()?.name).toBe(updatedName);
+      expect(component.selectedEventConfig()?.event.name).toBe(updatedName);
+      expect(component.selectedEventConfig()?.revision).toBe('2');
+      expect(component.isBasicInfoDirty()).toBe(false);
+    });
+
+    it('descarta respuestas tardías de evento A cuando el usuario navega a evento B (carrera A->B - EL-TK-228)', async () => {
+      let resolveA!: (value: any) => void;
+      const promiseA = new Promise((res) => { resolveA = res; });
+      const configB: EventConfigurationModel = {
+        event: sampleEvents[1],
+        revision: '200',
+        capabilities: {
+          canEditName: false,
+          canEditSchedule: false,
+          canChangeTimezone: false,
+          canEditSettings: false,
+          canManageAccess: false,
+          canViewLifecycle: false,
+          canViewCapacity: false,
+          canPublishOrActivate: false
+        }
+      };
+
+      organizerServiceMock.getEventConfiguration.mockImplementation((id: string) => {
+        if (id === 'event-101') return promiseA;
+        if (id === 'event-102') return Promise.resolve(configB);
+        return Promise.reject(new Error('NOT_FOUND'));
+      });
+
+      // 1. Usuario selecciona evento A
+      const selectionA = component.onEventSelected('event-101');
+      expect(component.selectedEventId()).toBe('event-101');
+      expect(component.selectedEventConfig()).toBeNull();
+
+      // 2. Antes de que A responda, usuario selecciona evento B
+      await component.onEventSelected('event-102');
+      expect(component.selectedEventId()).toBe('event-102');
+      expect(component.selectedEventConfig()).toBe(configB);
+
+      // 3. Respuesta tardía de A llega ahora
+      resolveA(sampleConfig);
+      await selectionA;
+
+      // 4. Configuración bajo B NO fue sobreescrita por A
+      expect(component.selectedEventId()).toBe('event-102');
+      expect(component.selectedEventConfig()).toBe(configB);
+      expect(component.selectedEventConfig()?.event.id).toBe('event-102');
+    });
+
+    it('devuelve resultado neutro sin datos ni capacidades si el evento es ajeno o inexistente (EL-TK-228)', async () => {
+      organizerServiceMock.getEventConfiguration.mockRejectedValueOnce(new Error('ACCESS_DENIED'));
+
+      await component.onEventSelected('event-ajeno-999');
+
+      expect(component.selectedEventId()).toBeNull();
+      expect(component.selectedEventConfig()).toBeNull();
+      expect(component.errorMessage()).toContain('El evento seleccionado no existe o no tienes permisos');
+    });
   });
 });

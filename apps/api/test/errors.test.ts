@@ -24,3 +24,24 @@ it.each([
   expect(body.correlationId).toBe('server-generated'); expect(body.message).toBeTypeOf('string');
   expect(JSON.stringify(body)).not.toMatch(/private credential details|UNTRUSTED_CODE/);
 });
+it.each([
+  ['EMAIL_EXISTS',409],['IDEMPOTENCY_CONFLICT',409],['STALE_REVISION',409],
+  ['CONCURRENCY_CONFLICT',409],['INVALID_STATE',409],['INVALID_ARGUMENT',422],
+  ['AUTHORITY_UNAVAILABLE',503]
+])('forwards allowlisted domain code %s with a fixed public message (EL-TK-242)', (domainCode,status) => {
+  let observedStatus:number|undefined, body:any;
+  const response = {status:(value:number) => {observedStatus=value;return response;},json:(value:unknown) => {body=value;}};
+  const host = {switchToHttp:() => ({getResponse:() => response,getRequest:() => ({correlationId:'server-generated'})})} as ArgumentsHost;
+  new PublicErrorFilter().catch(new HttpException({message:'leaky internal domain detail',code:domainCode},Number(status)),host);
+  expect(observedStatus).toBe(status);
+  expect(body.code).toBe(domainCode);
+  expect(body.message).toBeTypeOf('string');
+  expect(JSON.stringify(body)).not.toMatch(/leaky internal domain detail/);
+});
+it('keeps collapsing domain-looking codes that are not allowlisted', () => {
+  let observedStatus:number|undefined, body:any;
+  const response = {status:(value:number) => {observedStatus=value;return response;},json:(value:unknown) => {body=value;}};
+  const host = {switchToHttp:() => ({getResponse:() => response,getRequest:() => ({correlationId:'server-generated'})})} as ArgumentsHost;
+  new PublicErrorFilter().catch(new HttpException({message:'internal',code:'NOT_IN_ALLOWLIST'},409),host);
+  expect(observedStatus).toBe(409); expect(body.code).toBe('CONFLICT');
+});

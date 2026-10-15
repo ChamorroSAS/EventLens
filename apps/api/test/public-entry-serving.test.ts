@@ -14,6 +14,31 @@ import { readConfig } from '../src/platform/config/config.js';
 import { createSpaStaticServer } from '../../web/spa-server.mjs';
 
 describe('Public entry serving, trusted QR base URL, and lookupKey redaction (EL-TK-212)', () => {
+  it.each(['10.0.0.1', '10.255.255.254', '172.16.0.1', '172.31.255.254', '192.168.0.1', '192.168.255.254'])('allows private IPv4 %s only under the trusted development policy', host => {
+    const base = `http://${host}:4200`;
+    expect(() => validateTrustedPublicEntryBaseUrl(base)).toThrow('INVALID_CONFIG:PUBLIC_ENTRY_BASE_URL');
+    const config = readConfig({ DATABASE_URL: 'postgresql://local:local@postgres:5432/local', NODE_ENV: 'development', PUBLIC_ENTRY_BASE_URL: base });
+    expect(resolveAuthoritativeShareBaseUrl({ trustedPublicEntryBaseUrl: config.publicEntryBaseUrl, allowPrivateNetworkHttp: config.allowPrivateNetworkPublicEntryHttp })).toBe(base);
+  });
+
+  it.each(['172.15.255.254', '172.32.0.1', '192.167.1.1', '192.169.1.1', '100.64.0.1', '169.254.169.254', '8.8.8.8', '0.0.0.0'])('does not allow non-RFC1918 HTTP %s even with development policy', host => {
+    expect(() => validateTrustedPublicEntryBaseUrl(`http://${host}:4200`, { allowPrivateNetworkHttp: true })).toThrow('INVALID_CONFIG:PUBLIC_ENTRY_BASE_URL');
+  });
+
+  it.each([undefined, 'test', 'production'])('rejects private HTTP outside explicit development: %s', mode => {
+    expect(() => readConfig({ DATABASE_URL: 'postgresql://local:local@postgres:5432/local', NODE_ENV: mode, PUBLIC_ENTRY_BASE_URL: 'http://192.168.40.135:4200' })).toThrow('INVALID_CONFIG:PUBLIC_ENTRY_BASE_URL');
+  });
+
+  it('keeps HTTPS, public HTTP, unsafe URLs and request overrides under existing restrictions', () => {
+    const options = { allowPrivateNetworkHttp: true };
+    expect(validateTrustedPublicEntryBaseUrl('https://events.example', options)).toBe('https://events.example');
+    for (const value of ['http://events.example', 'http://user:pass@192.168.40.135:4200', 'http://192.168.40.135:4200/?q=1', 'http://192.168.40.135:4200/#part', 'http://192.168.40.135:4200/api']) {
+      expect(() => validateTrustedPublicEntryBaseUrl(value, options)).toThrow('INVALID_CONFIG:PUBLIC_ENTRY_BASE_URL');
+    }
+    expect(() => validateTrustedPublicEntryBaseUrl('http://192.168.40.135:4200', { ...options, allowInsecureLocalHttp: false })).toThrow('INVALID_CONFIG:PUBLIC_ENTRY_BASE_URL');
+    expect(() => resolveAuthoritativeShareBaseUrl({ trustedPublicEntryBaseUrl: 'http://192.168.40.135:4200', ...options, untrustedBaseUrlOverride: 'http://10.0.0.1:4200' })).toThrow('UNTRUSTED_SHARE_BASE_OVERRIDE');
+  });
+
   it('validates trusted public entry base URLs (HTTPS external, HTTP local/lab only, no reserved prefixes)', () => {
     expect(validateTrustedPublicEntryBaseUrl('https://eventos.eventlens.app')).toBe(
       'https://eventos.eventlens.app'

@@ -6,6 +6,7 @@ import {
   type AdminSearchResult,
   type AdminSearchResultItem,
   type AdminSupportAuditSink,
+  type AdminReadAuditOptions,
   type SqlTransaction,
   type TransactionRunner
 } from './contracts.js';
@@ -31,7 +32,8 @@ interface RawCountRow {
 export class AdminSearchService {
   constructor(
     private readonly runner: TransactionRunner,
-    private readonly auditSink?: AdminSupportAuditSink
+    private readonly auditSink?: AdminSupportAuditSink,
+    private readonly auditOptions: AdminReadAuditOptions = {}
   ) {
     if (!runner) {
       throw new AdminSupportError('INVALID_ARGUMENT', 'TransactionRunner is required');
@@ -48,6 +50,9 @@ export class AdminSearchService {
     // Fail closed: Solo principales administrativos autenticados pueden buscar (EL-TK-044)
     if (!actorContext || actorContext.actorType !== 'ADMIN_HUMAN' || !actorContext.principalId) {
       throw new AdminSupportError('UNAUTHORIZED', 'Authorized administrative principal required');
+    }
+    if (this.auditOptions.requireDurableAudit && !this.auditSink) {
+      throw new AdminSupportError('INTERNAL_ERROR', 'Administrative audit is unavailable');
     }
 
     // Sanitización y validación de tipo de entidad
@@ -102,6 +107,9 @@ export class AdminSearchService {
     }
 
     const offset = (page - 1) * limit;
+    if (!Number.isSafeInteger(offset)) {
+      throw new AdminSupportError('INVALID_ARGUMENT', 'Pagination offset exceeds supported range');
+    }
 
     const result = await this.runner.run(async (tx: SqlTransaction) => {
       return this.executeSearch(tx, {
@@ -132,6 +140,9 @@ export class AdminSearchService {
           timestamp: new Date()
         });
       } catch {
+        if (this.auditOptions.requireDurableAudit) {
+          throw new AdminSupportError('INTERNAL_ERROR', 'Administrative audit is unavailable');
+        }
         // La falla en auditoría asíncrona no debe bloquear la respuesta si se define no-bloqueante
       }
     }

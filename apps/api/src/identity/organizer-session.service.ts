@@ -3,16 +3,18 @@ import {
   HttpException,
   Inject,
   Injectable,
+  Optional,
   ServiceUnavailableException,
   UnauthorizedException
 } from '@nestjs/common';
 import {
   AuthenticationError,
+  AdminOrganizerManagementService,
+  OrganizerManagementError,
   OrganizerAuthenticationService,
   deriveOrganizerCsrfToken,
   projectOrganizerEffectiveSession,
   serializeOrganizerSessionCookie,
-  type AuditEventRecord,
   type AuditSink,
   type OrganizerEffectiveSessionProjection,
   type RecoveryAuthorityPort,
@@ -20,6 +22,8 @@ import {
 } from '@eventlens/identity';
 import { DatabaseService } from '../platform/database/database.service.js';
 import type { PlatformConfig } from '../platform/config/config.js';
+import { ADMIN_RECOVERY_AUTHORITY } from './recovery-authority.token.js';
+import { createAuditedTransactions } from './audited-transactions.js';
 
 export const ORGANIZER_SESSION_CONFIG = Symbol('ORGANIZER_SESSION_CONFIG');
 
@@ -70,29 +74,12 @@ export class OrganizerSessionService {
 
   constructor(
     @Inject(DatabaseService) private readonly database: DatabaseService,
-    @Inject(ORGANIZER_SESSION_CONFIG) private readonly config: PlatformConfig
+    @Inject(ORGANIZER_SESSION_CONFIG) private readonly config: PlatformConfig,
+    @Optional() @Inject(ADMIN_RECOVERY_AUTHORITY) durableAuthority?: RecoveryAuthorityPort
   ) {
-    this.auditSink = {
-      record: async (event: AuditEventRecord) => {
-        await this.database.transactions.run((tx) =>
-          tx.execute(
-            `INSERT INTO admin_audit_event (
-               id, procedure, actor_id, target_identifier, target_principal_id, result, details, timestamp
-             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-            event.id,
-            event.procedure,
-            event.actorId,
-            event.targetIdentifier,
-            event.targetPrincipalId ?? null,
-            event.result,
-            event.details ?? null,
-            event.timestamp
-          )
-        );
-      }
-    };
-
     const readActiveCredentialRevision = async (principalId: string): Promise<bigint | null> => {
+      const accounts = await this.database.transactions.run(tx => tx.query<{ provisioning_source: string }>('SELECT provisioning_source FROM organizer_account WHERE id=$1', principalId));
+      if (accounts[0]?.provisioning_source === 'ADMIN_PROVISIONED') throw new AuthenticationError('AUTHORITY_UNAVAILABLE', 'Managed organizer authority unavailable');
       const rows = await this.database.transactions.run((tx) =>
         tx.query<{ revision: bigint | number | string }>(
           `SELECT revision
@@ -107,15 +94,27 @@ export class OrganizerSessionService {
     };
 
     this.recoveryAuthority = {
-      getRecoveryEpoch: async () => 1n,
-      getCredentialRevision: readActiveCredentialRevision,
-      getAdminAuthWatermark: async (principalId: string) =>
-        (await readActiveCredentialRevision(principalId)) ?? 1n
+      getRecoveryEpoch: async () => durableAuthority ? durableAuthority.getRecoveryEpoch() : 1n,
+      isRecoveryBarrierActive: durableAuthority?.isRecoveryBarrierActive?.bind(durableAuthority),
+      prepare: durableAuthority?.prepare?.bind(durableAuthority),
+      ackCommit: durableAuthority?.ackCommit?.bind(durableAuthority),
+      resolveAbort: durableAuthority?.resolveAbort?.bind(durableAuthority),
+      getCredentialRevision: async principalId => {
+        const registered = durableAuthority ? await durableAuthority.getCredentialRevision(principalId) : null;
+        if (registered !== null) return registered;
+        return readActiveCredentialRevision(principalId);
+      },
+      getAdminAuthWatermark: async (principalId: string) => {
+        if (durableAuthority && await durableAuthority.getCredentialRevision(principalId) !== null) return durableAuthority.getAdminAuthWatermark(principalId);
+        return (await readActiveCredentialRevision(principalId)) ?? 1n;
+      }
     };
 
+    const audited = createAuditedTransactions(this.database.transactions);
+    this.auditSink = audited.auditSink;
     this.authService = new OrganizerAuthenticationService(
-      this.database.transactions,
-      this.auditSink,
+      audited.transactions,
+      audited.auditSink,
       this.recoveryAuthority
     );
   }
@@ -211,6 +210,7 @@ export class OrganizerSessionService {
       };
     } catch (error) {
       if (error instanceof AuthenticationError) {
+        if (error.code === 'AUTHORITY_UNAVAILABLE') throw new ServiceUnavailableException({code:error.code});
         if (error.code === 'RATE_LIMITED') {
           throw new HttpException('Too Many Requests', 429);
         }
@@ -253,6 +253,7 @@ export class OrganizerSessionService {
       validated = await this.authService.validateSession({
         sessionToken: params.sessionToken,
         csrfToken: params.csrfToken,
+        allowPasswordChangeOnly: true,
         requireCsrf: true
       });
     } catch (error) {
@@ -358,6 +359,20 @@ export class OrganizerSessionService {
         }
         throw new UnauthorizedException();
       }
+      throw new ServiceUnavailableException();
+    }
+  }
+
+  async changeTemporaryPassword(params: { sessionToken?: string; csrfToken?: string; originHeader?: string; currentPassword: string; newPassword: string; declaredAdult: boolean }) {
+    this.assertTrustedOrigin(params.originHeader);
+    if (!params.sessionToken) throw new UnauthorizedException();
+    try {
+      const validated = await this.authService.validateSession({sessionToken:params.sessionToken,csrfToken:params.csrfToken,requireCsrf:true,allowPasswordChangeOnly:true});
+      const result = await new AdminOrganizerManagementService(this.database.transactions,this.recoveryAuthority).changeTemporaryPassword({...params,actorContext:validated.actorContext});
+      return {...result,setCookieHeaders:buildExpiredOrganizerSessionCookies(this.isLocalHttpOrigin())};
+    } catch(error) {
+      if(error instanceof AuthenticationError) { if(error.code==='FORBIDDEN') throw new ForbiddenException(); if(error.code==='AUTHORITY_UNAVAILABLE') throw new ServiceUnavailableException(); throw new UnauthorizedException(); }
+      if(error instanceof OrganizerManagementError) { if(error.code==='AUTHORITY_UNAVAILABLE') throw new ServiceUnavailableException({code:error.code}); if(error.code==='FORBIDDEN') throw new ForbiddenException({code:error.code}); throw new HttpException({code:error.code},422); }
       throw new ServiceUnavailableException();
     }
   }
