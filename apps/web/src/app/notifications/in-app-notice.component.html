@@ -1,0 +1,63 @@
+@if (notice) {
+  <div
+    class="el-notice-card"
+    [ngClass]="'severity-' + (notice.severity || 'info').toLowerCase()"
+    [attr.role]="isCritical() ? 'alert' : 'status'"
+    [attr.aria-live]="isCritical() ? 'assertive' : 'polite'"
+    [attr.data-testid]="'notice-' + notice.id"
+  >
+    <div class="notice-header">
+      <span class="severity-icon" aria-hidden="true">{{ getSeverityIcon() }}</span>
+      <div class="notice-title-group">
+        <p class="notice-title">{{ notice.title }}</p>
+        <span class="notice-date">{{ formattedDate() }}</span>
+      </div>
+    </div>
+
+    <div class="notice-body">
+      <p class="notice-fact">
+        <strong>Hecho:</strong> {{ notice.fact }}
+      </p>
+      <p class="notice-consequence">
+        <strong>Consecuencia:</strong> {{ notice.consequence }}
+      </p>
+
+      @if (isActionExpired()) {
+        <p class="notice-expired-warning" role="note">
+          ⚠️ La ventana de acción para este aviso ha finalizado o ha expirado. Verifica el estado actualizado en la plataforma.
+        </p>
+      }
+    </div>
+
+    <div class="notice-footer">
+      @if (notice.action && !isActionExpired()) {
+        <a
+          class="notice-action-btn"
+          [href]="notice.action.destination"
+          (click)="onActionClicked($event, notice.action.destination)"
+        >
+          {{ notice.action.label }}
+        </a>
+      } @else if (notice.action && isActionExpired()) {
+        <a
+          class="notice-action-btn fallback-btn"
+          [href]="fallbackDestination()"
+          (click)="onActionClicked($event, fallbackDestination())"
+        >
+          {{ fallbackAction?.label ?? 'Ver estado en la biblioteca' }}
+        </a>
+      }
+
+      @if (dismissible) {
+        <button
+          type="button"
+          class="dismiss-btn"
+          (click)="onDismiss()"
+          aria-label="Ocultar aviso temporalmente"
+        >
+          Ocultar
+        </button>
+      }
+    </div>
+  </div>
+}

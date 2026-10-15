@@ -109,6 +109,34 @@ describe('InAppNoticeComponent (EL-TK-164 Accessible In-App Notices)', () => {
     expect(fallbackLink.getAttribute('href')).toBe('/events/evt-1/media');
   });
 
+  it('Usa la acción de respaldo configurada por el owner cuando el destino expiró', () => {
+    component.notice = {
+      id: 'not-expired-custom',
+      notificationType: 'CAPACITY_EXCEEDED_100',
+      title: 'Capacidad al 100%',
+      fact: 'Las cargas están pausadas.',
+      date: new Date(Date.now() - 7200000),
+      validUntil: new Date(Date.now() - 3600000),
+      consequence: 'Solicita una ampliación.',
+      action: {
+        label: 'Ampliar capacidad',
+        destination: '/events/evt-9/capacity'
+      },
+      severity: 'CRITICAL',
+      resourceRef: 'events/evt-9'
+    };
+    component.fallbackAction = {
+      label: 'Gestionar capacidad',
+      destination: '/events/evt-9/capacity'
+    };
+    component.now = new Date();
+    fixture.detectChanges();
+
+    const fallbackLink = fixture.nativeElement.querySelector('.fallback-btn') as HTMLAnchorElement;
+    expect(fallbackLink.textContent).toContain('Gestionar capacidad');
+    expect(fallbackLink.getAttribute('href')).toBe('/events/evt-9/capacity');
+  });
+
   it('Emite evento de acción al hacer click cuando hay listener', () => {
     const onAction = vi.fn();
     component.actionClick.subscribe(onAction);
