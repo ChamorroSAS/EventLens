@@ -35,6 +35,7 @@ apps/*/dist/
 apps/*/.angular/
 e2e/test-results/
 e2e/playwright-report/
+e2e/trace-extracted/
 packages/database/prisma/schema.prisma
 packages/database/prisma/migrations/
 packages/database/prisma/migration-manifest.json
