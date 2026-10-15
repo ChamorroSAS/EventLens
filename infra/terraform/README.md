@@ -13,6 +13,7 @@ scope until the approvals listed in that document are recorded.
 ```
 infra/terraform/
 ├── modules/
+│   ├── beta-permissions/    pure IAM policy compiler and boundary contracts
 │   ├── network/             VPC, one public subnet, IGW, route table, edge SG
 │   ├── compute/             instance, IMDSv2-only, SSM-only access, Elastic IP, instance role
 │   ├── persistent-storage/  PostgreSQL, media and (gated) authority volumes
@@ -21,17 +22,26 @@ infra/terraform/
 │   ├── snapshot-policy/     complementary daily EBS snapshots (disabled by default)
 │   └── identity/            GitHub OIDC deploy role and HCP Terraform plan/apply roles
 └── environments/
+    ├── permission-boundaries/ separately authorized initial protection policies
     ├── bootstrap/           account-level identity only
     └── beta/                the published stack
 ```
 
-Two roots on purpose: `bootstrap` creates trust (roles, providers) and can be
-reviewed on its own; `beta` creates workload resources and must be planned with
-the same roles the deployment workflow will use.
+Three isolated roots: `permission-boundaries` defines the immutable protection
+policies with a separately authorized initial identity; `bootstrap` consumes
+those existing policies to create OIDC roles; `beta` creates workload resources.
+The delegated apply role cannot create or update its own boundaries. See the
+[hardening report and IAM matrix](../../docs/terraform-apply-iam-hardening.md)
+for the remaining NO_GO_APPLY conditions, including missing read permissions.
 
 ## Order of operations
 
-1. `environments/bootstrap` — plan and apply first. It creates the GitHub OIDC
+0. `environments/permission-boundaries` — review its plan in a separate remote
+   workspace. Creation requires separate explicit approval and an identity outside
+   the delegated role. Nothing in the following order authorizes an apply now.
+
+1. `environments/bootstrap` — consumes existing, verified control/workload
+   boundary ARNs, the authorized zone ID and a pinned AMI ID. It creates the GitHub OIDC
    provider (or references an existing one), the deployment role and, when HCP
    Terraform is used, the plan and apply roles.
 2. `environments/beta` — plan and apply second. It creates the network, the
@@ -92,6 +102,14 @@ terraform -chdir=infra/terraform/environments/beta plan -out=tfplan
 ```
 
 `terraform apply` is never run by CI and never without the recorded approvals.
+
+The Beta root now requires the same pinned AMI and existing workload boundary.
+The default candidate is still t4g.medium; this does not certify ARM64 capacity.
+The three roots must use their own remote states. IAM boundary JSON is shared
+through the provider-free `modules/beta-permissions` compiler, not copied from
+an unreviewed account policy. Eight managed policies form the delegated apply
+permission set; review all of them. The standalone module-local lockfile is not
+the provider selection of these roots; their committed locks pin AWS 5.100.0.
 
 ## Guard rails
 

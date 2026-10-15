@@ -1,5 +1,7 @@
 # Phoeve Beta — despliegue incremental preparado (Fase 1)
 
+Seguimiento IAM: [hardening y matriz](terraform-apply-iam-hardening.md). El rol delegado sigue NO_GO_APPLY hasta resolver la evidencia de permisos/lecturas; se requieren boundaries externas verificadas y AMI explícita. No habilita capacidades bloqueadas ni altera contratos de recuperación.
+
 Estado: **PREPARADO, NO APROVISIONADO**. No se ha ejecutado `terraform apply`, no se
 ha creado ningún recurso facturable, no se ha desplegado nada en AWS y no se ha
 tocado ningún contrato aceptado.
@@ -75,8 +77,8 @@ responde de forma fail-closed (`401`/`403`/`503`), nunca con una sesión válida
 | Ticket | Alcance | Estado real tras esta entrega |
 | --- | --- | --- |
 | EL-TK-245 | Contratos y decisiones de operación Beta | ADR de S3/RecoveryAuthority escrito y commiteado; contratos de despliegue materializados en código (`infra/beta/preflight.mjs`). Decisiones de autoridad y RPO **siguen abiertas** |
-| EL-TK-246 | Acreditar ARM64 y capacidad | La AMI ARM64 se resuelve por parámetro SSM y la clase por defecto es `t4g.medium`; ambas quedan en el plan. **Acreditación real pendiente de ejecución en AWS** |
-| EL-TK-247 | State remoto y OIDC | Plantilla HCP + roles OIDC plan/apply/deploy validados; backend **no configurado** (bloque `cloud` deliberadamente ausente) |
+| EL-TK-246 | Acreditar ARM64 y capacidad | Beta exige una AMI explícita coincidente con la autorizada en bootstrap; la clase por defecto es `t4g.medium`. **Acreditación ARM64 y de capacidad pendiente de ejecución en AWS** |
+| EL-TK-247 | State remoto y OIDC | Plantilla HCP + roles OIDC con boundaries externas verificadas en pruebas mock; backend **no configurado** (bloque `cloud` deliberadamente ausente). Hardening pendiente de revisión y permisos de lectura faltantes: **NO_GO_APPLY** |
 | EL-TK-248 | Red y compute restringidos | VPC + subnet pública + IGW + SG 80/443 + IMDSv2 hop limit 1 + SSM; `terraform validate` en verde |
 | EL-TK-249 | Volúmenes persistentes seguros | Volúmenes db/media cifrados con `prevent_destroy`; autoridad creada sólo con acknowledgement explícito |
 | EL-TK-250 | DNS Beta acotado | Un único registro A sobre zona existente (la zona no se gestiona); `prevent_destroy` |

@@ -1,5 +1,7 @@
 # Phoeve — Correctivo del bootstrap IAM de Terraform
 
+Seguimiento: [hardening IAM y boundaries](terraform-apply-iam-hardening.md). Sus nuevos inputs, conjunto de policies y precondiciones de regeneración prevalecen sobre la receta original conservada abajo. El correctivo de dependencia no equivalía a una aprobación del alcance IAM.
+
 Fecha: 2026-10-15, America/Bogota. Alcance: generación revisable del plan de `infra/terraform/environments/bootstrap`. No se ejecutó apply, no se crearon recursos AWS, no se consultó una cuenta AWS y no se delegó. No se modifica ningún contrato aceptado ni estado de ticket.
 
 ## Causa confirmada y diff
