@@ -60,6 +60,19 @@ services:
     command: ["node", "scripts/database.mjs", "migrate"]
     depends_on:
       postgres: {condition: service_healthy}
+  media-init:
+    <<: *workspace
+    environment:
+      <<: *database
+      NODE_ENV: development
+      LOCAL_MEDIA_UPLOAD_ENABLED: ${LOCAL_MEDIA_UPLOAD_ENABLED:-true}
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_BUCKET: ${MINIO_BUCKET:-eventlens}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-eventlens-local}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-eventlens-local-storage-only}
+    command: ["node", "scripts/local-media.mjs"]
+    depends_on:
+      minio: {condition: service_healthy}
   api:
     <<: *workspace
     environment:
@@ -70,11 +83,17 @@ services:
       NODE_ENV: development
       LOCAL_ADMIN_ENABLED: ${LOCAL_ADMIN_ENABLED:-false}
       LOCAL_ADMIN_AUTHORITY_DIR: /home/node/.eventlens/admin-authority
+      LOCAL_MEDIA_UPLOAD_ENABLED: ${LOCAL_MEDIA_UPLOAD_ENABLED:-true}
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_BUCKET: ${MINIO_BUCKET:-eventlens}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-eventlens-local}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-eventlens-local-storage-only}
     volumes: ["admin-authority:/home/node/.eventlens/admin-authority"]
     ports: ["127.0.0.1:${API_PORT:-3000}:3000"]
     tmpfs: ["/tmp:size=32m,mode=1777"]
     depends_on:
       migrate: {condition: service_completed_successfully}
+      media-init: {condition: service_completed_successfully}
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/v1/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
       interval: 3s
@@ -85,6 +104,8 @@ services:
     <<: *workspace
     environment:
       API_PROXY_TARGET: http://api:3000
+      STORAGE_PROXY_TARGET: http://minio:9000
+      MINIO_BUCKET: ${MINIO_BUCKET:-eventlens}
       NG_CLI_ANALYTICS: "false"
     command: ["pnpm", "--filter", "@eventlens/web", "start", "--port", "4200"]
     ports: ["${WEB_BIND:-127.0.0.1}:${WEB_PORT:-4200}:4200"]

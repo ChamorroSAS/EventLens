@@ -1,5 +1,20 @@
 name: eventlens-isolated-tests
 services:
+  test-minio:
+    image: eventlens-development:minio
+    build:
+      context: .
+      dockerfile: infra/spikes/Dockerfile.minio
+    environment:
+      MINIO_ROOT_USER: isolated-media
+      MINIO_ROOT_PASSWORD: isolated-media-test-only
+    tmpfs: ["/data:uid=10001,gid=10001,mode=0700"]
+    mem_limit: 512m
+    healthcheck:
+      test: [CMD, curl, -fsS, http://localhost:9000/minio/health/live]
+      interval: 2s
+      timeout: 3s
+      retries: 30
   workspace-tests:
     profiles: [workspace]
     build:

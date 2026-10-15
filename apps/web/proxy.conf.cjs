@@ -13,6 +13,18 @@ function redactProxyUrl(rawUrl) {
 }
 
 module.exports = {
+  '/storage/**': {
+    target: process.env.STORAGE_PROXY_TARGET || 'http://127.0.0.1:19000',
+    changeOrigin: true,
+    pathRewrite: { '^/storage': '' },
+    // This development gateway accepts signed multipart POST only. No object reads/listing.
+    bypass(req) {
+      const bucket = process.env.MINIO_BUCKET || 'eventlens';
+      if (req.method !== 'POST' || ![ `/storage/${bucket}`, `/storage/${bucket}/` ].includes(req.url)) {
+        return false;
+      }
+    }
+  },
   '/api/**': {
     target: url.origin,
     changeOrigin: false
