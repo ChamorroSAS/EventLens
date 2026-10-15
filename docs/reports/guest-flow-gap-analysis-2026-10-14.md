@@ -133,3 +133,13 @@ Queda cerrada la ausencia de controles de permisos en el organizador. **La trans
 - Campos públicos adicionales: ubicación/descripción/portada y ownership/configuración, sin divulgar información no aprobada.
 - Contrato de versiones legales, gateway local, rutas HTTP y autorización de galería/retiro, sujetos a gates técnicos existentes.
 - No se generaron nuevos tickets READY ni se implementaron cambios de aplicación como parte del análisis.
+
+## Transferencia real implementada — EL-TK-265
+
+La limitación de transporte descrita en las secciones históricas queda sustituida para el entorno local: selección y Cargar archivos explícito, autorización/reserva durable, POST real privado a MinIO, progreso XHR medido y confirmación idempotente. La identidad recibida conserva versión y SHA-256 observados; modificar staging después no altera el sello. La recepción técnica queda en CONFIRMING con «Transferido; validación pendiente», sin crear media/jobs ni afirmar publicación.
+
+G-06 avanza a parcial: transporte y confirmación técnica operativos, pero aceptación/pipeline/publicación siguen pendientes. G-10 cubre refresh de Mis aportes y snapshot durable de CONFIRMING; no acredita galerías ni retiro. G-03 ya no necesita el aviso de transporte inexistente en el entorno local habilitado. G-08, políticas legales y limpieza física conservan sus pendientes. No cambiar estados históricos de aceptación por el simple envío de bytes.
+
+Evidencia: 11 casos HTTP PostgreSQL/MinIO PASS; 18 regresiones PostgreSQL PASS; 44 unitarias API, 4 capacidad y 44 frontend focales PASS. Proxy Angular real PASS con Host alternativo, bytes idénticos, versión real y lecturas denegadas; proxy unitario 1/1. Builds y contrato PASS; revisión independiente APPROVED. API/web locales actualizadas Healthy y HTTP 200; bucket privado/versionado inicializado, volúmenes conservados, migración aditiva aplicada. Servicios aislados detenidos tras limpiar sus bases propias. No se probaron teléfonos físicos.
+
+Guía de operación y límites: `docs/local-guest-uploads.md`. MinIO se habilita sólo en development; esta entrega no adopta almacenamiento S3 para Beta ni modifica recuperación/journal. Los huérfanos privados tras fallo/cancelación quedan pendientes de cleanup con drenaje demostrado.
