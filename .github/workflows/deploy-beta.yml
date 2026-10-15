@@ -1,0 +1,197 @@
+name: Deploy Beta
+
+# Publishes a new image pair on the closed Beta host.
+#
+# Controls, in order:
+#   1. Manual dispatch only, and the request must be confirmed by typing exactly
+#      "deploy".
+#   2. The job runs in the protected `beta` GitHub environment, so the
+#      configured reviewers must approve the run before any credential is issued.
+#      Configure that environment before the first deployment.
+#    3. Images must be digest-pinned: a tag can be moved, a digest cannot.
+#   4. The workflow only asks the host to run the fixed entry point
+#      (/usr/local/sbin/phoeve-deploy) over SSM. It cannot run arbitrary
+#      commands, write files or change infrastructure.
+#   5. The entry point validates the contract and the smoke checks, and rolls
+#      back on failure.
+#
+# GitHub holds no AWS keys: it exchanges an OIDC token for a short-lived session.
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_image:
+        description: 'API image, digest-pinned (for example ghcr.io/acme/phoeve-api@sha256:...)'
+        required: true
+        type: string
+      web_image:
+        description: 'SPA image, digest-pinned'
+        required: true
+        type: string
+      confirmation:
+        description: 'Type deploy to confirm'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-beta
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to beta.phoeve.com
+    runs-on: ubuntu-latest
+    environment: beta
+    env:
+      AWS_REGION: ${{ vars.PHOEVE_AWS_REGION }}
+      API_IMAGE: ${{ inputs.api_image }}
+      WEB_IMAGE: ${{ inputs.web_image }}
+    steps:
+      - name: Verify the request
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.confirmation }}" != "deploy" ]; then
+            echo "::error::the confirmation input must be exactly 'deploy'"
+            exit 1
+          fi
+          for ref in "$API_IMAGE" "$WEB_IMAGE"; do
+            case "$ref" in
+              *@sha256:*) ;;
+              *)
+                echo "::error::image reference '$ref' is not digest-pinned (expected name@sha256:...)"
+                exit 1
+                ;;
+            esac
+            if printf '%s' "$ref" | grep -qvE '^[A-Za-z0-9._/:@-]+$'; then
+              echo "::error::image reference '$ref' contains characters that are not allowed"
+              exit 1
+            fi
+          done
+          if [ -z "${AWS_REGION:-}" ]; then
+            echo "::error::the PHOEVE_AWS_REGION repository variable is not set"
+            exit 1
+          fi
+          echo "request verified"
+
+      - name: Assume the deployment role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.PHOEVE_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: phoeve-beta-deploy
+
+      - name: Resolve the Beta host
+        id: host
+        run: |
+          set -euo pipefail
+          ids=$(aws ec2 describe-instances \
+            --filters \
+              "Name=tag:Project,Values=phoeve" \
+              "Name=tag:Environment,Values=beta" \
+              "Name=instance-state-name,Values=running" \
+            --query 'Reservations[].Instances[].InstanceId' \
+            --output text)
+          count=$(echo "$ids" | wc -w | tr -d ' ')
+          if [ "$count" != "1" ]; then
+            echo "::error::expected exactly one running Beta host, found $count"
+            exit 1
+          fi
+          echo "instance_id=$ids" >> "$GITHUB_OUTPUT"
+          echo "target: $ids"
+
+      - name: Run the deployment entry point
+        env:
+          INSTANCE_ID: ${{ steps.host.outputs.instance_id }}
+        run: |
+          set -euo pipefail
+          command_id=$(aws ssm send-command \
+            --document-name AWS-RunShellScript \
+            --instance-ids "$INSTANCE_ID" \
+            --comment "phoeve beta deploy" \
+            --parameters "commands=[\"/usr/local/sbin/phoeve-deploy $API_IMAGE $WEB_IMAGE\"]" \
+            --query 'Command.CommandId' \
+            --output text)
+          echo "command: $command_id"
+          echo "command_id=$command_id" >> "$GITHUB_ENV"
+
+          for attempt in $(seq 1 120); do
+            status=$(aws ssm get-command-invocation \
+              --command-id "$command_id" \
+              --instance-id "$INSTANCE_ID" \
+              --query Status --output text 2>/dev/null || echo Pending)
+            echo "attempt $attempt: $status"
+            case "$status" in
+              Success|Failed|Cancelled|TimedOut) break ;;
+            esac
+            sleep 10
+          done
+
+          aws ssm get-command-invocation \
+            --command-id "$command_id" \
+            --instance-id "$INSTANCE_ID" \
+            --query '{Status:Status,Output:StandardOutputContent,Error:StandardErrorContent}' \
+            --output json | tee invocation.json
+
+          final=$(aws ssm get-command-invocation \
+            --command-id "$command_id" --instance-id "$INSTANCE_ID" \
+            --query Status --output text)
+          if [ "$final" != "Success" ]; then
+            echo "::error::deployment command finished with status $final"
+            exit 1
+          fi
+
+      - name: Verify the published surface
+        env:
+          INSTANCE_ID: ${{ steps.host.outputs.instance_id }}
+        run: |
+          set -euo pipefail
+          # The contract probe runs inside the image that was just deployed, so
+          # the verification uses the same code as the deployment itself.
+          command_id=$(aws ssm send-command \
+            --document-name AWS-RunShellScript \
+            --instance-ids "$INSTANCE_ID" \
+            --comment "phoeve beta contract probe" \
+            --parameters "commands=[\"docker run --rm --network host $API_IMAGE node /workspace/infra/beta/preflight.mjs --probe https://beta.phoeve.com --probe-only\"]" \
+            --query 'Command.CommandId' \
+            --output text)
+
+          for attempt in $(seq 1 60); do
+            status=$(aws ssm get-command-invocation \
+              --command-id "$command_id" --instance-id "$INSTANCE_ID" \
+              --query Status --output text 2>/dev/null || echo Pending)
+            case "$status" in
+              Success) break ;;
+              Failed|Cancelled|TimedOut)
+                aws ssm get-command-invocation \
+                  --command-id "$command_id" --instance-id "$INSTANCE_ID" \
+                  --query '{Output:StandardOutputContent,Error:StandardErrorContent}' \
+                  --output json
+                echo "::error::the contract probe failed"
+                exit 1
+                ;;
+            esac
+            sleep 10
+          done
+
+          aws ssm get-command-invocation \
+            --command-id "$command_id" --instance-id "$INSTANCE_ID" \
+            --query '{Status:Status,Output:StandardOutputContent}' \
+            --output json
+
+      - name: Deployment summary
+        if: always()
+        run: |
+          {
+            echo "## Beta deployment"
+            echo
+            echo "- API image: \`$API_IMAGE\`"
+            echo "- SPA image: \`$WEB_IMAGE\`"
+            echo "- Host: \`${{ steps.host.outputs.instance_id }}\`"
+            echo
+            echo "The stack performs its own smoke check and rolls back to the"
+            echo "previous release when it fails."
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,118 @@
+name: CI
+
+# Continuous integration for the deployment contract and the prepared
+# infrastructure (Phase 1 of the closed Beta).
+#
+# This workflow intentionally does not touch AWS: no credentials, no OIDC, no
+# resources. Everything it runs is static or local.
+#
+# The application test suite is not wired here because it requires the
+# repository's development Docker image. See docs/aws-preview-deployment.md.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    name: Deployment contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify the Compose and edge contract
+        run: node --test infra/beta/preflight.test.mjs
+
+      - name: Verify the documented environment file is not deployable
+        # The example file must fail: it still contains placeholders. If this
+        # ever passes, a real secret has been committed to the example file.
+        run: |
+          if node infra/beta/preflight.mjs --env-file infra/beta/beta.env.example; then
+            echo "::error::the example environment file passed the preflight; it must contain placeholders only"
+            exit 1
+          else
+            echo "the example file is correctly rejected"
+          fi
+
+  compose:
+    name: Compose syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate the Compose file against its documented contract
+        run: |
+          docker compose \
+            --env-file infra/beta/beta.env.example \
+            -f infra/beta/compose.yaml \
+            config --quiet
+
+  terraform:
+    name: Terraform (static)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        root: [environments/bootstrap, environments/beta]
+    defaults:
+      run:
+        working-directory: infra/terraform/${{ matrix.root }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.9.8'
+
+      - name: Initialise without a backend
+        run: terraform init -backend=false -input=false
+
+      - name: Validate
+        run: terraform validate -no-color
+
+  hygiene:
+    name: Repository hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.9.8'
+
+      - name: Check formatting across every root and module
+        run: terraform fmt -check -recursive infra/terraform
+
+      - name: No Terraform state, real variable files or backend configuration is committed
+        run: |
+          set -euo pipefail
+          forbidden=$(git ls-files | grep -E '(^|/)(terraform\.tfstate|.*\.tfstate|backend\.hcp\.tf)$|\.tfvars$' || true)
+          if [ -n "$forbidden" ]; then
+            echo "::error::these files must never be committed:"
+            echo "$forbidden"
+            exit 1
+          fi
+          echo "no state, backend or real variable files are committed"
+
+      - name: The deployment bundle carries no secret material
+        run: |
+          set -euo pipefail
+          # Guard against a real secret being pasted into the deployment files.
+          if grep -rInE '(AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----)' infra/beta infra/terraform; then
+            echo "::error::credential material found in the deployment files"
+            exit 1
+          fi
+          echo "no credential material found"

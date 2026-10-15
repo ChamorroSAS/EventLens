@@ -1,0 +1,64 @@
+name: Terraform plan
+
+# Static validation for infrastructure changes, and a pointer to where the
+# authoritative plan comes from.
+#
+# The real plan is produced by the HCP Terraform workspace once the remote
+# backend is authorised (see docs/aws-preview-deployment.md). This workflow does
+# not run `terraform plan` against AWS and holds no AWS credentials: a plan run
+# from a GitHub runner would need either long-lived keys or a role that can read
+# the whole account, and neither is wanted here.
+
+on:
+  pull_request:
+    paths:
+      - 'infra/terraform/**'
+      - 'infra/beta/**'
+      - '.github/workflows/terraform-plan.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate (${{ matrix.root }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        root: [environments/bootstrap, environments/beta]
+    defaults:
+      run:
+        working-directory: infra/terraform/${{ matrix.root }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.9.8'
+
+      - name: Initialise without a backend
+        run: terraform init -backend=false -input=false
+
+      - name: Validate
+        run: terraform validate -no-color
+
+  summary:
+    name: Where the plan comes from
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Explain the gate
+        run: |
+          {
+            echo "## Infrastructure change"
+            echo
+            echo "Static validation passed for both roots."
+            echo
+            echo "The authoritative plan is produced in the HCP Terraform workspace"
+            echo "for \`${{ github.repository }}\` once the remote backend is authorised."
+            echo "Auto-apply must stay disabled: a human approves every apply."
+            echo
+            echo "No apply is performed by GitHub Actions."
+          } >> "$GITHUB_STEP_SUMMARY"
