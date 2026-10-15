@@ -39,6 +39,9 @@ jobs:
       - name: Verify the rollback compatibility gate
         run: node --test infra/beta/rollback-compatibility.test.mjs
 
+      - name: Verify reserved pilot bootstrap remains fail-closed (synthetic inputs only)
+        run: node --test scripts/pilot-bootstrap-preflight.test.mjs
+
       - name: Verify the deployment controls (SSM document, workflow, entry point)
         run: node --test infra/beta/deployment-controls.test.mjs
 

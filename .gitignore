@@ -29,6 +29,7 @@ AGENTS.md
 
 .env
 .env.*
+*.reservation.private.json
 !.env.example
 .local/
 apps/*/dist/
