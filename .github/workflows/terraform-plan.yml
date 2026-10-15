@@ -16,6 +16,8 @@ on:
       - 'infra/beta/**'
       - '.github/workflows/terraform-plan.yml'
       - 'scripts/verify-bootstrap-plan.mjs'
+      - 'scripts/verify-beta-boundary-plan.mjs'
+      - 'scripts/iam/**'
   workflow_dispatch:
 
 permissions:
@@ -28,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        root: [environments/bootstrap, environments/beta]
+        root: [environments/permission-boundaries, environments/bootstrap, environments/beta]
     defaults:
       run:
         working-directory: infra/terraform/${{ matrix.root }}
@@ -50,6 +52,18 @@ jobs:
         if: matrix.root == 'environments/bootstrap'
         run: node "$GITHUB_WORKSPACE/scripts/verify-bootstrap-plan.mjs"
 
+      - name: Offline IAM model semantics
+        if: matrix.root == 'environments/bootstrap'
+        run: node --test "$GITHUB_WORKSPACE/scripts/iam/policy-evaluator.test.mjs"
+
+      - name: Beta runtime boundary plan (mock AWS)
+        if: matrix.root == 'environments/beta'
+        run: node "$GITHUB_WORKSPACE/scripts/verify-beta-boundary-plan.mjs"
+
+      - name: Independent boundary policies (mock AWS)
+        if: matrix.root == 'environments/permission-boundaries'
+        run: terraform test -no-color
+
   summary:
     name: Where the plan comes from
     runs-on: ubuntu-latest
@@ -60,7 +74,7 @@ jobs:
           {
             echo "## Infrastructure change"
             echo
-            echo "Static validation passed for both roots."
+            echo "Static validation passed for all three roots."
             echo
             echo "The authoritative plan is produced in the HCP Terraform workspace"
             echo "for \`${{ github.repository }}\` once the remote backend is authorised."

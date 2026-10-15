@@ -90,10 +90,25 @@ variable "hcp_oidc_provider_arn" {
 }
 
 variable "permissions_boundary_arn" {
-  description = "Optional permissions boundary attached to every role created here."
+  description = "Mandatory existing control boundary. See environments/permission-boundaries."
   type        = string
-  default     = null
+  nullable    = false
+  validation {
+    condition     = can(regex("^arn:aws:iam::[0-9]{12}:policy/phoeve-beta-control-boundary$", var.permissions_boundary_arn))
+    error_message = "The external Phoeve Beta control boundary is mandatory."
+  }
 }
+
+variable "workload_permissions_boundary_arn" {
+  type     = string
+  nullable = false
+  validation {
+    condition     = can(regex("^arn:aws:iam::[0-9]{12}:policy/phoeve-beta-workload-boundary$", var.workload_permissions_boundary_arn))
+    error_message = "The external Phoeve Beta workload boundary is mandatory."
+  }
+}
+variable "hosted_zone_id" { type = string }
+variable "allowed_ami_id" { type = string }
 
 variable "ssm_parameter_prefix" {
   description = "SSM parameter path prefix the apply role may manage."

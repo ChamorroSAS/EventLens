@@ -5,6 +5,7 @@ import { spawn } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
 import { join, resolve } from 'node:path';
+import { verifyHardening, verifyReference } from './iam/verify-hardening.mjs';
 
 const args = process.argv.slice(2);
 for (let i = 0; i < args.length; i += 2) {
@@ -34,7 +35,7 @@ for await (const line of createInterface({ input: child.stdout, crlfDelay: Infin
 }
 const result = await exit;
 assert.equal(result.code, 0, `Terraform test failed: ${diagnostics.join('; ')} ${stderr}`);
-assert.equal(summary?.passed, 11, 'All eleven plan-only tests must pass');
+assert.equal(summary?.passed, 13, 'All thirteen plan-only tests must pass');
 assert.equal(summary?.failed, 0);
 assert.equal(summary?.errored, 0);
 const prefix = 'module.identity.';
@@ -59,17 +60,17 @@ for (const name of ['policies_and_existing_oidc_resolve_in_plan', 'new_oidc_prov
   assert.ok(changes, `Missing verbose plan for ${name}`);
   assert.ok(!changes.some(r => r.mode === 'data' && r.change.actions.includes('read')), 'Account/region reads must not be deferred to apply');
   const apply = json(changes, 'aws_iam_policy.hcp_apply[0]', 'policy');
-  assert.equal(bySid(apply, 'ManageSsmParameters').Resource, 'arn:aws:ssm:us-east-1:123456789012:parameter/phoeve/beta*');
-  assert.equal(bySid(apply, 'ManagePolicyObjects').Resource, 'arn:aws:iam::123456789012:policy/phoeve-beta-*');
+  assert.deepEqual(bySid(apply, 'ManageSsmParameters').Resource, ['arn:aws:ssm:us-east-1:123456789012:parameter/phoeve/beta', 'arn:aws:ssm:us-east-1:123456789012:parameter/phoeve/beta/*']);
+  assert.equal(bySid(apply, 'ManagePolicyObjects').Resource, 'arn:aws:iam::123456789012:policy/phoeve-beta-instance-runtime');
   const pass = bySid(apply, 'PassInstanceRoleToEc2Only');
-  assert.equal(pass.Resource, 'arn:aws:iam::123456789012:role/phoeve-beta-*');
+  assert.equal(pass.Resource, 'arn:aws:iam::123456789012:role/phoeve-beta-instance');
   assert.equal(pass.Condition.StringEquals['iam:PassedToService'], 'ec2.amazonaws.com');
   const plan = json(changes, 'aws_iam_policy.hcp_plan', 'policy');
   assert.ok(plan.Statement.every(s => s.Effect === 'Allow' && s.Action.every(a => /:(Describe|Get|List|View)/.test(a))), 'Plan role must only retain discovery/read actions');
   const deploy = planned(changes, 'aws_iam_policy.github_deploy');
   assert.equal(deploy.after_unknown.policy, true, 'Only the existing, legitimate SSM document ARN dependency remains for the deploy policy');
   for (const role of ['github_deploy', 'hcp_plan[0]', 'hcp_apply[0]']) {
-    assert.equal(planned(changes, `aws_iam_role.${role}`).after.permissions_boundary, 'arn:aws:iam::123456789012:policy/test-boundary');
+    assert.equal(planned(changes, `aws_iam_role.${role}`).after.permissions_boundary, 'arn:aws:iam::123456789012:policy/phoeve-beta-control-boundary');
   }
   if (name === 'policies_and_existing_oidc_resolve_in_plan') {
     for (const [role, issuer, audience, subject] of [
@@ -83,11 +84,12 @@ for (const name of ['policies_and_existing_oidc_resolve_in_plan', 'new_oidc_prov
       assert.equal(trust[0].Action, 'sts:AssumeRoleWithWebIdentity');
       assert.equal(trust[0].Principal.Federated, `arn:aws:iam::123456789012:oidc-provider/${issuer}`);
       assert.equal(trust[0].Condition.StringEquals[`${issuer}:aud`], audience);
-      assert.equal(trust[0].Condition.StringLike[`${issuer}:sub`], subject);
+      assert.equal(trust[0].Condition.StringEquals[`${issuer}:sub`], subject);
       assert.ok(!/[*?]/.test(subject), 'Fixture trusts must have no subject wildcard');
     }
   } else {
-    assert.equal(changes.filter(r => r.mode === 'managed' && r.change.actions.includes('create')).length, 13);
+    const extraPolicies = changes.filter(r => r.address.startsWith(prefix + 'aws_iam_policy.hcp_apply_scoped[')).length;
+    assert.equal(changes.filter(r => r.mode === 'managed' && r.change.actions.includes('create')).length, 13 + 2 * extraPolicies);
     for (const [resource, url, audience] of [
       ['github', 'https://token.actions.githubusercontent.com', 'sts.amazonaws.com'],
       ['hcp', 'https://app.terraform.io', 'aws.workload.identity'],
@@ -97,9 +99,37 @@ for (const name of ['policies_and_existing_oidc_resolve_in_plan', 'new_oidc_prov
       assert.deepEqual(provider.client_id_list, [audience]);
     }
   }
+  const documents = [apply, ...changes.filter(r => r.address.startsWith(prefix + 'aws_iam_policy.hcp_apply_scoped[')).map(r => json(changes, r.address.slice(prefix.length), 'policy'))];
+  assert.ok(documents.length <= 10, 'The apply role must fit the default attachment quota');
+  assert.ok(documents.every(p => JSON.stringify(p).length <= 6144), 'Managed policy JSON must fit IAM quotas');
   reviews.push({ run: name, hcpApplyPolicyKnown: true, hcpPlanPolicyKnown: true,
+    applyPolicyCount: documents.length, hardening: verifyHardening(documents), reference: verifyReference(documents),
     account: '123456789012 (mock)', region: 'us-east-1', deployPolicy: 'UNKNOWN_UNTIL_SSM_DOCUMENT_ARN',
     trusts: name === 'new_oidc_providers' ? 'NEW_PROVIDER_ARNS_UNKNOWN' : 'EXACT_FIXTURE_TRUSTS_VERIFIED' });
 }
+
+// Child-module postconditions cannot be expect_failures targets in Terraform
+// 1.9. Exercise the two deliberate rejections separately and require the exact
+// postcondition diagnostic, not just an arbitrary non-zero process result.
+const rejection = spawn(terraform, [`-chdir=${root}`, 'test', '-json', '-test-directory=tests/rejections'], { stdio: ['ignore', 'pipe', 'pipe'] });
+const rejectedExit = new Promise((resolveExit, reject) => {
+  rejection.once('error', reject);
+  rejection.once('close', code => resolveExit(code));
+});
+rejection.stderr.resume();
+const failures = [];
+let rejectedSummary;
+for await (const line of createInterface({ input: rejection.stdout, crlfDelay: Infinity })) {
+  if (!line.trim()) continue;
+  const event = JSON.parse(line);
+  if (event.type === 'diagnostic' && event.diagnostic?.severity === 'error') failures.push(event.diagnostic);
+  if (event.type === 'test_summary') rejectedSummary = event.test_summary;
+}
+assert.equal(await rejectedExit, 1, 'Tampered boundary fixtures must fail planning');
+assert.equal(rejectedSummary?.failed, 0);
+assert.equal(rejectedSummary?.errored, 2);
+assert.equal(failures.length, 2);
+for (const kind of ['control', 'workload']) assert.ok(failures.some(f => f.summary === 'Resource postcondition failed' && f.detail.includes(`externally bootstrapped ${kind} boundary`)), `Missing verified rejection for ${kind}`);
 console.log(JSON.stringify({ status: 'PASS_MOCK_PLAN_ONLY', tests: summary, reviews,
+  verifiedBoundaryRejections: failures.length,
   realAwsPlan: 'NOT_EXECUTED', apply: 'NOT_EXECUTED' }, null, 2));

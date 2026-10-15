@@ -88,7 +88,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        root: [environments/bootstrap, environments/beta]
+        root: [environments/permission-boundaries, environments/bootstrap, environments/beta]
     defaults:
       run:
         working-directory: infra/terraform/${{ matrix.root }}
@@ -109,6 +109,18 @@ jobs:
       - name: Bootstrap guard rails and IAM plan regression (mock AWS)
         if: matrix.root == 'environments/bootstrap'
         run: node "$GITHUB_WORKSPACE/scripts/verify-bootstrap-plan.mjs"
+
+      - name: Offline IAM model semantics
+        if: matrix.root == 'environments/bootstrap'
+        run: node --test "$GITHUB_WORKSPACE/scripts/iam/policy-evaluator.test.mjs"
+
+      - name: Beta runtime boundary plan (mock AWS)
+        if: matrix.root == 'environments/beta'
+        run: node "$GITHUB_WORKSPACE/scripts/verify-beta-boundary-plan.mjs"
+
+      - name: Independent boundary policies (mock AWS)
+        if: matrix.root == 'environments/permission-boundaries'
+        run: terraform test -no-color
 
   hygiene:
     name: Repository hygiene

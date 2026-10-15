@@ -35,3 +35,8 @@ monthly_budget_usd = 60
 # Secrets are never set here: the host reads them from SSM SecureString at
 # deployment time.
 ssm_parameter_prefix = "/phoeve/beta"
+
+# Same reviewed AMI and external boundaries as bootstrap. Replace the sample ID.
+ami_id = "ami-0123456789abcdef0"
+workload_permissions_boundary_arn = "arn:aws:iam::000000000000:policy/phoeve-beta-workload-boundary"
+dlm_permissions_boundary_arn = null

@@ -11,6 +11,15 @@ variable "enabled" {
   default     = false
 }
 
+variable "permissions_boundary_arn" {
+  type    = string
+  default = null
+  validation {
+    condition     = !var.enabled || can(regex("^arn:aws:iam::[0-9]{12}:policy/phoeve-beta-dlm-boundary$", var.permissions_boundary_arn))
+    error_message = "An enabled DLM role requires its externally bootstrapped boundary."
+  }
+}
+
 variable "project" {
   description = "Product or system name used for tagging and resource naming."
   type        = string

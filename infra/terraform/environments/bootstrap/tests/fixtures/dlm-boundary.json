@@ -1,0 +1,87 @@
+{
+  "Statement": [
+    {
+      "Action": [
+        "ec2:DescribeVolumes",
+        "ec2:DescribeSnapshots"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "ec2:Region": "us-east-1"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
+      "Action": [
+        "ec2:CreateSnapshot"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/DataRole": [
+            "database",
+            "media"
+          ],
+          "aws:ResourceTag/Environment": "beta",
+          "aws:ResourceTag/Project": "phoeve",
+          "aws:ResourceTag/SnapshotPolicy": "daily",
+          "ec2:Region": "us-east-1"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "arn:aws:ec2:us-east-1:123456789012:volume/*"
+    },
+    {
+      "Action": [
+        "ec2:CreateSnapshot"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/Environment": "beta",
+          "aws:RequestTag/Project": "phoeve",
+          "aws:RequestTag/SnapshotCreator": "dlm",
+          "ec2:Region": "us-east-1"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "arn:aws:ec2:us-east-1::snapshot/*"
+    },
+    {
+      "Action": [
+        "ec2:CreateTags"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/Environment": "beta",
+          "aws:RequestTag/Project": "phoeve",
+          "aws:RequestTag/SnapshotCreator": "dlm",
+          "ec2:CreateAction": "CreateSnapshot",
+          "ec2:Region": "us-east-1"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "arn:aws:ec2:us-east-1::snapshot/*"
+    },
+    {
+      "Action": [
+        "ec2:DeleteSnapshot"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/DataRole": [
+            "database",
+            "media"
+          ],
+          "aws:ResourceTag/Environment": "beta",
+          "aws:ResourceTag/Project": "phoeve",
+          "aws:ResourceTag/SnapshotCreator": "dlm",
+          "ec2:Region": "us-east-1"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "arn:aws:ec2:us-east-1::snapshot/*"
+    }
+  ],
+  "Version": "2012-10-17"
+}

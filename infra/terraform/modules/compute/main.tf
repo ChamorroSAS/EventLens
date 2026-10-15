@@ -3,7 +3,8 @@ data "aws_caller_identity" "current" {}
 
 # Official Amazon Linux 2023 ARM64 image, resolved from the public SSM path.
 data "aws_ssm_parameter" "amazon_linux_2023_arm64" {
-  name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64"
+  count = var.ami_id == null ? 1 : 0
+  name  = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64"
 }
 
 locals {
@@ -13,7 +14,7 @@ locals {
     ManagedBy   = "terraform"
   })
 
-  ami_id = coalesce(var.ami_id, data.aws_ssm_parameter.amazon_linux_2023_arm64.value)
+  ami_id = var.ami_id != null ? var.ami_id : data.aws_ssm_parameter.amazon_linux_2023_arm64[0].value
 
   ssm_kms_key_arn = (
     var.ssm_kms_key_arn != null
@@ -23,7 +24,8 @@ locals {
 }
 
 resource "aws_iam_role" "instance" {
-  name = "${var.project}-${var.environment}-instance"
+  name                 = "${var.project}-${var.environment}-instance"
+  permissions_boundary = var.permissions_boundary_arn
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -50,7 +52,7 @@ resource "aws_iam_policy" "instance_runtime" {
   description = "Least-privilege runtime access for the ${var.environment} host: configuration parameters and application logs."
 
   policy = jsonencode({
-    Version = "2012-11-01"
+    Version = "2012-10-17"
     Statement = [
       {
         Sid    = "ReadDeploymentParameters"
@@ -95,10 +97,11 @@ resource "aws_iam_role_policy_attachment" "instance_runtime" {
 resource "aws_iam_instance_profile" "instance" {
   name = "${var.project}-${var.environment}-instance"
   role = aws_iam_role.instance.name
+  tags = local.tags
 }
 
 resource "aws_instance" "beta" {
-  ami                    = var.ami_id != null ? var.ami_id : data.aws_ssm_parameter.amazon_linux_2023_arm64.value
+  ami                    = local.ami_id
   instance_type          = var.instance_type
   subnet_id              = var.subnet_id
   vpc_security_group_ids = var.security_group_ids
@@ -127,7 +130,8 @@ resource "aws_instance" "beta" {
   user_data                   = templatefile("${path.module}/templates/user_data.sh.tftpl", { environment = var.environment })
   user_data_replace_on_change = false
 
-  tags = merge(local.tags, { Name = "${var.project}-${var.environment}-host" })
+  tags        = merge(local.tags, { Name = "${var.project}-${var.environment}-host" })
+  volume_tags = local.tags
 
   lifecycle {
     # The instance must not be silently replaced: data volumes and the edge

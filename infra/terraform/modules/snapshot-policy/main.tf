@@ -65,9 +65,10 @@ data "aws_iam_policy_document" "dlm_assume" {
 resource "aws_iam_role" "dlm" {
   count = var.enabled ? 1 : 0
 
-  name               = "${var.project}-${var.environment}-dlm"
-  description        = "Lifecycle role for EBS snapshots of the ${var.environment} volumes."
-  assume_role_policy = data.aws_iam_policy_document.dlm_assume.json
+  name                 = "${var.project}-${var.environment}-dlm"
+  description          = "Lifecycle role for EBS snapshots of the ${var.environment} volumes."
+  assume_role_policy   = data.aws_iam_policy_document.dlm_assume.json
+  permissions_boundary = var.permissions_boundary_arn
 
   tags = local.tags
 }

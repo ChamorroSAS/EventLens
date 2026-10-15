@@ -1,3 +1,33 @@
+data "aws_caller_identity" "current" {}
+module "permissions_contract" {
+  source               = "../../modules/beta-permissions"
+  account_id           = data.aws_caller_identity.current.account_id
+  region               = var.region
+  project              = var.project
+  environment          = var.environment
+  hosted_zone_id       = var.hosted_zone_id
+  allowed_ami_id       = var.ami_id
+  ssm_parameter_prefix = var.ssm_parameter_prefix
+}
+data "aws_iam_policy" "workload_boundary" {
+  arn = var.workload_permissions_boundary_arn
+  lifecycle {
+    postcondition {
+      condition     = self.arn == module.permissions_contract.boundary_arns.workload && jsondecode(self.policy) == jsondecode(module.permissions_contract.workload_boundary)
+      error_message = "The runtime boundary must match the reviewed external policy."
+    }
+  }
+}
+data "aws_iam_policy" "dlm_boundary" {
+  count = var.enable_ebs_snapshot_policy ? 1 : 0
+  arn   = var.dlm_permissions_boundary_arn
+  lifecycle {
+    postcondition {
+      condition     = self.arn == module.permissions_contract.boundary_arns.dlm && jsondecode(self.policy) == jsondecode(module.permissions_contract.dlm_boundary)
+      error_message = "The DLM boundary must match the reviewed external policy."
+    }
+  }
+}
 locals {
   common_tags = merge(var.tags, {
     Stage = "preview"
@@ -38,17 +68,18 @@ module "network" {
 module "compute" {
   source = "../../modules/compute"
 
-  project              = var.project
-  environment          = var.environment
-  subnet_id            = module.network.public_subnet_id
-  security_group_ids   = [module.network.edge_security_group_id]
-  instance_type        = var.instance_type
-  root_volume_size_gb  = var.root_volume_size_gb
-  ami_id               = var.ami_id
-  app_log_group_name   = var.app_log_group_name
-  ssm_parameter_prefix = var.ssm_parameter_prefix
-  ssm_kms_key_arn      = var.ssm_kms_key_arn
-  tags                 = local.common_tags
+  project                  = var.project
+  environment              = var.environment
+  subnet_id                = module.network.public_subnet_id
+  security_group_ids       = [module.network.edge_security_group_id]
+  instance_type            = var.instance_type
+  root_volume_size_gb      = var.root_volume_size_gb
+  ami_id                   = var.ami_id
+  app_log_group_name       = var.app_log_group_name
+  permissions_boundary_arn = data.aws_iam_policy.workload_boundary.arn
+  ssm_parameter_prefix     = var.ssm_parameter_prefix
+  ssm_kms_key_arn          = var.ssm_kms_key_arn
+  tags                     = local.common_tags
 
   depends_on = [terraform_data.guard_rails]
 }
@@ -92,8 +123,9 @@ module "monitoring" {
 module "snapshot_policy" {
   source = "../../modules/snapshot-policy"
 
-  enabled     = var.enable_ebs_snapshot_policy
-  project     = var.project
-  environment = var.environment
-  tags        = local.common_tags
+  enabled                  = var.enable_ebs_snapshot_policy
+  project                  = var.project
+  environment              = var.environment
+  tags                     = local.common_tags
+  permissions_boundary_arn = var.enable_ebs_snapshot_policy ? data.aws_iam_policy.dlm_boundary[0].arn : null
 }

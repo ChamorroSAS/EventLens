@@ -1,6 +1,37 @@
 data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
+module "beta_permissions" {
+  source               = "../beta-permissions"
+  account_id           = data.aws_caller_identity.current.account_id
+  region               = data.aws_region.current.name
+  project              = var.project
+  environment          = var.environment
+  hosted_zone_id       = var.hosted_zone_id
+  allowed_ami_id       = var.allowed_ami_id
+  ssm_parameter_prefix = var.ssm_parameter_prefix
+}
+
+data "aws_iam_policy" "control_boundary" {
+  arn = var.permissions_boundary_arn
+  lifecycle {
+    postcondition {
+      condition     = self.arn == module.beta_permissions.boundary_arns.control && jsondecode(self.policy) == jsondecode(module.beta_permissions.control_boundary)
+      error_message = "The externally bootstrapped control boundary must match the reviewed policy definition exactly."
+    }
+  }
+}
+
+data "aws_iam_policy" "workload_boundary" {
+  arn = var.workload_permissions_boundary_arn
+  lifecycle {
+    postcondition {
+      condition     = self.arn == module.beta_permissions.boundary_arns.workload && jsondecode(self.policy) == jsondecode(module.beta_permissions.workload_boundary)
+      error_message = "The externally bootstrapped workload boundary must match the reviewed policy definition exactly."
+    }
+  }
+}
+
 locals {
   account_id = data.aws_caller_identity.current.account_id
   region     = data.aws_region.current.name
@@ -52,7 +83,7 @@ locals {
 resource "aws_iam_role" "github_deploy" {
   name                 = "${var.project}-${var.environment}-github-deploy"
   description          = "Assumed by GitHub Actions to request a deployment over SSM."
-  permissions_boundary = var.permissions_boundary_arn
+  permissions_boundary = data.aws_iam_policy.control_boundary.arn
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -63,8 +94,6 @@ resource "aws_iam_role" "github_deploy" {
       Condition = {
         StringEquals = {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
-        }
-        StringLike = {
           "token.actions.githubusercontent.com:sub" = "repo:${var.github_repository}:environment:${var.github_environment}"
         }
       }
@@ -171,7 +200,7 @@ resource "aws_iam_role" "hcp_plan" {
 
   name                 = "${var.project}-${var.environment}-terraform-plan"
   description          = "Read-only role for HCP Terraform plan runs."
-  permissions_boundary = var.permissions_boundary_arn
+  permissions_boundary = data.aws_iam_policy.control_boundary.arn
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -182,8 +211,6 @@ resource "aws_iam_role" "hcp_plan" {
       Condition = {
         StringEquals = {
           "app.terraform.io:aud" = "aws.workload.identity"
-        }
-        StringLike = {
           "app.terraform.io:sub" = "${local.hcp_subject_base}:run_phase:plan"
         }
       }
@@ -198,7 +225,7 @@ resource "aws_iam_role" "hcp_apply" {
 
   name                 = "${var.project}-${var.environment}-terraform-apply"
   description          = "Role used by HCP Terraform apply runs. Auto-apply stays disabled."
-  permissions_boundary = var.permissions_boundary_arn
+  permissions_boundary = data.aws_iam_policy.control_boundary.arn
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -209,8 +236,6 @@ resource "aws_iam_role" "hcp_apply" {
       Condition = {
         StringEquals = {
           "app.terraform.io:aud" = "aws.workload.identity"
-        }
-        StringLike = {
           "app.terraform.io:sub" = "${local.hcp_subject_base}:run_phase:apply"
         }
       }
@@ -262,145 +287,34 @@ resource "aws_iam_policy" "hcp_plan" {
 # can see exactly what the Beta stack is allowed to create. Anything not listed
 # here is expected to fail loudly rather than be granted silently.
 resource "aws_iam_policy" "hcp_apply" {
-  count = local.hcp_enabled ? 1 : 0
-
+  count       = local.hcp_enabled ? 1 : 0
   name        = "${var.project}-${var.environment}-terraform-apply"
-  description = "Create and update the ${var.environment} stack resources."
+  description = "Scoped IAM, DNS and parameter management for Beta."
+  policy      = module.beta_permissions.apply_policies.core
+  lifecycle {
+    precondition {
+      condition     = length(module.beta_permissions.apply_policies.core) <= 6144 && length(module.beta_permissions.apply_policies) <= 10 && data.aws_iam_policy.workload_boundary.arn == module.beta_permissions.boundary_arns.workload
+      error_message = "The apply role must fit IAM document and attachment quotas."
+    }
+  }
+}
 
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid    = "ManageNetworking"
-        Effect = "Allow"
-        Action = [
-          "ec2:CreateVpc", "ec2:DeleteVpc", "ec2:ModifyVpcAttribute",
-          "ec2:CreateSubnet", "ec2:DeleteSubnet", "ec2:ModifySubnetAttribute",
-          "ec2:CreateInternetGateway", "ec2:DeleteInternetGateway",
-          "ec2:AttachInternetGateway", "ec2:DetachInternetGateway",
-          "ec2:CreateRouteTable", "ec2:DeleteRouteTable",
-          "ec2:CreateRoute", "ec2:DeleteRoute",
-          "ec2:AssociateRouteTable", "ec2:DisassociateRouteTable",
-          "ec2:CreateSecurityGroup", "ec2:DeleteSecurityGroup",
-          "ec2:AuthorizeSecurityGroupIngress", "ec2:RevokeSecurityGroupIngress",
-          "ec2:AuthorizeSecurityGroupEgress", "ec2:RevokeSecurityGroupEgress",
-          "ec2:CreateTags", "ec2:DeleteTags"
-        ]
-        Resource = "*"
-      },
-      {
-        Sid    = "ManageComputeAndStorage"
-        Effect = "Allow"
-        Action = [
-          "ec2:RunInstances", "ec2:TerminateInstances", "ec2:StartInstances",
-          "ec2:StopInstances", "ec2:ModifyInstanceAttribute", "ec2:ModifyInstanceMetadataOptions",
-          "ec2:CreateVolume", "ec2:DeleteVolume", "ec2:AttachVolume", "ec2:DetachVolume",
-          "ec2:ModifyVolume", "ec2:CreateSnapshot", "ec2:DeleteSnapshot",
-          "ec2:AllocateAddress", "ec2:ReleaseAddress", "ec2:AssociateAddress", "ec2:DisassociateAddress"
-        ]
-        Resource = "*"
-      },
-      {
-        Sid    = "ManageInstanceIdentity"
-        Effect = "Allow"
-        Action = [
-          "iam:CreateRole", "iam:DeleteRole", "iam:GetRole", "iam:TagRole",
-          "iam:UntagRole", "iam:UpdateAssumeRolePolicy", "iam:ListRolePolicies",
-          "iam:ListAttachedRolePolicies",
-          "iam:CreateInstanceProfile", "iam:DeleteInstanceProfile",
-          "iam:GetInstanceProfile", "iam:AddRoleToInstanceProfile",
-          "iam:RemoveRoleFromInstanceProfile", "iam:TagInstanceProfile"
-        ]
-        Resource = "*"
-      },
-      {
-        Sid    = "ManageInstanceRolePolicies"
-        Effect = "Allow"
-        Action = [
-          "iam:AttachRolePolicy", "iam:DetachRolePolicy",
-          "iam:PutRolePolicy", "iam:DeleteRolePolicy"
-        ]
-        Resource = "*"
-        Condition = {
-          StringLike = {
-            "iam:PolicyARN" = [
-              "arn:aws:iam::${local.account_id}:policy/${var.project}-${var.environment}-*",
-              "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-            ]
-          }
-        }
-      },
-      {
-        Sid    = "ManagePolicyObjects"
-        Effect = "Allow"
-        Action = [
-          "iam:CreatePolicy", "iam:DeletePolicy", "iam:GetPolicy",
-          "iam:CreatePolicyVersion", "iam:DeletePolicyVersion", "iam:SetDefaultPolicyVersion",
-          "iam:ListPolicyVersions", "iam:TagPolicy", "iam:UntagPolicy"
-        ]
-        Resource = "arn:aws:iam::${local.account_id}:policy/${var.project}-${var.environment}-*"
-      },
-      {
-        Sid      = "PassInstanceRoleToEc2Only"
-        Effect   = "Allow"
-        Action   = ["iam:PassRole"]
-        Resource = "arn:aws:iam::${local.account_id}:role/${var.project}-${var.environment}-*"
-        Condition = {
-          StringEquals = {
-            "iam:PassedToService" = "ec2.amazonaws.com"
-          }
-        }
-      },
-      {
-        Sid    = "ManageObservability"
-        Effect = "Allow"
-        Action = [
-          "logs:CreateLogGroup", "logs:DeleteLogGroup", "logs:PutRetentionPolicy",
-          "logs:TagLogGroup", "logs:ListTagsLogGroup", "logs:TagResource",
-          "cloudwatch:PutMetricAlarm", "cloudwatch:DeleteAlarms", "cloudwatch:DescribeAlarms",
-          "cloudwatch:TagResource", "cloudwatch:UntagResource", "cloudwatch:ListTagsForResource",
-          "sns:CreateTopic", "sns:DeleteTopic", "sns:Subscribe", "sns:Unsubscribe",
-          "sns:GetTopicAttributes", "sns:SetTopicAttributes", "sns:TagResource", "sns:ListTagsForResource"
-        ]
-        Resource = "*"
-      },
-      {
-        Sid    = "ManagePublishedRecord"
-        Effect = "Allow"
-        Action = [
-          "route53:ChangeResourceRecordSets",
-          "route53:GetChange"
-        ]
-        Resource = "*"
-      },
-      {
-        Sid    = "ManageSnapshotPolicy"
-        Effect = "Allow"
-        Action = [
-          "dlm:CreateLifecyclePolicy", "dlm:DeleteLifecyclePolicy",
-          "dlm:GetLifecyclePolicy", "dlm:UpdateLifecyclePolicy", "dlm:TagResource"
-        ]
-        Resource = "*"
-      },
-      {
-        Sid    = "ManageCostBudget"
-        Effect = "Allow"
-        Action = [
-          "budgets:CreateBudget", "budgets:DeleteBudget", "budgets:ModifyBudget",
-          "budgets:ViewBudget"
-        ]
-        Resource = "*"
-      },
-      {
-        Sid    = "ManageSsmParameters"
-        Effect = "Allow"
-        Action = [
-          "ssm:PutParameter", "ssm:DeleteParameter", "ssm:AddTagsToResource"
-        ]
-        Resource = "arn:aws:ssm:${local.region}:${local.account_id}:parameter${var.ssm_parameter_prefix}*"
-      }
-    ]
-  })
+resource "aws_iam_policy" "hcp_apply_scoped" {
+  for_each = local.hcp_enabled ? { for name, policy in module.beta_permissions.apply_policies : name => policy if name != "core" } : {}
+  name     = "${var.project}-${var.environment}-terraform-apply-${each.key}"
+  policy   = each.value
+  lifecycle {
+    precondition {
+      condition     = length(each.value) <= 6144
+      error_message = "A scoped policy exceeds IAM's 6,144-character limit."
+    }
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "hcp_apply_scoped" {
+  for_each   = aws_iam_policy.hcp_apply_scoped
+  role       = aws_iam_role.hcp_apply[0].name
+  policy_arn = each.value.arn
 }
 
 resource "aws_iam_role_policy_attachment" "hcp_plan" {

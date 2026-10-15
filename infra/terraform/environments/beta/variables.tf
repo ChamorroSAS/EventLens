@@ -4,6 +4,15 @@ variable "project" {
   default     = "phoeve"
 }
 
+variable "workload_permissions_boundary_arn" {
+  type     = string
+  nullable = false
+}
+variable "dlm_permissions_boundary_arn" {
+  type    = string
+  default = null
+}
+
 variable "environment" {
   description = "Deployment stage. This configuration is the closed Beta stage."
   type        = string
@@ -47,12 +56,20 @@ variable "record_name" {
   description = "Subdomain the Beta is published on."
   type        = string
   default     = "beta"
+  validation {
+    condition     = var.record_name == "beta"
+    error_message = "The delegated role only manages beta.phoeve.com."
+  }
 }
 
 variable "domain" {
   description = "Apex domain that owns the hosted zone."
   type        = string
   default     = "phoeve.com"
+  validation {
+    condition     = var.domain == "phoeve.com"
+    error_message = "The approved zone domain is phoeve.com."
+  }
 }
 
 variable "instance_type" {
@@ -68,9 +85,13 @@ variable "root_volume_size_gb" {
 }
 
 variable "ami_id" {
-  description = "Explicit AMI identifier. Null resolves the latest Amazon Linux 2023 ARM64 image."
+  description = "Pin the same approved AMI ID authorized by bootstrap. Automatic latest-image discovery is not allowed for delegated apply."
   type        = string
-  default     = null
+  nullable    = false
+  validation {
+    condition     = can(regex("^ami-[a-f0-9]{8}([a-f0-9]{9})?$", var.ami_id))
+    error_message = "Supply the exact AMI ID reviewed in bootstrap."
+  }
 }
 
 variable "db_volume_size_gb" {
@@ -153,4 +174,8 @@ variable "tags" {
   description = "Additional tags merged into every resource."
   type        = map(string)
   default     = {}
+  validation {
+    condition     = alltrue([for key in keys(var.tags) : !contains(["project", "environment", "datarole", "snapshotpolicy", "snapshotcreator", "datavolume"], lower(key))])
+    error_message = "Ownership and data-classification tags, including case variants, are reserved to the modules."
+  }
 }

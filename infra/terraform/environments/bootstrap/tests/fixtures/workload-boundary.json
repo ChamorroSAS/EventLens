@@ -1,0 +1,73 @@
+{
+  "Statement": [
+    {
+      "Action": [
+        "ssm:GetParameter",
+        "ssm:GetParameters",
+        "ssm:GetParametersByPath"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws:ssm:us-east-1:123456789012:parameter/phoeve/beta",
+        "arn:aws:ssm:us-east-1:123456789012:parameter/phoeve/beta/*"
+      ]
+    },
+    {
+      "Action": [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogStreams"
+      ],
+      "Effect": "Allow",
+      "Resource": "arn:aws:logs:us-east-1:123456789012:log-group:/phoeve/beta/application:*"
+    },
+    {
+      "Action": [
+        "ssm:DescribeAssociation",
+        "ssm:GetDeployablePatchSnapshotForInstance",
+        "ssm:GetDocument",
+        "ssm:DescribeDocument",
+        "ssm:GetManifest",
+        "ssm:ListAssociations",
+        "ssm:ListInstanceAssociations",
+        "ssm:PutInventory",
+        "ssm:PutComplianceItems",
+        "ssm:PutConfigurePackageResult",
+        "ssm:UpdateAssociationStatus",
+        "ssm:UpdateInstanceAssociationStatus",
+        "ssm:UpdateInstanceInformation",
+        "ssmmessages:CreateControlChannel",
+        "ssmmessages:CreateDataChannel",
+        "ssmmessages:OpenControlChannel",
+        "ssmmessages:OpenDataChannel",
+        "ec2messages:AcknowledgeMessage",
+        "ec2messages:DeleteMessage",
+        "ec2messages:FailMessage",
+        "ec2messages:GetEndpoint",
+        "ec2messages:GetMessages",
+        "ec2messages:SendReply"
+      ],
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
+      "Action": [
+        "kms:Decrypt"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "kms:ViaService": "ssm.us-east-1.amazonaws.com"
+        },
+        "StringLike": {
+          "kms:EncryptionContext:PARAMETER_ARN": [
+            "arn:aws:ssm:us-east-1:123456789012:parameter/phoeve/beta",
+            "arn:aws:ssm:us-east-1:123456789012:parameter/phoeve/beta/*"
+          ]
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    }
+  ],
+  "Version": "2012-10-17"
+}

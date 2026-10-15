@@ -4,6 +4,15 @@ variable "project" {
   default     = "phoeve"
 }
 
+variable "permissions_boundary_arn" {
+  type     = string
+  nullable = false
+  validation {
+    condition     = can(regex("^arn:aws:iam::[0-9]{12}:policy/phoeve-beta-workload-boundary$", var.permissions_boundary_arn))
+    error_message = "The instance role requires the externally managed workload boundary."
+  }
+}
+
 variable "environment" {
   description = "Deployment stage name (for example: beta)."
   type        = string

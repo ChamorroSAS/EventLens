@@ -23,7 +23,10 @@ hcp_workspace            = ""
 create_hcp_oidc_provider = false
 hcp_oidc_provider_arn    = null
 
-# Optional guard rail: an existing permissions boundary to attach to every role.
-permissions_boundary_arn = null
+# Required external boundaries. Provision/review them in the separate root first.
+permissions_boundary_arn = "arn:aws:iam::000000000000:policy/phoeve-beta-control-boundary"
+workload_permissions_boundary_arn = "arn:aws:iam::000000000000:policy/phoeve-beta-workload-boundary"
+hosted_zone_id = "ZREPLACE"
+allowed_ami_id = "ami-0123456789abcdef0"
 
 ssm_parameter_prefix = "/phoeve/beta"
