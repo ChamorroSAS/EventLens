@@ -99,12 +99,32 @@ El contrato no es un documento: es código que se ejecuta y falla.
 | Environment | que las variables requeridas existen, que no quedan placeholders `REPLACE_WITH_*`, que `PUBLIC_ENTRY_BASE_URL` es `https://beta.phoeve.com` sin credenciales/query/path, que el borde es el host publicado, que la contraseña y el pepper no son los de desarrollo y que no hay ninguna clave desconocida |
 | Compose | que existen exactamente los servicios `postgres`, `migrate`, `api`, `web`, `edge`; que no aparece MinIO, worker, scheduler, ni `5432`/`3000`/`4200`/`9000` publicados; que `api` y `web` son `read_only`; que hay healthchecks; que las variables obligatorias usan `:?` |
 | Edge | que el Caddyfile tiene `admin off`, que los límites de memoria están definidos y que no hay `file_server` publicando un directorio de medios |
-| Probe | contra un origen ya desplegado: health `200`, `docs`/`openapi`/`media`/`storage` `404`, SPA `200`, y **NUNCA éxito** en login admin, login organizador, alta de organizadores, listado de eventos ni presign de subida |
+| Probe | contra un origen ya desplegado: estados esperados por endpoint, declarados en dos tablas únicas (`PUBLISHED_SURFACE`, `BLOCKED_CAPABILITIES`), sin ninguna respuesta `5xx` que no sea el `503` fail-closed documentado |
 
-Regla de fail-closed del probe: cualquier respuesta `>= 400` cuenta como rechazo
-correcto. Esto es deliberado — un `503` de «autoridad no disponible» es el resultado
-esperado y correcto hoy, no una fuga. El fallo se declara sólo cuando algo
-bloqueado responde con éxito.
+El probe ya **no** acepta «cualquier rechazo». La tabla de estados esperados es una
+sola, exportada y única para todo el sistema (`infra/beta/preflight.mjs`), y la usan
+por igual el CLI local, el workflow y el host:
+
+| Bloque | Contenido | Regla |
+| --- | --- | --- |
+| `PUBLISHED_SURFACE` (9 peticiones) | `/api/v1/health/live`, `/api/v1/health/ready`, `/`, y las rutas que deben responder `404` (`openapi`, `docs`, `media`, `storage`) | **`200` exacto** donde la superficie es pública; `404` exacto donde debe estar cerrada |
+| `BLOCKED_CAPABILITIES` (6 peticiones) | login admin, login organizador, alta de organizadores, listado de eventos, presign de subida | Conjunto **explícito** de estados de rechazo por endpoint, cada uno con su `reason`; cualquier otro estado, incluido un `5xx`, es fallo |
+
+Reglas de fail-closed, explícitas:
+
+- Un `200` en cualquier capacidad bloqueada es **FAIL**.
+- Un `500` (o cualquier `5xx`) es **FAIL**, salvo el `503` que está declarado como
+  resultado esperado de «autoridad no disponible».
+- Un estado no declarado para un endpoint es **FAIL**, aunque sea un `4xx`.
+- El fallo cerrado sigue siendo correcto: un `503` de autoridad no disponible se
+  declara como rechazo esperado, no como éxito ni como ambigüedad.
+
+Transporte (`--probe-loopback`): el probe del host no resuelve el DNS público para
+comprobarse a sí mismo. `loopbackFetch(address = '127.0.0.1')` fija la dirección de
+conexión al loopback, conserva la cabecera `Host` y el `servername` del origen
+publicado (`beta.phoeve.com`) y usa un `timeout` de 10 s. Así la validación atraviesa
+el borde real —TLS y verificación del certificado incluidos— sin depender de DNS ni de
+la ruta externa.
 
 Guard rails que impiden una publicación accidental (Terraform, evaluados en plan):
 
@@ -116,7 +136,51 @@ Guard rails que impiden una publicación accidental (Terraform, evaluados en pla
 | La política de snapshots no se activa sin reconocer que es complementaria | `precondition` equivalente |
 | Los datos no se destruyen por un apply rutinario | `lifecycle { prevent_destroy = true }` en volúmenes y registro DNS |
 | La autoridad nunca se rebobina con la base de datos | El tag `SnapshotPolicy` sólo se escribe en volúmenes operativos |
-| El rol de despliegue no crea infraestructura | Políticas separadas: deploy sólo SSM; plan/apply separados y desactivados hasta que exista organización HCP |
+| El rol de despliegue no crea infraestructura y no elige qué ejecuta el host | Políticas separadas (plan/apply/deploy) y **un único documento SSM propio**; el rol sólo puede invocar ese documento, nunca `AWS-RunShellScript` |
+| Un release no puede activarse sobre un esquema que no conoce | Gate `forward` antes de conmutar el symlink; si la base tiene migraciones que la imagen no trae, el despliegue se aborta sin tocar el stack |
+| Un rollback no puede cruzar una migración no certificada | Gate `backward` con declaraciones revisadas por migración (`infra/beta/migration-compatibility.json`); por defecto no certifica ninguna |
+
+### El documento SSM restringido (control del hallazgo 1)
+
+El host ejecuta un único punto de entrada fijo (`/usr/local/sbin/phoeve-deploy`) y el
+rol de despliegue ya no puede enviar un script arbitrario:
+
+| Pieza | Ruta | Qué garantiza |
+| --- | --- | --- |
+| Documento | `infra/terraform/modules/identity/templates/deploy-command.json` (aplicado con `aws_ssm_document.deploy`, nombre `phoeve-beta-deploy`) | Versionado en Terraform y revisable en el diff; declara `schemaVersion 2.2` y **un solo** parámetro de acción con `allowedValues` (`deploy`, `rollback`, `verify`, `status`) |
+| Parámetros de imagen | mismos parámetros `apiImage`/`webImage` con `allowedPattern` | Sólo acepta referencias fijadas por digest (`…@sha256:` + 64 hex). Un tag móvil, un digest corto, mayúsculas o cualquier sufijo (`; id`, `$(…)`) son rechazados **por SSM**, antes de contactar la instancia |
+| Guion del documento | `runCommand` del propio documento | Fijo: valida otra vez el digest, y sólo entonces hace `exec /usr/local/sbin/phoeve-deploy`. El llamante no aporta ninguna línea de shell |
+| Permisos | `infra/terraform/modules/identity/main.tf` | `ssm:SendCommand` se limita al ARN de ese documento y a instancias con `Project=phoeve`/`Environment=beta`. No existe ningún ARN `document/AWS-*` en el módulo |
+| Workflow | `.github/workflows/deploy-beta.yml` | Envía `action` + imágenes como JSON construido con `jq`; no usa `commands=[…]`, no menciona `AWS-RunShellScript` y comprueba el digest con la misma expresión que el documento |
+
+Contrato verificable sin AWS: `infra/beta/deployment-controls.test.mjs` afirma que el
+documento no contiene `AWS-RunShellScript`, que sólo interpola parámetros validados y
+nunca en una línea `exec`, que el patrón de digest del guion es idéntico al declarado
+por los parámetros, y que la política del rol no otorga `ssm:SendCommand` sobre ningún
+recurso comodín.
+
+### Compatibilidad de rollback (control del hallazgo 4)
+
+`infra/beta/rollback-compatibility.mjs` decide si un movimiento entre dos releases es
+admisible, con dos modos y **fail-closed por defecto**:
+
+| Modo | Pregunta | Rechaza cuando |
+| --- | --- | --- |
+| `forward` | ¿la imagen que se va a activar conoce todas las migraciones ya aplicadas? | la base tiene migraciones que esa imagen no trae |
+| `backward` | ¿la imagen a la que se vuelve es compatible con el esquema actual? | el destino espera migraciones que la base nunca recibió, o hay migraciones posteriores al destino que no están declaradas `backward-compatible` |
+
+Las declaraciones viven en `infra/beta/migration-compatibility.json` y las revisa un
+humano: `default: forward-only` y `reviewed: {}` significan que **ningún** rollback
+puede cruzar una migración. Declarar una migración como `backward-compatible` es una
+decisión explícita y trazable. El manifiesto de cada release
+(`packages/database/prisma/migration-manifest.json`, generado por
+`scripts/database.mjs`) viaja dentro de la imagen y se copia a
+`$PHOEVE_ROOT/releases/<id>/` al desplegar.
+
+El gate `forward` se ejecuta **antes** de activar, con la imagen nueva y `--network
+none`: si la imagen no puede ejecutar `node`, el despliegue se aborta sin tocar el
+stack en marcha. El gate `backward` corre con la imagen del release que se reemplaza,
+que es la que revisó las declaraciones.
 
 ## 5. Arquitectura preparada
 
@@ -164,20 +228,25 @@ Decisiones de seguridad que se mantienen del plan aceptado:
 | `infra/beta/compose.yaml` | Stack `phoeve-beta`: 5 servicios, red interna, límites, healthchecks, `read_only` |
 | `infra/beta/Caddyfile` | Borde: TLS, headers, deny 404 de todo lo no publicado |
 | `infra/beta/beta.env.example` | Contrato de variables con placeholders (nunca desplegable) |
-| `infra/beta/preflight.mjs` | Contrato ejecutable (env + Compose + borde + probe) |
-| `infra/beta/preflight.test.mjs` | 21 pruebas del contrato |
+| `infra/beta/preflight.mjs` | Contrato ejecutable (env + Compose + borde) **y** probe de la superficie publicada: `PUBLISHED_SURFACE` + `BLOCKED_CAPABILITIES`, transporte `loopbackFetch` y flag `--probe-loopback` |
+| `infra/beta/preflight.test.mjs` | 25 pruebas del contrato (incluye `500` → FAIL y el transporte loopback contra un servidor real) |
+| `infra/beta/rollback-compatibility.mjs` | Gate de compatibilidad entre releases (`forward`/`backward`), fail-closed, con CLI propia |
+| `infra/beta/migration-compatibility.json` | Declaraciones revisadas por migración; por defecto no certifica ningún rollback |
+| `infra/beta/rollback-compatibility.test.mjs` | 29 pruebas del gate, incluidos los rechazos y los códigos de salida del CLI |
+| `infra/beta/deployment-controls.test.mjs` | 31 pruebas de los invariantes del documento SSM, la política del rol, el workflow, el punto de entrada y la coherencia de `app.env` |
 | `infra/beta/deploy/bootstrap-host.sh` | Preparación del host: Docker, volúmenes por UUID, marcador de volumen, unidad systemd |
 | `infra/beta/deploy/render-env.sh` | Materializa secretos desde SSM al fichero `0600` |
 | `infra/beta/deploy/mount-guard.sh` | Verifica que el volumen correcto está montado antes de arrancar |
-| `infra/beta/deploy/phoeve-deploy` | Punto de entrada estable: deploy / rollback / status, digest obligatorio |
+| `infra/beta/deploy/phoeve-deploy` | Punto de entrada estable: `deploy` / `rollback` / `verify` / `status`; digest obligatorio, gates de migración, probe por loopback y persistencia de las imágenes en `app.env` |
 | `infra/beta/deploy/phoeve-beta.service` | Unidad oneshot con `RequiresMountsFor` |
+| `infra/terraform/modules/identity/templates/deploy-command.json` | Documento SSM restringido (`aws_ssm_document.deploy`): acción con `allowedValues` y refs de imagen con `allowedPattern` |
 | `infra/terraform/modules/*` | `network`, `compute`, `persistent-storage`, `dns`, `monitoring`, `snapshot-policy`, `identity` |
 | `infra/terraform/environments/bootstrap` | Identidad de cuenta (OIDC GitHub/HCP, roles) |
 | `infra/terraform/environments/beta` | Stack publicado |
 | `infra/terraform/README.md` | Orden de operaciones, guard rails y comandos |
-| `.github/workflows/ci.yml` | Contrato + sintaxis Compose + Terraform estático + higiene de repositorio |
+| `.github/workflows/ci.yml` | Contrato + compatibilidad de rollback + controles de despliegue + `shellcheck` de los scripts + sintaxis Compose + Terraform estático + higiene de repositorio |
 | `.github/workflows/terraform-plan.yml` | Validación estática en PR de infraestructura y aviso de dónde vive el plan autoritativo |
-| `.github/workflows/deploy-beta.yml` | Despliegue manual, digest obligatorio, entorno protegido, vía SSM |
+| `.github/workflows/deploy-beta.yml` | Despliegue manual, digest obligatorio, entorno protegido, invocación del documento SSM restringido (`phoeve-beta-deploy`), sin guion propio |
 
 ## 7. Pruebas ejecutadas (evidencia)
 
@@ -185,7 +254,10 @@ Todas son locales. Ninguna crea recursos ni factura.
 
 | Prueba | Comando | Resultado |
 | --- | --- | --- |
-| Contrato unitario | `node --test infra/beta/preflight.test.mjs` | **21/21 PASS** |
+| Contrato unitario | `node --test infra/beta/preflight.test.mjs` | **25/25 PASS** (7 suites) |
+| Compatibilidad de rollback | `node --test infra/beta/rollback-compatibility.test.mjs` | **24/24 PASS** (7 suites) |
+| Controles de despliegue (SSM/rol/workflow/host) | `node --test infra/beta/deployment-controls.test.mjs` | **31/31 PASS** (6 suites) |
+| Sintaxis de los scripts del host | `bash -n` sobre los cuatro scripts y `shellcheck -S style` | **exit 0**, sin avisos |
 | El fichero de ejemplo no es desplegable | `node infra/beta/preflight.mjs --env-file infra/beta/beta.env.example` | **FAIL esperado** (placeholders detectados) |
 | Contrato estático con entorno válido | `preflight.mjs --env-file <env local> --allow-local-edge --allow-tag-images` | **PASS** |
 | Sintaxis Compose | `docker compose --env-file … -f infra/beta/compose.yaml config --quiet` | **exit 0** |
@@ -196,7 +268,7 @@ Todas son locales. Ninguna crea recursos ni factura.
 | Guard rail positivo | `terraform plan -refresh=false -target=terraform_data.guard_rails` | **exit 0** (gates cerrados) |
 | Guard rail negativo | igual, con `enable_authority_volume=true` sin acknowledgement | **exit 1** — «enable_authority_volume requires authority_gate_acknowledged» |
 | Stack real levantado | `docker compose up -d` (imágenes `beta-local`, borde en `127.0.0.1:8080`) | postgres/migrate/api/web/edge **OK**, migraciones aplicadas |
-| Probe del contrato publicado | `preflight.mjs --probe http://localhost:8080 --probe-only` | **15/15 PASS**, «the published surface matches the contract» |
+| Probe del contrato publicado | `preflight.mjs --probe http://localhost:8080 --probe-only --probe-loopback` | **15/15 PASS**, «the published surface matches the contract» |
 | Cabeceras del borde | `curl -I http://localhost:8080/` | HSTS, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, `X-Robots-Tag`, sin `Server` |
 | Sólo el borde publica puertos | `docker compose ps` | `api`/`web`/`postgres` sin puertos de host; sólo `edge` publica |
 
@@ -221,14 +293,25 @@ Defectos reales encontrados por estas pruebas y corregidos (no cosméticos):
 
 1. El check de MinIO daba falso positivo por la palabra «MinIO» dentro de un
    comentario del Compose → se ignoran comentarios antes de evaluar.
-2. El probe exigía 4xx y la aplicación responde `503` cuando la autoridad no está
-   disponible → se corrigió a `>= 400`, que es el comportamiento fail-closed correcto.
+2. La primera versión del probe aceptaba «cualquier respuesta `>= 400`» como rechazo
+   correcto. Ese criterio es demasiado débil: un `500` —es decir, la aplicación rota o
+   a medio arrancar— habría contado como éxito. Hoy la tabla de estados esperados es
+   explícita por endpoint y cualquier `5xx` distinto del `503` documentado es **FAIL**
+   (véase el hallazgo 2 en la sección 14).
 3. La migración fallaba con `EACCES` porque `scripts/database.mjs` reescribe
    `packages/database/prisma` y el directorio pertenecía a `root` → el stage `api`
    ahora hace `chown` al usuario de runtime.
 4. `terraform fmt` detectó dos condicionales multilínea inválidos en `identity` y
    `terraform validate` dos referencias rotas (`user_data.sh.tftpl` inexistente y
    `aws_iam_policy_document.dlm` mal nombrado) → corregidos; ambas raíces validan.
+5. El rol de despliegue podía invocar `AWS-RunShellScript`, es decir, ejecutar
+   cualquier script como root en el host de producción → sustituido por un documento
+   SSM propio y versionado (hallazgo 1).
+6. `deploy()` no persistía `PHOEVE_API_IMAGE`/`PHOEVE_WEB_IMAGE` en `app.env`
+   (`render-env.sh` no las escribe) mientras el preflight y Compose las exigen desde
+   ese fichero: un despliegue real habría abortado en el preflight, y un
+   `docker compose up` manual habría arrancado un par de imágenes que nadie pidió
+   (hallazgo 5, más abajo).
 
 ### Pruebas que NO se pueden hacer sin AWS (pendientes, no afirmadas)
 
@@ -284,7 +367,7 @@ Tres niveles, todos disponibles sin aprovisionamiento nuevo.
 
 | Nivel | Acción | Efecto sobre datos |
 | --- | --- | --- |
-| Release | `phoeve-deploy rollback` conmuta el symlink a la release anterior y reinicia el stack; es automático si el smoke falla durante un despliegue | Ninguno; sólo cambia el código en ejecución |
+| Release | `phoeve-deploy rollback` conmuta el symlink a la release anterior y reinicia el stack; es automático si el smoke falla durante un despliegue | Ninguno; sólo cambia el código en ejecución, y sólo si el gate `backward` lo certifica (si no, se rechaza con exit 1 y no se toca nada) |
 | Stack | `docker compose down` en el host | Ninguno; los volúmenes permanecen montados |
 | Infraestructura | `terraform destroy` **bloqueado por `prevent_destroy`** | Exige modificar código y aprobación explícita |
 
@@ -303,8 +386,10 @@ Ninguna de estas aprobaciones está concedida:
 3. **Adjunto de la política de apply**: el rol de apply de HCP es amplio por
    necesidad (`ec2:*` de creación, IAM, logs, SNS, Route 53, DLM, budgets); su
    adjunto a la organización requiere revisión y firma.
-4. **Identidad GitHub**: repositorio real (`owner/name`) y confirmación del entorno
-   protegido `beta` con revisores obligatorios.
+4. **Identidad GitHub**: repositorio real (`owner/name`) y comprobación del entorno
+   `beta` con **`required reviewers` configurados y evidenciados** (`gh api
+   repos/{owner}/{repo}/environments/beta`). Sin revisores, el entorno sólo aporta el
+   binding OIDC, no una aprobación humana (véase §14, hallazgo 3).
 5. **Correo ACME**: buzón que recibirá los avisos de expiración del certificado.
 6. **Clase de instancia** y **capacidad/cuotas** de EBS en la cuenta
    (volúmenes gp3 y capacidad total).
@@ -358,6 +443,129 @@ login de organizador, subida de medios o el volumen de autoridad.
 - Las imágenes locales son de validación, no releases firmadas con SBOM/provenance.
 - Las acreditaciones ARM64, ACME, SSM y de restauración quedan pendientes de
   ejecución real.
+
+## 14. Controles revisados antes del primer `plan` (hallazgos y correcciones)
+
+Los cuatro hallazgos de esta revisión se corrigieron **antes** de pedir autorización
+para el primer `plan`. Dos se cerraron con código y pruebas (1 y 2), uno es una
+corrección de código con evidencia de integración (4), y uno se documenta porque la
+mitigación real es operativa, no de configuración (3).
+
+### Hallazgo 1 — el rol de despliegue podía ejecutar cualquier cosa
+
+Estado anterior: la política del rol incluía `ssm:SendCommand` sobre
+`arn:aws:ssm:<región>::document/AWS-RunShellScript`. Cualquier proceso que asumiera ese
+rol (un workflow, o un token OIDC robado con el mismo `sub`) podía pedir al host que
+ejecutase un script arbitrario **como root**, incluido leer los secretos de la
+instancia. Los permisos de la instancia (SSM + egress) no limitan eso: el script lo
+ejecuta el agente como root.
+
+Corrección: `AWS-RunShellScript` desaparece del módulo. Se crea un documento propio
+versionado en Terraform (`phoeve-beta-deploy`, contenido en
+`templates/deploy-command.json`) y `ssm:SendCommand` se limita a su ARN. El llamante
+sólo aporta:
+- `action`, con `allowedValues` (`deploy`, `rollback`, `verify`, `status`);
+- `apiImage`/`webImage`, con `allowedPattern` que exige `…@sha256:` + 64 hex.
+
+Y el documento, que nadie puede modificar desde la API, decide qué se ejecuta:
+`exec /usr/local/sbin/phoeve-deploy`. La validación del digest se repite dentro del
+documento y en el workflow, así que un tag móvil o una inyección (`; id`, `$(…)`) se
+rechazan por SSM antes de tocar la instancia.
+
+Contrato verificado sin AWS: `infra/beta/deployment-controls.test.mjs` (31 pruebas).
+
+### Hallazgo 2: el probe aceptaba como correcto cualquier rechazo
+
+La regla anterior (`>= 400` = rechazo correcto) convertía un `500` en un éxito. Un
+stack a medio arrancar habría pasado la verificación posterior al despliegue.
+
+Corregido: tabla de estados esperados **única y exportada** en `preflight.mjs`
+(`PUBLISHED_SURFACE` para los 9 endpoints publicados, `BLOCKED_CAPABILITIES` para los 6
+bloqueados, cada uno con su `reason`), `200` exacto donde la superficie es pública,
+conjuntos explícitos de rechazo en los fail-closed, y **`500` = FAIL**. El transporte
+`loopbackFetch()` (cabecera `Host` y SNI del origen publicado, conexión fijada a
+`127.0.0.1`, `timeout` 10s, `--probe-loopback`) permite validar el borde real con TLS
+sin depender del DNS público. El punto de entrada del host ya no duplica la tabla: se
+limita a ejecutar el probe del bundle.
+
+### Hallazgo 3: qué aplica realmente el environment `beta` de GitHub
+
+El workflow declara `environment: beta`. Eso produce dos efectos distintos, y sólo uno
+de ellos es una aprobación humana:
+
+| Efecto | ¿Se aplica hoy? | Detalle |
+| --- | --- | --- |
+| El job se pausa antes de empezar hasta cumplir las *protection rules* del environment | Sí | Sin protection rules la pausa se resuelve al instante: **no hay revisión**. |
+| Un humano debe aprobar la ejecución (*required reviewers*) | **Sólo si el environment tiene revisores configurados** | Es configuración de GitHub, no del repositorio, y no se puede verificar ni versionar desde aquí. |
+| El rol de AWS sólo acepta el `sub` `repo:<owner>/<repo>:environment:beta` | Sí | `StringLike` sobre un repositorio validado como `owner/name` (sin comodines), de modo que una ejecución fuera del environment no puede asumir el rol. |
+| El input `confirmation` exige escribir `deploy` | Sí | Es una salvaguarda contra clics accidentales, **no** una aprobación: cualquiera con permiso de dispatch puede escribirla. |
+
+Fallo silencioso a documentar: si el environment `beta` no existe o existe sin revisores,
+GitHub lo crea o lo acepta y el job corre **sin ninguna aprobación humana** después del
+dispatch. El binding OIDC sigue evitando que otra ejecución asuma el rol, pero no añade
+un revisor.
+
+Alternativas registradas, por orden de preferencia (hallazgo sólo documental: no se
+cambió ningún control en esta entrega):
+
+1. **Configurar `required reviewers`** en el environment `beta` (con `prevent
+   self-review` cuando haya más de un aprobador) y comprobarlo con
+   `gh api repos/{owner}/{repo}/environments/beta` antes del primer despliegue. Es la
+   única forma de que el environment signifique una aprobación.
+2. **Operar por SSM Session Manager**: un operador autorizado lanza
+   `/usr/local/sbin/phoeve-deploy` con las referencias fijadas por digest. Es el control
+   más fuerte, porque no depende de ninguna configuración de GitHub, y coincide con el
+   criterio de parada del runbook (la infraestructura la aplica un humano autorizado).
+3. **Gate en HCP Terraform** para todo lo que sí sea infraestructura: `auto-apply`
+   desactivado y revisores en el workspace. Nada de esto se ha configurado todavía.
+
+Lo que **no** se acepta como control: un `workflow_dispatch` cuyo «aprobador» sea el
+propio input de confirmación, o un job que asuma el rol de despliegue sin environment.
+Evidencia pendiente (requiere el repositorio real): `gh api
+repos/{owner}/{repo}/environments/beta` mostrando `required_reviewers`.
+
+### Hallazgo 4: rollback entre imágenes, migraciones y esquema PostgreSQL
+
+Un rollback de release sólo conmutaba el symlink: si la release anterior no conocía el
+esquema actual (o al revés), el resultado era una aplicación rota o una mutación de
+datos silenciosa. Corregido con dos gates fail-closed (descritos en §4) y un fichero de
+declaraciones revisadas: `migration-compatibility.json`, con `default: forward-only` y
+`reviewed: {}`, no certifica **ninguna** migración por defecto. Sin una declaración
+explícita, el rollback que cruza una migración se **rechaza** (exit 1).
+
+### Hallazgo 5 (defecto adicional, encontrado al revisar el host)
+
+`render-env.sh` no escribe `PHOEVE_API_IMAGE`/`PHOEVE_WEB_IMAGE`, pero el preflight y
+Compose las exigen desde `app.env`. Un despliegue real habría fallado en el preflight, y
+un `docker compose up` manual podría haber arrancado un par de imágenes no solicitadas.
+`deploy()` ahora persiste atómicamente las referencias (modo `0600`) en `app.env` en el
+momento de activar, junto con `release.env` y `migration-manifest.json` por release en
+`$PHOEVE_ROOT/releases/<id>`; `app.env` siempre describe lo que está en marcha, porque es
+la única fuente de imágenes para Compose. `render-env.sh` conserva esas dos líneas al
+volver a renderizar secretos (una rotación de pepper no puede dejar el stack sin poder
+arrancar).
+
+## 15. Decisión de preparación para el primer `plan`
+
+| Control | Estado | Evidencia |
+| --- | --- | --- |
+| El rol de despliegue no puede ejecutar guiones arbitrarios | **Cerrado** | Documento SSM propio + política limitada a su ARN; 31 pruebas de invariantes |
+| El probe no acepta un `5xx` como rechazo correcto | **Cerrado** | Tabla única de estados esperados; 25 pruebas; 15/15 endpoints reales con `--probe-loopback` |
+| El environment `beta` no se presenta como aprobación si no la da | **Documentado** | §14, hallazgo 3: `required reviewers` es configuración de GitHub y se comprueba con `gh api`; alternativa por Session Manager registrada |
+| Rollback acreditado entre imagen, migraciones y esquema | **Cerrado** | Gates `forward`/`backward` + declaraciones revisadas; 24 pruebas; gate `forward` real contra las 64 migraciones del manifiesto → exit 0 |
+| Las imágenes que se van a ejecutar se publican en `app.env` | **Cerrado** | Escritura atómica en `deploy()` y conservación al regenerar secretos; defecto reproducido al revisar el host (hallazgo 5) |
+| Infraestructura Terraform válida y con guard rails | **Cerrado** | `fmt -check -recursive` y `validate` en verde; guard rail negativo con exit 1 |
+
+**Decisión: la Fase 1 está lista para un primer `terraform plan`, y no para un `apply`.**
+
+- El `plan` es de sólo lectura, pero se ejecuta sobre credenciales reales: requiere las
+  aprobaciones 1, 2, 3 y 4 de §11 concedidas **antes** de lanzarlo.
+- Un `apply` requiere además las aprobaciones 5 a 10, y que la revisión del plan se haga
+  sobre el plan autoritativo (no sobre este documento).
+- Los controles de hallazgo 3 que dependen de configuración de GitHub deben comprobarse
+  y registrarse antes del primer despliegue, no antes del primer plan.
+- No se aprovisionó, compró, desplegó ni publicó nada, y no se declara ningún umbral de
+  preparación que no esté respaldado por las evidencias de §7.
 
 **El siguiente paso no es aplicar: es autorizar.** Se requiere aprobación expresa para
 cualquier operación cloud.

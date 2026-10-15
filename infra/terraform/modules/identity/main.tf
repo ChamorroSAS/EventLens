@@ -75,7 +75,23 @@ resource "aws_iam_role" "github_deploy" {
 }
 
 # The deploy role can only ask the tagged Beta host to run the fixed deployment
-# entry point. It cannot create, modify or delete infrastructure.
+# entry point, and only through the document created below. It cannot create,
+# modify or delete infrastructure, and it cannot choose what the host runs: the
+# document, not the caller, owns the script.
+#
+# A dedicated document replaces the AWS-managed AWS-RunShellScript: the caller
+# supplies a validated action and (only for a deployment) a digest-pinned image
+# pair, and SSM refuses anything that is not covered by allowedValues or
+# allowedPattern before the host is contacted.
+resource "aws_ssm_document" "deploy" {
+  name            = "${var.project}-${var.environment}-deploy"
+  document_type   = "Command"
+  document_format = "JSON"
+  content         = file("${path.module}/templates/deploy-command.json")
+
+  tags = local.tags
+}
+
 resource "aws_iam_policy" "github_deploy" {
   name        = "${var.project}-${var.environment}-github-deploy"
   description = "Run the fixed deployment entry point on the tagged ${var.environment} host."
@@ -90,12 +106,12 @@ resource "aws_iam_policy" "github_deploy" {
         Resource = "*"
       },
       {
-        Sid    = "InvokeTheRunbookDocument"
-        Effect = "Allow"
-        Action = ["ssm:SendCommand"]
-        Resource = [
-          "arn:aws:ssm:${local.region}::document/AWS-RunShellScript"
-        ]
+        # Only this document, and therefore only the fixed entry point. No
+        # AWS-managed document, and no wildcard, is reachable from this role.
+        Sid      = "InvokeOnlyTheDeployDocument"
+        Effect   = "Allow"
+        Action   = ["ssm:SendCommand"]
+        Resource = [aws_ssm_document.deploy.arn]
       },
       {
         Sid      = "TargetOnlyTheBetaHost"

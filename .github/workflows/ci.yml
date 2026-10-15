@@ -36,6 +36,28 @@ jobs:
       - name: Verify the Compose and edge contract
         run: node --test infra/beta/preflight.test.mjs
 
+      - name: Verify the rollback compatibility gate
+        run: node --test infra/beta/rollback-compatibility.test.mjs
+
+      - name: Verify the deployment controls (SSM document, workflow, entry point)
+        run: node --test infra/beta/deployment-controls.test.mjs
+
+      - name: Verify the host scripts parse and pass shellcheck
+        run: |
+          set -euo pipefail
+          for script in \
+            infra/beta/deploy/phoeve-deploy \
+            infra/beta/deploy/bootstrap-host.sh \
+            infra/beta/deploy/render-env.sh \
+            infra/beta/deploy/mount-guard.sh; do
+            bash -n "$script"
+          done
+          shellcheck -S style infra/beta/deploy/phoeve-deploy \
+            infra/beta/deploy/bootstrap-host.sh \
+            infra/beta/deploy/render-env.sh \
+            infra/beta/deploy/mount-guard.sh
+          echo "the host scripts parse and pass shellcheck"
+
       - name: Verify the documented environment file is not deployable
         # The example file must fail: it still contains placeholders. If this
         # ever passes, a real secret has been committed to the example file.

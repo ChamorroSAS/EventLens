@@ -17,10 +17,16 @@
  * Usage:
  *   node infra/beta/preflight.mjs --env-file infra/beta/beta.env.example
  *   node infra/beta/preflight.mjs --env-file ./app.env --allow-local-edge --allow-tag-images
- *   node infra/beta/preflight.mjs --probe http://localhost:8080
+ *   node infra/beta/preflight.mjs --probe https://beta.phoeve.com
+ *   node infra/beta/preflight.mjs --probe https://beta.phoeve.com --probe-only --probe-loopback
+ *
+ * --probe-loopback connects to 127.0.0.1 instead of resolving the public name,
+ * keeping SNI and the certificate hostname check on the published origin.
  */
 
 import { readFile } from 'node:fs/promises';
+import { request as httpRequest } from 'node:http';
+import { request as httpsRequest } from 'node:https';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -324,8 +330,138 @@ export function checkEdgeContract(caddyText) {
 }
 
 /**
- * Probe a running deployment. Every blocked capability must answer with a
- * non-success status.
+ * The published surface. Each entry lists every status the contract allows for
+ * that request, taken from the edge configuration and the API's own contract.
+ * Anything else — a redirect or a 5xx included — is a failure.
+ */
+export const PUBLISHED_SURFACE = [
+  { method: 'GET', path: '/api/v1/health/live', statuses: [200] },
+  { method: 'GET', path: '/api/v1/health/ready', statuses: [200] },
+  { method: 'GET', path: '/', statuses: [200] },
+  { method: 'GET', path: '/api/v1/openapi.json', statuses: [404] },
+  { method: 'GET', path: '/api/docs', statuses: [404] },
+  { method: 'GET', path: '/api/docs/swagger-ui.css', statuses: [404] },
+  { method: 'GET', path: '/media/anything', statuses: [404] },
+  { method: 'GET', path: '/storage/anything', statuses: [404] },
+  { method: 'GET', path: '/api/v1/public/guest-entry/this-key-does-not-exist', statuses: [404] }
+];
+
+/**
+ * Blocked capabilities, each with the only statuses its contracts allow.
+ *
+ * Declared by the API itself (Swagger annotations plus the guards that run
+ * before the service):
+ *   - POST /api/v1/admin/auth/login      401, 403, 503
+ *   - POST /api/v1/organizer/session/login 401, 403, 429, 503
+ *   - POST|GET /api/v1/admin/organizers  401, 403, 503 (409/422 from the service)
+ *   - GET /api/v1/events                 401, 403, 503
+ *   - POST /api/v1/public/guest-session/uploads/presign 400, 401, 403, 409, 422, 503
+ * The framework adds 400 (invalid body) and 404 (route not registered in this
+ * build).
+ *
+ * 500 and every other 5xx except the deliberate 503 are failures: an unexpected
+ * server error is not a fail-closed refusal and must never count as a PASS.
+ */
+export const BLOCKED_CAPABILITIES = [
+  {
+    method: 'POST',
+    path: '/api/v1/admin/auth/login',
+    statuses: [400, 401, 403, 404, 503],
+    reason: 'the local administration surface signs nobody in'
+  },
+  {
+    method: 'POST',
+    path: '/api/v1/organizer/session/login',
+    statuses: [400, 401, 403, 404, 429, 503],
+    reason: 'organizer sign-in fails closed until the RecoveryAuthority exists'
+  },
+  {
+    method: 'POST',
+    path: '/api/v1/admin/organizers',
+    statuses: [400, 401, 403, 404, 409, 422, 503],
+    reason: 'no organizer can be provisioned'
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/admin/organizers',
+    statuses: [401, 403, 404, 503],
+    reason: 'the organizers surface requires the unavailable authority'
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/events',
+    statuses: [401, 403, 404, 503],
+    reason: 'event creation stays unreachable'
+  },
+  {
+    method: 'POST',
+    path: '/api/v1/public/guest-session/uploads/presign',
+    statuses: [400, 401, 403, 404, 409, 422, 503],
+    reason: 'media reception is blocked; no upload URL is ever minted'
+  }
+];
+
+const JSON_POST = {
+  method: 'POST',
+  headers: { 'content-type': 'application/json' },
+  body: '{}'
+};
+
+/** Render an unexpected value so a failure message is unambiguous. */
+function describeStatus(status) {
+  return typeof status === 'number' ? String(status) : status;
+}
+
+/**
+ * A `fetch`-shaped transport that connects to a loopback address while
+ * presenting the published origin: the TCP peer is pinned, so DNS or a hosts
+ * file cannot redirect the probe, and TLS SNI plus the certificate hostname
+ * check still use the public hostname.
+ *
+ * @param {string} [address] loopback address to connect to
+ */
+export function loopbackFetch(address = '127.0.0.1') {
+  return (url, init = {}) =>
+    new Promise((resolve, reject) => {
+      let target;
+      try {
+        target = new URL(url);
+      } catch (error) {
+        reject(error);
+        return;
+      }
+      const isTls = target.protocol === 'https:';
+      const port = target.port || (isTls ? '443' : '80');
+      const request = (isTls ? httpsRequest : httpRequest)(
+        {
+          host: address,
+          port: Number(port),
+          path: `${target.pathname}${target.search}`,
+          method: init.method ?? 'GET',
+          headers: { ...(init.headers ?? {}), host: target.host },
+          // Drives both SNI and the certificate hostname check.
+          servername: isTls ? target.hostname : undefined,
+          timeout: 10_000
+        },
+        (response) => {
+          response.resume();
+          resolve({ status: response.statusCode });
+        }
+      );
+      request.on('timeout', () => request.destroy(new Error(`${address}:${port} timed out`)));
+      request.on('error', reject);
+      if (init.body !== undefined && init.body !== null) request.write(String(init.body));
+      request.end();
+    });
+}
+
+/**
+ * Probe a running deployment.
+ *
+ * Every published path must answer with exactly the documented status, and every
+ * blocked capability must answer with one of its documented refusal statuses.
+ * A 2xx or 3xx on a blocked capability, and any unexpected status (500 included)
+ * on either list, fails the probe.
  *
  * @param {string} baseUrl
  * @param {{fetchImpl?: typeof fetch}} [options]
@@ -344,48 +480,21 @@ export async function probe(baseUrl, options = {}) {
     }
   };
 
-  const jsonPost = {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: '{}'
-  };
-
-  const expected = [
-    ['GET', '/api/v1/health/live', undefined, 200],
-    ['GET', '/api/v1/health/ready', undefined, 200],
-    ['GET', '/api/v1/openapi.json', undefined, 404],
-    ['GET', '/api/docs', undefined, 404],
-    ['GET', '/api/docs/swagger-ui.css', undefined, 404],
-    ['GET', '/media/anything', undefined, 404],
-    ['GET', '/storage/anything', undefined, 404],
-    ['GET', '/api/v1/public/guest-entry/this-key-does-not-exist', undefined, 404]
-  ];
-
-  for (const [method, path, init, status] of expected) {
-    const actual = await call(path, method === 'GET' ? undefined : init);
-    report.check(actual === status, `probe: ${method} ${path} answers ${status} (got ${actual})`);
+  for (const { method, path, statuses } of PUBLISHED_SURFACE) {
+    const actual = await call(path, method === 'GET' ? undefined : JSON_POST);
+    report.check(
+      typeof actual === 'number' && statuses.includes(actual),
+      `probe: ${method} ${path} answers ${statuses.join(' or ')} (got ${describeStatus(actual)})`
+    );
   }
 
-  // Blocked capabilities must never answer with a success or redirect status,
-  // even when the request carries no session at all. A 401/403/404/503 is the
-  // expected fail-closed answer.
-  const mustNotSucceed = [
-    ['POST', '/api/v1/admin/auth/login', jsonPost],
-    ['POST', '/api/v1/organizer/session/login', jsonPost],
-    ['POST', '/api/v1/admin/organizers', jsonPost],
-    ['GET', '/api/v1/admin/organizers', undefined],
-    ['GET', '/api/v1/events', undefined],
-    ['POST', '/api/v1/public/guest-session/uploads/presign', jsonPost]
-  ];
-
-  for (const [method, path, init] of mustNotSucceed) {
-    const actual = await call(path, method === 'GET' ? undefined : init);
-    const refused = typeof actual === 'number' && actual >= 400;
-    report.check(refused, `probe: ${method} ${path} is refused (got ${actual})`);
+  for (const { method, path, statuses, reason } of BLOCKED_CAPABILITIES) {
+    const actual = await call(path, method === 'GET' ? undefined : JSON_POST);
+    report.check(
+      typeof actual === 'number' && statuses.includes(actual),
+      `probe: ${method} ${path} is refused with ${statuses.join('/')} — ${reason} (got ${describeStatus(actual)})`
+    );
   }
-
-  const spa = await call('/', undefined);
-  report.check(spa === 200, `probe: GET / serves the SPA application shell (got ${spa})`);
 
   return report;
 }
@@ -409,6 +518,11 @@ async function main() {
   const scriptDir = dirname(fileURLToPath(import.meta.url));
   const probeUrl = flagValue('--probe');
   const probeOnly = args.includes('--probe-only');
+  // --probe-loopback pins the TCP peer to the loopback address while presenting
+  // the published origin, so the probe cannot be redirected by DNS.
+  const probeOptions = args.includes('--probe-loopback')
+    ? { fetchImpl: loopbackFetch() }
+    : {};
 
   // --probe-only checks an already deployed origin. It reads no configuration
   // files, so it can run inside the image that was just published.
@@ -418,7 +532,7 @@ async function main() {
       process.exitCode = 1;
       return;
     }
-    const report = await probe(probeUrl);
+    const report = await probe(probeUrl, probeOptions);
     for (const message of report.passes) console.log(`  PASS  ${message}`);
     for (const message of report.failures) console.error(`  FAIL  ${message}`);
     if (report.failures.length > 0) {
@@ -444,7 +558,7 @@ async function main() {
   });
   const composeReport = checkComposeContract(await readFile(composePath, 'utf8'));
   const edgeReport = checkEdgeContract(await readFile(caddyPath, 'utf8'));
-  const probeReport = probeUrl ? await probe(probeUrl) : null;
+  const probeReport = probeUrl ? await probe(probeUrl, probeOptions) : null;
 
   const sections = [
     ['environment contract', envReport],

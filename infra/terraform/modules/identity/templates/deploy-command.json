@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "2.2",
+  "description": "Phoeve Beta: run the fixed deployment entry point. The caller chooses an action and, only for a deployment, a digest-pinned image pair. It cannot choose what the host executes.",
+  "parameters": {
+    "action": {
+      "type": "String",
+      "description": "Deployment action. No other value is accepted.",
+      "allowedValues": ["deploy", "rollback", "verify", "status"]
+    },
+    "apiImage": {
+      "type": "String",
+      "default": "",
+      "description": "API image reference, digest-pinned. Required when action is deploy.",
+      "allowedPattern": "^$|^[a-z0-9][a-z0-9._/:-]*@sha256:[0-9a-f]{64}$"
+    },
+    "webImage": {
+      "type": "String",
+      "default": "",
+      "description": "SPA image reference, digest-pinned. Required when action is deploy.",
+      "allowedPattern": "^$|^[a-z0-9][a-z0-9._/:-]*@sha256:[0-9a-f]{64}$"
+    }
+  },
+  "mainSteps": [
+    {
+      "action": "aws:runShellScript",
+      "name": "invokeFixedEntryPoint",
+      "inputs": {
+        "timeoutSeconds": "3600",
+        "runCommand": [
+          "set -euo pipefail",
+          "umask 077",
+          "readonly entry_point=/usr/local/sbin/phoeve-deploy",
+          "readonly digest_pinned='^[a-z0-9][a-z0-9._/:-]*@sha256:[0-9a-f]{64}$'",
+          "action='{{ action }}'",
+          "api_image='{{ apiImage }}'",
+          "web_image='{{ webImage }}'",
+          "case \"$action\" in",
+          "  deploy)",
+          "    if ! [[ \"$api_image\" =~ $digest_pinned ]]; then echo 'apiImage must be a digest-pinned image reference' >&2; exit 64; fi",
+          "    if ! [[ \"$web_image\" =~ $digest_pinned ]]; then echo 'webImage must be a digest-pinned image reference' >&2; exit 64; fi",
+          "    exec \"$entry_point\" \"$api_image\" \"$web_image\"",
+          "    ;;",
+          "  rollback|verify|status)",
+          "    exec \"$entry_point\" \"$action\"",
+          "    ;;",
+          "  *)",
+          "    echo \"unsupported action: $action\" >&2",
+          "    exit 64",
+          "    ;;",
+          "esac"
+        ]
+      }
+    }
+  ]
+}

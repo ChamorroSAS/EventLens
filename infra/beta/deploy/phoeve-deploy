@@ -2,42 +2,82 @@
 # Phoeve Beta — stable deployment entry point (Etapa 1).
 #
 # Installed at /usr/local/sbin/phoeve-deploy by bootstrap-host.sh and invoked on
-# the host by the authorised GitHub Actions workflow over SSM:
+# the host by the authorised GitHub Actions workflow through the restricted SSM
+# document (its only permitted action, never a shell document):
 #
 #   sudo /usr/local/sbin/phoeve-deploy <api-image-ref> <web-image-ref>
 #   sudo /usr/local/sbin/phoeve-deploy rollback
+#   sudo /usr/local/sbin/phoeve-deploy verify
 #   sudo /usr/local/sbin/phoeve-deploy status
 #
 # Design notes:
-#   * The deployment bundle (compose.yaml, Caddyfile, preflight) is extracted from
-#     the image being deployed, so the files on disk always match the running
-#     image. CI cannot push arbitrary files into the release directory.
-#   * The contract preflight runs before anything is switched, and the stack is
-#     rolled back automatically when the smoke check fails.
+#   * The deployment bundle (compose.yaml, Caddyfile, preflight, compatibility
+#     gate) is extracted from the image being deployed, so the files on disk
+#     always match the running image. CI cannot push arbitrary files into the
+#     release directory.
 #   * Images must be digest-pinned. Tag-only references require
-#     ALLOW_TAG_IMAGES=1 and are only for local validation.
+#     ALLOW_TAG_IMAGES=1 and are only for local validation. The same variable
+#     relaxes the bundle preflight for the same reason.
+#   * $APP_ENV is the only source of images for Compose, and it is written from
+#     the release being activated. The requested pair is never passed on the
+#     command line to Compose, so what the caller asked for is what runs.
+#   * The contract preflight validates the *candidate* environment (the current
+#     app.env with the requested refs) before anything is switched.
+#   * The runtime probe of infra/beta/preflight.mjs is the single source of truth
+#     for the published surface; there is no second, weaker status table here.
+#     It runs with --probe-loopback, so the real edge (TLS and certificate
+#     hostname check included) is exercised while the TCP peer stays on the
+#     loopback address.
+#   * A release is activated only when it knows every migration already applied,
+#     and a rollback is refused unless the target release is certified
+#     compatible with the applied schema (infra/beta/migration-compatibility).
+#     Both verdicts come from the bundle inside the image.
 set -euo pipefail
 
 PHOEVE_ROOT=/srv/phoeve/beta
 APP_ENV="${PHOEVE_ROOT}/app.env"
 VOLUMES_ENV=/etc/phoeve/beta-volumes.env
+CURRENT="${PHOEVE_ROOT}/current"
+PREVIOUS_FILE="${PHOEVE_ROOT}/previous"
+RELEASES_DIR="${PHOEVE_ROOT}/releases"
+BUNDLE_DIR=/workspace/infra/beta
 KEEP_RELEASES=3
+
+# Reports of the database schema, one migration id per line. An empty result is
+# a valid answer: either the ledger does not exist yet or nothing was applied.
+APPLIED_SQL="select case when to_regclass('public._prisma_migrations') is null then '' else coalesce((select string_agg(migration_name, chr(10) order by finished_at) from public._prisma_migrations where finished_at is not null), '') end"
 
 log() { printf '[deploy] %s\n' "$*"; }
 die() { printf '[deploy] ERROR: %s\n' "$*" >&2; exit 1; }
 
 [[ "$(id -u)" -eq 0 ]] || die "run as root (sudo)"
 
+SCRATCH="$(mktemp -d)"
+trap 'rm -rf "$SCRATCH"' EXIT
+
 compose() {
   docker compose \
     --env-file "$APP_ENV" \
-    --project-directory "$PHOEVE_ROOT/current" \
-    -f "$PHOEVE_ROOT/current/compose.yaml" \
+    --project-directory "$CURRENT" \
+    -f "$CURRENT/compose.yaml" \
     "$@"
 }
 
+# Reads a KEY=value pair from a file without sourcing it (so a malformed or
+# hostile file cannot execute anything).
+env_value() {
+  local file="$1" key="$2"
+  [[ -f "$file" ]] || return 1
+  sed -n "s/^${key}=//p" "$file" | head -n1
+}
+
+app_env_value() { env_value "$APP_ENV" "$1"; }
+
 base_url() {
-  sed -n 's/^PUBLIC_ENTRY_BASE_URL=//p' "$APP_ENV" | head -n1
+  local value
+  value="$(app_env_value PUBLIC_ENTRY_BASE_URL || true)"
+  [[ -n "$value" ]] || die "PUBLIC_ENTRY_BASE_URL is missing from $APP_ENV"
+  printf '%s\n' "${value%/}"
 }
 
 # Requests the public origin while forcing the loopback address, so a fresh
@@ -46,7 +86,6 @@ base_url() {
 edge_status() {
   local method="$1" path="$2" url host
   url="$(base_url)"
-  [[ -n "$url" ]] || die "PUBLIC_ENTRY_BASE_URL is missing from $APP_ENV"
   host="${url#*://}"
   host="${host%%/*}"
   local args=()
@@ -56,46 +95,151 @@ edge_status() {
   curl -s -o /dev/null -w '%{http_code}' --max-time 10 -X "$method" "${args[@]}" "${url}${path}" || true
 }
 
-smoke() {
-  local failures=0 status
+# The published surface, verified by the bundle's own contract: one table, one
+# implementation, whether it runs here, in the workflow or in CI.
+probe_surface() {
+  local image="${1:-}"
+  if [[ -z "$image" ]]; then
+    image="$(env_value "$APP_ENV" PHOEVE_API_IMAGE || true)"
+  fi
+  [[ -n "$image" ]] || die "PHOEVE_API_IMAGE is missing from $APP_ENV"
+  docker run --rm --network host "$image" \
+    node "${BUNDLE_DIR}/preflight.mjs" \
+      --probe "$(base_url)" --probe-only --probe-loopback
+}
 
-  status="$(edge_status GET /api/v1/health/live)"
-  [[ "$status" == "200" ]] || { printf 'smoke: health/live expected 200, got %s\n' "$status" >&2; failures=$((failures + 1)); }
-  status="$(edge_status GET /api/v1/health/ready)"
-  [[ "$status" == "200" ]] || { printf 'smoke: health/ready expected 200, got %s\n' "$status" >&2; failures=$((failures + 1)); }
-  status="$(edge_status GET /api/v1/openapi.json)"
-  [[ "$status" == "404" ]] || { printf 'smoke: openapi.json expected 404, got %s\n' "$status" >&2; failures=$((failures + 1)); }
-  status="$(edge_status GET /api/docs)"
-  [[ "$status" == "404" ]] || { printf 'smoke: /api/docs expected 404, got %s\n' "$status" >&2; failures=$((failures + 1)); }
+smoke() { probe_surface; }
 
-  for blocked in /api/v1/admin/auth/login /api/v1/organizer/session/login; do
-    status="$(edge_status POST "$blocked")"
-    if [[ "$status" == 2* ]]; then
-      printf 'smoke: %s answered %s but the capability is blocked\n' "$blocked" "$status" >&2
-      failures=$((failures + 1))
-    fi
-  done
+# The candidate environment: the current app.env with the requested images.
+# Written to the scratch directory so a failed validation leaves app.env
+# describing what is actually running.
+candidate_env() {
+  local api_ref="$1" web_ref="$2" file="${SCRATCH}/app.env.candidate"
+  grep -vE '^(PHOEVE_API_IMAGE|PHOEVE_WEB_IMAGE)=' "$APP_ENV" > "$file" || true
+  printf 'PHOEVE_API_IMAGE=%s\nPHOEVE_WEB_IMAGE=%s\n' "$api_ref" "$web_ref" >> "$file"
+  chmod 0600 "$file"
+  printf '%s' "$file"
+}
 
-  status="$(edge_status GET /)"
-  [[ "$status" == "200" ]] || { printf 'smoke: / expected 200, got %s\n' "$status" >&2; failures=$((failures + 1)); }
+write_app_env_images() {
+  local api_ref="$1" web_ref="$2" tmp
+  tmp="$(mktemp "${PHOEVE_ROOT}/.app.env.XXXXXX")"
+  chmod 0600 "$tmp"
+  grep -vE '^(PHOEVE_API_IMAGE|PHOEVE_WEB_IMAGE)=' "$APP_ENV" > "$tmp" || true
+  printf 'PHOEVE_API_IMAGE=%s\nPHOEVE_WEB_IMAGE=%s\n' "$api_ref" "$web_ref" >> "$tmp"
+  chown --reference="$APP_ENV" "$tmp" 2>/dev/null || true
+  mv -f "$tmp" "$APP_ENV"
+}
 
-  return "$failures"
+# app.env follows the active release: switching releases and republishing the
+# images is one step, so Compose can never start a pair nobody asked for.
+app_env_from_release() {
+  local release_dir="$1" api web
+  api="$(env_value "$release_dir/release.env" PHOEVE_API_IMAGE || true)"
+  web="$(env_value "$release_dir/release.env" PHOEVE_WEB_IMAGE || true)"
+  [[ -n "$api" && -n "$web" ]] || die "$release_dir/release.env is missing the image references"
+  write_app_env_images "$api" "$web"
 }
 
 switch_to() {
   local release_dir="$1" previous=""
-  if [[ -L "$PHOEVE_ROOT/current" ]]; then
-    previous="$(basename "$(readlink -f "$PHOEVE_ROOT/current")")"
+  [[ -f "$release_dir/release.env" ]] || die "$release_dir has no release.env (not a release directory)"
+  if [[ -L "$CURRENT" ]]; then
+    previous="$(basename "$(readlink -f "$CURRENT")")"
   fi
-  ln -sfn "$release_dir" "$PHOEVE_ROOT/current.tmp"
-  mv -Tf "$PHOEVE_ROOT/current.tmp" "$PHOEVE_ROOT/current"
-  if [[ -n "$previous" ]]; then
-    printf '%s\n' "$previous" > "$PHOEVE_ROOT/previous"
+  ln -sfn "$release_dir" "${CURRENT}.tmp"
+  mv -Tf "${CURRENT}.tmp" "$CURRENT"
+  app_env_from_release "$release_dir"
+  if [[ -n "$previous" && "$previous" != "$(basename "$release_dir")" ]]; then
+    printf '%s\n' "$previous" > "$PREVIOUS_FILE"
   fi
 }
 
+# --- Database schema -------------------------------------------------------
+
+postgres_data_dir() {
+  local root
+  root="$(env_value "$APP_ENV" PHOEVE_DATA_ROOT || true)"
+  [[ -n "$root" ]] || root=/srv/phoeve/beta
+  printf '%s/postgres\n' "$root"
+}
+
+# A directory with PG_VERSION holds a database that was initialised, even when no
+# container is running. It decides whether "no migrations applied" means "new
+# database" or "cannot see the database".
+postgres_initialised() { [[ -f "$(postgres_data_dir)/PG_VERSION" ]]; }
+
+applied_migrations() {
+  local out
+  if ! out="$(compose exec -T postgres psql -v ON_ERROR_STOP=1 -qtA \
+      -U "$(env_value "$APP_ENV" POSTGRES_USER)" \
+      -d "$(env_value "$APP_ENV" POSTGRES_DB)" \
+      -c "$APPLIED_SQL" 2>/dev/null)"; then
+    return 1
+  fi
+  printf '%s\n' "$out" | tr -d '\r' | sed '/^[[:space:]]*$/d'
+}
+
+# Writes the applied migration ids to $1. Fails closed: an unreachable or
+# unreadable database that exists is an error, never an empty schema.
+collect_applied() {
+  local file="$1" out
+  if out="$(applied_migrations)"; then
+    printf '%s\n' "$out" > "$file"
+    return 0
+  fi
+  if [[ -n "$(compose ps -q postgres 2>/dev/null || true)" ]] || postgres_initialised; then
+    return 1
+  fi
+  : > "$file"
+  log "no database yet: the applied schema is treated as empty"
+  return 0
+}
+
+migration_gate_forward() {
+  local image="$1" applied="${SCRATCH}/applied-forward.txt"
+  collect_applied "$applied" ||
+    die "could not read the applied migrations: refusing to activate against an unknown schema"
+  docker run --rm -i --network none "$image" \
+    node "${BUNDLE_DIR}/rollback-compatibility.mjs" \
+      --mode forward --applied - \
+    < "$applied"
+}
+
+# Uses the declarations of the release currently published, which is the one
+# that reviewed them, and the manifest of the release being restored.
+migration_gate_backward() {
+  local target="$1" applied="${SCRATCH}/applied-backward.txt" current_image
+  [[ -f "$target/migration-manifest.json" ]] ||
+    die "$target has no migration manifest: refusing an uncertified rollback"
+  current_image="$(env_value "$APP_ENV" PHOEVE_API_IMAGE || true)"
+  [[ -n "$current_image" ]] || die "PHOEVE_API_IMAGE is missing from $APP_ENV"
+  collect_applied "$applied" || die "could not read the applied migrations: refusing to roll back blindly"
+  docker run --rm -i --network none \
+    -v "${target}:/target:ro" \
+    "$current_image" \
+    node "${BUNDLE_DIR}/rollback-compatibility.mjs" \
+      --mode backward --applied - \
+      --release-manifest /target/migration-manifest.json \
+    < "$applied"
+}
+
+# --- Commands --------------------------------------------------------------
+
+wait_ready() {
+  local attempt
+  for attempt in $(seq 1 30); do
+    if [[ "$(edge_status GET /api/v1/health/ready)" == "200" ]]; then
+      return 0
+    fi
+    log "not ready yet (attempt ${attempt}/30)"
+    sleep 5
+  done
+  return 1
+}
+
 deploy() {
-  local api_ref="$1" web_ref="$2"
+  local api_ref="$1" web_ref="$2" ref release_id release_dir container preflight_args
 
   for ref in "$api_ref" "$web_ref"; do
     if [[ "$ref" != *"@sha256:"* && "${ALLOW_TAG_IMAGES:-0}" != "1" ]]; then
@@ -104,83 +248,130 @@ deploy() {
   done
 
   [[ -f "$APP_ENV" ]] || die "$APP_ENV is missing (run phoeve-render-env first)"
-  /usr/local/sbin/phoeve-mount-guard --from-env /etc/phoeve/beta-volumes.env
+  /usr/local/sbin/phoeve-mount-guard --from-env "$VOLUMES_ENV"
 
-  local release_id
   release_id="$(printf '%s' "$api_ref" | sed -n 's/.*@sha256:\([0-9a-f]\{12\}\).*/\1/p')"
   [[ -n "$release_id" ]] || release_id="tag-$(date -u +%Y%m%d%H%M%S)"
-
-  local release_dir="$PHOEVE_ROOT/releases/$release_id"
+  release_dir="${RELEASES_DIR}/${release_id}"
   install -d -m 0700 "$release_dir"
 
-  printf 'pulling images\n'
+  log "pulling the requested images"
   docker pull "$api_ref"
   docker pull "$web_ref"
 
-  printf 'extracting the deploy bundle from %s\n' "$api_ref"
-  local container
+  log "extracting the deploy bundle from ${api_ref}"
   container="$(docker create "$api_ref")"
-  docker cp "${container}:/workspace/infra/beta/." "$release_dir/"
+  docker cp "${container}:${BUNDLE_DIR}/." "$release_dir/"
+  docker cp "${container}:/workspace/packages/database/prisma/migration-manifest.json" \
+    "${release_dir}/migration-manifest.json"
   docker rm -f "$container" >/dev/null
+  printf 'PHOEVE_API_IMAGE=%s\nPHOEVE_WEB_IMAGE=%s\n' "$api_ref" "$web_ref" \
+    > "${release_dir}/release.env"
+  chmod 0600 "${release_dir}/release.env"
 
-  printf 'validating the deployment contract\n'
+  log "validating the deployment contract"
+  preflight_args=(--env-file - --compose /bundle/compose.yaml --caddy /bundle/Caddyfile)
+  if [[ "${ALLOW_TAG_IMAGES:-0}" == "1" ]]; then
+    preflight_args+=(--allow-tag-images)
+  fi
   docker run --rm -i --network none \
     -v "${release_dir}:/bundle:ro" \
     "$api_ref" \
-    node /bundle/preflight.mjs --env-file - \
-      --compose /bundle/compose.yaml --caddy /bundle/Caddyfile \
-    < "$APP_ENV"
+    node /bundle/preflight.mjs "${preflight_args[@]}" \
+    < "$(candidate_env "$api_ref" "$web_ref")"
 
-  printf 'activating release %s\n' "$release_id"
-  switch_to "$release_dir"
-
-  compose up -d --remove-orphans
-
-  printf 'waiting for readiness\n'
-  local attempt
-  for attempt in $(seq 1 30); do
-    if [[ "$(edge_status GET /api/v1/health/ready)" == "200" ]]; then
-      break
-    fi
-    sleep 5
-  done
-
-  if smoke; then
-    printf 'deployment %s is healthy\n' "$release_id"
-  else
-    printf 'smoke checks failed, rolling back\n' >&2
-    rollback
-    die "deployment $release_id failed its smoke checks"
+  log "checking that ${release_id} knows every applied migration"
+  if ! migration_gate_forward "$api_ref"; then
+    die "release ${release_id} is older than the database schema; it was not activated"
   fi
 
-  # Keep only the most recent releases.
-  ls -1dt "$PHOEVE_ROOT"/releases/*/ 2>/dev/null | tail -n +$((3 + 1)) | xargs -r rm -rf
+  log "activating release ${release_id}"
+  switch_to "$release_dir"
+  compose up -d --remove-orphans
+
+  log "waiting for readiness"
+  wait_ready || log "the stack is not ready yet; the runtime probe decides"
+
+  if smoke; then
+    log "release ${release_id} is healthy"
+  else
+    log "the runtime probe failed for release ${release_id}; attempting an automatic rollback"
+    if ! rollback; then
+      die "release ${release_id} failed its runtime probe and the rollback was refused; an operator is required"
+    fi
+    die "release ${release_id} failed its runtime probe"
+  fi
+
+  cleanup_releases
 }
 
 rollback() {
   local previous
-  [[ -f "$PHOEVE_ROOT/previous" ]] || die "no previous release recorded"
-  previous="$(cat "$PHOEVE_ROOT/previous")"
-  [[ -d "$PHOEVE_ROOT/releases/$previous" ]] || die "previous release $previous is no longer on the host"
+  [[ -f "$PREVIOUS_FILE" ]] || die "no previous release recorded"
+  previous="$(cat "$PREVIOUS_FILE")"
+  [[ -d "${RELEASES_DIR}/${previous}" ]] || die "previous release ${previous} is no longer on this host"
 
-  printf 'rolling back to %s\n' "$previous"
-  ln -sfn "$PHOEVE_ROOT/releases/$previous" "$PHOEVE_ROOT/current.tmp"
-  mv -Tf "$PHOEVE_ROOT/current.tmp" "$PHOEVE_ROOT/current"
+  migration_gate_backward "${RELEASES_DIR}/${previous}"
+
+  log "rolling back to ${previous}"
+  switch_to "${RELEASES_DIR}/${previous}"
   compose up -d --remove-orphans
-  smoke || die "rollback target $previous did not pass its smoke checks"
-  printf 'rollback to %s complete\n' "$previous"
+
+  wait_ready || true
+
+  smoke || die "rollback target ${previous} did not pass the runtime probe"
+  log "rollback to ${previous} complete"
 }
+
+verify() { probe_surface; }
 
 status() {
   compose ps
+  printf 'current release: %s\n' "$(basename "$(readlink -f "$CURRENT" 2>/dev/null || printf 'none')")"
+  printf 'previous release: %s\n' "$(cat "$PREVIOUS_FILE" 2>/dev/null || printf 'none')"
+}
+
+# Old release directories are only ever removed after a successful deployment,
+# and never the release that is current or the one a rollback would use.
+cleanup_releases() {
+  local id dir keep_current keep_previous seen=0
+  keep_current="$(basename "$(readlink -f "$CURRENT" 2>/dev/null || printf 'none')")"
+  keep_previous="$(cat "$PREVIOUS_FILE" 2>/dev/null || printf 'none')"
+  while IFS= read -r dir; do
+    [[ -n "$dir" ]] || continue
+    seen=$((seen + 1))
+    if [[ "$seen" -le "$KEEP_RELEASES" ]]; then
+      continue
+    fi
+    id="$(basename "$dir")"
+    if [[ "$id" == "$keep_current" || "$id" == "$keep_previous" ]]; then
+      continue
+    fi
+    log "removing old release ${id}"
+    rm -rf "$dir"
+  done < <(
+    find "${RELEASES_DIR}" -mindepth 1 -maxdepth 1 -type d -printf '%T@ %p\n' 2>/dev/null |
+      sort -rn | cut -d' ' -f2-
+  )
+}
+
+usage() {
+  cat >&2 <<'USAGE'
+usage:
+  phoeve-deploy <api-image-ref> <web-image-ref>   activate a digest-pinned pair
+  phoeve-deploy rollback                          restore the previous release
+  phoeve-deploy verify                            run the published-surface probe
+  phoeve-deploy status                            show the running stack
+USAGE
 }
 
 case "${1:-}" in
   deploy|"")
-    [[ $# -eq 3 ]] || die "usage: phoeve-deploy <api-image> <web-image>"
+    [[ $# -eq 3 ]] || { usage; die "deploy needs exactly <api-image-ref> <web-image-ref>"; }
     deploy "$2" "$3"
     ;;
   rollback) rollback ;;
+  verify) verify ;;
   status) status ;;
-  *) die "unknown command: $1" ;;
+  *) usage; die "unknown command: $1" ;;
 esac

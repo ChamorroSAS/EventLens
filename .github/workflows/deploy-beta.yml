@@ -5,14 +5,18 @@ name: Deploy Beta
 # Controls, in order:
 #   1. Manual dispatch only, and the request must be confirmed by typing exactly
 #      "deploy".
-#   2. The job runs in the protected `beta` GitHub environment, so the
-#      configured reviewers must approve the run before any credential is issued.
-#      Configure that environment before the first deployment.
-#    3. Images must be digest-pinned: a tag can be moved, a digest cannot.
-#   4. The workflow only asks the host to run the fixed entry point
-#      (/usr/local/sbin/phoeve-deploy) over SSM. It cannot run arbitrary
-#      commands, write files or change infrastructure.
-#   5. The entry point validates the contract and the smoke checks, and rolls
+#   2. The job runs in the protected `beta` GitHub environment. An environment
+#      applies the pause before the job starts and, when required reviewers are
+#      configured, it also requires their approval; without them the pause is the
+#      only effect. See docs/aws-preview-deployment.md for what the environment
+#      does and does not enforce.
+#   3. Images must be digest-pinned: a tag can be moved, a digest cannot.
+#   4. The workflow can only invoke the restricted SSM document
+#      `phoeve-beta-deploy` (infra/terraform/modules/identity), which accepts a
+#      validated action and, for a deployment, a digest-pinned image pair. It
+#      cannot run arbitrary commands: no shell document is permitted, by the
+#      document and by the role policy.
+#   5. The entry point validates the contract and the runtime probe, and rolls
 #      back on failure.
 #
 # GitHub holds no AWS keys: it exchanges an OIDC token for a short-lived session.
@@ -50,6 +54,9 @@ jobs:
       AWS_REGION: ${{ vars.PHOEVE_AWS_REGION }}
       API_IMAGE: ${{ inputs.api_image }}
       WEB_IMAGE: ${{ inputs.web_image }}
+      # The only document the deploy role can send commands to. It is created by
+      # infra/terraform/modules/identity and cannot run a caller-supplied script.
+      SSM_DOCUMENT: phoeve-beta-deploy
     steps:
       - name: Verify the request
         run: |
@@ -58,16 +65,12 @@ jobs:
             echo "::error::the confirmation input must be exactly 'deploy'"
             exit 1
           fi
+          # The same shape the SSM document enforces, so a bad reference is
+          # rejected here instead of by the host.
+          pinned='^[a-z0-9][a-z0-9._/:-]*@sha256:[0-9a-f]{64}$'
           for ref in "$API_IMAGE" "$WEB_IMAGE"; do
-            case "$ref" in
-              *@sha256:*) ;;
-              *)
-                echo "::error::image reference '$ref' is not digest-pinned (expected name@sha256:...)"
-                exit 1
-                ;;
-            esac
-            if printf '%s' "$ref" | grep -qvE '^[A-Za-z0-9._/:@-]+$'; then
-              echo "::error::image reference '$ref' contains characters that are not allowed"
+            if ! printf '%s' "$ref" | grep -qE "$pinned"; then
+              echo "::error::image reference '$ref' is not a digest-pinned reference"
               exit 1
             fi
           done
@@ -108,15 +111,19 @@ jobs:
           INSTANCE_ID: ${{ steps.host.outputs.instance_id }}
         run: |
           set -euo pipefail
+          parameters=$(jq -nc \
+            --arg action deploy \
+            --arg api "$API_IMAGE" \
+            --arg web "$WEB_IMAGE" \
+            '{action: [$action], apiImage: [$api], webImage: [$web]}')
           command_id=$(aws ssm send-command \
-            --document-name AWS-RunShellScript \
+            --document-name "$SSM_DOCUMENT" \
             --instance-ids "$INSTANCE_ID" \
             --comment "phoeve beta deploy" \
-            --parameters "commands=[\"/usr/local/sbin/phoeve-deploy $API_IMAGE $WEB_IMAGE\"]" \
+            --parameters "$parameters" \
             --query 'Command.CommandId' \
             --output text)
           echo "command: $command_id"
-          echo "command_id=$command_id" >> "$GITHUB_ENV"
 
           for attempt in $(seq 1 120); do
             status=$(aws ssm get-command-invocation \
@@ -137,10 +144,11 @@ jobs:
             --output json | tee invocation.json
 
           final=$(aws ssm get-command-invocation \
-            --command-id "$command_id" --instance-id "$INSTANCE_ID" \
+            --command-id "$command_id" \
+            --instance-id "$INSTANCE_ID" \
             --query Status --output text)
           if [ "$final" != "Success" ]; then
-            echo "::error::deployment command finished with status $final"
+            echo "::error::the deployment entry point did not succeed ($final)"
             exit 1
           fi
 
@@ -149,13 +157,14 @@ jobs:
           INSTANCE_ID: ${{ steps.host.outputs.instance_id }}
         run: |
           set -euo pipefail
-          # The contract probe runs inside the image that was just deployed, so
-          # the verification uses the same code as the deployment itself.
+          # The entry point runs the bundle's own contract probe against the
+          # published origin, in the image that is actually serving it.
+          parameters=$(jq -nc --arg action verify '{action: [$action]}')
           command_id=$(aws ssm send-command \
-            --document-name AWS-RunShellScript \
+            --document-name "$SSM_DOCUMENT" \
             --instance-ids "$INSTANCE_ID" \
-            --comment "phoeve beta contract probe" \
-            --parameters "commands=[\"docker run --rm --network host $API_IMAGE node /workspace/infra/beta/preflight.mjs --probe https://beta.phoeve.com --probe-only\"]" \
+            --comment "phoeve beta verify" \
+            --parameters "$parameters" \
             --query 'Command.CommandId' \
             --output text)
 
@@ -170,7 +179,7 @@ jobs:
                   --command-id "$command_id" --instance-id "$INSTANCE_ID" \
                   --query '{Output:StandardOutputContent,Error:StandardErrorContent}' \
                   --output json
-                echo "::error::the contract probe failed"
+                echo "::error::the published-surface probe failed"
                 exit 1
                 ;;
             esac
@@ -182,6 +191,14 @@ jobs:
             --query '{Status:Status,Output:StandardOutputContent}' \
             --output json
 
+          final=$(aws ssm get-command-invocation \
+            --command-id "$command_id" --instance-id "$INSTANCE_ID" \
+            --query Status --output text)
+          if [ "$final" != "Success" ]; then
+            echo "::error::the published-surface probe did not succeed ($final)"
+            exit 1
+          fi
+
       - name: Deployment summary
         if: always()
         run: |
@@ -191,7 +208,9 @@ jobs:
             echo "- API image: \`$API_IMAGE\`"
             echo "- SPA image: \`$WEB_IMAGE\`"
             echo "- Host: \`${{ steps.host.outputs.instance_id }}\`"
+            echo "- Document: \`$SSM_DOCUMENT\`"
             echo
-            echo "The stack performs its own smoke check and rolls back to the"
-            echo "previous release when it fails."
+            echo "The host performs its own contract check, activates only when the"
+            echo "database schema is known, probes the published surface and rolls"
+            echo "back to the previous release when that probe fails."
           } >> "$GITHUB_STEP_SUMMARY"

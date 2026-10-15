@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "note": [
+    "Reviewed migration compatibility for the Beta deployment gate.",
+    "A migration listed as backward-compatible means the PREVIOUS release still",
+    "works with that migration applied. Anything else is forward-only, and",
+    "forward-only is also the default for unlisted migrations, so a new migration",
+    "never widens what a rollback may do. Add an entry only with the evidence that",
+    "the previous release runs against the migrated schema."
+  ],
+  "default": "forward-only",
+  "reviewed": {}
+}

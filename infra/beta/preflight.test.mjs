@@ -9,14 +9,18 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
+import { createServer } from 'node:http';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, it } from 'node:test';
 
 import {
+  BLOCKED_CAPABILITIES,
+  PUBLISHED_SURFACE,
   checkComposeContract,
   checkEdgeContract,
   checkEnvironment,
+  loopbackFetch,
   parseEnvFile,
   probe,
   serviceBlocks
@@ -200,20 +204,27 @@ describe('checkEdgeContract', () => {
 });
 
 describe('probe', () => {
-  const healthy = async (url) => {
-    const path = new URL(url).pathname;
-    if (path === '/' || path.startsWith('/api/v1/health')) return { status: 200 };
-    if (path === '/api/v1/openapi.json' || path.startsWith('/api/docs')) return { status: 404 };
-    if (path.startsWith('/media') || path.startsWith('/storage')) return { status: 404 };
-    if (path === '/api/v1/public/guest-entry/this-key-does-not-exist') return { status: 404 };
-    if (path === '/api/v1/admin/auth/login') return { status: 503 };
-    if (path === '/api/v1/organizer/session/login') return { status: 503 };
-    return { status: 401 };
+  const contractStatus = (method, path) => {
+    const match = (entry) => entry.method === method && entry.path === path;
+    const published = PUBLISHED_SURFACE.find(match);
+    if (published) return published.statuses[0];
+    const blocked = BLOCKED_CAPABILITIES.find(match);
+    if (blocked) return blocked.statuses[0];
+    throw new Error(`no status declared for ${method} ${path}`);
   };
 
-  it('passes when every blocked capability is refused', async () => {
+  const healthy = async (url, init = {}) => ({
+    status: contractStatus(init.method ?? 'GET', new URL(url).pathname)
+  });
+
+  it('accepts a deployment that fails closed on every blocked capability', async () => {
     const report = await probe('https://beta.phoeve.com', { fetchImpl: healthy });
     assert.equal(report.failures.length, 0, failuresOf(report));
+    assert.equal(
+      report.passes.length,
+      PUBLISHED_SURFACE.length + BLOCKED_CAPABILITIES.length,
+      'every declared request is probed exactly once'
+    );
   });
 
   it('fails when a blocked capability answers with success', async () => {
@@ -225,8 +236,37 @@ describe('probe', () => {
     };
     const report = await probe('https://beta.phoeve.com', { fetchImpl: leaky });
     const failures = failuresOf(report);
-    assert.match(failures, /POST \/api\/v1\/admin\/auth\/login is refused/);
+    assert.match(failures, /POST \/api\/v1\/admin\/auth\/login is refused with/);
     assert.match(failures, /openapi\.json answers 404/);
+  });
+
+  it('never treats an unexpected 500 as a refusal', async () => {
+    const broken = async (url, init = {}) => {
+      const path = new URL(url).pathname;
+      const method = init.method ?? 'GET';
+      if (method === 'GET' && (path === '/api/v1/events' || path === '/api/v1/admin/organizers')) {
+        return { status: 500 };
+      }
+      return healthy(url, init);
+    };
+    const report = await probe('https://beta.phoeve.com', { fetchImpl: broken });
+    const failures = failuresOf(report);
+    assert.match(failures, /GET \/api\/v1\/events is refused with .*\(got 500\)/);
+    assert.match(failures, /GET \/api\/v1\/admin\/organizers is refused with .*\(got 500\)/);
+    assert.equal(report.failures.length, 2, failures);
+  });
+
+  it('never treats a gateway error on a published path as a refutation', async () => {
+    const broken = async (url) => {
+      const path = new URL(url).pathname;
+      if (path === '/api/v1/health/ready') return { status: 503 };
+      if (path === '/api/v1/health/live') return { status: 502 };
+      return healthy(url);
+    };
+    const report = await probe('https://beta.phoeve.com', { fetchImpl: broken });
+    const failures = failuresOf(report);
+    assert.match(failures, /health\/ready answers 200 .*\(got 503\)/);
+    assert.match(failures, /health\/live answers 200 .*\(got 502\)/);
   });
 
   it('reports a transport error instead of passing', async () => {
@@ -236,6 +276,69 @@ describe('probe', () => {
     const report = await probe('https://beta.phoeve.com', { fetchImpl: broken });
     assert.ok(report.failures.length > 0);
     assert.match(failuresOf(report), /ECONNREFUSED/);
+  });
+
+  it('declares an explicit status set per request', () => {
+    const declared = [...PUBLISHED_SURFACE, ...BLOCKED_CAPABILITIES];
+    const keys = declared.map((entry) => `${entry.method} ${entry.path}`);
+    assert.equal(new Set(keys).size, declared.length, 'each request is declared once');
+    for (const entry of declared) {
+      assert.ok(['GET', 'POST'].includes(entry.method), `${entry.path}: ${entry.method}`);
+      assert.ok(Array.isArray(entry.statuses) && entry.statuses.length > 0, entry.path);
+      for (const status of entry.statuses) {
+        assert.ok(Number.isInteger(status), `${entry.path}: ${status}`);
+        // Only the deliberate 503 may appear; no other 5xx is a refusal.
+        assert.ok(status < 500 || status === 503, `${entry.path} accepts ${status}`);
+      }
+    }
+    for (const entry of BLOCKED_CAPABILITIES) {
+      assert.equal(typeof entry.reason, 'string', `${entry.path} documents why it is blocked`);
+    }
+  });
+});
+
+describe('loopbackFetch', () => {
+  it('pins the connection to loopback while sending the published Host', async () => {
+    const requests = [];
+    const server = createServer((request, response) => {
+      const chunks = [];
+      request.on('data', (chunk) => chunks.push(chunk));
+      request.on('end', () => {
+        requests.push({
+          method: request.method,
+          url: request.url,
+          host: request.headers.host,
+          body: Buffer.concat(chunks).toString('utf8')
+        });
+        response.writeHead(204);
+        response.end();
+      });
+    });
+
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const { port } = server.address();
+    try {
+      const transport = loopbackFetch();
+      // The published name is never resolved, so TLS is attempted on loopback.
+      await assert.rejects(transport(`https://beta.phoeve.com:${port}/api/v1/events`));
+
+      const response = await transport(`http://beta.phoeve.com:${port}/api/v1/admin/auth/login`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: '{}'
+      });
+      assert.equal(response.status, 204);
+      assert.deepEqual(requests, [
+        {
+          method: 'POST',
+          url: '/api/v1/admin/auth/login',
+          host: `beta.phoeve.com:${port}`,
+          body: '{}'
+        }
+      ]);
+    } finally {
+      await new Promise((resolve) => server.close(resolve));
+    }
   });
 });
 
