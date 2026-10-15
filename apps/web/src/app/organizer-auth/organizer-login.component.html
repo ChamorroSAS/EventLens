@@ -1,13 +1,18 @@
 <main class="el-auth-entry" aria-labelledby="organizer-login-heading">
   <div class="el-auth-card">
     <div class="el-auth-logo">
+      @if (!logoFailed) {
       <img
         src="assets/branding/phoeve/logo-primary.png"
         alt="Phoeve"
         class="auth-brand-logo"
         width="120"
         height="40"
+        (error)="onLogoError()"
       />
+      } @else {
+      <span class="brand-fallback-text">Phoeve</span>
+      }
     </div>
 
     <header class="el-auth-header">

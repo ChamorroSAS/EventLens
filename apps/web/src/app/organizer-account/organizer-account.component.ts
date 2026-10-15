@@ -238,7 +238,7 @@ export class OrganizerAccountComponent implements OnInit {
   );
 
   formatSessionDate(isoDate?: string | null): string {
-    if (!isoDate) return '14 de octubre, 2026 - 03:57 PM';
+    if (!isoDate) return '';
     try {
       const date = new Date(isoDate);
       if (isNaN(date.getTime())) return isoDate;

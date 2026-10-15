@@ -1,0 +1,162 @@
+.el-beta-access-page {
+  max-width: 30rem;
+  margin: 2.5rem auto;
+  padding: 0 1.25rem;
+  font-family: var(--el-font-family);
+  color: var(--el-color-text);
+}
+
+.el-beta-card {
+  background: var(--el-color-surface);
+  border: 1px solid var(--el-color-border);
+  border-radius: 1rem;
+  padding: 2rem 1.5rem;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+}
+
+.el-beta-eyebrow {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--el-color-primary);
+}
+
+.el-beta-header h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.el-beta-helper {
+  margin: 0 0 1.5rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--el-color-text-secondary);
+}
+
+.el-beta-received {
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  background: var(--el-color-surface-muted);
+  border: 1px solid var(--el-color-border-strong);
+}
+
+.el-beta-received h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--el-color-text);
+}
+
+.el-beta-received p {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--el-color-text-secondary);
+}
+
+.el-inline-message {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.el-inline-message p {
+  margin: 0;
+}
+
+.el-inline-message--error {
+  background: var(--el-color-danger-soft);
+  border: 1px solid var(--el-color-danger);
+  color: var(--el-color-danger);
+}
+
+.el-inline-message--warning {
+  background: var(--el-color-warning-soft);
+  border: 1px solid var(--el-color-warning);
+  color: var(--el-color-warning);
+}
+
+.el-btn-retry {
+  margin-top: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid currentColor;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.el-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: 1rem;
+}
+
+.el-form-field label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--el-color-text);
+}
+
+.el-form-field input {
+  min-height: 2.75rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--el-color-border);
+  border-radius: 0.5rem;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--el-color-text);
+}
+
+.el-form-field input:focus-visible {
+  outline: 2px solid var(--el-color-primary);
+  outline-offset: 2px;
+}
+
+.el-form-actions {
+  margin-top: 1.25rem;
+}
+
+.el-btn--primary {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: var(--el-color-primary);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.el-btn--primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.el-beta-footer {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--el-color-border);
+}
+
+.el-link-secondary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: var(--el-color-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: underline;
+}

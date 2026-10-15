@@ -6,9 +6,9 @@
   align-items: center;
   justify-content: center;
   padding: 2rem 1.25rem;
-  font-family: 'Manrope', system-ui, sans-serif;
-  color: #0f172a;
-  background-color: #f8fafc;
+  font-family: var(--el-font-family);
+  color: var(--el-color-text);
+  background-color: var(--el-color-background);
   background-image: url('/assets/branding/phoeve/login-background.jpg');
   background-size: cover;
   background-position: center;
@@ -39,32 +39,38 @@
   aspect-ratio: 2172 / 724;
   object-fit: contain;
 }
+.brand-fallback-text {
+  font-family: inherit;
+  font-size: var(--el-font-size-h1);
+  font-weight: var(--el-font-weight-bold);
+  color: var(--el-color-text);
+}
 .el-auth-eyebrow {
   margin: 0 0 0.375rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #2563eb;
+  color: var(--el-color-primary);
 }
 .el-auth-header h1 {
   margin: 0 0 0.5rem;
   font-size: 1.625rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--el-color-text);
   line-height: 1.25;
 }
 .el-auth-subtitle {
   margin: 0 0 1.5rem;
   font-size: 0.875rem;
   line-height: 1.45;
-  color: #64748b;
+  color: var(--el-color-text-secondary);
 }
 .el-inline-message--error {
   margin-bottom: 1rem;
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #991b1b;
+  background: var(--el-color-danger-soft);
+  border: 1px solid var(--el-color-danger);
+  color: var(--el-color-danger);
   font-size: 0.875rem;
   line-height: 1.4;
 }
@@ -77,27 +83,27 @@
 .el-form-field label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--el-color-text);
 }
 .el-form-field input {
   min-height: 2.75rem;
   padding: 0.625rem 0.875rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--el-color-border);
   border-radius: 0.5rem;
-  background-color: #f8fafc;
+  background-color: var(--el-color-background);
   font-family: inherit;
   font-size: 0.95rem;
-  color: #0f172a;
+  color: var(--el-color-text);
   transition: all 0.15s ease;
 }
 .el-form-field input::placeholder {
-  color: #94a3b8;
+  color: var(--el-color-text-secondary);
 }
 .el-form-field input:focus-visible {
   outline: none;
-  border-color: #2563eb;
-  background-color: #ffffff;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  border-color: var(--el-color-primary);
+  background-color: var(--el-color-surface);
+  box-shadow: 0 0 0 3px rgba(23, 52, 92, 0.15);
 }
 .el-password-wrap {
   position: relative;
@@ -118,17 +124,17 @@
   height: 2rem;
   border: none;
   background: transparent;
-  color: #94a3b8;
+  color: var(--el-color-text-secondary);
   border-radius: 0.375rem;
   cursor: pointer;
   transition: color 0.15s ease;
 
   &:hover {
-    color: #475569;
+    color: var(--el-color-text);
   }
 
   &:focus-visible {
-    outline: 2px solid #2563eb;
+    outline: 2px solid var(--el-color-primary);
     outline-offset: 1px;
   }
 }
@@ -141,18 +147,18 @@
   padding: 0.75rem 1.25rem;
   border: none;
   border-radius: 0.5rem;
-  background: #2563eb;
+  background: var(--el-color-primary);
   color: #ffffff;
   font-family: inherit;
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 2px 4px rgba(23, 52, 92, 0.2);
   transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: #1d4ed8;
-    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.25);
+    background: var(--el-color-primary-hover);
+    box-shadow: 0 4px 8px rgba(23, 52, 92, 0.25);
   }
 
   &:disabled {
@@ -162,7 +168,7 @@
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35);
+    box-shadow: 0 0 0 3px rgba(23, 52, 92, 0.35);
   }
 }
 .el-auth-footer {
@@ -175,7 +181,7 @@
 .el-link-secondary {
   display: inline-flex;
   align-items: center;
-  color: #1e293b;
+  color: var(--el-color-text);
   font-size: 0.8125rem;
   font-weight: 500;
   text-decoration: underline;
@@ -183,6 +189,6 @@
   transition: color 0.15s ease;
 
   &:hover {
-    color: #2563eb;
+    color: var(--el-color-primary);
   }
 }

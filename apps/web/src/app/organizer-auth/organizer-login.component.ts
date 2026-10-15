@@ -29,6 +29,12 @@ export class OrganizerLoginComponent implements OnInit {
   readonly errorMessage = signal<string | null>(null);
   readonly hasFieldValidationError = signal(false);
 
+  logoFailed = false;
+
+  onLogoError(): void {
+    this.logoFailed = true;
+  }
+
   toggleShowPassword(): void {
     this.showPassword.update(v => !v);
   }

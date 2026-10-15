@@ -27,7 +27,6 @@ export class OrganizerAppShellComponent {
   readonly homePath = APPROVED_PUBLIC_ENTRY_PATHS.HOME;
 
   logoFailed = false;
-  avatarFailed = false;
   readonly isSidebarCollapsed = signal(false);
 
   readonly userEmail = computed(() => this.sessionService?.account()?.email ?? '');
@@ -48,10 +47,6 @@ export class OrganizerAppShellComponent {
 
   onLogoError(): void {
     this.logoFailed = true;
-  }
-
-  onAvatarError(): void {
-    this.avatarFailed = true;
   }
 
   onExitContext(): void {

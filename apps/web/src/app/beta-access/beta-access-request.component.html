@@ -1,0 +1,94 @@
+<main class="el-beta-access-page" aria-labelledby="beta-access-heading">
+  <div class="el-beta-card">
+    <header class="el-beta-header">
+      <p class="el-beta-eyebrow">Acceso disponible mediante invitación.</p>
+      <h1 id="beta-access-heading" tabindex="-1">Solicitar acceso a la Beta</h1>
+      <p id="beta-access-helper" class="el-beta-helper">
+        Enviar esta solicitud no crea una cuenta ni garantiza una invitación.
+      </p>
+    </header>
+
+    @if (formState() === 'RECEIVED') {
+      <section
+        class="el-beta-received"
+        role="status"
+        aria-live="polite"
+        aria-labelledby="beta-received-heading">
+        <h2 id="beta-received-heading">Solicitud recibida</h2>
+        <p>{{ feedbackMessage() }}</p>
+        <div class="el-beta-actions">
+          <a class="el-link-secondary" [href]="homePath" (click)="onReturnHome($event)">
+            Volver al inicio
+          </a>
+        </div>
+      </section>
+    } @else {
+      <form
+        class="el-beta-form"
+        (submit)="onSubmit($event)"
+        novalidate
+        aria-labelledby="beta-access-heading"
+        aria-describedby="beta-access-helper">
+        @if (feedbackMessage(); as messageText) {
+          <div
+            id="beta-access-feedback"
+            role="alert"
+            aria-live="assertive"
+            class="el-inline-message"
+            [class.el-inline-message--warning]="formState() === 'RATE_LIMITED'"
+            [class.el-inline-message--error]="formState() !== 'RATE_LIMITED'">
+            <p>{{ messageText }}</p>
+            @if (formState() === 'RATE_LIMITED' || formState() === 'UNAVAILABLE') {
+              <button
+                type="button"
+                class="el-btn-retry"
+                [disabled]="formState() === 'SUBMITTING'"
+                (click)="retrySubmission()">
+                Reintentar envío
+              </button>
+            }
+          </div>
+        }
+
+        <div class="el-form-field">
+          <label for="beta-access-email">Correo electrónico</label>
+          <input
+            id="beta-access-email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            required
+            [value]="email()"
+            [disabled]="formState() === 'SUBMITTING'"
+            [attr.aria-invalid]="formState() === 'INVALID' ? 'true' : null"
+            [attr.aria-describedby]="
+              feedbackMessage()
+                ? 'beta-access-helper beta-access-feedback'
+                : 'beta-access-helper'
+            "
+            (input)="onEmailInput($event)" />
+        </div>
+
+        <div class="el-form-actions">
+          <button
+            type="submit"
+            class="el-btn el-btn--primary"
+            [disabled]="formState() === 'SUBMITTING'"
+            [attr.aria-busy]="formState() === 'SUBMITTING' ? 'true' : null">
+            {{
+              formState() === 'SUBMITTING'
+                ? 'Enviando solicitud…'
+                : 'Solicitar acceso a la Beta'
+            }}
+          </button>
+        </div>
+      </form>
+
+      <footer class="el-beta-footer">
+        <a class="el-link-secondary" [href]="homePath" (click)="onReturnHome($event)">
+          Volver al inicio
+        </a>
+      </footer>
+    }
+  </div>
+</main>

@@ -65,25 +65,17 @@
         <!-- Profile Info Card -->
         <div class="sidebar-profile-card">
           <div class="sidebar-avatar-wrap">
-            @if (!avatarFailed) {
-            <img
-              src="assets/branding/phoeve/organizer-avatar.jpg"
-              alt="Avatar del organizador"
-              class="sidebar-avatar-img"
-              width="60"
-              height="60"
-              (error)="onAvatarError()" />
-            } @else {
-            <div class="sidebar-avatar-fallback">
+            <div class="sidebar-avatar-fallback" aria-hidden="true">
               {{ userInitial() }}
             </div>
-            }
           </div>
           <div class="sidebar-user-details">
-            <span class="sidebar-user-greeting">Hi, Organizador</span>
+            <span class="sidebar-user-greeting">Tu cuenta</span>
+            @if (userEmail()) {
             <span class="sidebar-user-email" [title]="userEmail()">
-              {{ userEmail() || 'organizador@phoeve.local' }}
+              {{ userEmail() }}
             </span>
+            }
           </div>
         </div>
 

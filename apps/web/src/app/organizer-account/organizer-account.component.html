@@ -144,7 +144,7 @@
           </p>
           } @else {
           <p class="el-session-activity-text">
-            Última actividad: {{ formatSessionDate(null) }}
+            Aún no registramos actividad en esta sesión.
           </p>
           }
         </div>
@@ -230,19 +230,6 @@
         data-testid="account-deletion-zone">
         <div class="el-card-header">
           <h2>Opciones de Cuenta</h2>
-        </div>
-
-        <div class="el-account-tabs" role="tablist">
-          <button type="button" class="el-tab is-active" role="tab"
-            aria-selected="true">
-            Activo
-          </button>
-          <button type="button" class="el-tab" role="tab" aria-selected="false">
-            Enlace
-          </button>
-          <button type="button" class="el-tab" role="tab" aria-selected="false">
-            Desactivado
-          </button>
         </div>
 
         @if (deletionSnapshot()?.isIrreversible) {
