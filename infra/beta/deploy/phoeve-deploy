@@ -1,0 +1,186 @@
+#!/usr/bin/env bash
+# Phoeve Beta — stable deployment entry point (Etapa 1).
+#
+# Installed at /usr/local/sbin/phoeve-deploy by bootstrap-host.sh and invoked on
+# the host by the authorised GitHub Actions workflow over SSM:
+#
+#   sudo /usr/local/sbin/phoeve-deploy <api-image-ref> <web-image-ref>
+#   sudo /usr/local/sbin/phoeve-deploy rollback
+#   sudo /usr/local/sbin/phoeve-deploy status
+#
+# Design notes:
+#   * The deployment bundle (compose.yaml, Caddyfile, preflight) is extracted from
+#     the image being deployed, so the files on disk always match the running
+#     image. CI cannot push arbitrary files into the release directory.
+#   * The contract preflight runs before anything is switched, and the stack is
+#     rolled back automatically when the smoke check fails.
+#   * Images must be digest-pinned. Tag-only references require
+#     ALLOW_TAG_IMAGES=1 and are only for local validation.
+set -euo pipefail
+
+PHOEVE_ROOT=/srv/phoeve/beta
+APP_ENV="${PHOEVE_ROOT}/app.env"
+VOLUMES_ENV=/etc/phoeve/beta-volumes.env
+KEEP_RELEASES=3
+
+log() { printf '[deploy] %s\n' "$*"; }
+die() { printf '[deploy] ERROR: %s\n' "$*" >&2; exit 1; }
+
+[[ "$(id -u)" -eq 0 ]] || die "run as root (sudo)"
+
+compose() {
+  docker compose \
+    --env-file "$APP_ENV" \
+    --project-directory "$PHOEVE_ROOT/current" \
+    -f "$PHOEVE_ROOT/current/compose.yaml" \
+    "$@"
+}
+
+base_url() {
+  sed -n 's/^PUBLIC_ENTRY_BASE_URL=//p' "$APP_ENV" | head -n1
+}
+
+# Requests the public origin while forcing the loopback address, so a fresh
+# deployment is validated through the real edge (including TLS) before it is
+# considered successful.
+edge_status() {
+  local method="$1" path="$2" url host
+  url="$(base_url)"
+  [[ -n "$url" ]] || die "PUBLIC_ENTRY_BASE_URL is missing from $APP_ENV"
+  host="${url#*://}"
+  host="${host%%/*}"
+  local args=()
+  if [[ "$url" == https://* ]]; then
+    args=(--resolve "${host}:443:127.0.0.1")
+  fi
+  curl -s -o /dev/null -w '%{http_code}' --max-time 10 -X "$method" "${args[@]}" "${url}${path}" || true
+}
+
+smoke() {
+  local failures=0 status
+
+  status="$(edge_status GET /api/v1/health/live)"
+  [[ "$status" == "200" ]] || { printf 'smoke: health/live expected 200, got %s\n' "$status" >&2; failures=$((failures + 1)); }
+  status="$(edge_status GET /api/v1/health/ready)"
+  [[ "$status" == "200" ]] || { printf 'smoke: health/ready expected 200, got %s\n' "$status" >&2; failures=$((failures + 1)); }
+  status="$(edge_status GET /api/v1/openapi.json)"
+  [[ "$status" == "404" ]] || { printf 'smoke: openapi.json expected 404, got %s\n' "$status" >&2; failures=$((failures + 1)); }
+  status="$(edge_status GET /api/docs)"
+  [[ "$status" == "404" ]] || { printf 'smoke: /api/docs expected 404, got %s\n' "$status" >&2; failures=$((failures + 1)); }
+
+  for blocked in /api/v1/admin/auth/login /api/v1/organizer/session/login; do
+    status="$(edge_status POST "$blocked")"
+    if [[ "$status" == 2* ]]; then
+      printf 'smoke: %s answered %s but the capability is blocked\n' "$blocked" "$status" >&2
+      failures=$((failures + 1))
+    fi
+  done
+
+  status="$(edge_status GET /)"
+  [[ "$status" == "200" ]] || { printf 'smoke: / expected 200, got %s\n' "$status" >&2; failures=$((failures + 1)); }
+
+  return "$failures"
+}
+
+switch_to() {
+  local release_dir="$1" previous=""
+  if [[ -L "$PHOEVE_ROOT/current" ]]; then
+    previous="$(basename "$(readlink -f "$PHOEVE_ROOT/current")")"
+  fi
+  ln -sfn "$release_dir" "$PHOEVE_ROOT/current.tmp"
+  mv -Tf "$PHOEVE_ROOT/current.tmp" "$PHOEVE_ROOT/current"
+  if [[ -n "$previous" ]]; then
+    printf '%s\n' "$previous" > "$PHOEVE_ROOT/previous"
+  fi
+}
+
+deploy() {
+  local api_ref="$1" web_ref="$2"
+
+  for ref in "$api_ref" "$web_ref"; do
+    if [[ "$ref" != *"@sha256:"* && "${ALLOW_TAG_IMAGES:-0}" != "1" ]]; then
+      die "image reference '$ref' is not digest-pinned (set ALLOW_TAG_IMAGES=1 only for local validation)"
+    fi
+  done
+
+  [[ -f "$APP_ENV" ]] || die "$APP_ENV is missing (run phoeve-render-env first)"
+  /usr/local/sbin/phoeve-mount-guard --from-env /etc/phoeve/beta-volumes.env
+
+  local release_id
+  release_id="$(printf '%s' "$api_ref" | sed -n 's/.*@sha256:\([0-9a-f]\{12\}\).*/\1/p')"
+  [[ -n "$release_id" ]] || release_id="tag-$(date -u +%Y%m%d%H%M%S)"
+
+  local release_dir="$PHOEVE_ROOT/releases/$release_id"
+  install -d -m 0700 "$release_dir"
+
+  printf 'pulling images\n'
+  docker pull "$api_ref"
+  docker pull "$web_ref"
+
+  printf 'extracting the deploy bundle from %s\n' "$api_ref"
+  local container
+  container="$(docker create "$api_ref")"
+  docker cp "${container}:/workspace/infra/beta/." "$release_dir/"
+  docker rm -f "$container" >/dev/null
+
+  printf 'validating the deployment contract\n'
+  docker run --rm -i --network none \
+    -v "${release_dir}:/bundle:ro" \
+    "$api_ref" \
+    node /bundle/preflight.mjs --env-file - \
+      --compose /bundle/compose.yaml --caddy /bundle/Caddyfile \
+    < "$APP_ENV"
+
+  printf 'activating release %s\n' "$release_id"
+  switch_to "$release_dir"
+
+  compose up -d --remove-orphans
+
+  printf 'waiting for readiness\n'
+  local attempt
+  for attempt in $(seq 1 30); do
+    if [[ "$(edge_status GET /api/v1/health/ready)" == "200" ]]; then
+      break
+    fi
+    sleep 5
+  done
+
+  if smoke; then
+    printf 'deployment %s is healthy\n' "$release_id"
+  else
+    printf 'smoke checks failed, rolling back\n' >&2
+    rollback
+    die "deployment $release_id failed its smoke checks"
+  fi
+
+  # Keep only the most recent releases.
+  ls -1dt "$PHOEVE_ROOT"/releases/*/ 2>/dev/null | tail -n +$((3 + 1)) | xargs -r rm -rf
+}
+
+rollback() {
+  local previous
+  [[ -f "$PHOEVE_ROOT/previous" ]] || die "no previous release recorded"
+  previous="$(cat "$PHOEVE_ROOT/previous")"
+  [[ -d "$PHOEVE_ROOT/releases/$previous" ]] || die "previous release $previous is no longer on the host"
+
+  printf 'rolling back to %s\n' "$previous"
+  ln -sfn "$PHOEVE_ROOT/releases/$previous" "$PHOEVE_ROOT/current.tmp"
+  mv -Tf "$PHOEVE_ROOT/current.tmp" "$PHOEVE_ROOT/current"
+  compose up -d --remove-orphans
+  smoke || die "rollback target $previous did not pass its smoke checks"
+  printf 'rollback to %s complete\n' "$previous"
+}
+
+status() {
+  compose ps
+}
+
+case "${1:-}" in
+  deploy|"")
+    [[ $# -eq 3 ]] || die "usage: phoeve-deploy <api-image> <web-image>"
+    deploy "$2" "$3"
+    ;;
+  rollback) rollback ;;
+  status) status ;;
+  *) die "unknown command: $1" ;;
+esac

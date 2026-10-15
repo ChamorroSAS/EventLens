@@ -1,0 +1,185 @@
+# Phoeve Beta — deployment contract (EL-EP-020, Etapa 1)
+#
+# Scope of this file: publish the safe public surface (SPA + public API +
+# PostgreSQL) behind the edge. It deliberately does NOT include MinIO, the media
+# gateway, workers, the scheduler or any local-admin tooling, and it keeps
+# development-only toggles explicitly disabled so a blocked feature cannot become
+# reachable by starting a container.
+#
+# How to use it (never from a workstation against real data):
+#   docker compose --env-file /srv/phoeve/beta/app.env -f compose.yaml up -d
+#
+# Required variables are declared with ":?" on purpose: Compose refuses to start
+# when a value is missing instead of falling back to a development default.
+
+name: phoeve-beta
+
+# Application containers must not write to the root filesystem or grow logs
+# without bound (root volume safety).
+x-hardening: &hardening
+  security_opt:
+    - no-new-privileges:true
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "5"
+
+x-database-environment: &database-environment
+  PGHOST: postgres
+  PGPORT: "5432"
+  PGUSER: ${POSTGRES_USER:?POSTGRES_USER}
+  PGPASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD}
+  PGDATABASE: ${POSTGRES_DB:?POSTGRES_DB}
+  DATABASE_TIMEOUT_MS: "2000"
+
+services:
+  postgres:
+    image: ${PHOEVE_POSTGRES_IMAGE:-postgres:16.15-alpine3.24}
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      POSTGRES_DB: ${POSTGRES_DB:?}
+    volumes:
+      - ${PHOEVE_DATA_ROOT:-/srv/phoeve/beta}/postgres:/var/lib/postgresql/data
+    networks: [control]
+    # No published port: the database is reachable only from the control network.
+    security_opt: [no-new-privileges:true]
+    mem_limit: ${POSTGRES_MEM_LIMIT:-1g}
+    logging:
+      driver: json-file
+      options: { max-size: 10m, max-file: "5" }
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\" -h 127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped
+
+  migrate:
+    image: ${PHOEVE_API_IMAGE:?set PHOEVE_API_IMAGE to the digest-pinned API image}
+    command: ["node", "scripts/database.mjs", "migrate"]
+    environment:
+      NODE_ENV: production
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGUSER: ${POSTGRES_USER:?}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?}
+      PGDATABASE: ${POSTGRES_DB:?}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [control]
+    restart: "no"
+    security_opt: [no-new-privileges:true]
+
+  api:
+    image: ${PHOEVE_API_IMAGE:?set PHOEVE_API_IMAGE to the digest-pinned API image}
+    environment:
+      NODE_ENV: production
+      API_HOST: 0.0.0.0
+      API_PORT: "3000"
+      DATABASE_TIMEOUT_MS: "2000"
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGUSER: ${POSTGRES_USER:?}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?}
+      PGDATABASE: ${POSTGRES_DB:?}
+      # CORS and session Origin validation.
+      WEB_ORIGIN: ${PUBLIC_ENTRY_BASE_URL:?set PUBLIC_ENTRY_BASE_URL to the published HTTPS origin}
+      # Guest links and QR payloads are derived from this trusted base.
+      PUBLIC_ENTRY_BASE_URL: ${PUBLIC_ENTRY_BASE_URL:?}
+      IDENTITY_PEPPER_SECRET: ${IDENTITY_PEPPER_SECRET:?set IDENTITY_PEPPER_SECRET from SSM SecureString}
+      # Blocked features stay off. Non-development values are rejected by the
+      # application at startup, so this is a second, explicit control.
+      LOCAL_ADMIN_ENABLED: "false"
+      LOCAL_MEDIA_UPLOAD_ENABLED: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    networks: [control, edge]
+    # The runtime filesystem is read-only: nothing may be persisted outside the
+    # mounted data volumes.
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt: [no-new-privileges:true]
+    mem_limit: ${API_MEM_LIMIT:-1g}
+    logging:
+      driver: json-file
+      options: { max-size: 10m, max-file: "5" }
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/v1/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  web:
+    image: ${PHOEVE_WEB_IMAGE:?set PHOEVE_WEB_IMAGE to the digest-pinned SPA image}
+    environment:
+      # spa-server.mjs binds loopback by default; publish it only inside the edge network.
+      SPA_HOST: 0.0.0.0
+      SPA_PORT: "4201"
+      PUBLIC_BASE_HREF: /
+    networks: [edge]
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt: [no-new-privileges:true]
+    logging:
+      driver: json-file
+      options: { max-size: 10m, max-file: "5" }
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:4201/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    restart: unless-stopped
+
+  edge:
+    image: ${PHOEVE_EDGE_IMAGE:-caddy:2.10.0-alpine}
+    environment:
+      PHOEVE_SITE_ADDRESS: ${PHOEVE_SITE_ADDRESS:-beta.phoeve.com}
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL for certificate registration}
+    ports:
+      - "${HTTP_BIND:-0.0.0.0}:${HTTP_PORT:-80}:80"
+      - "${HTTP_BIND:-0.0.0.0}:${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ${PHOEVE_DATA_ROOT:-/srv/phoeve/beta}/caddy/data:/data
+      - ${PHOEVE_DATA_ROOT:-/srv/phoeve/beta}/caddy/config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    networks: [edge]
+    security_opt: [no-new-privileges:true]
+    logging:
+      driver: json-file
+      options: { max-size: 10m, max-file: "5" }
+    restart: unless-stopped
+
+networks:
+  # Reachable from the edge only.
+  edge:
+    driver: bridge
+  # Internal: no route to the outside, so the database and the migration job
+  # cannot reach the internet.
+  control:
+    driver: bridge
+    internal: true

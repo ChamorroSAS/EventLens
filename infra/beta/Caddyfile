@@ -1,0 +1,74 @@
+# Phoeve Beta — edge configuration (Etapa 1)
+#
+# The edge publishes exactly three things:
+#   1. the SPA served by the verified spa-server.mjs container,
+#   2. the public API under /api/v1,
+#   3. nothing else.
+#
+# Everything that is not part of the approved public surface answers 404 so that
+# a blocked capability cannot be reached by guessing a URL. The API itself also
+# fails closed in production; this is deliberately a second, independent control.
+#
+# Local validation (no TLS, no ACME): PHOEVE_SITE_ADDRESS=http://localhost
+# Production: PHOEVE_SITE_ADDRESS=beta.phoeve.com (ACME issues the certificate).
+{
+	email {$ACME_EMAIL}
+	# No remote administration API on a public host.
+	admin off
+	# Keep certificate state inside the mounted data volume.
+	storage file_system /data
+}
+
+{$PHOEVE_SITE_ADDRESS} {
+	log {
+		output stdout
+		format json
+	}
+
+	encode zstd gzip
+
+	header {
+		# The published Beta is HTTPS-only.
+		Strict-Transport-Security "max-age=63072000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		# Not indexed while the Beta is closed.
+		X-Robots-Tag "noindex, nofollow, noarchive"
+		-Server
+	}
+
+	# --- API documentation is not part of the published surface -------------
+	handle /api/docs* {
+		respond 404
+	}
+
+	handle /api/v1/openapi.json {
+		respond 404
+	}
+
+	# --- Public API --------------------------------------------------------
+	handle /api/v1/* {
+		reverse_proxy api:3000
+	}
+
+	# --- Anything else under /api is not published -------------------------
+	handle /api/* {
+		respond 404
+	}
+
+	# --- No object storage is published in the Beta ------------------------
+	handle /media* {
+		respond 404
+	}
+
+	handle /storage* {
+		respond 404
+	}
+
+	# --- SPA (verified Angular build served by apps/web/spa-server.mjs) -----
+	handle {
+		reverse_proxy web:4201
+	}
+}
