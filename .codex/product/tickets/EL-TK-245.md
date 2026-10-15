@@ -50,6 +50,15 @@ Reducir garantías por presupuesto o llamar DONE a evidencia simulada.
 Bloqueantes globales: región/proveedores/capacidad/costo/gates/autoridad; ver CR-011. Riesgos particulares se resuelven con las pruebas y revisión descritas.
 
 ## Definition of Ready
+
+### Evaluación técnica posterior — 2026-10-14
+
+CONFIRMED por usuario: us-east-1; dos eventos simultáneos de prueba; media operativa filesystem/EBS sin gateway S3. Se solicita evaluar S3 para backups y RecoveryAuthority frente a DynamoDB; no se adopta proveedor por esta solicitud. Región y simultaneidad dejan de ser preguntas abiertas; volumen, rotación mensual, retención y capacidad siguen PENDING.
+
+Informe: `docs/aws-beta-technical-evaluation.md`. ADR: `docs/adr/beta-backups-and-recovery-authority.proposed.md`, PROPOSED / NOT_ACCEPTED. Evidencia pública de precios y calculador offline disponibles; no son benchmark ARM64 ni prueba PITR. Recomendación para revisión: backups S3 Standard y autoridad DynamoDB on-demand, sujetos a ancla de actualidad/reconstrucción, IAM, purga y protocolo probado. RPO media ≤1h propuesto, no aprobado.
+
+Esta actualización prevalece sobre las preguntas históricas de región/cohorte y el precio EC2 sin SKU. No altera DRAFT/REQUIREMENTS_READY: NO/READY_FOR_IMPLEMENTATION: NO, ni decisiones aceptadas. No hubo delegación, asignación de responsabilidades ni recursos AWS. Bloqueantes y ensayos pendientes: secciones 8–9 del informe.
+
 - [x] Objetivo y alcance propuestos.
 - [x] Dependencias y aceptación identificadas.
 - [ ] Decisiones BLOCKER aplicables cerradas.

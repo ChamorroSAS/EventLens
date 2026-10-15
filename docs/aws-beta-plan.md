@@ -1,5 +1,7 @@
 # Phoeve Beta — Propuesta de infraestructura y despliegue
 
+Actualización para revisión: [evaluación EL-TK-245 / CR-011](aws-beta-technical-evaluation.md) y [ADR propuesto](adr/beta-backups-and-recovery-authority.proposed.md). us-east-1 y dos eventos simultáneos ahora CONFIRMED; S3 backups/autoridad son alternativas evaluadas, no adoptadas. Usar los escenarios del informe para costos actuales. El resto conserva el historial de la propuesta; no habilita despliegue.
+
 Fecha: 2026-10-14. RECOMMENDED; REQUIREMENTS_READY: NO; READY_FOR_IMPLEMENTATION: NO.
 Todos los pasos de aprovisionamiento son futuros y requieren gates/aprobación. No hay archivos Terraform ni workflows ejecutables nuevos en esta entrega.
 

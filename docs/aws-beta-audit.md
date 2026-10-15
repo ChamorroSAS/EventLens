@@ -1,5 +1,7 @@
 # Phoeve Beta — Auditoría de preparación para AWS
 
+Evaluación posterior para revisión: [EL-TK-245 / CR-011](aws-beta-technical-evaluation.md). Región us-east-1 y dos eventos simultáneos confirmados; alternativas S3/DynamoDB y costos revisados allí. No modifica decisiones aceptadas ni acredita despliegue.
+
 Fecha: 2026-10-14. Estado: propuesta documental; no autorización de aprovisionamiento.
 
 Revisión posterior a EL-TK-265 y commits `3a09bd2`..`4b85e91`: **NO-GO para desplegar la Beta con datos reales**. La recepción privada local ya funciona; no acredita el proveedor filesystem Beta, aceptación/publicación, PITR ni autoridad independiente. Se conserva la historia de EL-TK-222; no se promueven tickets de infraestructura por el cierre focal de transferencia.

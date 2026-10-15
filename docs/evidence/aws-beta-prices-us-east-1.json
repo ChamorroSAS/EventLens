@@ -1,0 +1,222 @@
+{
+  "retrievedAt": "2026-10-15T03:24:46.649Z",
+  "region": "us-east-1",
+  "catalogs": [
+    {
+      "service": "AmazonS3",
+      "source": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonS3/current/us-east-1/index.json",
+      "publicationDate": "2026-10-14T20:58:47Z",
+      "sourceSha256": "c5ba2b7dabaf9fdc802125ecc105ffa8575ceefb30953626b7334816d6943c4d",
+      "items": [
+        {
+          "sku": "GWU4HUHFNSRYMYNK",
+          "rateCode": "GWU4HUHFNSRYMYNK.JRTCKXETXF.6YS6EN2CT7",
+          "usage": "Requests-SIA-Tier2",
+          "group": "S3-API-SIA-Tier2",
+          "begin": "0",
+          "end": "Inf",
+          "unit": "Requests",
+          "usd": "0.0000010000"
+        },
+        {
+          "sku": "CN3DWKRWAMMHWCA3",
+          "rateCode": "CN3DWKRWAMMHWCA3.JRTCKXETXF.6YS6EN2CT7",
+          "usage": "Retrieval-GIR",
+          "group": "S3-API-GIR-Retrieval",
+          "begin": "0",
+          "end": "Inf",
+          "unit": "GB",
+          "usd": "0.0300000000"
+        },
+        {
+          "sku": "YAXYB5WAVB7U5BRN",
+          "rateCode": "YAXYB5WAVB7U5BRN.JRTCKXETXF.6YS6EN2CT7",
+          "usage": "Requests-GIR-Tier1",
+          "group": "S3-API-GIR-Tier1",
+          "begin": "0",
+          "end": "Inf",
+          "unit": "Requests",
+          "usd": "0.0000200000"
+        },
+        {
+          "sku": "NMJQ7TNW84EMBGZM",
+          "rateCode": "NMJQ7TNW84EMBGZM.JRTCKXETXF.6YS6EN2CT7",
+          "usage": "TimedStorage-GIR-ByteHrs",
+          "storageClass": "Archive Instant Retrieval",
+          "begin": "0",
+          "end": "Inf",
+          "unit": "GB-Mo",
+          "usd": "0.0040000000"
+        },
+        {
+          "sku": "379GYJUQ5WFBUYGM",
+          "rateCode": "379GYJUQ5WFBUYGM.JRTCKXETXF.6YS6EN2CT7",
+          "usage": "TimedStorage-SIA-ByteHrs",
+          "storageClass": "Infrequent Access",
+          "begin": "0",
+          "end": "Inf",
+          "unit": "GB-Mo",
+          "usd": "0.0125000000"
+        },
+        {
+          "sku": "ZWQ6Q48CRJXX4FXE",
+          "rateCode": "ZWQ6Q48CRJXX4FXE.JRTCKXETXF.6YS6EN2CT7",
+          "usage": "Requests-Tier2",
+          "group": "S3-API-Tier2",
+          "begin": "0",
+          "end": "Inf",
+          "unit": "Requests",
+          "usd": "0.0000004000"
+        },
+        {
+          "sku": "6WKRC2AMC45PNCVZ",
+          "rateCode": "6WKRC2AMC45PNCVZ.JRTCKXETXF.6YS6EN2CT7",
+          "usage": "Requests-GIR-Tier2",
+          "group": "S3-API-GIR-Tier2",
+          "begin": "0",
+          "end": "Inf",
+          "unit": "Requests",
+          "usd": "0.0000100000"
+        },
+        {
+          "sku": "7594RTQEE8ND34GA",
+          "rateCode": "7594RTQEE8ND34GA.JRTCKXETXF.6YS6EN2CT7",
+          "usage": "Retrieval-SIA",
+          "group": "S3-API-SIA-Retrieval",
+          "begin": "0",
+          "end": "Inf",
+          "unit": "GB",
+          "usd": "0.0100000000"
+        },
+        {
+          "sku": "FNYHUPR3T466JJYM",
+          "rateCode": "FNYHUPR3T466JJYM.JRTCKXETXF.6YS6EN2CT7",
+          "usage": "Requests-SIA-Tier1",
+          "group": "S3-API-SIA-Tier1",
+          "begin": "0",
+          "end": "Inf",
+          "unit": "Requests",
+          "usd": "0.0000100000"
+        },
+        {
+          "sku": "E9YHNFENF4XQBZR6",
+          "rateCode": "E9YHNFENF4XQBZR6.JRTCKXETXF.6YS6EN2CT7",
+          "usage": "Requests-Tier1",
+          "group": "S3-API-Tier1",
+          "begin": "0",
+          "end": "Inf",
+          "unit": "Requests",
+          "usd": "0.0000050000"
+        },
+        {
+          "sku": "WP9ANXZGBYYSGJEA",
+          "rateCode": "WP9ANXZGBYYSGJEA.JRTCKXETXF.PGHJ3S3EYE",
+          "usage": "TimedStorage-ByteHrs",
+          "storageClass": "General Purpose",
+          "begin": "0",
+          "end": "51200",
+          "unit": "GB-Mo",
+          "usd": "0.0230000000"
+        },
+        {
+          "sku": "WP9ANXZGBYYSGJEA",
+          "rateCode": "WP9ANXZGBYYSGJEA.JRTCKXETXF.D42MF2PVJS",
+          "usage": "TimedStorage-ByteHrs",
+          "storageClass": "General Purpose",
+          "begin": "51200",
+          "end": "512000",
+          "unit": "GB-Mo",
+          "usd": "0.0220000000"
+        },
+        {
+          "sku": "WP9ANXZGBYYSGJEA",
+          "rateCode": "WP9ANXZGBYYSGJEA.JRTCKXETXF.PXJDJ3YRG3",
+          "usage": "TimedStorage-ByteHrs",
+          "storageClass": "General Purpose",
+          "begin": "512000",
+          "end": "Inf",
+          "unit": "GB-Mo",
+          "usd": "0.0210000000"
+        }
+      ]
+    },
+    {
+      "service": "AmazonDynamoDB",
+      "source": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonDynamoDB/current/us-east-1/index.json",
+      "publicationDate": "2026-09-11T12:44:22Z",
+      "sourceSha256": "b25d0fd8d26a9fd489b27c19abf895c9d86145ca6ed935fcf25303f784cfb15e",
+      "items": [
+        {
+          "sku": "TFXQN9PEG62G7A67",
+          "rateCode": "TFXQN9PEG62G7A67.JRTCKXETXF.6YS6EN2CT7",
+          "usage": "USE1-TimedPITRStorage-ByteHrs",
+          "begin": "0",
+          "end": "Inf",
+          "unit": "GB-Mo",
+          "usd": "0.2000000000"
+        },
+        {
+          "sku": "F3E2EDSYC6ZNW7XP",
+          "rateCode": "F3E2EDSYC6ZNW7XP.JRTCKXETXF.G2A93NZ7DT",
+          "usage": "TimedStorage-ByteHrs",
+          "begin": "0",
+          "end": "25",
+          "unit": "GB-Mo",
+          "usd": "0.0000000000"
+        },
+        {
+          "sku": "F3E2EDSYC6ZNW7XP",
+          "rateCode": "F3E2EDSYC6ZNW7XP.JRTCKXETXF.VYAP54KATQ",
+          "usage": "TimedStorage-ByteHrs",
+          "begin": "25",
+          "end": "Inf",
+          "unit": "GB-Mo",
+          "usd": "0.2500000000"
+        },
+        {
+          "sku": "FGXVD96DKJMUASY3",
+          "rateCode": "FGXVD96DKJMUASY3.JRTCKXETXF.6YS6EN2CT7",
+          "usage": "WriteRequestUnits",
+          "group": "DDB-WriteUnits",
+          "begin": "0",
+          "end": "Inf",
+          "unit": "WriteRequestUnits",
+          "usd": "0.0000006250"
+        },
+        {
+          "sku": "4W4ZMC46EHE8XTTZ",
+          "rateCode": "4W4ZMC46EHE8XTTZ.JRTCKXETXF.6YS6EN2CT7",
+          "usage": "ReadRequestUnits",
+          "group": "DDB-ReadUnits",
+          "begin": "0",
+          "end": "Inf",
+          "unit": "ReadRequestUnits",
+          "usd": "0.0000001250"
+        }
+      ]
+    },
+    {
+      "service": "AmazonEC2",
+      "source": "https://b0.p.awsstatic.com/pricing/2.0/meteredUnitMaps/ec2/USD/current/ec2-ondemand-without-sec-sel/US%20East%20(N.%20Virginia)/Linux/index.json",
+      "sourceSha256": "6e9a689c29cec74edec249ef76a13109cf03358586e46c73b735028bcc7c2773",
+      "items": [
+        {
+          "rateCode": "E2KFUE6DHVS3HDJM.JRTCKXETXF.6YS6EN2CT7",
+          "price": "0.0336000000",
+          "Location": "US East (N. Virginia)",
+          "Instance Family": "General purpose",
+          "vCPU": "2",
+          "Instance Type": "t4g.medium",
+          "Memory": "4 GiB",
+          "Storage": "EBS only",
+          "Network Performance": "Up to 5 Gigabit",
+          "plc:OperatingSystem": "Linux",
+          "plc:InstanceFamily": "General Purpose",
+          "Operating System": "Linux",
+          "Pre Installed S/W": "NA",
+          "License Model": "No License required"
+        }
+      ]
+    }
+  ]
+}
