@@ -308,3 +308,4 @@ export {
   type AccountDeletionReauthApiPort,
   AccountDeletionUiController
 } from './deletion-ui-controllers.js';
+export * from './local-upload-transfer.js';

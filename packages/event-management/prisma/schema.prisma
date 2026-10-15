@@ -312,3 +312,19 @@ model EventCommandReceipt {
   @@index([eventId])
   @@map("event_command_receipt")
 }
+model LocalUploadTransfer {
+  attemptId String @id @map("attempt_id") @db.Uuid
+  stagingKey String @unique @map("staging_key")
+  mimeType String @map("mime_type")
+  requestFingerprint String @map("request_fingerprint")
+  expectedSha256 String? @map("expected_sha256")
+  grantExpiresAt DateTime @map("grant_expires_at") @db.Timestamptz
+  operationId String? @map("operation_id") @db.Uuid
+  sourceVersion String? @map("source_version")
+  sealedKey String? @map("sealed_key")
+  sealedVersion String? @map("sealed_version")
+  actualSha256 String? @map("actual_sha256")
+  actualBytes BigInt? @map("actual_bytes")
+  receivedAt DateTime? @map("received_at") @db.Timestamptz
+  @@map("local_upload_transfer")
+}

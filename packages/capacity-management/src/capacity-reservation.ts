@@ -36,6 +36,15 @@ interface RawBalanceRow {
 }
 
 export class CapacityReservationService {
+  /** Short transaction-bound guard; never commits or changes reserved capacity. */
+  public async assertActiveReservation(eventId: string, reservationId: string): Promise<void> {
+    if (!eventId || !reservationId) throw new CapacityError('INVALID_ARGUMENT', 'Event and reservation required');
+    await this.transactions.run(async tx => {
+      const rows = await tx.query<{ status: string }>('SELECT status FROM capacity_reservation WHERE event_id=$1 AND id=$2 FOR UPDATE', eventId, reservationId);
+      if (!rows.length) throw new CapacityError('RESERVATION_NOT_FOUND', 'Reservation not found');
+      if (rows[0].status !== 'ACTIVE') throw new CapacityError('CONFLICT', 'Reservation is no longer active');
+    });
+  }
   constructor(
     private readonly transactions: TransactionRunner,
     private readonly planService: CapacityPlanService
