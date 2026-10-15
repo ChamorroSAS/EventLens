@@ -24,6 +24,11 @@ variable "region" {
 variable "github_repository" {
   description = "GitHub repository allowed to assume the deployment role, in owner/name form."
   type        = string
+
+  validation {
+    condition     = can(regex("^[^/]+/[^/]+$", var.github_repository))
+    error_message = "github_repository must be in owner/name form so the OIDC subject cannot be widened with a wildcard."
+  }
 }
 
 variable "github_environment" {
@@ -36,6 +41,11 @@ variable "create_github_oidc_provider" {
   description = "Create the GitHub OIDC provider in this account. Set to false when one already exists."
   type        = bool
   default     = false
+
+  validation {
+    condition     = var.create_github_oidc_provider ? var.github_oidc_provider_arn == null : var.github_oidc_provider_arn != null
+    error_message = "Set exactly one of create_github_oidc_provider or github_oidc_provider_arn."
+  }
 }
 
 variable "github_oidc_provider_arn" {
@@ -48,6 +58,11 @@ variable "hcp_organization" {
   description = "HCP Terraform organization. Empty keeps the HCP roles uncreated."
   type        = string
   default     = ""
+
+  validation {
+    condition     = var.hcp_organization == "" ? true : var.hcp_workspace != ""
+    error_message = "hcp_workspace is required when hcp_organization is set."
+  }
 }
 
 variable "hcp_project" {

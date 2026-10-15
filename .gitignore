@@ -49,6 +49,8 @@ opencode.json
 **/.terraform/
 *.tfstate
 *.tfstate.*
+*.tfplan
+*.tfplan.json
 crash.log
 override.tf
 override.tf.json

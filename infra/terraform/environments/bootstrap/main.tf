@@ -28,6 +28,9 @@ resource "terraform_data" "guard_rails" {
 }
 
 module "identity" {
+  # Keep the input-only preconditions and variable validations independent of
+  # resource creation. Variable validations also protect targeted module plans.
+  # A module-wide depends_on defers its account/region reads until apply.
   source = "../../modules/identity"
 
   project                     = var.project
@@ -44,6 +47,4 @@ module "identity" {
   permissions_boundary_arn    = var.permissions_boundary_arn
   ssm_parameter_prefix        = var.ssm_parameter_prefix
   tags                        = var.tags
-
-  depends_on = [terraform_data.guard_rails]
 }

@@ -15,6 +15,7 @@ on:
       - 'infra/terraform/**'
       - 'infra/beta/**'
       - '.github/workflows/terraform-plan.yml'
+      - 'scripts/verify-bootstrap-plan.mjs'
   workflow_dispatch:
 
 permissions:
@@ -37,12 +38,17 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: '1.9.8'
+          terraform_wrapper: false
 
       - name: Initialise without a backend
         run: terraform init -backend=false -input=false
 
       - name: Validate
         run: terraform validate -no-color
+
+      - name: Bootstrap guard rails and IAM plan regression (mock AWS)
+        if: matrix.root == 'environments/bootstrap'
+        run: node "$GITHUB_WORKSPACE/scripts/verify-bootstrap-plan.mjs"
 
   summary:
     name: Where the plan comes from

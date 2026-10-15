@@ -73,6 +73,18 @@ terraform -chdir=infra/terraform/environments/beta validate
 
 The same commands work for `environments/bootstrap`.
 
+Bootstrap regression tests use a mocked AWS provider and plan-only runs:
+
+```bash
+# From the repository root, after bootstrap init -backend=false:
+node scripts/verify-bootstrap-plan.mjs
+```
+
+This verifies input guards (including targeted plans), known HCP policy values
+and exact fixture OIDC trusts. It does not run an AWS plan or authorise apply.
+See [the corrective report and CloudShell checklist](../../docs/terraform-bootstrap-iam-corrective.md)
+for the dependency graph, evidence and legitimate computed ARN limitations.
+
 Planning requires the authorised backend and credentials:
 
 ```bash
