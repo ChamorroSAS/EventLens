@@ -49,6 +49,13 @@ worker runtime semántico, packages/job-queue,media-execution,media-inspection. 
 Supervisor privilegiado, orphan writer y starvation de control.
 Bloqueantes globales: región/proveedores/capacidad/costo/gates/autoridad; ver CR-011. Riesgos particulares se resuelven con las pruebas y revisión descritas.
 
+## Reauditoría focal tras EL-TK-265 — 2026-10-14
+
+- UPDATE_REQUIRED: el recibo durable `local_upload_transfer` de EL-TK-265 representa transferencia privada `CONFIRMING`, con versiones fuente/sellada, SHA-256 observado y bytes; no implementa `MediaAcceptance`, consumo de jobs ni publicación. Su DONE no cierra este ticket DRAFT.
+- Aceptación adicional: integrar explícitamente esa recepción pendiente con aceptación, autoridad de recuperación vigente y worker/publicación conforme a contratos existentes. Un ACK de transporte, HEAD o receipt no sustituye validación ni concede visibilidad pública.
+- Pruebas/evidencia adicional: archivo real recibido → validación/aceptación → job recuperable → publicación autorizada, con replay sin doble aceptación/cuota, revocación concurrente, caída entre fases y rechazo de outputs de generaciones antiguas. Vincular versión exacta y checksum del input al outcome, sin exponer objetos pendientes.
+- Dependencias: EL-TK-251/252 siguen pendientes; EL-TK-265 aporta un punto de integración ya entregado, no una exención de autoridad ni un proveedor Beta aprobado. Mantener REQUIREMENTS_READY/READY_FOR_IMPLEMENTATION en NO hasta los gates aplicables.
+
 ## Definition of Ready
 - [x] Objetivo y alcance propuestos.
 - [x] Dependencias y aceptación identificadas.

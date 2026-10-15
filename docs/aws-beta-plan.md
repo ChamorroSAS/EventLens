@@ -3,6 +3,8 @@
 Fecha: 2026-10-14. RECOMMENDED; REQUIREMENTS_READY: NO; READY_FOR_IMPLEMENTATION: NO.
 Todos los pasos de aprovisionamiento son futuros y requieren gates/aprobación. No hay archivos Terraform ni workflows ejecutables nuevos en esta entrega.
 
+Revisión tras EL-TK-265: **NO-GO para desplegar la Beta funcional con datos reales**. Se puede preparar el laboratorio y cerrar decisiones sin crear AWS. La transferencia privada ahora existe en development, pero el proveedor filesystem Beta, aceptación/publicación, autoridad vigente y recuperación continúan pendientes. No cambiar a `NODE_ENV=development` en EC2 para eludir esas dependencias.
+
 ## Arquitectura
 
 ```mermaid
@@ -69,6 +71,10 @@ Especificación a implementar tras gates; no presentar servicios futuros como ex
 
 No desplegar perfiles dev tools/e2e/local-admin/contracts ni MinIO en Beta de filesystem sin S3. El Compose local se conserva para validación de contratos históricos. Build sin compilador/tests en runtime. Configuración de producción: `WEB_ORIGIN=PUBLIC_ENTRY_BASE_URL=https://beta.phoeve.com`, NODE_ENV=production, localhost-only exceptions deshabilitadas. Validar cookies Secure/HttpOnly/SameSite y CSRF con proxy real, IP cliente confiable para rate-limit y redacción de URL/capacidades en proxy. OpenAPI/docs de operación no expuestos sin decisión. Renovación ACME con ensayo staging y alerta caducidad; certificados y claves fuera de git.
 
+**Delta de transferencia:** la implementación local nueva usa `PresignUploadService`/`LocalMediaStorage` con SDK MinIO, staging privado y versioning. `LOCAL_MEDIA_UPLOAD_ENABLED=true` se rechaza en production; si está deshabilitado, presign/confirm devuelven 503. EL-TK-251 debe introducir el adapter/config Beta y conectarlo al dominio existente, conservando el contrato same-origin de transferencia, la propiedad por guest y el receipt `local_upload_transfer`. El edge Beta reemplaza el proxy Angular `/storage` sin habilitar GET/listado público ni exponer `/srv/phoeve/media`. Si cambia el protocolo visible, verificar el gate UI sobre la experiencia de EL-TK-265.
+
+El receipt `CONFIRMING` significa «Transferido; validación pendiente»: no crea media/job, no liquida la reserva ni ejecuta el pipeline. El smoke de despliegue debe verificar recepción → aceptación bajo autoridad real → validación → publicación/galería autorizada; un POST exitoso y readiness 200 no bastan para abrir la Beta funcional.
+
 Mount EBS por UUID, permisos del UID real, systemd RequiresMountsFor y marcador de volumen obligatorio: si falta disco, impedir startup; nunca crear directorio vacío equivalente. DB/media/journal no se escriben en root Docker. Datos persisten tras recreate de contenedores/EC2; nunca `compose down -v` en release. Readonly root, tmpfs acotado, no-new-privileges/cap-drop donde compatible. API sin mounts de originales innecesarios. Parser sin salida/socket/credenciales y límites preservados. Docker runtime privilegiado sólo en supervisor y no como montaje universal.
 
 ## Recuperación y retención
@@ -77,7 +83,7 @@ Contratos preservados: base backup **full diario**, WAL continuo, horizonte mín
 
 **RECOMMENDED DB:** pgBackRest con repo externo cifrado y full diario/WAL archive; `archive_timeout` y alerta lag con margen antes de 1 h, test completo sin WAL perdido. `archive_command` no debe declarar éxito antes de copia durable exterior; volumen spool acotado, alerta caída repo y disco/WAL. Retención debe preservar cadenas válidas para todo el horizonte, no sólo borrar por nombre/fecha. Proteger repo de runtime; validar versión/ARM64 en imagen PG. [pgBackRest](https://pgbackrest.org/user-guide.html).
 
-**RECOMMENDED media:** restic cifrado a SFTP/host externo, manifests de objetos inmutables/checksums, staging/scratch excluidos, derivados regenerables identificados. Frecuencia inicial ≤1 h es recomendación, no RPO multimedia ya aprobado: decidir objetivo y semántica de upload confirmado/copia exterior. Restore rechaza originales corruptos/Missing, nunca inventa bytes. Medir throughput/capacidad para RTO y costo por cohorte. [restic destinos](https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html).
+**RECOMMENDED media:** restic cifrado a SFTP/host externo, manifests de objetos inmutables/checksums, staging/scratch transitorios excluidos y derivados regenerables identificados. Un sello recibido todavía CONFIRMING no se descarta como staging por no estar publicado: decidir explícitamente su protección y RPO. El inventario debe enlazar attempt/receipt/objeto/versión/hash/bytes con los archivos reales del adapter Beta. No copiar el layout interno MinIO ni tratar `sealed_key` como ruta filesystem intercambiable. Si se migra contenido local existente, exportar la versión exacta, verificar bytes/hash y registrar el mapping autorizado; no actualizar referencias SQL a mano como procedimiento normal. Frecuencia inicial ≤1 h es recomendación, no RPO multimedia ya aprobado: decidir objetivo y semántica de upload confirmado/copia exterior. Restore rechaza originales corruptos/Missing, nunca inventa bytes. Medir throughput/capacidad para RTO y costo por cohorte. [restic destinos](https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html).
 
 Snapshots EBS complementan recuperación de volumen, no reemplazan base backup/WAL ni PITR. Quiescence consistente, manifests DB/media y snapshots cifrados con retención/purge verificables. No incluir journal en restauración del conjunto histórico. Snapshot de authority no permite volver a un estado revocado anterior. Si el journal más reciente no es demostrable, mantener barrera y acceso cerrado; prohibido bootstrap automático, epoch ficticio o confiar en DB restaurada. Un ledger independiente también necesita protección de permisos contra rollback/delete, consistencia, idempotencia y disponibilidad; nombrar DynamoDB no prueba el protocolo. El historial debe cubrir el horizonte de restore más margen; los floors vigentes y el ancla de actualidad no se eliminan por una TTL de siete días. Compactar sólo con checkpoint acreditado y sin reducir restricciones actuales.
 
@@ -102,6 +108,12 @@ Restore futuro: declarar incidente y barrera exterior → detener writers/leases
 | **Total de planificación con controles completos** | **51–65+** |
 
 [EBS](https://aws.amazon.com/ebs/pricing/), [IPv4](https://aws.amazon.com/vpc/pricing/), [DNS](https://aws.amazon.com/route53/pricing/). Los US$10–20/1–3 son reservas, no ofertas verificadas de proveedor. Cotizar repositorio según full diario/WAL, media y retención real. Un host backup adicional o SFTP contratado requiere autorización, no queda creado ni elegido.
+
+Revisión de la estimación: se mantienen **US$40–42 para el núcleo y US$51–65+ con provisiones exteriores**, no una cotización aprobada. AWS sigue publicando IPv4 US$0.005/h y hosted zone US$0.50/mes para las primeras 25; la página EBS usa US$0.08/GB-mes como ejemplo de una región, no como precio universal. La referencia EC2 de US$0.0336/h continúa siendo ASSUMED hasta consultar el SKU/región/tenancy/OS exactos en Pricing Calculator/catálogo vigente; la consulta al endpoint público de catálogo intentada en esta revisión devolvió 404 y no se sustituyó por un precio de terceros. [EC2](https://aws.amazon.com/ec2/pricing/on-demand/), [VPC](https://aws.amazon.com/vpc/pricing/), [Route 53](https://aws.amazon.com/route53/pricing/).
+
+Los 60 GiB de media del escenario no son un cupo vendible. Dimensionar `originales retenidos + staging concurrente + sellos/versiones huérfanos + derivados + exports + scratch por slot + margen operativo`. El sellado local actual puede coexistir con staging y versiones anteriores; el proveedor filesystem debe medir su pico real. No asumir que la cuota lógica o la liberación de una reserva equivale a bytes físicos liberados. Capacidad, egress, backlog de cleanup y lag de backups entran en el gate de admisión de cargas y en las alarmas antes de agotar el disco.
+
+HCP Free sigue documentando hasta 500 recursos administrados; comprobar el plan/capacidades efectivamente habilitados. Las fuentes oficiales consultadas no son uniformes respecto a funciones avanzadas del nivel Free (blog y tabla de planes difieren), por lo que no presupuestar policy enforcement, custom RBAC o auditoría como incluidos sin acreditarlos. Para el mínimo propuesto basta demostrar state remoto con locking, permisos, run manual aprobado y OIDC separado; GitHub required reviewers en repos privados continúa condicionado al plan. [Planes HCP](https://docs.hashicorp.com/terraform/cloud-docs/overview), [anuncio HCP Free](https://www.hashicorp.com/en/blog/continuing-hcp-terraform-s-enhanced-free-tier-experience), [GitHub approvals](https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments).
 
 Egress no incluido: AWS publica 100 GB/mes agregados gratis para regiones elegibles; se comparte con otros servicios de la cuenta. Descargas/exports pueden superar esa cantidad rápidamente. Registrar precio regional excedente, volumen y presupuesto. T4g Unlimited cobra surplus CPU (AWS publica US$0.04/vCPU-h Linux), además de EC2: no prometer costo fijo bajo transcodes sostenidos. [AWS On-Demand](https://aws.amazon.com/ec2/pricing/on-demand/). GitHub Actions/registry, SMTP, KMS, retenidos snapshots y crecimiento media pueden sumar costo.
 
@@ -129,3 +141,19 @@ Secuencia futura:
 10. Validar RPO/RTO, purgas/copias≤30d, alertas y deny matrix; aprobación de apertura cerrada y rollback operativo.
 
 No avanzar a datos reales mientras el ensayo DR/autoridad sea PENDING. Tickets ordenados: [EL-EP-020](../.codex/product/epics/EL-EP-020.md).
+
+## Decisiones y orden revisado para desbloquear trabajo
+
+| Gate | Decisión/evidencia pendiente | Seguimiento |
+|---|---|---|
+| Producto y operación | Región/AZ, control de zona/DNS, cohorte y volumen, RPO multimedia, presupuesto completo, responsable operativo y destino de alertas | EL-TK-245 |
+| Contrato filesystem Beta | Adoptar sustitución técnica focal ya solicitada a nivel producto, puerto neutral y garantías de identidad/versión/grants/drain; no elegir de nuevo MinIO como producción por conveniencia | 245 → 251 |
+| Autoridad y DR | Destino externo actual/monotónico, coordinación de writers, wiring admin/organizer/jobs, decisión DEC-112 reconciliada y prueba PostgreSQL/WAL real post-revocación | 245 → 252 → 262 |
+| Capacidad | ARM64 nativo de todos los artefactos, carga con hash/sellado/scanner/codecs y modo de créditos CPU; dimensionamiento físico con margen | 246,255 |
+| Recuperación | Proveedor/capacidad externa sin S3, full diario/WAL continuo, inventario exacto de media y retención/purga verificable | 257,258 |
+| Publicación | Receipt CONFIRMING → aceptación/validación/worker → galería/grants autorizados; scheduler integrado y cleanup operativo | 251,252,253,254 |
+| Entrega | HCP/state y OIDC, aprobación efectiva para repo/plan elegido, imágenes y edge production/TLS, CI/CD y ensayo de rollback de aplicación | 247,255,256,259,260 |
+
+Siguiente trabajo recomendado: resolver EL-TK-245 y preparar evidencia acotada de capacidad/proveedor en laboratorio; no empezar por `terraform apply`. Una vez aprobados los gates de cada ticket, pueden implementarse en paralelo los ámbitos independientes de storage, autoridad y cadena de entrega. Mantener DRAFT los tickets no preparados; el DONE focal de 265 no certifica Beta.
+
+Validación de esta actualización: arquitectura independiente mantiene NO-GO para despliegue; requirements_reviewer aprueba la calidad documental después de explicitar 258 → 252 y distinguir los gates históricos. Verificados los 18 tickets contra la tabla de épica: dependencias coincidentes y orden acíclico. `git diff --check` PASS. No se ejecutaron pruebas de aplicación, ARM64, PITR ni recursos cloud durante esta revisión documental; las evidencias de transferencia son las registradas en EL-TK-265.

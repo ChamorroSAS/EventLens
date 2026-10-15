@@ -49,6 +49,14 @@ packages/media-execution contratos y adapter/gateway semántico nuevo; integraci
 Tráfico de100 uploads por host, path injection o bypass por static server.
 Bloqueantes globales: región/proveedores/capacidad/costo/gates/autoridad; ver CR-011. Riesgos particulares se resuelven con las pruebas y revisión descritas.
 
+## Reauditoría focal tras EL-TK-265 — 2026-10-14
+
+- UPDATE_REQUIRED: EL-TK-265 está DONE sólo para recepción privada development con MinIO y recibo `CONFIRMING`; no resuelve este ticket Beta ni adopta un proveedor productivo. Mantener DRAFT y gates pendientes de CR-011.
+- Aceptación adicional: el adapter filesystem neutral debe conservar identidad lógica de versión inmutable, bytes y SHA-256 observado de las versiones fuente/sellada del recibo; un path mutable o inode no demuestra esa identidad. Reutilizar invariantes del transporte existente sin incorporar SDK MinIO como requisito de producción.
+- Compatibilidad requerida: preservar el contrato HTTP de carga POST same-origin y grants de intento/objeto/tamaño/MIME exactos. Drain, crash, retry y writers tardíos deben tener resultado reconciliable; inventariar staging, sellos y huérfanos antes de limpieza, sin confundir `CONFIRMING` con aceptación/publicación.
+- Pruebas/evidencia adicional: matriz de equivalencia contra EL-TK-265 con filesystem real, cambios de versión, reintento después de crash, grant tardío y hash/bytes exactos. El layout interno de MinIO no constituye un adapter filesystem ni prueba de portabilidad.
+- Dependencia: conservar el gate arquitectónico de EL-TK-245 para almacenamiento Beta. La UX de EL-TK-265 ya tiene gate; sólo reabrir UI si cambia el protocolo o comportamiento visible.
+
 ## Definition of Ready
 - [x] Objetivo y alcance propuestos.
 - [x] Dependencias y aceptación identificadas.

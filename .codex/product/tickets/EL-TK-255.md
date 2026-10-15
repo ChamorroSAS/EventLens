@@ -49,6 +49,13 @@ infra/beta Dockerfiles y manifests release (futuros). Paths futuros semánticos 
 Digest amd64 hardcoded, supply chain o imagen scanner sin firmas vigentes.
 Bloqueantes globales: región/proveedores/capacidad/costo/gates/autoridad; ver CR-011. Riesgos particulares se resuelven con las pruebas y revisión descritas.
 
+## Reauditoría focal tras EL-TK-265 — 2026-10-14
+
+- UPDATE_REQUIRED: EL-TK-265 añade dependencias/configuración de recepción MinIO únicamente development; sus imágenes locales no son artefactos release certificados. El ticket permanece DRAFT y no queda resuelto por aquel DONE.
+- Aceptación adicional: release Beta utiliza el proveedor aprobado por EL-TK-251 y rechaza la habilitación de flags de transporte development en producción. No promover Compose development ni requerir MinIO/S3 mediante el SDK de pruebas/local.
+- Pruebas/evidencia adicional: build y smoke ARM64 nativos con dependencias multimedia y gateway reales, SBOM/digests por arquitectura, configuración productiva fail-closed y ausencia de flags/secretos/defaults development. Probar límites y hardening del transporte real en el artefacto final, no sólo compilación multiarch.
+- Dependencias: mantener EL-TK-251/253 como gates de proveedor y pipeline; conservar la trazabilidad de EL-TK-265 como recepción privada parcial sin certificar aceptación/publicación ni compatibilidad ARM64 de Beta.
+
 ## Definition of Ready
 - [x] Objetivo y alcance propuestos.
 - [x] Dependencias y aceptación identificadas.

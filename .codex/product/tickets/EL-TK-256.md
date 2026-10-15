@@ -49,6 +49,13 @@ infra/beta Compose/edge y API startup config. Paths futuros semánticos por resp
 Dev server, exposición original o headers proxy confiados al cliente.
 Bloqueantes globales: región/proveedores/capacidad/costo/gates/autoridad; ver CR-011. Riesgos particulares se resuelven con las pruebas y revisión descritas.
 
+## Reauditoría focal tras EL-TK-265 — 2026-10-14
+
+- UPDATE_REQUIRED: el POST firmado same-origin funciona hoy mediante proxy Angular development y MinIO privado; no existe por ello un edge Beta certificado. EL-TK-265 DONE no resuelve este ticket DRAFT.
+- Aceptación adicional: sustituir el proxy Angular por edge TLS productivo compatible con el contrato de transporte existente, streaming y límites de cuerpo/tiempo/concurrencia acotados. Mantener grants scoped, redacción de firmas y objetos privados; denegar GET/listado y métodos/rutas no autorizados en el endpoint de carga.
+- Pruebas/evidencia adicional: carga real desde navegador móvil bajo HTTPS hasta receipt durable con hash/bytes exactos, tamaño máximo, timeout/corte/retry, Host/Origin/CSRF y ausencia de lectura/listado público. Verificar persistencia de recibos/objetos tras recrear contenedores y mounts ausentes fail-closed.
+- Dependencias: proveedor y release aprobados de EL-TK-251/255; no activar el flag MinIO development en producción como atajo. El gate UI de EL-TK-265 sigue aplicando mientras no cambie la interacción visible.
+
 ## Definition of Ready
 - [x] Objetivo y alcance propuestos.
 - [x] Dependencias y aceptación identificadas.

@@ -26,7 +26,7 @@ Preservar contratos enumerados en docs/aws-beta-audit.md y aws-beta-plan.md: ind
 Actor autorizado por gate de la capacidad; menor privilegio y redacción. Ante evidencia ausente, autoridad incierta, permisos inválidos o dependencia no READY, bloquear efecto/promoción. No fallback silencioso ni bootstrap nuevo sobre datos perdidos.
 
 ## Dependencias técnicas y funcionales
-depends_on: EL-TK-250, EL-TK-256, EL-TK-258, EL-TK-260, EL-TK-261
+depends_on: EL-TK-250, EL-TK-251, EL-TK-253, EL-TK-256, EL-TK-258, EL-TK-260, EL-TK-261
 Todos dependen de cierre de los BLOCKER de CR-011 aplicables. No empezar ejecución por estar enumerado en orden.
 
 ## Pruebas requeridas
@@ -48,6 +48,14 @@ evidencia sesión DR, runbooks y gate de apertura. Paths futuros semánticos por
 ## Riesgos / notas
 Release por ticket DONE sin evidencia o costo parcial presentado como total.
 Bloqueantes globales: región/proveedores/capacidad/costo/gates/autoridad; ver CR-011. Riesgos particulares se resuelven con las pruebas y revisión descritas.
+
+## Reauditoría focal tras EL-TK-265 — 2026-10-14
+
+- UPDATE_REQUIRED: EL-TK-265 acredita recepción privada development hasta `CONFIRMING`, no un ensayo DR ni carga Beta aceptada/publicada. Este ticket conserva DRAFT y gates de apertura pendientes.
+- Aceptación adicional: el ensayo debe cargar bytes reales mediante HTTPS y el proveedor Beta, recuperar receipt/versión/hash exactos y completar aceptación, worker y publicación con autoridad vigente. No acreditar éxito por ACK de transferencia ni por un objeto presente sin registro coherente.
+- Pruebas/evidencia adicional: grants/writers tardíos durante pérdida de host, confirmación incierta y reintento tras restore; PITR anterior a revocación no rehabilita credenciales ni autoridad antigua. Reconciliar recibos, objetos, tombstones y cuota antes de reabrir, denegando ante UNKNOWN.
+- Dependencias: explicitar EL-TK-251/253 para el recorrido real de almacenamiento y procesamiento, además de los gates existentes de release/backup/authority. Mantener los contratos de independencia y no rollback del journal; no medir RTO sólo hasta readiness de API.
+- Evidencia de cierre: timeline hasta servicio recuperado utilizable, versiones/checksums y matriz de denegación post-PITR con revisión independiente. Las pruebas locales de EL-TK-265 son antecedentes reutilizables, no sustituyen la prueba Beta completa.
 
 ## Definition of Ready
 - [x] Objetivo y alcance propuestos.

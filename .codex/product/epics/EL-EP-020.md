@@ -61,11 +61,11 @@ No reemplaza EL-EP-019/EL-TK-218/221/222; usa implementación y verifica brechas
 | 11 | EL-TK-255 | Imágenes reproducibles release | 246,251,252,253,254 |
 | 12 | EL-TK-256 | Compose Beta/TLS | 249,250,255 |
 | 13 | EL-TK-257 | PITR exterior PostgreSQL | 245,249 |
-| 14 | EL-TK-258 | Backup/restore media y purga copias | 251,257 |
+| 14 | EL-TK-258 | Backup/restore media y purga copias | 251,252,257 |
 | 15 | EL-TK-259 | CI y validación Terraform | 247,255 |
 | 16 | EL-TK-260 | Deploy aprobado y rollback app | 256,257,259 |
 | 17 | EL-TK-261 | Alertas operativas/budget | 248,252,254,257,258 |
-| 18 | EL-TK-262 | Ensayo DR y apertura controlada | 250,256,258,260,261 |
+| 18 | EL-TK-262 | Ensayo DR y apertura controlada | 250,251,253,256,258,260,261 |
 
 Independencias permiten trabajo paralelo sólo tras gates y ownership separado; orden tabla es topológico, no obligación serial de todo.
 
@@ -84,3 +84,5 @@ PASS reproducible permisos, restore post-revocación, RPO/RTO, integridad, purga
 ## Priority / Change history
 
 P0 preparación Beta. 2026-10-14: primera propuesta, todos los tickets DRAFT, sin infraestructura aplicada.
+
+Revisión posterior a EL-TK-265: recepción privada local implementada y probada en MinIO development; no resuelve filesystem Beta ni pipeline/autoridad/DR. Actualizados 251/253/255/256/258/262 con compatibilidad de receipt/versiones, same-origin, integridad y recuperación. Se preserva el orden y los estados DRAFT; 262 explicita 251/253 como dependencias funcionales ya transitivas y el cierre integrado de restore media (258) requiere autoridad vigente (252). Arquitectura independiente mantiene READY_FOR_IMPLEMENTATION: NO para despliegue Beta; decisiones pendientes y costo total actualizados en auditoría/plan/CR-011. Sin autorización implícita de aprovisionamiento.
