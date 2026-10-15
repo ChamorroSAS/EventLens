@@ -1,175 +1,49 @@
-import { expect, it, vi, beforeEach, describe } from 'vitest';
-import { PresignUploadService } from '../src/guest/guest-upload.service.js';
-
-// Mock the AWS SDK modules
-vi.mock('@aws-sdk/s3-presigned-post', () => ({
-  createPresignedPost: vi.fn(),
-}));
-
-vi.mock('@aws-sdk/client-s3', () => ({
-  S3Client: vi.fn(),
-  HeadObjectCommand: vi.fn(function (this: { input: Record<string, unknown> }, args: Record<string, unknown>) {
-    this.input = args;
-  }),
-}));
-
+﻿import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { Readable } from 'node:stream';
+import { createHash, randomUUID } from 'node:crypto';
+import { LocalMediaStorage, PresignUploadService } from '../src/guest/guest-upload.service.js';
+import { LocalUploadTransferService } from '@eventlens/event-management';
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
-import { HeadObjectCommand } from '@aws-sdk/client-s3';
-
-describe('PresignUploadService', () => {
-  let mockS3Send: ReturnType<typeof vi.fn>;
-  let mockS3Client: { send: ReturnType<typeof vi.fn> };
-  let service: PresignUploadService;
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockS3Send = vi.fn();
-    mockS3Client = { send: mockS3Send };
-
-    // Create service with mocked S3 client
-    service = new PresignUploadService(mockS3Client as unknown as ReturnType<typeof import('@aws-sdk/client-s3').S3Client>);
-  });
-
-  it('returns presigned POST URL with correct key pattern and fields', async () => {
-    const mockPresignedPost = {
-      url: 'https://minio/test-bucket',
-      fields: {
-        'Content-Type': 'image/jpeg',
-        'x-amz-checksum-sha256': 'abc123',
-        key: 'events/evt-123/media/mr-abc123/photo.jpg',
-        policy: 'base64policy',
-        'x-amz-signature': 'signature',
-        'x-amz-credential': 'credential',
-        'x-amz-date': '20240101T000000Z',
-        'x-amz-algorithm': 'AWS4-HMAC-SHA256',
-      },
-    };
-
-    vi.mocked(createPresignedPost).mockResolvedValueOnce(mockPresignedPost);
-
-    const result = await service.getPresignedUploadUrls({
-      eventId: 'evt-123',
-      files: [{ name: 'photo.jpg', size: 1024, type: 'image/jpeg', sha256: 'abc123' }],
-    });
-
-    expect(result).toHaveLength(1);
-    // When sha256 is provided, mediaRef is mr- + first 22 chars of sha256
-    expect(result[0].mediaRef).toBe('mr-abc123');
-    expect(result[0].uploadUrl).toBe(mockPresignedPost.url);
-    expect(result[0].fields['Content-Type']).toBe('image/jpeg');
-    expect(result[0].fields['x-amz-checksum-sha256']).toBe('abc123');
-    expect(result[0].expiresAt).toBeDefined();
-
-    // Verify createPresignedPost was called with correct parameters
-    expect(createPresignedPost).toHaveBeenCalledWith(
-      mockS3Client, // The mocked S3Client instance
-      expect.objectContaining({
-        Bucket: 'eventlens', // Default bucket from service
-        Conditions: expect.arrayContaining([
-          ['content-length-range', 0, 1024],
-          ['eq', '$Content-Type', 'image/jpeg'],
-          ['eq', '$x-amz-checksum-sha256', 'abc123'],
-        ]),
-        Fields: expect.objectContaining({
-          'Content-Type': 'image/jpeg',
-          'x-amz-checksum-sha256': 'abc123',
-          key: 'events/evt-123/media/mr-abc123/photo.jpg',
-        }),
-        Expires: 900,
-      })
-    );
-  });
-
-  it('generates mediaRef from sha256 when provided (22 chars)', async () => {
-    const mockPresignedPost = {
-      url: 'https://minio/test-bucket',
-      fields: {
-        'Content-Type': 'image/png',
-        key: 'events/evt-123/media/mr-deadbeef12345678901234/image.png',
-        policy: 'base64policy',
-        'x-amz-signature': 'signature',
-        'x-amz-credential': 'credential',
-        'x-amz-date': '20240101T000000Z',
-        'x-amz-algorithm': 'AWS4-HMAC-SHA256',
-      },
-    };
-
-    vi.mocked(createPresignedPost).mockResolvedValueOnce(mockPresignedPost);
-
-    // sha256 is 32 chars, we take first 22
-    const result = await service.getPresignedUploadUrls({
-      eventId: 'evt-123',
-      files: [{ name: 'image.png', size: 2048, type: 'image/png', sha256: 'deadbeef12345678901234567890123456789012' }],
-    });
-
-    expect(result[0].mediaRef).toBe('mr-deadbeef12345678901234');
-  });
-
-  it('generates random mediaRef when sha256 not provided', async () => {
-    const mockPresignedPost = {
-      url: 'https://minio/test-bucket',
-      fields: {
-        'Content-Type': 'image/png',
-        key: 'events/evt-123/media/mr-random123/image.png',
-        policy: 'base64policy',
-        'x-amz-signature': 'signature',
-        'x-amz-credential': 'credential',
-        'x-amz-date': '20240101T000000Z',
-        'x-amz-algorithm': 'AWS4-HMAC-SHA256',
-      },
-    };
-
-    vi.mocked(createPresignedPost).mockResolvedValueOnce(mockPresignedPost);
-
-    const result = await service.getPresignedUploadUrls({
-      eventId: 'evt-123',
-      files: [{ name: 'image.png', size: 2048, type: 'image/png' }],
-    });
-
-    // Generated mediaRef: mr- + timestamp base36 + 16 random chars
-    expect(result[0].mediaRef).toMatch(/^mr-[a-z0-9]{10,}$/);
-  });
-
-  it('confirms upload by checking object exists', async () => {
-    mockS3Send.mockResolvedValueOnce({});
-
-    const result = await service.confirmUpload(
-      'mr-abc123',
-      'events/evt-123/media/mr-abc123/photo.jpg',
-      'op-123'
-    );
-
-    expect(result).toEqual({
-      status: 'RECEIVED',
-      availableAt: expect.any(String),
-    });
-    expect(mockS3Send).toHaveBeenCalledWith(
-      expect.objectContaining({
-        input: {
-          Bucket: 'eventlens',
-          Key: 'events/evt-123/media/mr-abc123/photo.jpg',
-        },
-      })
-    );
-    // Verify HeadObjectCommand was used with correct args
-    expect(HeadObjectCommand).toHaveBeenCalledWith({
-      Bucket: 'eventlens',
-      Key: 'events/evt-123/media/mr-abc123/photo.jpg',
-    });
-  });
-
-  it('throws when confirmUpload object not found', async () => {
-    const error = new Error('Not Found');
-    error.$metadata = { httpStatusCode: 404 };
-    mockS3Send.mockRejectedValueOnce(error);
-
-    await expect(service.confirmUpload('mr-abc123', 'events/evt-123/media/mr-abc123/missing.jpg', 'op-123'))
-      .rejects.toThrow();
-  });
-
-  it('throws when confirmUpload mediaRef does not match objectKey', async () => {
-    await expect(
-      service.confirmUpload('mr-abc123', 'events/evt-123/media/mr-xyz/photo.jpg', 'op-123')
-    ).rejects.toThrow('mediaRef does not match objectKey path');
-  });
+vi.mock('@aws-sdk/s3-presigned-post',()=>({createPresignedPost:vi.fn()}));
+const localMedia={endpoint:'http://localhost:9000',bucket:'isolated',accessKeyId:'test',secretAccessKey:'isolated-test-only'};
+const config={webOrigin:'http://localhost:4200',publicEntryBaseUrl:'http://192.168.1.10:4200',localMedia} as any;
+const grant={attemptId:randomUUID(),objectKey:'events/event/staging/random',mimeType:'image/jpeg',size:3,expiresAt:new Date(Date.now()+900000),sha256:null};
+beforeEach(()=>vi.restoreAllMocks());
+describe('bounded private storage adapter',()=>{
+ it('signs only exact size and MIME staging POST using same origin',async()=>{
+  const storage=new LocalMediaStorage(localMedia);
+  vi.spyOn(storage.client,'send').mockResolvedValue({Status:'Enabled'} as never);
+  vi.mocked(createPresignedPost).mockResolvedValue({url:'http://internal/isolated',fields:{key:grant.objectKey}});
+  expect(await storage.presign(grant)).toMatchObject({uploadUrl:'/storage/isolated',attemptId:grant.attemptId});
+  expect(createPresignedPost).toHaveBeenCalledWith(storage.client,expect.objectContaining({Key:grant.objectKey,Conditions:[['content-length-range',3,3],['eq','$Content-Type','image/jpeg']]}));
+ });
+ it('fails closed without versioning',async()=>{
+  const storage=new LocalMediaStorage(localMedia);vi.spyOn(storage.client,'send').mockResolvedValue({Status:'Suspended'} as never);
+  await expect(storage.presign(grant)).rejects.toMatchObject({status:503});
+ });
+ it('streams bytes and copies exact source version with actual checksum',async()=>{
+  const storage=new LocalMediaStorage(localMedia);
+  const send=vi.spyOn(storage.client,'send').mockResolvedValueOnce({Status:'Enabled'} as never).mockResolvedValueOnce({Body:Readable.from([Buffer.from('abc')]),VersionId:'source/one',ContentLength:3,ContentType:'image/jpeg'} as never).mockResolvedValueOnce({VersionId:'sealed-one'} as never);
+  const seal=await storage.seal(grant);
+  expect(seal).toMatchObject({bytes:3,sourceVersion:'source/one',sealedVersion:'sealed-one',sha256:createHash('sha256').update('abc').digest('hex')});
+  expect((send.mock.calls[2][0] as any).input.CopySource).toContain('?versionId=source%2Fone');
+ });
+ it('rejects a checksum mismatch before copy',async()=>{
+  const storage=new LocalMediaStorage(localMedia);const send=vi.spyOn(storage.client,'send').mockResolvedValueOnce({Status:'Enabled'} as never).mockResolvedValueOnce({Body:Readable.from([Buffer.from('abc')]),VersionId:'source',ContentLength:3,ContentType:'image/jpeg'} as never);
+  await expect(storage.seal({...grant,sha256:'0'.repeat(64)})).rejects.toMatchObject({code:'CORRUPTED_OR_UNREADABLE_FILE'});expect(send).toHaveBeenCalledTimes(2);
+ });
+ it('rejects excess actual bytes before copy',async()=>{
+  const storage=new LocalMediaStorage(localMedia);const send=vi.spyOn(storage.client,'send').mockResolvedValueOnce({Status:'Enabled'} as never).mockResolvedValueOnce({Body:Readable.from([Buffer.from('abcd')]),VersionId:'source',ContentLength:3,ContentType:'image/jpeg'} as never);
+  await expect(storage.seal(grant)).rejects.toMatchObject({code:'SIZE_MISMATCH'});expect(send).toHaveBeenCalledTimes(2);
+ });
+});
+describe('strict guest transport boundary',()=>{
+ const service=()=>new PresignUploadService({transactions:{run:vi.fn()}} as any,config);
+ const file={name:'photo.jpg',size:3,type:'image/jpeg',idempotencyKey:'stable-key'};
+ it('denies untrusted origin before authorization',async()=>{const auth=vi.spyOn(LocalUploadTransferService.prototype,'authorize');await expect(service().getPresignedUploadUrls('token','http://evil.test',{files:[file]})).rejects.toMatchObject({status:403});expect(auth).not.toHaveBeenCalled();});
+ it('rejects unsupported MIME, empty/oversize batch and unexpected properties',async()=>{for(const body of [{files:[]},{files:Array(11).fill(file)},{files:[{...file,type:'text/html'}]},{files:[{...file,extra:true}]},{files:[file],eventId:randomUUID()}])await expect(service().getPresignedUploadUrls('token',config.webOrigin,body)).rejects.toMatchObject({status:400});});
+ it('enforces 25MiB photo boundary',async()=>{await expect(service().getPresignedUploadUrls('token',config.webOrigin,{files:[{...file,size:25*1024*1024+1}]})).rejects.toMatchObject({status:422});});
+ it('requires a session',async()=>{await expect(service().getPresignedUploadUrls(undefined,config.webOrigin,{files:[file]})).rejects.toMatchObject({status:401});});
+ it('confirm rejects client object identity and requires only UUID',async()=>{for(const body of [{attemptId:'bad'},{attemptId:grant.attemptId,objectKey:'injected'}])await expect(service().confirmUpload('token',config.webOrigin,body)).rejects.toMatchObject({status:400});});
+ it('replay uses durable receipt without storage IO',async()=>{const receivedAt=new Date();vi.spyOn(LocalUploadTransferService.prototype,'inspect').mockResolvedValue({grant,receivedAt});const seal=vi.spyOn(LocalMediaStorage.prototype,'seal');expect(await service().confirmUpload('token',config.webOrigin,{attemptId:grant.attemptId})).toEqual({status:'RECEIVED',state:'CONFIRMING',attemptId:grant.attemptId,receivedAt:receivedAt.toISOString()});expect(seal).not.toHaveBeenCalled();});
 });

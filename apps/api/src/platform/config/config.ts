@@ -11,6 +11,8 @@ export interface PlatformConfig {
   allowPrivateNetworkPublicEntryHttp?: boolean;
   identityPepperSecret: string;
   localAdminAuthorityDir?: string;
+  /** Development-only private MinIO receiver; never an AWS/Beta provider choice. */
+  localMedia?: { endpoint: string; bucket: string; accessKeyId: string; secretAccessKey: string };
 }
 
 function integer(
@@ -63,6 +65,24 @@ export function readConfig(env: NodeJS.ProcessEnv): PlatformConfig {
   } else if (env.LOCAL_ADMIN_ENABLED && env.LOCAL_ADMIN_ENABLED !== 'false') {
     throw new Error('INVALID_CONFIG:LOCAL_ADMIN');
   }
+  let localMedia: PlatformConfig['localMedia'];
+  if (env.LOCAL_MEDIA_UPLOAD_ENABLED === 'true') {
+    if (env.NODE_ENV !== 'development') throw new Error('INVALID_CONFIG:LOCAL_MEDIA_UPLOAD_ENABLED');
+    const endpoint = env.MINIO_ENDPOINT ?? 'http://minio:9000';
+    const url = new URL(endpoint);
+    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password ||
+        url.pathname !== '/' || url.search || url.hash ||
+        !['minio', 'test-minio', 'localhost', '127.0.0.1', '[::1]'].includes(url.hostname))
+      throw new Error('INVALID_CONFIG:MINIO_ENDPOINT');
+    const bucket = env.MINIO_BUCKET ?? 'eventlens';
+    if (!/^[a-z][a-z0-9-]{2,62}$/.test(bucket)) throw new Error('INVALID_CONFIG:MINIO_BUCKET');
+    const accessKeyId = env.MINIO_ROOT_USER;
+    const secretAccessKey = env.MINIO_ROOT_PASSWORD;
+    if (!accessKeyId || !secretAccessKey || secretAccessKey.length < 8) throw new Error('INVALID_CONFIG:MINIO_CREDENTIALS');
+    localMedia = { endpoint: url.origin, bucket, accessKeyId, secretAccessKey };
+  } else if (env.LOCAL_MEDIA_UPLOAD_ENABLED && env.LOCAL_MEDIA_UPLOAD_ENABLED !== 'false') {
+    throw new Error('INVALID_CONFIG:LOCAL_MEDIA_UPLOAD_ENABLED');
+  }
   return {
     port: integer(env.API_PORT, 3000, 1, 65535, 'API_PORT'),
     host,
@@ -72,6 +92,7 @@ export function readConfig(env: NodeJS.ProcessEnv): PlatformConfig {
     publicEntryBaseUrl,
     allowPrivateNetworkPublicEntryHttp: env.NODE_ENV === 'development',
     identityPepperSecret,
-    localAdminAuthorityDir
+    localAdminAuthorityDir,
+    localMedia
   };
 }

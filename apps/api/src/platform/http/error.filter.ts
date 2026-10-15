@@ -25,6 +25,16 @@ const publicErrors: Record<number, { code: string; message: string }> = {
  * `.codex/context/api-conventions.md`.
  */
 const publicDomainErrors: Record<string, { code: string; message: string }> = {
+  INSUFFICIENT_FILE_CAPACITY: { code: 'INSUFFICIENT_FILE_CAPACITY', message: 'El evento alcanzó su límite de archivos.' },
+  INSUFFICIENT_STORAGE_CAPACITY: { code: 'INSUFFICIENT_STORAGE_CAPACITY', message: 'El evento no tiene espacio disponible para este archivo.' },
+  FILE_SIZE_EXCEEDS_LIMIT: { code: 'FILE_SIZE_EXCEEDS_LIMIT', message: 'El archivo supera el tamaño permitido.' },
+  UPLOAD_ATTEMPT_EXPIRED: { code: 'UPLOAD_ATTEMPT_EXPIRED', message: 'El plazo de este intento de carga terminó.' },
+  UPLOAD_ATTEMPT_CANCELLED: { code: 'UPLOAD_ATTEMPT_CANCELLED', message: 'Este intento de carga fue cancelado.' },
+  UPLOADS_DISABLED: { code: 'UPLOADS_DISABLED', message: 'El evento no permite subidas en este momento.' },
+  SIZE_MISMATCH: { code: 'SIZE_MISMATCH', message: 'El tamaño o tipo transferido no coincide con el archivo autorizado.' },
+  CORRUPTED_OR_UNREADABLE_FILE: { code: 'CORRUPTED_OR_UNREADABLE_FILE', message: 'No se pudo comprobar la integridad del archivo.' },
+  CONSENT_REQUIRED: { code: 'CONSENT_REQUIRED', message: 'Acepta los consentimientos antes de subir archivos.' },
+  INVALID_CONTRIBUTOR_NICKNAME: { code: 'INVALID_CONTRIBUTOR_NICKNAME', message: 'Completa tu nombre o apodo antes de subir archivos.' },
   EMAIL_EXISTS: { code: 'EMAIL_EXISTS', message: 'Ya existe una cuenta con ese correo.' },
   IDEMPOTENCY_CONFLICT: { code: 'IDEMPOTENCY_CONFLICT', message: 'La operación ya estaba registrada con otros datos.' },
   STALE_REVISION: { code: 'STALE_REVISION', message: 'La cuenta cambió desde que se abrió el formulario. Recarga antes de continuar.' },

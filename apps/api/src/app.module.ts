@@ -31,6 +31,7 @@ import { createLocalAdminAuthority } from './identity/local-admin-authority.js';
 import { ADMIN_RECOVERY_AUTHORITY } from './identity/admin-session.service.js';
 import { AdminOrganizersController } from './identity/admin-organizers.controller.js';
 import { AdminOrganizersService } from './identity/admin-organizers.service.js';
+import { PresignUploadService } from './guest/guest-upload.service.js';
 @Module({})
 export class AppModule {
   static configure(config:PlatformConfig):DynamicModule {
@@ -61,7 +62,8 @@ export class AppModule {
         PublicBetaAccessRequestAdapterService,
         OrganizerAccountService,
         OrganizerEventsService,
-        GuestPublicEntryService
+        GuestPublicEntryService,
+        PresignUploadService
       ]
     };
   }

@@ -36,7 +36,7 @@ import { ORGANIZER_SESSION_CONFIG } from '../identity/organizer-session.service.
 import type { PlatformConfig } from '../platform/config/config.js';
 import { errorSchema } from '../platform/health/health.controller.js';
 import { PresignUploadService } from './guest-upload.service.js';
-import type { PresignInputFile, PresignedUpload, ConfirmUploadResult, PresignInput } from './guest-upload.service.js';
+import type { PresignedUpload, ConfirmUploadResult } from './guest-upload.service.js';
 
 export const GUEST_SESSION_COOKIE_NAME = 'el_guest_session';
 const GUEST_SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
@@ -279,72 +279,13 @@ export const guestRemovalIntakeRouteSchema = {
 };
 
 export const presignInputFileSchema = {
-  type: 'object',
-  required: ['name', 'size', 'type'],
-  properties: {
-    name: { type: 'string', maxLength: 255 },
-    size: { type: 'integer', minimum: 1, maximum: 500 * 1024 * 1024 },
-    type: { type: 'string', enum: ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime'] },
-    sha256: { type: 'string', pattern: '^[a-f0-9]{64}$' }
-  }
+    type: 'object', additionalProperties: false, required: ['name', 'size', 'type', 'idempotencyKey'], properties: { name: { type: 'string', minLength: 1, maxLength: 255 }, size: { type: 'integer', minimum: 1, maximum: 500 * 1024 * 1024 }, type: { type: 'string', enum: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'video/mp4', 'video/webm', 'video/quicktime'] }, idempotencyKey: { type: 'string', pattern: '^[A-Za-z0-9_-]{1,100}$' }, sha256: { type: 'string', pattern: '^[a-f0-9]{64}$' } }
 };
-
-export const presignUploadsRequestSchema = {
-  type: 'object',
-  required: ['files'],
-  properties: {
-    files: {
-      type: 'array',
-      items: presignInputFileSchema,
-      minItems: 1,
-      maxItems: 10
-    }
-  }
-};
-
-export const presignedUploadSchema = {
-  type: 'object',
-  required: ['mediaRef', 'uploadUrl', 'fields', 'expiresAt'],
-  properties: {
-    mediaRef: { type: 'string', pattern: '^mr-[a-z0-9]+$' },
-    uploadUrl: { type: 'string', format: 'uri' },
-    fields: {
-      type: 'object',
-      additionalProperties: { type: 'string' }
-    },
-    expiresAt: { type: 'string', format: 'date-time' }
-  }
-};
-
-export const presignUploadsResponseSchema = {
-  type: 'object',
-  required: ['uploads'],
-  properties: {
-    uploads: {
-      type: 'array',
-      items: presignedUploadSchema
-    }
-  }
-};
-
-export const confirmUploadRequestSchema = {
-  type: 'object',
-  required: ['mediaRef', 'objectKey', 'operationId'],
-  properties: {
-    mediaRef: { type: 'string', pattern: '^mr-[a-z0-9]+$' },
-    objectKey: { type: 'string', pattern: '^events/[^/]+/media/mr-[a-z0-9]+/.+$' },
-    operationId: { type: 'string', format: 'uuid' }
-  }
-};
-
-export const confirmUploadResponseSchema = {
-  type: 'object',
-  required: ['status', 'availableAt'],
-  properties: {
-    status: { type: 'string', enum: ['RECEIVED'] },
-    availableAt: { type: 'string', format: 'date-time' }
-  }
-};
+export const presignUploadsRequestSchema = { type: 'object', additionalProperties: false, required: ['files'], properties: { files: { type: 'array', minItems: 1, maxItems: 10, items: presignInputFileSchema } } };
+export const presignedUploadSchema = { type: 'object', required: ['attemptId', 'uploadUrl', 'fields', 'expiresAt'], properties: { attemptId: { type: 'string', format: 'uuid' }, uploadUrl: { type: 'string' }, fields: { type: 'object', additionalProperties: { type: 'string' } }, expiresAt: { type: 'string', format: 'date-time' } } };
+export const presignUploadsResponseSchema = { type: 'object', required: ['uploads'], properties: { uploads: { type: 'array', items: presignedUploadSchema } } };
+export const confirmUploadRequestSchema = { type: 'object', additionalProperties: false, required: ['attemptId'], properties: { attemptId: { type: 'string', format: 'uuid' } } };
+export const confirmUploadResponseSchema = { type: 'object', required: ['status', 'state', 'attemptId', 'receivedAt'], properties: { status: { type: 'string', enum: ['RECEIVED'] }, state: { type: 'string', enum: ['CONFIRMING'] }, attemptId: { type: 'string', format: 'uuid' }, receivedAt: { type: 'string', format: 'date-time' } } };
 
 export function extractGuestSessionCookie(
   cookieHeader: string | undefined
@@ -1167,52 +1108,21 @@ export class GuestPublicEntryController {
   @ApiOperation({ operationId: 'presignGuestUploads', summary: 'Obtener URLs prefirmadas para subida directa a MinIO' })
   @ApiBody({ schema: presignUploadsRequestSchema })
   @ApiResponse({ status: 200, schema: presignUploadsResponseSchema })
+  @ApiResponse({ status: 400, schema: errorSchema })
+  @ApiResponse({ status: 409, schema: errorSchema })
   @ApiResponse({ status: 401, schema: errorSchema })
   @ApiResponse({ status: 403, schema: errorSchema })
   @ApiResponse({ status: 422, schema: errorSchema })
   @ApiResponse({ status: 503, schema: errorSchema })
   async presignUploads(
     @Req() request: { headers?: Record<string, string | string[] | undefined> },
-    @Body() body: { files: PresignInputFile[] },
+    @Body() body: unknown,
     @Res({ passthrough: true }) response: { setHeader(name: string, value: string | string[]): void }
   ): Promise<{ uploads: PresignedUpload[] }> {
     this.applySecurityHeaders(response);
     const cookieToken = this.extractCookieToken(request);
-    const session = await this.guestPublicEntryService.getSessionFromCookie(cookieToken);
-    if (!session || !session.canUpload) throw new ForbiddenException('Uploads not allowed');
-
-    // Enforce file size limits per type: photo ≤ 50 MB, video ≤ 500 MB
-    const PHOTO_MAX_SIZE = 50 * 1024 * 1024; // 50 MB
-    const VIDEO_MAX_SIZE = 500 * 1024 * 1024; // 500 MB
-    const photoTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
-    const videoTypes = new Set(['video/mp4', 'video/webm', 'video/quicktime']);
-
-    for (const file of body.files) {
-      if (photoTypes.has(file.type) && file.size > PHOTO_MAX_SIZE) {
-        throw new HttpException(
-          {
-            code: 'FILE_TOO_LARGE',
-            message: `Photo files must not exceed 50 MB. File "${file.name}" is ${Math.round(file.size / 1024 / 1024)} MB.`,
-          },
-          HttpStatus.UNPROCESSABLE_ENTITY
-        );
-      }
-      if (videoTypes.has(file.type) && file.size > VIDEO_MAX_SIZE) {
-        throw new HttpException(
-          {
-            code: 'FILE_TOO_LARGE',
-            message: `Video files must not exceed 500 MB. File "${file.name}" is ${Math.round(file.size / 1024 / 1024)} MB.`,
-          },
-          HttpStatus.UNPROCESSABLE_ENTITY
-        );
-      }
-    }
-
-    const uploads = await this.guestUploadService.getPresignedUploadUrls({
-      eventId: session.eventId,
-      files: body.files,
-    });
-    return { uploads };
+    const origin = request.headers?.origin;
+    return { uploads: await this.guestUploadService.getPresignedUploadUrls(cookieToken, typeof origin === 'string' ? origin : undefined, body) };
   }
 
   @Post('guest-session/uploads/confirm')
@@ -1220,38 +1130,21 @@ export class GuestPublicEntryController {
   @ApiOperation({ operationId: 'confirmGuestUpload', summary: 'Confirmar recepción de archivo subido a MinIO' })
   @ApiBody({ schema: confirmUploadRequestSchema })
   @ApiResponse({ status: 200, schema: confirmUploadResponseSchema })
+  @ApiResponse({ status: 400, schema: errorSchema })
+  @ApiResponse({ status: 422, schema: errorSchema })
+  @ApiResponse({ status: 429, schema: errorSchema })
   @ApiResponse({ status: 401, schema: errorSchema })
   @ApiResponse({ status: 403, schema: errorSchema })
   @ApiResponse({ status: 404, schema: errorSchema })
   @ApiResponse({ status: 503, schema: errorSchema })
   async confirmUpload(
     @Req() request: { headers?: Record<string, string | string[] | undefined> },
-    @Body() body: { mediaRef: string; objectKey: string; operationId: string },
+    @Body() body: unknown,
     @Res({ passthrough: true }) response: { setHeader(name: string, value: string | string[]): void }
   ): Promise<ConfirmUploadResult> {
     this.applySecurityHeaders(response);
     const cookieToken = this.extractCookieToken(request);
-    const session = await this.guestPublicEntryService.getSessionFromCookie(cookieToken); // validates session
-    if (!session) {
-      throw new HttpException(
-        { code: 'GUEST_SESSION_REQUIRED', message: 'Se requiere una sesión de invitado activa.' },
-        HttpStatus.UNAUTHORIZED
-      );
-    }
-
-    // Extract eventId from objectKey (format: events/{eventId}/media/...) and verify it matches session
-    const objectKeyParts = body.objectKey.split('/');
-    if (objectKeyParts.length < 2 || objectKeyParts[0] !== 'events') {
-      throw new HttpException(
-        { code: 'INVALID_OBJECT_KEY', message: 'Invalid objectKey format' },
-        HttpStatus.BAD_REQUEST
-      );
-    }
-    const objectKeyEventId = objectKeyParts[1];
-    if (objectKeyEventId !== session.eventId) {
-      throw new ForbiddenException('objectKey eventId does not match session eventId');
-    }
-
-    return this.guestUploadService.confirmUpload(body.mediaRef, body.objectKey, body.operationId);
+    const origin = request.headers?.origin;
+    return this.guestUploadService.confirmUpload(cookieToken, typeof origin === 'string' ? origin : undefined, body);
   }
 }

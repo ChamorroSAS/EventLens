@@ -27,7 +27,11 @@ it.each([
 it.each([
   ['EMAIL_EXISTS',409],['IDEMPOTENCY_CONFLICT',409],['STALE_REVISION',409],
   ['CONCURRENCY_CONFLICT',409],['INVALID_STATE',409],['INVALID_ARGUMENT',422],
-  ['AUTHORITY_UNAVAILABLE',503]
+  ['AUTHORITY_UNAVAILABLE',503],
+  ['INSUFFICIENT_FILE_CAPACITY',422],['INSUFFICIENT_STORAGE_CAPACITY',422],
+  ['FILE_SIZE_EXCEEDS_LIMIT',422],['UPLOAD_ATTEMPT_EXPIRED',422],
+  ['UPLOAD_ATTEMPT_CANCELLED',422],['UPLOADS_DISABLED',403],['SIZE_MISMATCH',422],
+  ['CORRUPTED_OR_UNREADABLE_FILE',422],['CONSENT_REQUIRED',422],['INVALID_CONTRIBUTOR_NICKNAME',422]
 ])('forwards allowlisted domain code %s with a fixed public message (EL-TK-242)', (domainCode,status) => {
   let observedStatus:number|undefined, body:any;
   const response = {status:(value:number) => {observedStatus=value;return response;},json:(value:unknown) => {body=value;}};
