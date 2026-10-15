@@ -1,6 +1,8 @@
 # ADR propuesto — Backups y RecoveryAuthority de la Beta
 
-Estado: **PROPOSED / NOT_ACCEPTED**. Fecha: 2026-10-14. Trazabilidad: CR-011, EL-TK-245, EL-EP-020. No asigna un DEC nuevo ni modifica los existentes.
+Estado: **PARTIALLY_APPROVED / TECHNICAL_GATES_PENDING**. Propuesta: 2026-10-14; aprobación parcial: 2026-10-15. Trazabilidad: CR-011, EL-TK-245, EL-EP-020, DEC-113.
+
+Aprobación expresa recibida: «Aprobar sólo S3 backups y filesystem; revisar autoridad y RPO». S3 es destino de backups aprobado y filesystem/EBS almacenamiento operativo aprobado para Beta; Standard sigue RECOMMENDED. DynamoDB, S3 como autoridad, RPO media y ancla/reconstrucción permanecen PENDING. Los puntos siguientes conservan su carácter de propuesta en todo lo no aprobado. Ningún gate de implementación queda aprobado por este registro.
 
 ## Contexto
 
@@ -32,4 +34,4 @@ Backups Standard-IA/GIR pueden evaluarse después de medir tamaño/retención/re
 
 ## Registro de decisión
 
-PENDING. Sin aprobador, fecha de aceptación ni ejecución. Las decisiones aceptadas actuales permanecen intactas. Evaluación y fuentes: [informe](../aws-beta-technical-evaluation.md).
+Usuario, 2026-10-15: aprobación parcial limitada registrada en DEC-113; sin ejecución. No hay aceptación del ADR completo ni del proveedor de autoridad/RPO. [Avance y condiciones de cierre](../aws-beta-ticket-closure-plan.md). Evaluación y fuentes: [informe](../aws-beta-technical-evaluation.md).

@@ -11,7 +11,7 @@ UI_REQUIRED: NO para este alcance; cualquier cambio visible requiere gate UI sep
 Como operador de Phoeve, quiero recuperar DB a un instante sin depender del host aplicación.
 
 ## Alcance funcional
-pgBackRest o alternativa aprobada: full diario/WAL continuo, destino externo no S3, cifrado/retención y alertas; no dumps locales como equivalente.
+pgBackRest o alternativa aprobada: full diario/WAL continuo, destino exterior Amazon S3 aprobado por usuario el 2026-10-15, cifrado/retención y alertas; no dumps locales como equivalente. Standard recomendada, herramienta/IAM/retención y pruebas aún pendientes. Trazabilidad: DEC-113 y docs/aws-beta-ticket-closure-plan.md.
 
 ## Fuera de alcance
 Crear recursos/aplicar Terraform durante la planificación, comprar dominios, secretos versionados y operaciones destructivas no aprobadas. No modificar contratos históricos sin gate.
@@ -20,7 +20,7 @@ Crear recursos/aplicar Terraform durante la planificación, comprar dominios, se
 Cadena válida≥7d, full diario, RPO≤1h; archive éxito sólo después de persistencia exterior. Roles runtime no borran repo; secrets recuperables autorizados. Spool/outage no agota DB sin alerta. Snapshot complementa, no reemplaza PITR.
 
 ## Reglas de negocio / datos y contratos
-Preservar contratos enumerados en docs/aws-beta-audit.md y aws-beta-plan.md: independencia del journal, denegación conservadora, integridad/privacidad/purga y RPO/RTO. No S3 obligatorio. Fuente propuesta, no decisión arquitectónica adoptada.
+Preservar contratos enumerados en docs/aws-beta-audit.md y aws-beta-plan.md: independencia del journal, denegación conservadora, integridad/privacidad/purga y RPO/RTO. S3 aprobado para backups exteriores; no autoriza media operativa S3 ni autoridad S3. Diseño/implementación sujetos a gates pendientes.
 
 ## Validaciones y permisos / errores
 Actor autorizado por gate de la capacidad; menor privilegio y redacción. Ante evidencia ausente, autoridad incierta, permisos inválidos o dependencia no READY, bloquear efecto/promoción. No fallback silencioso ni bootstrap nuevo sobre datos perdidos.

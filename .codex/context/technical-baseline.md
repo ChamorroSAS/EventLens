@@ -114,6 +114,8 @@ Architecture abstractions must avoid unnecessarily coupling the product to these
 
 ## EL-TD-008 — Local environment and Beta topology
 
+Addendum 2026-10-15, DEC-113: explicit user approval selects operational Beta media on local persistent filesystem/EBS and Amazon S3 as the external PostgreSQL/media backup destination. This narrowly supersedes the deferred Beta storage choice below; MinIO remains development/validation only. Preserve the neutral storage contract, privacy, integrity, grants, revocation, quotas, purge and PITR/RTO requirements. RecoveryAuthority provider and media RPO remain PENDING; technical implementation/readiness gates are not approved. See [scope and closure plan](../../docs/aws-beta-ticket-closure-plan.md). EL-TD-001..007 remain unchanged.
+
 Status: ACCEPTED — 2026-10-08, explicit user approval; traceability: DEC-106.
 
 - Local development is fully Dockerized; Docker Compose is the initial orchestration. The monorepo continues to use pnpm workspaces.

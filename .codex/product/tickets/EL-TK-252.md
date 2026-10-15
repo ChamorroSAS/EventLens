@@ -46,6 +46,9 @@ P0 preparación Beta. Estimación PENDING del planner tras decisiones/gate.
 packages/identity, API provider/config, recovery/barrier adapters y runbook. Paths futuros semánticos por responsabilidad; no directorios con ID de ticket.
 
 ## Riesgos / notas
+
+2026-10-15: usuario pidió revisar autoridad y RPO y aprobó sólo S3 backups/filesystem. DynamoDB no adoptado; S3 autoridad tampoco. Cierre requiere amenaza, ancla/actualidad, política de pérdida/reconstrucción y provider aprobados antes del adapter. Revisión y límites de recuperación: `docs/aws-beta-ticket-closure-plan.md`. No reducir floors ni reinterpretar RTO para poder cerrar.
+
 Rollback de revocaciones, límites por proceso y recuperación que confía DB antigua.
 Bloqueantes globales: región/proveedores/capacidad/costo/gates/autoridad; ver CR-011. Riesgos particulares se resuelven con las pruebas y revisión descritas.
 

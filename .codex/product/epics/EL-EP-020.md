@@ -2,6 +2,8 @@
 
 ## Status
 
+Actualización 2026-10-15: us-east-1 y dos eventos simultáneos CONFIRMED. DEC-113 registra aprobación parcial filesystem/EBS operativo y S3 backups. Autoridad y RPO media PENDING; no adopción de DynamoDB/S3 autoridad. Ver [plan de cierre](../../../docs/aws-beta-ticket-closure-plan.md); gates/estados conservados. El resto de preguntas históricas se interpreta con esta actualización.
+
 DRAFT. REQUIREMENTS_READY: NO. READY_FOR_IMPLEMENTATION: NO.
 UI_REQUIRED: NO: infraestructura/operación, sin nuevas pantallas o interacción aprobada.
 CR-011; propuesta 2026-10-14. No autorización de aprovisionamiento.

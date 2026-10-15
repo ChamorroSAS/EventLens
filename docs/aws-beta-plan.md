@@ -1,5 +1,7 @@
 # Phoeve Beta — Propuesta de infraestructura y despliegue
 
+Resolución parcial 2026-10-15 (DEC-113): S3 backups y filesystem/EBS operativo aprobados; autoridad y RPO no aprobados. [Continuación y condiciones de cierre](aws-beta-ticket-closure-plan.md). Prevalece sobre los destinos pendientes descritos en el historial de abajo; sin autorización de aprovisionamiento.
+
 Actualización para revisión: [evaluación EL-TK-245 / CR-011](aws-beta-technical-evaluation.md) y [ADR propuesto](adr/beta-backups-and-recovery-authority.proposed.md). us-east-1 y dos eventos simultáneos ahora CONFIRMED; S3 backups/autoridad son alternativas evaluadas, no adoptadas. Usar los escenarios del informe para costos actuales. El resto conserva el historial de la propuesta; no habilita despliegue.
 
 Fecha: 2026-10-14. RECOMMENDED; REQUIREMENTS_READY: NO; READY_FOR_IMPLEMENTATION: NO.

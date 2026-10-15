@@ -4,6 +4,8 @@
 EL-EP-020. Cambio: CR-011.
 
 ## Status
+
+Actualización 2026-10-15: aprobación parcial expresa registrada en DEC-113: filesystem/EBS operativo y S3 para backups. Autoridad y RPO media NO aprobados. ADR PARTIALLY_APPROVED; Standard RECOMMENDED. Se han cerrado esas preguntas de producto, no el ticket. Mantener los gates abajo; plan de cierre y revisión: `docs/aws-beta-ticket-closure-plan.md`.
 DRAFT. REQUIREMENTS_READY: NO. READY_FOR_IMPLEMENTATION: NO.
 UI_REQUIRED: NO para este alcance; cualquier cambio visible requiere gate UI separado.
 
@@ -47,7 +49,7 @@ P0 preparación Beta. Estimación PENDING del planner tras decisiones/gate.
 
 ## Riesgos / notas
 Reducir garantías por presupuesto o llamar DONE a evidencia simulada.
-Bloqueantes globales: región/proveedores/capacidad/costo/gates/autoridad; ver CR-011. Riesgos particulares se resuelven con las pruebas y revisión descritas.
+Bloqueantes vigentes: autoridad/ancla/reconstrucción, RPO media, retención de copias, capacidad/costo, gates y control DNS; ver CR-011. Región, simultaneidad, filesystem operativo y destino S3 backup confirmados. Riesgos particulares se resuelven con las pruebas y revisión descritas.
 
 ## Definition of Ready
 

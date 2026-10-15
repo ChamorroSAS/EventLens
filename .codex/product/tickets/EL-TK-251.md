@@ -11,7 +11,7 @@ UI_REQUIRED: NO para este alcance; cualquier cambio visible requiere gate UI sep
 Como operador de Phoeve, quiero usar EBS local manteniendo integridad y permisos del contrato neutral.
 
 ## Alcance funcional
-Adapter filesystem/gateway para clases, streams/chunks/range, version/checksum y operationId/drain; sin S3 Beta; no adaptar UI sin gate propio.
+Adapter filesystem/gateway para clases, streams/chunks/range, version/checksum y operationId/drain; sin S3 como storage operativo Beta; no adaptar UI sin gate propio. Filesystem/EBS aprobado expresamente el 2026-10-15 (DEC-113); S3 para backups es un alcance distinto. Diseño del adapter, autoridad y gates técnicos siguen pendientes.
 
 ## Fuera de alcance
 Crear recursos/aplicar Terraform durante la planificación, comprar dominios, secretos versionados y operaciones destructivas no aprobadas. No modificar contratos históricos sin gate.

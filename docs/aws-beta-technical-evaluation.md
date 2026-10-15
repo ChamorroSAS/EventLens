@@ -1,5 +1,7 @@
 # Phoeve — Evaluación técnica de EL-TK-245 / CR-011
 
+Actualización 2026-10-15: el usuario aprobó sólo S3 para backups y filesystem/EBS operativo; autoridad y RPO siguen pendientes. Ver [aprobación parcial y cierre de tickets](aws-beta-ticket-closure-plan.md) y DEC-113. Standard continúa recomendada; no se adoptó DynamoDB. El análisis de abajo conserva la evaluación original, sin promover gates.
+
 Fecha local: 2026-10-14. Estado: **PROPOSED / FOR_REVIEW**. REQUIREMENTS_READY: NO. READY_FOR_IMPLEMENTATION: NO.
 Evaluación propia; no equivale a los gates independientes requeridos. Sin delegación ni asignación de responsabilidades. No se ejecutó Terraform ni se crearon recursos AWS. La consulta de precios fue HTTP público, sin credenciales.
 

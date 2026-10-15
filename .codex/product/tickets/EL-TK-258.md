@@ -11,7 +11,7 @@ UI_REQUIRED: NO para este alcance; cualquier cambio visible requiere gate UI sep
 Como operador de Phoeve, quiero conservar originales recuperables sin resucitar objetos eliminados.
 
 ## Alcance funcional
-restic o alternativa cifrada no S3, inventory/checksum y reconciliación externa de tombstones; rotación por ancla/deadline.
+restic o alternativa cifrada hacia Amazon S3 aprobado para backups por usuario el 2026-10-15, inventory/checksum y reconciliación externa de tombstones; rotación por ancla/deadline. Standard recomendada; RPO media no aprobado. Trazabilidad: DEC-113 y docs/aws-beta-ticket-closure-plan.md.
 
 ## Fuera de alcance
 Crear recursos/aplicar Terraform durante la planificación, comprar dominios, secretos versionados y operaciones destructivas no aprobadas. No modificar contratos históricos sin gate.
@@ -20,7 +20,7 @@ Crear recursos/aplicar Terraform durante la planificación, comprar dominios, se
 Restore conserva bytes/versiones exactos y no sirve purgados ni exports invalidados; Missing explícito. Copias técnicas expiran≤30d con evidencia; horizonte y RPO media explícitamente aprobados. Backup staging/scratch no constituye original.
 
 ## Reglas de negocio / datos y contratos
-Preservar contratos enumerados en docs/aws-beta-audit.md y aws-beta-plan.md: independencia del journal, denegación conservadora, integridad/privacidad/purga y RPO/RTO. No S3 obligatorio. Fuente propuesta, no decisión arquitectónica adoptada.
+Preservar contratos enumerados en docs/aws-beta-audit.md y aws-beta-plan.md: independencia del journal, denegación conservadora, integridad/privacidad/purga y RPO/RTO. S3 aprobado sólo para backups, filesystem/EBS operativo; autoridad y RPO media siguen pendientes. Sin gate de implementación ni restore acreditado.
 
 ## Validaciones y permisos / errores
 Actor autorizado por gate de la capacidad; menor privilegio y redacción. Ante evidencia ausente, autoridad incierta, permisos inválidos o dependencia no READY, bloquear efecto/promoción. No fallback silencioso ni bootstrap nuevo sobre datos perdidos.

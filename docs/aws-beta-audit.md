@@ -1,5 +1,7 @@
 # Phoeve Beta — Auditoría de preparación para AWS
 
+Resolución parcial 2026-10-15: DEC-113 aprueba S3 backups y filesystem/EBS operativo, sin aprobar autoridad ni RPO media. [Avance de tickets y preflight local](aws-beta-ticket-closure-plan.md). La aprobación de dirección no constituye implementación o evidencia de recuperación.
+
 Evaluación posterior para revisión: [EL-TK-245 / CR-011](aws-beta-technical-evaluation.md). Región us-east-1 y dos eventos simultáneos confirmados; alternativas S3/DynamoDB y costos revisados allí. No modifica decisiones aceptadas ni acredita despliegue.
 
 Fecha: 2026-10-14. Estado: propuesta documental; no autorización de aprovisionamiento.

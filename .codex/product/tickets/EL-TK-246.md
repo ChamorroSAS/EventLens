@@ -33,6 +33,9 @@ Todos dependen de cierre de los BLOCKER de CR-011 aplicables. No empezar ejecuci
 Carga sostenida/burst, HEIC/video máximo, signatures vencidas, ZIP y disco alto; no usar emulación para declarar rendimiento nativo.
 
 ## Evidencias
+
+Preparación 2026-10-15: `node docs/research/beta-lab-preflight.mjs`, revisión e21babc, Node Windows x64; consulta del engine Docker PROBE_FAILED, buildx/Compose disponibles. No acredita arquitectura del engine, compatibilidad nativa ni capacidad; NOT_TESTED, sin gate/promoción. Resultado y plan: `docs/aws-beta-ticket-closure-plan.md`. No se crearon recursos ni se implementó el runtime de este ticket.
+
 Manifests/digests, comandos, corpus/denominadores y métricas p95/RAM/CPU/scratch; verdict reproducible.
 Guardar comandos/versiones/ambiente/resultado y artefactos sanitizados en sesión trazable; no presumir PASS de pruebas no ejecutadas.
 
