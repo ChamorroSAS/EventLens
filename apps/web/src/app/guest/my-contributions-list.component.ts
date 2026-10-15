@@ -224,6 +224,7 @@ export class MyContributionsListComponent {
       case 'UPLOADING':
         return 'Cargando';
       case 'CONFIRMING':
+        return 'Transferido; validación pendiente';
       case 'VALIDATING':
       case 'PROCESSING':
         return 'Procesando';

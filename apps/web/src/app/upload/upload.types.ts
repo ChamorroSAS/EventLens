@@ -26,6 +26,9 @@ export interface UploadLocalFile {
   objectKey?: string;
   sha256?: string;
   mediaRef?: string;
+  idempotencyKey?: string;
+  bytesTransferred?: boolean;
+  presigned?: { uploadUrl: string; fields: Record<string, string>; expiresAt: string };
 }
 
 export interface UploadBatchSummary {

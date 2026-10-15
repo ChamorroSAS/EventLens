@@ -14,14 +14,12 @@ import { MyContributionsListComponent } from './my-contributions-list.component.
 import { RemovalRequestFlowComponent } from './removal-request-flow.component.js';
 import { GalleryComponent } from '../gallery/gallery.component.js';
 import { UploadContainerComponent } from '../upload/upload-container.component.js';
-import type { UploadLocalFile } from '../upload/upload.types.js';
 import {
   APPROVED_PUBLIC_ENTRY_PATHS,
   CANONICAL_PUBLIC_ENTRY_ROUTE_METADATA,
   type PublicEntryRouteDescriptor
 } from '../navigation/public-entry-routes.contract.js';
 import { PublicEntryRouterService } from '../navigation/public-entry-router.service.js';
-import { UploadOrchestratorService } from '../upload/upload-orchestrator.service.js';
 
 export interface SelectedUploadItem {
   id: string;
@@ -176,7 +174,6 @@ export type GuestFlowStep =
               </div>
             </section>
             @if (accessView?.welcomeMessage) { <p class="event-welcome">{{ accessView?.welcomeMessage }}</p> }
-            <p class="restriction-banner" role="note">{{ transferUnavailableMessage }}</p>
 
             <!-- Restriction / Session Alerts if applicable -->
             @if (accessView?.restrictionReason) {
@@ -289,17 +286,6 @@ export type GuestFlowStep =
               </section>
             }
 
-            <!-- Upload Section (Task 4: integrate upload container in guest flow) -->
-            @if (hasActiveSession && !showIdentityForm() && !isUnavailableAccess && canUpload && guestService.isReadyToUpload()) {
-              <section class="upload-section" aria-labelledby="upload-title">
-                <eventlens-upload-container
-                  [isPolicyBlocked]="!canUpload"
-                  (fileQueued)="onFileQueued($event)"
-                  (fileRetried)="onFileRetried($event)"
-                ></eventlens-upload-container>
-              </section>
-            }
-
             <!-- Acceso directo a derivación de retiro sin sesión -->
             @if (!hasActiveSession && !needsPinVerification && !isUnavailableAccess) {
               <div class="removal-guest-link-row">
@@ -360,7 +346,7 @@ export type GuestFlowStep =
         <!-- SCREEN 4: SELECCIÓN DE ARCHIVOS -->
         @if (currentStep() === 'SELECT_FILES') {
           <div class="screen-view file-selection-screen">
-            <p class="restriction-banner" role="status">Los archivos seleccionados todavía no se han enviado. {{ transferUnavailableMessage }}</p>
+            <p class="restriction-banner" role="status">Selecciona tus archivos y pulsa Cargar archivos para enviarlos.</p>
             @if (sessionErrorMessage()) { <p role="alert">{{ sessionErrorMessage() }}</p> }
             <!-- Header bar -->
             <header class="mobile-app-header">
@@ -461,6 +447,7 @@ export type GuestFlowStep =
                         type="button"
                         class="remove-thumb-btn"
                         (click)="removeSelectedFile(item.id)"
+                        [disabled]="!canRemoveSelectedFile(item.file)"
                         aria-label="Quitar archivo"
                       >
                         ✕
@@ -480,6 +467,14 @@ export type GuestFlowStep =
               </section>
             }
 
+            <eventlens-upload-container
+              [isPolicyBlocked]="!canUpload || !hasActiveSession"
+              [contextKey]="uploadContextKey"
+              [showPicker]="false"
+              [showStartButton]="false"
+              (received)="refreshContributions()"
+            ></eventlens-upload-container>
+
             <!-- Upload Policy Info Pill Callout -->
             <div class="info-pill-callout" (click)="openUploadPolicy()">
               <div class="info-pill-icon">
@@ -496,10 +491,10 @@ export type GuestFlowStep =
             <button
               type="button"
               class="btn-primary-gradient cta-large mt-auto"
-              [disabled]="true"
+              [disabled]="!selectedFiles().length || !canUpload || !hasQueuedUploadFiles"
               (click)="startUploadingSelectedFiles()"
             >
-              <span>Subir recuerdos</span>
+              <span>Cargar archivos</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="9 18 15 12 9 6"></polyline>
               </svg>
@@ -1847,7 +1842,6 @@ export class GuestContainerComponent implements OnInit, OnDestroy, OnChanges {
   readonly isDragOver = signal(false);
 
   readonly selectedFiles = signal<SelectedUploadItem[]>([]);
-  readonly transferUnavailableMessage = 'La subida de archivos aún no está disponible.';
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private identityOrigin: GuestFlowStep | null = null;
   private fileSequence = 0;
@@ -1855,8 +1849,7 @@ export class GuestContainerComponent implements OnInit, OnDestroy, OnChanges {
   private serviceContext: number;
 
   constructor(
-    public guestService: GuestService,
-    private readonly orchestrator: UploadOrchestratorService
+    public guestService: GuestService
   ) { this.serviceContext = guestService.getContextVersion(); }
 
   @ViewChild(UploadContainerComponent) uploadContainer!: UploadContainerComponent;
@@ -1889,8 +1882,6 @@ export class GuestContainerComponent implements OnInit, OnDestroy, OnChanges {
       void this.loadGuestEntry(resolvedKey);
       return;
     }
-
-
   }
 
   get effectiveLookupKey(): string | null {
@@ -1951,15 +1942,13 @@ export class GuestContainerComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   get confirmedPhotosCount(): number {
-    const fromSelected = this.selectedFiles().filter(f => f.type === 'PHOTO' && f.status === 'COMPLETED').length;
     const fromContribs = this.contributions.filter(c => c.mediaType === 'PHOTO').length;
-    return Math.max(fromSelected, fromContribs);
+    return fromContribs;
   }
 
   get confirmedVideosCount(): number {
-    const fromSelected = this.selectedFiles().filter(f => f.type === 'VIDEO' && f.status === 'COMPLETED').length;
     const fromContribs = this.contributions.filter(c => c.mediaType === 'VIDEO').length;
-    return Math.max(fromSelected, fromContribs);
+    return fromContribs;
   }
 
   getStatusLabel(status?: string): string {
@@ -1994,7 +1983,7 @@ export class GuestContainerComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   goToStep(step: GuestFlowStep): void {
-    if (step === 'UPLOADING' || step === 'CONFIRMATION') { this.sessionErrorMessage.set(this.transferUnavailableMessage); return; }
+    if (step === 'UPLOADING' || step === 'CONFIRMATION') return;
     if (step === 'GALLERY' && !this.accessView?.canViewGallery) return;
     if ((step === 'CONSENT' || step === 'SELECT_FILES' || (step === 'IDENTITY' && this.identityOrigin === null)) && (!this.canUpload || !this.hasActiveSession)) {
       this.goToStep('LANDING');
@@ -2003,6 +1992,7 @@ export class GuestContainerComponent implements OnInit, OnDestroy, OnChanges {
     }
     if (step === 'IDENTITY' && !this.hasActiveSession) { this.goToStep('LANDING'); return; }
     if (step === 'SELECT_FILES' && (!this.currentSession?.hasConsented || !this.currentSession?.contributorNickname)) { this.startUploadFlow(); return; }
+    if (this.currentStep() === 'SELECT_FILES' && step !== 'SELECT_FILES') this.clearSelectedFiles();
     this.currentStep.set(step);
     this.isMenuOpen.set(false);
     if (step === 'LANDING') this.identityOrigin = null;
@@ -2079,9 +2069,6 @@ export class GuestContainerComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     this.accessView = outcome.access;
-    if (outcome.session && !outcome.session.hasConsented && this.canUpload) {
-      this.showConsentSheet.set(false);
-    }
   }
 
   async onPinSubmitted(pin: string): Promise<void> {
@@ -2230,40 +2217,30 @@ export class GuestContainerComponent implements OnInit, OnDestroy, OnChanges {
     });
 
     this.selectedFiles.set([...this.selectedFiles(), ...newItems]);
+    this.uploadContainer?.onFilesSelected(files);
   }
 
   removeSelectedFile(id: string): void {
     const removed = this.selectedFiles().find(f => f.id === id);
-    if (removed) URL.revokeObjectURL(removed.previewUrl);
+    if (removed && !this.canRemoveSelectedFile(removed.file)) return;
+    if (removed) { this.uploadContainer?.removeQueuedFile(removed.file); URL.revokeObjectURL(removed.previewUrl); }
     this.selectedFiles.set(this.selectedFiles().filter(f => f.id !== id));
   }
 
   startUploadingSelectedFiles(): void {
     if (!this.canUpload || !this.hasActiveSession) { this.startUploadFlow(); return; }
     if (!this.currentSession?.hasConsented || !this.currentSession?.contributorNickname) { this.startUploadFlow(); return; }
-    this.sessionErrorMessage.set(this.transferUnavailableMessage);
+    this.uploadContainer?.startQueuedUploads();
   }
 
   retryFileUpload(_id: string): void { this.startUploadingSelectedFiles(); }
 
-  onFileQueued(file: UploadLocalFile): void {
-    this.orchestrator.startUpload(file, {
-      onProgress: (id, pct) => this.uploadContainer.updateFileProgress(id, pct),
-      onStatusChange: (id, status, opts) => this.uploadContainer.updateFileStatus(id, status, opts),
-    });
-  }
+  get uploadContextKey(): string { return [this.accessView?.eventId, this.currentSession?.id, this.accessView?.generation].join(':'); }
+  get hasQueuedUploadFiles(): boolean { return this.uploadContainer?.hasQueuedFiles ?? false; }
 
-  onFileRetried(fileId: string): void {
-    const file = this.uploadContainer.files.find(f => f.id === fileId);
-    if (file) {
-      this.orchestrator.retryUpload(fileId, file, {
-        onProgress: (id, pct) => this.uploadContainer.updateFileProgress(id, pct),
-        onStatusChange: (id, status, opts) => this.uploadContainer.updateFileStatus(id, status, opts),
-      });
-    }
-  }
+  canRemoveSelectedFile(raw: File): boolean { return !this.uploadContainer?.files.some(file => file.file === raw && file.status !== 'QUEUED' && !file.isInvalidLocal); }
 
-  isAllUploadsDone(): boolean { return false; }
+  isAllUploadsDone(): boolean { return this.uploadContainer?.batchSummary.allCompleted ?? false; }
 
   onUploadMoreClick(): void { this.startUploadFlow(); }
 
@@ -2279,6 +2256,8 @@ export class GuestContainerComponent implements OnInit, OnDestroy, OnChanges {
     this.serviceContext = this.guestService.getContextVersion();
     const outcome = await this.guestService.refreshOwnContributions();
     if (request !== this.entryRequest) return;
+    if (outcome.ok) { this.uploadContainer?.reconcileContributions(outcome.contributions ?? []); }
+    else if (outcome.status !== 401) { this.sessionErrorMessage.set(outcome.message); }
     if (!outcome.ok && outcome.status === 401) {
       this.clearSelectedFiles();
       this.goToStep('LANDING');
@@ -2287,6 +2266,7 @@ export class GuestContainerComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private clearSelectedFiles(): void {
+    this.uploadContainer?.cancelPendingTransfers();
     for (const item of this.selectedFiles()) URL.revokeObjectURL(item.previewUrl);
     this.selectedFiles.set([]);
   }

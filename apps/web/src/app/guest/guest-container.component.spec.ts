@@ -290,7 +290,7 @@ describe('GuestContainerComponent (EL-TK-083 & EL-TK-211 & Mobile-First 7-Screen
     guestService.setSession({ id: 'sess-ready', eventId: mockAccessView.eventId, credentialGeneration: 1, contributorNickname: 'Nestor', hasConsented: true, consentVersion: 'v1.0' });
     const { fixture, component } = createComponent({ ...mockAccessView, pinRequired: false });
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain(component.transferUnavailableMessage);
+    expect(component.currentStep()).toBe('LANDING');
     component.startUploadFlow(); fixture.detectChanges();
     expect(component.currentStep()).toBe('SELECT_FILES');
     expect(component.selectedFiles()).toEqual([]);
@@ -301,8 +301,10 @@ describe('GuestContainerComponent (EL-TK-083 & EL-TK-211 & Mobile-First 7-Screen
     expect(component.selectedFiles()[0].file).toBe(file);
     expect(component.selectedFiles()[0].sizeBytes).toBe(4);
     expect(component.selectedFiles()[0].duration).toBeUndefined();
-    expect(fixture.nativeElement.querySelector('.file-selection-screen button.mt-auto').disabled).toBe(true);
-    component.startUploadingSelectedFiles(); component.retryFileUpload(component.selectedFiles()[0].id); component.goToStep('CONFIRMATION');
+    expect(fixture.nativeElement.querySelector('.file-selection-screen button.mt-auto').disabled).toBe(false);
+    const start = vi.spyOn(component.uploadContainer, 'startQueuedUploads').mockImplementation(() => {});
+    component.startUploadingSelectedFiles();
+    expect(start).toHaveBeenCalledTimes(1);
     expect(component.currentStep()).toBe('SELECT_FILES');
     expect(component.selectedFiles()[0].status).toBe('PENDING');
     expect(component.selectedFiles()[0].progress).toBe(0);
@@ -398,6 +400,8 @@ describe('GuestContainerComponent (EL-TK-083 & EL-TK-211 & Mobile-First 7-Screen
     expect(component.canUpload).toBe(true);
     expect(component.hasActiveSession).toBe(true);
     expect(guestService.isReadyToUpload()).toBe(true);
+    expect(fixture.nativeElement.querySelector('eventlens-upload-container')).toBeNull();
+    component.startUploadFlow(); fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('eventlens-upload-container')).not.toBeNull();
   });
 

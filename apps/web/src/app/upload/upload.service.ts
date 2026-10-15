@@ -11,18 +11,24 @@ const SUPPORTED_TYPES = [
   'image/png',
   'image/webp',
   'image/heic',
+  'image/heif',
   'video/mp4',
   'video/quicktime',
   'video/webm'
 ];
 
-const MAX_PHOTO_BYTES = 50 * 1024 * 1024; // 50MB
+const MAX_PHOTO_BYTES = 25 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 500 * 1024 * 1024; // 500MB
 
 @Injectable({
   providedIn: 'root'
 })
 export class UploadService {
+  resolveContentType(file: { name: string; type: string }): string {
+    if (file.type) return file.type.toLowerCase();
+    const byExtension: Record<string, string> = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', heic: 'image/heic', heif: 'image/heif', mp4: 'video/mp4', mov: 'video/quicktime', webm: 'video/webm' };
+    return byExtension[file.name.split('.').pop()?.toLowerCase() ?? ''] ?? '';
+  }
   /**
    * Valida un archivo localmente antes de enviarlo.
    * La validación local es una ayuda de UX; el backend conserva la autoridad final.
@@ -35,10 +41,10 @@ export class UploadService {
     const type = file.type?.toLowerCase() || '';
     const extension = file.name.split('.').pop()?.toLowerCase() || '';
 
-    const isImage = type.startsWith('image/') || ['jpg', 'jpeg', 'png', 'webp', 'heic'].includes(extension);
+    const isImage = type.startsWith('image/') || ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'].includes(extension);
     const isVideo = type.startsWith('video/') || ['mp4', 'mov', 'webm'].includes(extension);
 
-    if (!isImage && !isVideo) {
+    if ((!isImage && !isVideo) || (type && !SUPPORTED_TYPES.includes(type)) || file.size <= 0) {
       return {
         valid: false,
         reason: 'Formato no soportado. Se aceptan fotos (JPEG, PNG, WebP, HEIC) y videos (MP4, MOV, WebM).'
@@ -48,7 +54,7 @@ export class UploadService {
     if (isImage && file.size > MAX_PHOTO_BYTES) {
       return {
         valid: false,
-        reason: 'La foto supera el límite máximo de 50 MB.'
+        reason: 'La foto supera el límite máximo de 25 MB.'
       };
     }
 
@@ -96,10 +102,10 @@ export class UploadService {
         if (f.canRetry) {
           actionRequiredCount++;
         }
-        totalProgressSum += 100;
+        totalProgressSum += f.progress;
       } else if (f.status === 'CANCELLED_POLICY') {
         cancelledCount++;
-        totalProgressSum += 100;
+        totalProgressSum += f.progress;
       } else {
         inProgressCount++;
         totalProgressSum += f.progress;

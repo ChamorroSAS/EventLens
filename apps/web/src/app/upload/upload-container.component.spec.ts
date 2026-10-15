@@ -5,11 +5,12 @@ import { UploadService } from './upload.service.js';
 import { UploadOrchestratorService } from './upload-orchestrator.service.js';
 
 describe('UploadContainerComponent (EL-TK-094 Mobile Upload Flow & WCAG 2.2 AA)', () => {
-  let mockOrchestrator: { startUpload: ReturnType<typeof vi.fn>; retryUpload: ReturnType<typeof vi.fn> };
+  let mockOrchestrator: { startUpload: ReturnType<typeof vi.fn>; retryUpload: ReturnType<typeof vi.fn>; abort: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     mockOrchestrator = {
-      startUpload: vi.fn(),
+      startUpload: vi.fn().mockResolvedValue(undefined),
+      abort: vi.fn(),
       retryUpload: vi.fn()
     };
 
@@ -164,7 +165,7 @@ describe('UploadContainerComponent (EL-TK-094 Mobile Upload Flow & WCAG 2.2 AA)'
     const alertBox = fixture.nativeElement.querySelector('.usage-alert-box');
     expect(alertBox).not.toBeNull();
     expect(alertBox.textContent).toContain('Cargas suspendidas por política');
-    expect(alertBox.textContent).toContain('Los archivos confirmados se preservaron');
+    expect(alertBox.textContent).toContain('Consulta Mis aportes');
 
     // File picker disabled
     expect(component.isPolicyBlocked).toBe(true);
@@ -197,5 +198,42 @@ describe('UploadContainerComponent (EL-TK-094 Mobile Upload Flow & WCAG 2.2 AA)'
     // Semantic list
     const list = fixture.nativeElement.querySelector('.upload-queue-list');
     expect(list.getAttribute('role')).toBe('list');
+  });
+
+  it('waits for explicit start and bounds transfer concurrency to two', async () => {
+    const completions: (() => void)[] = [];
+    mockOrchestrator.startUpload.mockImplementation(() => new Promise<void>(resolve => completions.push(resolve)));
+    const { component } = createComponent();
+    component.onFilesSelected([1, 2, 3].map(value => new File(['x'], `${value}.jpg`, { type: 'image/jpeg' })));
+    expect(mockOrchestrator.startUpload).not.toHaveBeenCalled();
+    component.startQueuedUploads();
+    expect(mockOrchestrator.startUpload).toHaveBeenCalledTimes(2);
+    completions[0](); await Promise.resolve(); await Promise.resolve();
+    expect(mockOrchestrator.startUpload).toHaveBeenCalledTimes(3);
+    completions[1](); completions[2]();
+  });
+
+  it('aborts only owned files on destruction and ignores late completion', () => {
+    mockOrchestrator.startUpload.mockReturnValue(new Promise<void>(() => {}));
+    const { component } = createComponent();
+    component.onFilesSelected([new File(['x'], 'one.jpg', { type: 'image/jpeg' })]);
+    component.startQueuedUploads();
+    const callbacks = mockOrchestrator.startUpload.mock.calls[0][1];
+    const id = component.files[0].id;
+    component.ngOnDestroy();
+    callbacks.onStatusChange(id, 'RECEIVED', { attemptId: 'server-id' });
+    expect(mockOrchestrator.abort).toHaveBeenCalledWith([id]);
+    expect(component.files[0].status).toBe('QUEUED');
+  });
+
+  it('authoritative cancellation overrides a transferred pending receipt', () => {
+    const { component } = createComponent();
+    component.onFilesSelected([new File(['x'], 'one.jpg', { type: 'image/jpeg' })]);
+    const file = component.files[0];
+    component.updateFileStatus(file.id, 'RECEIVED', { attemptId: 'server-id' });
+    component.reconcileContributions([{ attemptId: 'server-id', status: 'CANCELLED' }]);
+    expect(file.status).toBe('CANCELLED_POLICY');
+    component.updateFileStatus(file.id, 'RECEIVED');
+    expect(file.status).toBe('CANCELLED_POLICY');
   });
 });

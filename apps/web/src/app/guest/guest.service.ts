@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 import { createEventLensClient } from '@eventlens/api-client';
 import {
   PublicAccessView,
@@ -138,11 +138,11 @@ export class GuestService {
     return this.contributions();
   }
 
-  public isReadyToUpload(): boolean {
+  public readonly isReadyToUpload = computed(() => {
     const sess = this.currentSession();
     if (!sess) return false;
     return sess.hasConsented && Boolean(sess.contributorNickname);
-  }
+  });
 
   /**
    * Resolves public access and authoritative session receipt via generated API client (EL-TK-211 / EL-TK-074 / EL-TK-075).

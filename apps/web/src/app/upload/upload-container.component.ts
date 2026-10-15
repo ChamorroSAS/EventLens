@@ -1,10 +1,10 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { FilePickerComponent } from './file-picker.component.js';
 import { UploadFileItemComponent } from './upload-file-item.component.js';
 import { UploadProgressSummaryComponent } from './upload-progress-summary.component.js';
 import { UsageLimitAlertComponent } from './usage-limit-alert.component.js';
 import { UploadService } from './upload.service.js';
-import { UploadOrchestratorService } from './upload-orchestrator.service.js';
+import { UploadOrchestratorService, createUploadKey } from './upload-orchestrator.service.js';
 import type { UploadLocalFile, UploadBatchSummary } from './upload.types.js';
 
 @Component({
@@ -34,16 +34,17 @@ import type { UploadLocalFile, UploadBatchSummary } from './upload.types.js';
       />
 
       <!-- File Picker (disabled if policy blocks uploads) -->
-      <eventlens-file-picker
+      @if (showPicker) { <eventlens-file-picker
         [disabled]="isPolicyBlocked"
         label="Elegir fotos y videos"
         (filesSelected)="onFilesSelected($event)"
-      />
+      /> }
 
       <!-- Batch Progress Summary (when files exist) -->
       @if (files.length > 0) {
         <div class="batch-section">
           <eventlens-upload-progress-summary [summary]="batchSummary" />
+          @if (showStartButton) { <button type="button" class="start-button" [disabled]="isPolicyBlocked || !hasQueuedFiles" (click)="startQueuedUploads()">Cargar archivos</button> }
 
           <!-- Queue / List of files (vertical rows for mobile accessibility) -->
           <ul
@@ -98,10 +99,27 @@ import type { UploadLocalFile, UploadBatchSummary } from './upload.types.js';
       flex-direction: column;
       gap: 0.5rem;
     }
+    .start-button { min-height: 44px; padding: 0.75rem; }
+    .start-button:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
   `
 })
-export class UploadContainerComponent {
+export class UploadContainerComponent implements OnChanges, OnDestroy {
   @Input() isPolicyBlocked = false;
+  @Input() contextKey = '';
+  @Input() showPicker = true;
+  @Input() showStartButton = true;
+  @Output() received = new EventEmitter<string>();
+  private generation = 0;
+  private running = 0;
+  private pending: UploadLocalFile[] = [];
+  get hasQueuedFiles(): boolean { return this.files.some(file => file.status === 'QUEUED'); }
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['contextKey'] && !changes['contextKey'].firstChange) { this.cancelOwned(); this.files = []; this.refreshSummary(); }
+    if (changes['isPolicyBlocked']?.currentValue === true) this.handlePolicyCancellation('UPLOADS_UNAVAILABLE');
+  }
+  ngOnDestroy(): void { this.cancelOwned(); }
+  cancelPendingTransfers(): void { this.cancelOwned(); }
+  private cancelOwned(): void { this.generation++; this.orchestrator.abort(this.files.map(file => file.id)); this.pending = []; this.running = 0; }
   showAlert = false;
   alertTitle?: string;
   alertMessage = '';
@@ -136,16 +154,18 @@ export class UploadContainerComponent {
    * conocidos localmente, entonces se señalan individualmente sin bloquear los elegibles.
    */
   onFilesSelected(selectedFiles: File[]): void {
+    if (this.isPolicyBlocked) return;
     for (const rawFile of selectedFiles) {
       const validation = this.uploadService.validateLocalFile(rawFile);
-      const fileId = `file-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const fileId = createUploadKey();
 
       const localFile: UploadLocalFile = {
         id: fileId,
         file: rawFile,
         name: rawFile.name,
         size: rawFile.size,
-        type: rawFile.type,
+        type: this.uploadService.resolveContentType(rawFile),
+        idempotencyKey: createUploadKey(),
         status: validation.valid ? 'QUEUED' : 'REJECTED',
         progress: 0,
         canRetry: false,
@@ -156,13 +176,6 @@ export class UploadContainerComponent {
       this.files.push(localFile);
       this.fileQueued.emit(localFile);
 
-      // Start upload for valid files
-      if (validation.valid) {
-        this.orchestrator.startUpload(localFile, {
-          onProgress: (id, pct) => this.updateFileProgress(id, pct),
-          onStatusChange: (id, status, opts) => this.updateFileStatus(id, status, opts),
-        });
-      }
     }
     this.refreshSummary();
   }
@@ -173,20 +186,47 @@ export class UploadContainerComponent {
    */
   onFileRetry(fileId: string): void {
     const item = this.files.find((f) => f.id === fileId);
-    if (!item || !item.canRetry) return;
+    if (!item || !item.canRetry || this.isPolicyBlocked) return;
 
     item.status = 'QUEUED';
-    item.progress = 0;
     item.error = undefined;
     item.canRetry = false;
 
     this.refreshSummary();
     this.fileRetried.emit(fileId);
 
-    this.orchestrator.retryUpload(fileId, item, {
-      onProgress: (id, pct) => this.updateFileProgress(id, pct),
-      onStatusChange: (id, status, opts) => this.updateFileStatus(id, status, opts),
-    });
+    this.pending.push(item);
+    this.drain();
+  }
+
+  startQueuedUploads(): void {
+    if (this.isPolicyBlocked) return;
+    for (const file of this.files.filter(item => item.status === 'QUEUED')) {
+      if (!this.pending.includes(file)) this.pending.push(file);
+    }
+    this.drain();
+  }
+  private drain(): void {
+    while (!this.isPolicyBlocked && this.running < 2 && this.pending.length) {
+      const file = this.pending.shift()!;
+      const generation = this.generation;
+      this.running++;
+      void this.orchestrator.startUpload(file, {
+        onProgress: (id, progress) => { if (generation === this.generation) this.updateFileProgress(id, progress); },
+        onStatusChange: (id, status, options) => { if (generation === this.generation) this.updateFileStatus(id, status, options); }
+      }).finally(() => { if (generation === this.generation) { this.running--; this.drain(); } });
+    }
+  }
+  removeQueuedFile(rawFile: File): void {
+    this.files = this.files.filter(file => file.file !== rawFile || (file.status !== 'QUEUED' && !file.isInvalidLocal));
+    this.refreshSummary();
+  }
+  reconcileContributions(items: readonly { attemptId: string; status: string }[]): void {
+    for (const item of items) {
+      const file = this.files.find(file => file.attemptId === item.attemptId);
+      if (file && item.status === 'CANCELLED') { file.status = 'CANCELLED_POLICY'; file.canRetry = false; }
+    }
+    this.refreshSummary();
   }
 
   /**
@@ -194,11 +234,12 @@ export class UploadContainerComponent {
    * los intentos no confirmados se muestran cancelados y los confirmados permanecen recibidos.
    */
   handlePolicyCancellation(reason: string): void {
+    this.cancelOwned();
     this.files = this.uploadService.applyPolicyCancellation(this.files, reason);
     this.isPolicyBlocked = true;
     this.showAlert = true;
     this.alertTitle = 'Cargas suspendidas por política';
-    this.alertMessage = `El evento no admite nuevas cargas (${reason}). Los archivos confirmados se preservaron.`;
+    this.alertMessage = 'El evento no admite nuevas cargas. Consulta Mis aportes para conocer el estado actual de los archivos transferidos.';
     this.alertType = 'warning';
     this.refreshSummary();
   }
@@ -223,13 +264,14 @@ export class UploadContainerComponent {
     options?: { error?: string; canRetry?: boolean; attemptId?: string }
   ): void {
     const item = this.files.find((f) => f.id === fileId);
-    if (item) {
+    if (item && item.status !== 'CANCELLED_POLICY') {
       item.status = status;
       if (options?.error) item.error = options.error;
       if (options?.canRetry !== undefined) item.canRetry = options.canRetry;
       if (options?.attemptId) item.attemptId = options.attemptId;
       if (status === 'RECEIVED') {
         item.progress = 100;
+        this.received.emit(item.attemptId!);
       }
       this.refreshSummary();
     }

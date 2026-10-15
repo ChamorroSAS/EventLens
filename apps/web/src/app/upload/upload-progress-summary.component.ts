@@ -33,7 +33,7 @@ import type { UploadBatchSummary } from './upload.types.js';
 
         @if (!summary.allCompleted && summary.overallProgress === 100) {
           <p class="acceptance-disclaimer">
-            El 100% de transferencia indica envío completado; el servidor está validando los archivos antes de confirmar su recepción definitiva.
+            El envío terminó. Falta confirmar la recepción del servidor; esto no implica validación ni publicación.
           </p>
         }
       </div>
@@ -102,9 +102,9 @@ export class UploadProgressSummaryComponent {
 
     if (this.summary.allCompleted) {
       if (this.summary.actionRequiredCount > 0 || this.summary.rejectedCount > 0) {
-        return `${this.summary.receivedCount} archivos recibidos; ${this.summary.actionRequiredCount + this.summary.rejectedCount} requieren atención.`;
+        return `${this.summary.receivedCount} archivos transferidos; ${this.summary.rejectedCount} requieren atención.`;
       }
-      return `${this.summary.receivedCount} de ${this.summary.totalFiles} archivos recibidos correctamente.`;
+      return `${this.summary.receivedCount} de ${this.summary.totalFiles} archivos transferidos; validación pendiente.`;
     }
 
     if (this.summary.actionRequiredCount > 0) {

@@ -246,7 +246,7 @@ export class UploadFileItemComponent {
       case 'VALIDATING':
         return 'Validando formato…';
       case 'RECEIVED':
-        return 'Recibido ✓';
+        return 'Transferido; validación pendiente';
       case 'REJECTED':
         return 'Error en la transferencia';
       case 'CANCELLED_POLICY':
