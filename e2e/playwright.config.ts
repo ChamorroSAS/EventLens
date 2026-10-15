@@ -2,6 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 const webPort = process.env.WEB_PORT || '4201';
 const webBaseUrl = process.env.WEB_BASE_URL || `http://127.0.0.1:${webPort}`;
+// If WEB_BASE_URL is explicitly set to port 4200 (Angular dev server), reuse existing server
+const isDevServer = process.env.WEB_BASE_URL?.includes(':4200') ?? false;
 
 export default defineConfig({
   testDir: './tests',
@@ -11,7 +13,7 @@ export default defineConfig({
   reporter: [['list']],
   outputDir: './test-results',
   use: { baseURL: webBaseUrl, trace: 'retain-on-failure' },
-  webServer: {
+  webServer: isDevServer ? undefined : {
     command: 'node ../apps/web/spa-server.mjs',
     url: webBaseUrl,
     reuseExistingServer: false,
